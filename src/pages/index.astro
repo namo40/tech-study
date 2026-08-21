@@ -1,0 +1,28 @@
+---
+import { defaultLocale, htmlLang, localePath, t } from '../i18n';
+
+/**
+ * The site root only forwards to the default locale. Static hosting has no
+ * server-side redirect, so this page ships a meta refresh, a script, and a
+ * plain link, in that order of preference.
+ */
+const target = localePath(defaultLocale);
+---
+
+<!doctype html>
+<html lang={htmlLang[defaultLocale]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="refresh" content={`0; url=${target}`} />
+    <meta name="robots" content="noindex" />
+    <title>{t(defaultLocale, 'site.name')}</title>
+    <link rel="canonical" href={new URL(target, Astro.site).href} />
+    <script is:inline define:vars={{ target }}>
+      window.location.replace(target);
+    </script>
+  </head>
+  <body>
+    <p><a href={target}>{t(defaultLocale, 'nav.home')}</a></p>
+  </body>
+</html>

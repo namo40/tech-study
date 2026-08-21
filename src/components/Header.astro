@@ -1,0 +1,26 @@
+---
+import LangSwitcher from './LangSwitcher.astro';
+import ThemeToggle from './ThemeToggle.astro';
+import { localePath, t } from '../i18n';
+import type { Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+  path?: string;
+}
+
+const { locale, path = '' } = Astro.props;
+---
+
+<header class="header">
+  <div class="shell header__inner">
+    <a class="header__brand" href={localePath(locale)}>
+      <span class="header__name">{t(locale, 'site.name')}</span>
+      <span class="header__tagline">{t(locale, 'site.tagline')}</span>
+    </a>
+    <div class="header__tools">
+      <LangSwitcher locale={locale} path={path} />
+      <ThemeToggle locale={locale} />
+    </div>
+  </div>
+</header>

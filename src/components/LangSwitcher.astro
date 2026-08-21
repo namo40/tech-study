@@ -1,0 +1,33 @@
+---
+import { alternatePaths, htmlLang, localeName, t } from '../i18n';
+import type { Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+  /** Path below the locale segment, so each link lands on the same page. */
+  path?: string;
+}
+
+const { locale, path = '' } = Astro.props;
+const alternates = alternatePaths(path);
+---
+
+<nav aria-label={t(locale, 'lang.label')}>
+  <ul class="langs">
+    {
+      alternates.map(({ locale: other, path: href }) => (
+        <li>
+          <a
+            class="langs__link"
+            href={href}
+            hreflang={htmlLang[other]}
+            lang={htmlLang[other]}
+            aria-current={other === locale ? 'true' : undefined}
+          >
+            {localeName(locale, other)}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>

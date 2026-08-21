@@ -1,0 +1,161 @@
+---
+import { t } from '../i18n';
+import type { Locale } from '../i18n';
+import { getSceneAsset } from '../scenes/registry';
+import '../styles/scene.css';
+
+interface StepEntry {
+  title: string;
+  text: string;
+}
+
+interface Props {
+  /** Scene identifier, matching the key used by the scene registry. */
+  scene: string;
+  locale: Locale;
+  /** Step-by-step explanation, one entry per timeline step. */
+  steps: StepEntry[];
+}
+
+const { scene, locale, steps } = Astro.props;
+
+const asset = getSceneAsset(scene);
+
+const totalMinutes = Math.floor((asset?.duration ?? 0) / 60);
+const totalSeconds = Math.round((asset?.duration ?? 0) % 60);
+const totalLabel = `0:00 / ${totalMinutes}:${String(totalSeconds).padStart(2, '0')}`;
+---
+
+{
+  asset && (
+    <section
+      class="player"
+      data-player
+      data-scene={scene}
+      tabindex="0"
+      role="group"
+      aria-label={t(locale, 'player.region')}
+    >
+      <div class="stage-wrap">
+        {/*
+          The card sits over the top of the stage on wide screens and above it
+          on narrow ones, so long text never covers the diagram.
+        */}
+        <div class="step-cards" role="status" aria-live="polite">
+          {steps.map((step, index) => (
+            <div class="step-card" data-caption={index} hidden={index !== 0}>
+              <p class="step-card__kicker">{t(locale, 'player.step', { n: index + 1 })}</p>
+              <h2 class="step-card__title">{step.title}</h2>
+              <p class="step-card__text">{step.text}</p>
+            </div>
+          ))}
+        </div>
+
+        <div class="stage-frame" data-stage set:html={asset.markup} />
+      </div>
+
+      <div class="controls">
+        <input
+          class="controls__scrub"
+          type="range"
+          min="0"
+          max="1000"
+          step="1"
+          value="0"
+          data-scrub
+          aria-label={t(locale, 'player.scrub')}
+        />
+
+        <button
+          type="button"
+          class="btn"
+          data-play
+          aria-pressed="false"
+          aria-label={t(locale, 'player.play')}
+          data-label-play={t(locale, 'player.play')}
+          data-label-pause={t(locale, 'player.pause')}
+        >
+          <svg class="btn__icon btn__icon--filled" data-play-icon="play" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 5 L19 12 L8 19 Z" />
+          </svg>
+          <svg
+            class="btn__icon btn__icon--filled is-hidden"
+            data-play-icon="pause"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path d="M7 5h3.4v14H7zM13.6 5H17v14h-3.4z" />
+          </svg>
+        </button>
+
+        <button type="button" class="btn" data-previous aria-label={t(locale, 'player.previous')}>
+          <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 6 L9 12 L15 18" />
+            <path d="M6 5v14" />
+          </svg>
+        </button>
+
+        <button type="button" class="btn" data-next aria-label={t(locale, 'player.next')}>
+          <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 6 L15 12 L9 18" />
+            <path d="M18 5v14" />
+          </svg>
+        </button>
+
+        <div class="controls__steps">
+          {steps.map((_step, index) => (
+            <button
+              type="button"
+              class="controls__step"
+              data-step={index}
+              aria-current={index === 0 ? 'true' : 'false'}
+              aria-label={t(locale, 'player.goToStep', { n: index + 1 })}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          class="btn"
+          data-loop
+          aria-pressed="false"
+          aria-label={t(locale, 'player.loop')}
+        >
+          <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 9a5 5 0 0 1 5-5h9" />
+            <path d="M15 1.5 18.5 4 15 6.5" />
+            <path d="M20 15a5 5 0 0 1-5 5H6" />
+            <path d="M9 17.5 5.5 20 9 22.5" />
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          class="btn"
+          data-sound
+          aria-pressed="false"
+          aria-label={t(locale, 'player.sound')}
+        >
+          <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 9v6h4l5 4V5L8 9z" />
+            <path d="M16.5 8.5a5 5 0 0 1 0 7" />
+          </svg>
+        </button>
+
+        <span class="controls__time" data-time aria-label={t(locale, 'player.time')}>
+          {totalLabel}
+        </span>
+      </div>
+
+      <p class="player__hint">{t(locale, 'player.keyboardHint')}</p>
+    </section>
+  )
+}
+
+<script>
+  import { initScenePlayers } from '../scripts/player';
+
+  initScenePlayers();
+</script>

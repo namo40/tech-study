@@ -1,0 +1,47 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { localePath, locales, t, toLocale } from '../../i18n';
+
+export function getStaticPaths() {
+  return locales.map((lang) => ({ params: { lang } }));
+}
+
+const locale = toLocale(Astro.params.lang);
+
+const entries = await getCollection('concepts');
+const concepts = entries
+  .filter((entry) => entry.id.endsWith(`/${locale}`))
+  .map((entry) => ({
+    slug: entry.id.split('/')[0],
+    title: entry.data.title,
+    summary: entry.data.summary,
+    category: entry.data.category,
+  }))
+  .sort((a, b) => a.title.localeCompare(b.title, locale));
+---
+
+<Base locale={locale} title={t(locale, 'site.name')} description={t(locale, 'site.tagline')}>
+  <div class="intro">
+    <h1 class="intro__title">{t(locale, 'home.heading')}</h1>
+    <p class="intro__text">{t(locale, 'home.intro')}</p>
+  </div>
+
+  {
+    concepts.length === 0 ? (
+      <p>{t(locale, 'home.empty')}</p>
+    ) : (
+      <ul class="card-grid">
+        {concepts.map((concept) => (
+          <li>
+            <a class="card" href={localePath(locale, concept.slug)}>
+              <span class="card__category">{concept.category}</span>
+              <h2 class="card__title">{concept.title}</h2>
+              <p class="card__summary">{concept.summary}</p>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</Base>

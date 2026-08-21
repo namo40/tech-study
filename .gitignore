@@ -3,3 +3,8 @@
 .research/
 CLAUDE.local.md
 AGENTS.override.md
+node_modules/
+dist/
+.astro/
+.env
+npm-debug.log*
