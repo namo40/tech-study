@@ -10,6 +10,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./circuit-breaker/scene')).default;
     case 'retry':
       return (await import('./retry/scene')).default;
+    case 'rate-limiter':
+      return (await import('./rate-limiter/scene')).default;
     default:
       return null;
   }

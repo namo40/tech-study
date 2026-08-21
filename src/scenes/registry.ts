@@ -2,6 +2,10 @@ import {
   SCENE_DURATION as circuitBreakerDuration,
   stageMarkup as circuitBreakerStage,
 } from './circuit-breaker/stage';
+import {
+  SCENE_DURATION as rateLimiterDuration,
+  stageMarkup as rateLimiterStage,
+} from './rate-limiter/stage';
 import { SCENE_DURATION as retryDuration, stageMarkup as retryStage } from './retry/stage';
 
 /**
@@ -23,6 +27,10 @@ const scenes: Record<string, SceneAsset> = {
   retry: {
     markup: retryStage,
     duration: retryDuration,
+  },
+  'rate-limiter': {
+    markup: rateLimiterStage,
+    duration: rateLimiterDuration,
   },
 };
 
