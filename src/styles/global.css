@@ -312,6 +312,12 @@ kbd {
   color: var(--fg-soft);
 }
 
+.concept__parent {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--fg-soft);
+}
+
 .prose {
   max-width: var(--content-width);
   margin-top: var(--space-8);

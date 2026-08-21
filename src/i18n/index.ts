@@ -65,6 +65,19 @@ export function localePath(locale: Locale, path = ''): string {
   return withBase(`/${locale}/${suffix}`);
 }
 
+/**
+ * Splits a message around a single `{name}` placeholder, for the cases where
+ * the value is an element rather than a string. Returns the text before and
+ * after the placeholder.
+ */
+export function tSplit(locale: Locale, key: MessageKey, name: string): [string, string] {
+  const template = messages[locale][key];
+  const token = `{${name}}`;
+  const index = template.indexOf(token);
+  if (index < 0) return [template, ''];
+  return [template.slice(0, index), template.slice(index + token.length)];
+}
+
 /** The autonym of `target`, taken from the message set of `locale`. */
 export function localeName(locale: Locale, target: Locale): string {
   return t(locale, `lang.${target}` as MessageKey);

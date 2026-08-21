@@ -38,6 +38,8 @@ const ja: Messages = {
     'プレーヤーにフォーカスがあるとき、Space で再生と一時停止を切り替え、左右の矢印キーでステップを移動し、Home で最初に戻ります。',
   'player.stageLabel': '概念を説明するアニメーション図',
 
+  'concept.partOf': '{parent} の一部です',
+
   'section.whenToUse': 'いつ使うか',
   'section.cautions': '注意点',
   'section.dotnet': '.NET では',

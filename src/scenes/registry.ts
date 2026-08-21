@@ -1,4 +1,8 @@
-import { SCENE_DURATION as circuitBreakerDuration, stageMarkup as circuitBreakerStage } from './circuit-breaker/stage';
+import {
+  SCENE_DURATION as circuitBreakerDuration,
+  stageMarkup as circuitBreakerStage,
+} from './circuit-breaker/stage';
+import { SCENE_DURATION as retryDuration, stageMarkup as retryStage } from './retry/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -15,6 +19,10 @@ const scenes: Record<string, SceneAsset> = {
   'circuit-breaker': {
     markup: circuitBreakerStage,
     duration: circuitBreakerDuration,
+  },
+  retry: {
+    markup: retryStage,
+    duration: retryDuration,
   },
 };
 

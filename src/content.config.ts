@@ -17,7 +17,15 @@ const concepts = defineCollection({
     category: z.string(),
     /** Identifier of the animated scene, when the page has one. */
     scene: z.string().optional(),
-    /** Step-by-step explanation, shown as a title card over the scene. */
+    /**
+     * Step of the scene this page is about. Sub-keyword pages set it so the
+     * player opens on that step and reuses the parent page's step text.
+     */
+    sceneStep: z.number().int().min(1).max(8).optional(),
+    /**
+     * Step-by-step explanation, shown as a title card over the scene. A page
+     * that leaves it empty inherits the steps of its parent scene page.
+     */
     steps: z
       .array(
         z.object({

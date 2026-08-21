@@ -2,7 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import ScenePlayer from '../../components/ScenePlayer.astro';
 import Base from '../../layouts/Base.astro';
-import { localePath, t, toLocale } from '../../i18n';
+import { localePath, t, toLocale, tSplit } from '../../i18n';
 
 export async function getStaticPaths() {
   const entries = await getCollection('concepts');
@@ -17,9 +17,25 @@ const { entry } = Astro.props;
 const [slug, lang] = entry.id.split('/');
 const locale = toLocale(lang);
 
-// Related concepts only become links once the page for that slug exists.
 const all = await getCollection('concepts');
+
+// Related concepts only become links once the page for that slug exists.
 const published = new Set(all.map((item) => item.id.split('/')[0]));
+
+/*
+ * A sub-keyword page names a scene but writes no steps of its own. It borrows
+ * the step text of the page that owns the scene, in the same locale, so the
+ * title card stays translated and there is only one place to edit it.
+ */
+const parentId = entry.data.scene ? `${entry.data.scene}/${lang}` : undefined;
+const parent =
+  parentId && parentId !== entry.id ? all.find((item) => item.id === parentId) : undefined;
+const steps = entry.data.steps.length > 0 ? entry.data.steps : (parent?.data.steps ?? []);
+
+// The "Part of" line is one message with a link in the middle, so the message
+// is split around its placeholder instead of being assembled from fragments.
+const [partOfBefore, partOfAfter] = tSplit(locale, 'concept.partOf', 'parent');
+const showPartOf = Boolean(entry.data.sceneStep && parent);
 
 const { Content } = await render(entry);
 ---
@@ -30,10 +46,22 @@ const { Content } = await render(entry);
       <p class="concept__category">{entry.data.category}</p>
       <h1 class="concept__title">{entry.data.title}</h1>
       <p class="concept__summary">{entry.data.summary}</p>
+      {showPartOf && parent && (
+        <p class="concept__parent">
+          {partOfBefore}
+          <a href={localePath(locale, entry.data.scene)}>{parent.data.title}</a>
+          {partOfAfter}
+        </p>
+      )}
     </header>
 
     {entry.data.scene && (
-      <ScenePlayer scene={entry.data.scene} locale={locale} steps={entry.data.steps} />
+      <ScenePlayer
+        scene={entry.data.scene}
+        locale={locale}
+        steps={steps}
+        startStep={entry.data.sceneStep}
+      />
     )}
 
     <div class="prose">

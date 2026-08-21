@@ -15,11 +15,16 @@ interface Props {
   locale: Locale;
   /** Step-by-step explanation, one entry per timeline step. */
   steps: StepEntry[];
+  /** 1-based step the player should open on. Defaults to the first. */
+  startStep?: number;
 }
 
-const { scene, locale, steps } = Astro.props;
+const { scene, locale, steps, startStep } = Astro.props;
 
 const asset = getSceneAsset(scene);
+
+// Sub-keyword pages open on the step they are about.
+const initialStep = Math.min(Math.max((startStep ?? 1) - 1, 0), Math.max(steps.length - 1, 0));
 
 const totalMinutes = Math.floor((asset?.duration ?? 0) / 60);
 const totalSeconds = Math.round((asset?.duration ?? 0) % 60);
@@ -32,6 +37,7 @@ const totalLabel = `0:00 / ${totalMinutes}:${String(totalSeconds).padStart(2, '0
       class="player"
       data-player
       data-scene={scene}
+      data-start-step={startStep}
       tabindex="0"
       role="group"
       aria-label={t(locale, 'player.region')}
@@ -43,7 +49,7 @@ const totalLabel = `0:00 / ${totalMinutes}:${String(totalSeconds).padStart(2, '0
         */}
         <div class="step-cards" role="status" aria-live="polite">
           {steps.map((step, index) => (
-            <div class="step-card" data-caption={index} hidden={index !== 0}>
+            <div class="step-card" data-caption={index} hidden={index !== initialStep}>
               <p class="step-card__kicker">{t(locale, 'player.step', { n: index + 1 })}</p>
               <h2 class="step-card__title">{step.title}</h2>
               <p class="step-card__text">{step.text}</p>
@@ -108,7 +114,7 @@ const totalLabel = `0:00 / ${totalMinutes}:${String(totalSeconds).padStart(2, '0
               type="button"
               class="controls__step"
               data-step={index}
-              aria-current={index === 0 ? 'true' : 'false'}
+              aria-current={index === initialStep ? 'true' : 'false'}
               aria-label={t(locale, 'player.goToStep', { n: index + 1 })}
             >
               {index + 1}

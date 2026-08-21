@@ -8,6 +8,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
   switch (id) {
     case 'circuit-breaker':
       return (await import('./circuit-breaker/scene')).default;
+    case 'retry':
+      return (await import('./retry/scene')).default;
     default:
       return null;
   }

@@ -1,5 +1,17 @@
 import gsap from 'gsap';
 import { SCENE_DURATION, TIMER_CIRCUMFERENCE } from './stage';
+import { q } from '../shared/dom';
+import {
+  addTrip,
+  haloRequest,
+  hideRequest,
+  markRequest,
+  mountRequests,
+  moveRequest,
+  parkRequest,
+  showRequest,
+  type RequestParts,
+} from '../shared/request';
 import type { SceneBuildOptions, SceneCue, SceneInstance, SceneModule, SceneStep } from '../types';
 
 /**
@@ -15,6 +27,8 @@ import type { SceneBuildOptions, SceneCue, SceneInstance, SceneModule, SceneStep
  *    playhead moves back past them. Colours then come from CSS rules keyed on
  *    those attributes, so both themes stay correct.
  */
+
+const ID = 'circuit-breaker';
 
 /** Horizontal axis every request travels along. */
 const X = 540;
@@ -78,46 +92,16 @@ const REQUESTS: RequestSpec[] = [
   { at: 21.9, kind: 'success' },
 ];
 
-const REQUEST_MARKUP = `<g class="cb-req">
-  <circle class="cb-req-halo" r="26" />
-  <circle class="cb-req-dot" r="14" />
-  <g class="cb-req-ok"><circle class="cb-req-ok-bg" r="20" /><path class="cb-req-glyph" d="M -9 1 L -3 8 L 10 -7" /></g>
-  <g class="cb-req-fail"><circle class="cb-req-fail-bg" r="20" /><path class="cb-req-glyph" d="M -8 -8 L 8 8 M 8 -8 L -8 8" /></g>
-</g>`;
-
-function q<T extends Element>(root: ParentNode, selector: string): T {
-  const element = root.querySelector<T>(selector);
-  if (!element) throw new Error(`circuit-breaker scene: element "${selector}" is missing`);
-  return element;
-}
-
 /** Adds one request as a set of absolutely positioned tweens. */
 function addRequest(
   tl: gsap.core.Timeline,
-  group: SVGGElement,
+  parts: RequestParts,
   spec: RequestSpec,
   cue: (name: SceneCue) => void,
 ): void {
-  const halo = q<SVGCircleElement>(group, '.cb-req-halo');
-  const dot = q<SVGCircleElement>(group, '.cb-req-dot');
-  const ok = q<SVGGElement>(group, '.cb-req-ok');
-  const fail = q<SVGGElement>(group, '.cb-req-fail');
-
-  // Resting state: parked at the client, hidden, showing the plain dot.
-  gsap.set(group, { x: X, y: Y_CLIENT, opacity: 0 });
-  gsap.set([ok, fail, halo], { opacity: 0 });
-  gsap.set(dot, { opacity: 1 });
+  parkRequest(parts, X, Y_CLIENT);
 
   const t = spec.at;
-  const pop = {
-    scale: 1,
-    transformOrigin: '50% 50%',
-    duration: 0.18,
-    ease: 'back.out(2.4)',
-    immediateRender: false,
-  };
-
-  tl.set(group, { opacity: 1, immediateRender: false }, t);
 
   if (spec.kind === 'success' || spec.kind === 'failure' || spec.kind === 'trial') {
     // Reaches the breaker, continues to the service, and comes back with a result.
@@ -125,25 +109,22 @@ function addRequest(
     const toService = spec.kind === 'trial' ? 0.6 : toBreaker;
     const dwell = spec.kind === 'trial' ? 0.4 : 0;
     const back = spec.kind === 'failure' ? 0.5 : 0.4;
-    const arrivedAtService = t + toBreaker + toService;
-    const turnAround = arrivedAtService + dwell;
-    const home = turnAround + back;
-    const marker = spec.kind === 'failure' ? fail : ok;
+    const result = spec.kind === 'failure' ? 'fail' : 'ok';
     const sound: SceneCue = spec.kind === 'failure' ? 'failure' : 'success';
 
-    if (spec.kind === 'trial') {
-      tl.set(halo, { opacity: 1, immediateRender: false }, t);
-      tl.to(halo, { opacity: 0, duration: 0.3, immediateRender: false }, home);
-    }
+    const home = addTrip(tl, parts, {
+      start: t,
+      down: [
+        { to: Y_BREAKER, duration: toBreaker },
+        { to: Y_SERVICE, duration: toService },
+      ],
+      result,
+      dwell,
+      up: [{ to: Y_CLIENT, duration: back }],
+    });
 
-    tl.to(group, { y: Y_BREAKER, duration: toBreaker, ease: 'none' }, t);
-    tl.to(group, { y: Y_SERVICE, duration: toService, ease: 'none' }, t + toBreaker);
-    tl.set(dot, { opacity: 0, immediateRender: false }, turnAround);
-    tl.set(marker, { opacity: 1, immediateRender: false }, turnAround);
-    tl.fromTo(marker, { scale: 0.55, transformOrigin: '50% 50%' }, { ...pop }, turnAround);
-    tl.to(group, { y: Y_CLIENT, duration: back, ease: 'none' }, turnAround);
+    if (spec.kind === 'trial') haloRequest(tl, parts, t, home);
     tl.call(() => cue(sound), undefined, home);
-    tl.to(group, { opacity: 0, duration: 0.22, immediateRender: false }, home);
     return;
   }
 
@@ -152,34 +133,27 @@ function addRequest(
   const bounce = atBreaker + 0.3;
   const home = bounce + 0.4;
 
-  tl.to(group, { y: Y_BREAKER, duration: 0.4, ease: 'none' }, t);
-  tl.set(dot, { opacity: 0, immediateRender: false }, atBreaker);
-  tl.set(fail, { opacity: 1, immediateRender: false }, atBreaker);
-  tl.fromTo(
-    fail,
-    { scale: 0.5, transformOrigin: '50% 50%' },
-    { ...pop, duration: 0.16, ease: 'back.out(3)' },
-    atBreaker,
-  );
+  showRequest(tl, parts, t);
+  moveRequest(tl, parts, Y_BREAKER, 0.4, t);
+  markRequest(tl, parts, 'fail', atBreaker, 0.5);
   tl.call(() => cue('failure'), undefined, atBreaker);
-  tl.to(group, { y: Y_CLIENT, duration: 0.4, ease: 'power1.in' }, bounce);
-  tl.to(group, { opacity: 0, duration: 0.22, immediateRender: false }, home);
+  moveRequest(tl, parts, Y_CLIENT, 0.4, bounce, 'power1.in');
+  hideRequest(tl, parts, home);
 }
 
 function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance {
   const { cue } = options;
 
-  const arm = q<SVGLineElement>(stage, '.cb-arm');
-  const badgeGlow = q<SVGRectElement>(stage, '.cb-badge-glow');
-  const timer = q<SVGGElement>(stage, '.cb-timer');
-  const timerProgress = q<SVGCircleElement>(stage, '.cb-timer-progress');
-  const meterFill = q<SVGRectElement>(stage, '.cb-meter-fill');
-  const service = q<SVGGElement>(stage, '.cb-service');
-  const health = q<SVGCircleElement>(stage, '.cb-health');
-  const requestLayer = q<SVGGElement>(stage, '.cb-requests');
+  const arm = q<SVGLineElement>(stage, '.cb-arm', ID);
+  const badgeGlow = q<SVGRectElement>(stage, '.cb-badge-glow', ID);
+  const timer = q<SVGGElement>(stage, '.cb-timer', ID);
+  const timerProgress = q<SVGCircleElement>(stage, '.cb-timer-progress', ID);
+  const meterFill = q<SVGRectElement>(stage, '.cb-meter-fill', ID);
+  const service = q<SVGGElement>(stage, '.scene-service', ID);
+  const health = q<SVGCircleElement>(stage, '.scene-health', ID);
+  const requestLayer = q<SVGGElement>(stage, '.scene-requests', ID);
 
-  requestLayer.innerHTML = REQUESTS.map(() => REQUEST_MARKUP).join('');
-  const requestNodes = Array.from(requestLayer.querySelectorAll<SVGGElement>('.cb-req'));
+  const requests = mountRequests(requestLayer, REQUESTS.length, ID);
 
   const tl = gsap.timeline({ paused: true });
 
@@ -265,8 +239,8 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
 
   // --- Requests -----------------------------------------------------------
   REQUESTS.forEach((spec, index) => {
-    const node = requestNodes[index];
-    if (node) addRequest(tl, node, spec, cue);
+    const parts = requests[index];
+    if (parts) addRequest(tl, parts, spec, cue);
   });
 
   // Pin the total length so the scrub bar covers the closing hold.
@@ -281,7 +255,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
 }
 
 const scene: SceneModule = {
-  id: 'circuit-breaker',
+  id: ID,
   duration: SCENE_DURATION,
   build,
 };

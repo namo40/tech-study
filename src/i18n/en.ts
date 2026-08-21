@@ -40,6 +40,8 @@ const en = {
     'With the player focused: Space plays or pauses, the left and right arrow keys move between steps, and Home returns to the start.',
   'player.stageLabel': 'Animated diagram of the concept',
 
+  'concept.partOf': 'Part of {parent}',
+
   'section.whenToUse': 'When to use',
   'section.cautions': 'Cautions',
   'section.dotnet': 'In .NET',

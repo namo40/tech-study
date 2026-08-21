@@ -216,11 +216,18 @@ async function initPlayer(root: HTMLElement): Promise<void> {
     }
   });
 
-  // Open on the first frame of step 1, then start playing. A reader who
-  // prefers reduced motion keeps the still frame until they press play.
-  tl.pause(0);
-  applyStep(0);
-  shownStep = 0;
+  // A sub-keyword page opens on the step it is about; every other page opens
+  // on step 1. Then playback starts, unless the reader prefers reduced motion,
+  // in which case that still frame is what they keep.
+  const requestedStep = Number(root.dataset.startStep);
+  const startIndex = Number.isFinite(requestedStep)
+    ? Math.min(Math.max(requestedStep - 1, 0), steps.length - 1)
+    : 0;
+  const startTime = steps[startIndex]?.time ?? 0;
+
+  tl.pause(startTime);
+  applyStep(startIndex);
+  shownStep = startIndex;
   syncPlayButton();
   render();
 

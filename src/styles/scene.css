@@ -1,59 +1,129 @@
 /*
  * Styles for the SVG stage of a scene.
  *
- * The stage markup is injected as raw HTML, so these rules are global rather
- * than component scoped. Every colour resolves to a design token, which keeps
- * the scene correct in both themes and lets the timeline change state by
- * flipping `data-*` attributes instead of interpolating colours.
+ * Stage markup is injected as raw HTML, so these rules are global rather than
+ * component scoped. Every colour resolves to a design token, which keeps a
+ * scene correct in both themes and lets a timeline change state by flipping
+ * `data-*` attributes instead of interpolating colours.
+ *
+ * `scene-` classes are shared by every scene. `cb-` and `rt-` belong to the
+ * Circuit Breaker and Retry stages.
  */
 
-.cb-stage {
+.scene-stage {
   display: block;
   width: 100%;
   height: 100%;
   font-family: var(--font-sans);
 }
 
-.cb-stage text {
+.scene-stage text {
   font-family: inherit;
 }
 
-.cb-bg {
+.scene-bg {
   fill: var(--bg);
 }
 
 /* Boxes and connectors */
-.cb-box {
+.scene-box {
   fill: var(--surface);
   stroke: var(--border);
   stroke-width: 3;
 }
 
-.cb-node-title {
+.scene-node-title {
   fill: var(--fg);
   font-size: 44px;
   font-weight: 600;
 }
 
-.cb-node-label {
+.scene-node-label {
   fill: var(--fg-soft);
   font-size: 30px;
   font-weight: 600;
   letter-spacing: 1px;
 }
 
-.cb-link {
+.scene-caption-label {
+  fill: var(--fg-soft);
+  font-size: 22px;
+}
+
+.scene-link {
   stroke: var(--muted);
   stroke-width: 5;
   stroke-linecap: round;
 }
 
-[data-state="open"] .cb-link--lower {
+/* Service health */
+.scene-health {
+  fill: var(--state-closed);
+}
+
+[data-health="down"] .scene-health {
+  fill: var(--state-open);
+}
+
+[data-health="recovering"] .scene-health {
+  fill: var(--state-half);
+}
+
+.scene-health-ring {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+  opacity: 0;
+}
+
+[data-health="down"] .scene-health-ring {
+  stroke: var(--state-open);
+  stroke-dasharray: 6 10;
+  opacity: 0.9;
+}
+
+[data-health="recovering"] .scene-health-ring {
+  stroke: var(--state-half);
+  stroke-dasharray: 14 10;
+  opacity: 0.9;
+}
+
+/* Request dots and result markers */
+.scene-req-dot {
+  fill: var(--request);
+}
+
+.scene-req-ok-bg {
+  fill: var(--state-closed);
+}
+
+.scene-req-fail-bg {
+  fill: var(--state-open);
+}
+
+.scene-req-glyph {
+  fill: none;
+  stroke: var(--bg);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.scene-req-halo {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+/* ---------------------------------------------------------------- */
+/* Circuit Breaker stage                                             */
+/* ---------------------------------------------------------------- */
+
+[data-state="open"] .scene-link--lower {
   stroke-dasharray: 16 16;
   opacity: 0.4;
 }
 
-/* Switch */
 .cb-arm {
   stroke: var(--state-closed);
   stroke-width: 16;
@@ -75,7 +145,6 @@
   stroke-width: 5;
 }
 
-/* State badge */
 .cb-badge-glow {
   fill: var(--state-closed);
   opacity: 0;
@@ -115,7 +184,6 @@
   opacity: 1;
 }
 
-/* Break duration timer */
 .cb-timer {
   opacity: 0;
 }
@@ -131,22 +199,6 @@
   stroke: var(--state-open);
   stroke-width: 11;
   stroke-linecap: round;
-}
-
-.cb-timer-label {
-  fill: var(--fg-soft);
-  font-size: 20px;
-}
-
-/* Failure rate meter */
-.cb-meter-label,
-.cb-threshold-label {
-  fill: var(--fg-soft);
-  font-size: 22px;
-}
-
-.cb-threshold-label {
-  font-size: 19px;
 }
 
 .cb-meter-track {
@@ -173,61 +225,122 @@
   stroke-linecap: round;
 }
 
-/* Service health */
-.cb-health {
-  fill: var(--state-closed);
+.cb-threshold-label {
+  fill: var(--fg-soft);
+  font-size: 19px;
 }
 
-[data-health="down"] .cb-health {
-  fill: var(--state-open);
-}
+/* ---------------------------------------------------------------- */
+/* Retry stage                                                       */
+/* ---------------------------------------------------------------- */
 
-[data-health="recovering"] .cb-health {
-  fill: var(--state-half);
-}
-
-.cb-health-ring {
+/* Attempt pills: outline while waiting, filled once an attempt is under way. */
+.rt-pill-bg {
   fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+.rt-pill[data-attempt="active"] .rt-pill-bg {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+.rt-pill[data-attempt="fail"] .rt-pill-bg {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+.rt-pill[data-attempt="ok"] .rt-pill-bg {
+  fill: var(--state-closed);
   stroke: var(--state-closed);
-  stroke-width: 4;
+}
+
+.rt-pill-num {
+  fill: var(--fg-soft);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.rt-pill[data-attempt="active"] .rt-pill-num {
+  fill: var(--bg);
+}
+
+.rt-pill[data-attempt="ok"] .rt-pill-num,
+.rt-pill[data-attempt="fail"] .rt-pill-num {
   opacity: 0;
 }
 
-[data-health="down"] .cb-health-ring {
-  stroke: var(--state-open);
-  stroke-dasharray: 6 10;
-  opacity: 0.9;
-}
-
-[data-health="recovering"] .cb-health-ring {
-  stroke: var(--state-half);
-  stroke-dasharray: 14 10;
-  opacity: 0.9;
-}
-
-/* Request dots and result markers */
-.cb-req-dot {
-  fill: var(--request);
-}
-
-.cb-req-ok-bg {
-  fill: var(--state-closed);
-}
-
-.cb-req-fail-bg {
-  fill: var(--state-open);
-}
-
-.cb-req-glyph {
+.rt-pill-glyph {
   fill: none;
   stroke: var(--bg);
   stroke-width: 5;
   stroke-linecap: round;
   stroke-linejoin: round;
+  opacity: 0;
 }
 
-.cb-req-halo {
-  fill: none;
-  stroke: var(--state-half);
-  stroke-width: 5;
+.rt-pill[data-attempt="ok"] .rt-pill-glyph--ok,
+.rt-pill[data-attempt="fail"] .rt-pill-glyph--fail {
+  opacity: 1;
+}
+
+/* Backoff bar */
+.rt-bar-track {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.rt-bar-fill {
+  fill: var(--request);
+}
+
+.rt-bar-tick {
+  fill: var(--muted);
+}
+
+.rt-wait {
+  fill: var(--fg);
+  font-size: 24px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-wait="1s"] .rt-wait--1s,
+[data-wait="2s"] .rt-wait--2s,
+[data-wait="4s"] .rt-wait--4s {
+  opacity: 1;
+}
+
+.rt-jitter {
+  fill: var(--state-half);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+[data-jitter="on"] .rt-jitter {
+  opacity: 1;
+}
+
+/* The doubling hint that appears under the bar at the end of step 2. */
+.rt-scale {
+  fill: var(--fg-soft);
+  font-size: 20px;
+  opacity: 0;
+}
+
+/* Shown once the retry budget is spent. */
+.rt-budget {
+  fill: var(--state-open);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+[data-budget="on"] .rt-budget {
+  opacity: 1;
 }
