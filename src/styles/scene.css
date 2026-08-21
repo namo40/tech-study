@@ -482,3 +482,146 @@
 .rl-drip {
   opacity: 0;
 }
+
+/* ---------------------------------------------------------------- */
+/* Bulkhead stage                                                    */
+/* ---------------------------------------------------------------- */
+
+/* Slots: an outline while free, filled while a call holds one. */
+.bh-slot {
+  fill: var(--surface-2);
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+.bh-slot[data-slot-state="busy"] {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+.bh-slot[data-slot-state="stuck"] {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+.bh-slot[data-slot-state="timeout"] {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-dasharray: 9 9;
+}
+
+/* The wall only exists once the pool is partitioned. */
+.bh-wall {
+  fill: var(--fg);
+  opacity: 0;
+}
+
+[data-wall="on"] .bh-wall {
+  opacity: 1;
+}
+
+.bh-count {
+  fill: var(--fg);
+  font-size: 30px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-inflight="0"] .bh-count--0,
+[data-inflight="1"] .bh-count--1,
+[data-inflight="2"] .bh-count--2,
+[data-inflight="3"] .bh-count--3,
+[data-inflight="4"] .bh-count--4,
+[data-inflight="5"] .bh-count--5,
+[data-inflight="6"] .bh-count--6 {
+  opacity: 1;
+}
+
+.bh-key {
+  fill: var(--fg-soft);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+[data-wall="on"] .bh-key {
+  opacity: 1;
+}
+
+/* One status line under the B compartment, used by two different steps. */
+.bh-alert {
+  fill: var(--state-open);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+[data-bfull="on"] .bh-alert--full,
+[data-timeout="on"] .bh-alert--timeout {
+  opacity: 1;
+}
+
+/* Timeout arcs above the stuck slots. */
+.bh-timer {
+  opacity: 0;
+}
+
+.bh-timer-track {
+  fill: none;
+  stroke: var(--surface-2);
+  stroke-width: 7;
+}
+
+.bh-timer-progress {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+/* Two services, each with its own health, so neither can use the shared rule. */
+.bh-health {
+  fill: var(--state-closed);
+}
+
+.bh-health[data-health-state="down"] {
+  fill: var(--state-open);
+}
+
+.bh-health[data-health-state="recovering"] {
+  fill: var(--state-half);
+}
+
+.bh-health-ring {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+  opacity: 0;
+}
+
+.bh-health-ring[data-health-state="down"] {
+  stroke: var(--state-open);
+  stroke-dasharray: 6 10;
+  opacity: 0.9;
+}
+
+.bh-health-ring[data-health-state="recovering"] {
+  stroke: var(--state-half);
+  stroke-dasharray: 14 10;
+  opacity: 0.9;
+}
+
+.bh-service-title {
+  font-size: 40px;
+}
+
+/* Flashed over Service A when healthy traffic is blocked by a full pool. */
+.bh-highlight {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 6;
+  opacity: 0;
+}

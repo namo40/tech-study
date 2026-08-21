@@ -3,6 +3,10 @@ import {
   stageMarkup as circuitBreakerStage,
 } from './circuit-breaker/stage';
 import {
+  SCENE_DURATION as bulkheadDuration,
+  stageMarkup as bulkheadStage,
+} from './bulkhead/stage';
+import {
   SCENE_DURATION as rateLimiterDuration,
   stageMarkup as rateLimiterStage,
 } from './rate-limiter/stage';
@@ -31,6 +35,10 @@ const scenes: Record<string, SceneAsset> = {
   'rate-limiter': {
     markup: rateLimiterStage,
     duration: rateLimiterDuration,
+  },
+  bulkhead: {
+    markup: bulkheadStage,
+    duration: bulkheadDuration,
   },
 };
 
