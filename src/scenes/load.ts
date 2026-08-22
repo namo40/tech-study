@@ -14,6 +14,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./rate-limiter/scene')).default;
     case 'bulkhead':
       return (await import('./bulkhead/scene')).default;
+    case 'cache-aside':
+      return (await import('./cache-aside/scene')).default;
     default:
       return null;
   }

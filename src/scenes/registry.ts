@@ -3,6 +3,10 @@ import {
   stageMarkup as circuitBreakerStage,
 } from './circuit-breaker/stage';
 import {
+  SCENE_DURATION as cacheAsideDuration,
+  stageMarkup as cacheAsideStage,
+} from './cache-aside/stage';
+import {
   SCENE_DURATION as bulkheadDuration,
   stageMarkup as bulkheadStage,
 } from './bulkhead/stage';
@@ -39,6 +43,10 @@ const scenes: Record<string, SceneAsset> = {
   bulkhead: {
     markup: bulkheadStage,
     duration: bulkheadDuration,
+  },
+  'cache-aside': {
+    markup: cacheAsideStage,
+    duration: cacheAsideDuration,
   },
 };
 

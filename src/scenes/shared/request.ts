@@ -169,3 +169,22 @@ export function addTrip(
   if (fade) hideRequest(tl, parts, at);
   return at;
 }
+
+/**
+ * Adds one extra element to a request group, for decoration a single scene
+ * needs: the value a read is carrying, a square marker for a write, a label.
+ * It starts hidden, so the scene decides when it appears.
+ */
+export function attachToRequest(
+  parts: RequestParts,
+  tag: string,
+  attributes: Record<string, string>,
+  text?: string,
+): SVGElement {
+  const element = document.createElementNS('http://www.w3.org/2000/svg', tag) as SVGElement;
+  for (const [name, value] of Object.entries(attributes)) element.setAttribute(name, value);
+  if (text !== undefined) element.textContent = text;
+  parts.group.appendChild(element);
+  gsap.set(element, { opacity: 0 });
+  return element;
+}

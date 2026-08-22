@@ -625,3 +625,146 @@
   stroke-width: 6;
   opacity: 0;
 }
+
+/* ---------------------------------------------------------------- */
+/* Cache-Aside stage                                                 */
+/* ---------------------------------------------------------------- */
+
+.ca-row-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.ca-row[data-entry="empty"] .ca-row-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-dasharray: 10 8;
+}
+
+.ca-key {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 26px;
+}
+
+/* An empty row has no value and no time left to run. */
+.ca-row[data-entry="empty"] .ca-chip,
+.ca-row[data-entry="empty"] .ca-ttl-fill {
+  opacity: 0;
+}
+
+.ca-chip-bg {
+  fill: var(--state-closed);
+}
+
+.ca-row[data-entry="stale"] .ca-chip-bg {
+  fill: var(--state-half);
+}
+
+.ca-chip-text {
+  fill: var(--bg);
+  font-size: 26px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.ca-row[data-value="v1"] .ca-chip-text--v1,
+.ca-row[data-value="v2"] .ca-chip-text--v2 {
+  opacity: 1;
+}
+
+.ca-ttl-track {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.ca-ttl-fill {
+  fill: var(--accent);
+}
+
+.ca-row[data-entry="stale"] .ca-ttl-fill {
+  fill: var(--state-half);
+}
+
+.ca-ttl-label {
+  font-size: 20px;
+}
+
+/* One flash slot at the top right of the node, four possible words. */
+.ca-flash {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+.ca-flash--hit {
+  fill: var(--state-closed);
+}
+
+.ca-flash--miss,
+.ca-flash--stale {
+  fill: var(--state-half);
+}
+
+.ca-flash--invalidate {
+  fill: var(--state-open);
+}
+
+[data-flash="hit"] .ca-flash--hit,
+[data-flash="miss"] .ca-flash--miss,
+[data-flash="stale"] .ca-flash--stale,
+[data-flash="invalidate"] .ca-flash--invalidate {
+  opacity: 1;
+}
+
+/* Database: the authoritative value and how often it was read. */
+.ca-db-chip-bg {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.ca-db-value {
+  fill: var(--fg);
+  font-size: 28px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-db="v1"] .ca-db-value--v1,
+[data-db="v2"] .ca-db-value--v2 {
+  opacity: 1;
+}
+
+.ca-reads {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  opacity: 0;
+}
+
+[data-reads="0"] .ca-reads--0,
+[data-reads="1"] .ca-reads--1,
+[data-reads="2"] .ca-reads--2,
+[data-reads="3"] .ca-reads--3 {
+  opacity: 1;
+}
+
+/* Decoration carried by a request: the value it fetched, and a write marker. */
+.scene-req-chip {
+  fill: var(--fg);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.scene-req-square {
+  fill: var(--request);
+}
+
+.scene-req-label {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  font-weight: 700;
+}
