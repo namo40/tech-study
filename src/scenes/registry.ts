@@ -3,6 +3,10 @@ import {
   stageMarkup as circuitBreakerStage,
 } from './circuit-breaker/stage';
 import {
+  SCENE_DURATION as nPlusOneDuration,
+  stageMarkup as nPlusOneStage,
+} from './n-plus-1-query/stage';
+import {
   SCENE_DURATION as middlewareDuration,
   stageMarkup as middlewareStage,
 } from './middleware-pipeline/stage';
@@ -79,6 +83,10 @@ const scenes: Record<string, SceneAsset> = {
   'middleware-pipeline': {
     markup: middlewareStage,
     duration: middlewareDuration,
+  },
+  'n-plus-1-query': {
+    markup: nPlusOneStage,
+    duration: nPlusOneDuration,
   },
 };
 

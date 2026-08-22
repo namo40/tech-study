@@ -1353,3 +1353,165 @@
 .scene-req-diamond {
   fill: var(--state-open);
 }
+
+/* ---------------------------------------------------------------- */
+/* N+1 Query stage                                                   */
+/* ---------------------------------------------------------------- */
+
+.nq-title {
+  fill: var(--fg);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.nq-times {
+  fill: var(--state-half);
+  font-size: 18px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-rows="20"] .nq-times {
+  opacity: 1;
+}
+
+/* Only one of the two lists is ever on screen. */
+.nq-list--large {
+  opacity: 0;
+}
+
+[data-rows="20"] .nq-list--small {
+  opacity: 0;
+}
+
+[data-rows="20"] .nq-list--large {
+  opacity: 1;
+}
+
+.nq-row-box {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.nq-row-box[data-row-loaded="1"] {
+  fill: var(--surface-2);
+  stroke: var(--muted);
+}
+
+.nq-row-label {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 16px;
+}
+
+/* An empty customer slot is a dashed outline; a filled one is solid. */
+.nq-slot {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+}
+
+.nq-slot[data-slot-filled="1"] {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+  stroke-dasharray: none;
+}
+
+.nq-queries,
+.nq-trips {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-queries="0"] .nq-queries--0, [data-queries="1"] .nq-queries--1,
+[data-queries="2"] .nq-queries--2, [data-queries="3"] .nq-queries--3,
+[data-queries="4"] .nq-queries--4, [data-queries="5"] .nq-queries--5,
+[data-queries="6"] .nq-queries--6, [data-queries="7"] .nq-queries--7,
+[data-queries="8"] .nq-queries--8, [data-queries="9"] .nq-queries--9,
+[data-queries="10"] .nq-queries--10, [data-queries="11"] .nq-queries--11,
+[data-queries="12"] .nq-queries--12, [data-queries="13"] .nq-queries--13,
+[data-queries="14"] .nq-queries--14, [data-queries="15"] .nq-queries--15,
+[data-queries="16"] .nq-queries--16, [data-queries="17"] .nq-queries--17,
+[data-queries="18"] .nq-queries--18, [data-queries="19"] .nq-queries--19,
+[data-queries="20"] .nq-queries--20, [data-queries="21"] .nq-queries--21,
+[data-trips="0"] .nq-trips--0, [data-trips="1"] .nq-trips--1,
+[data-trips="2"] .nq-trips--2, [data-trips="3"] .nq-trips--3,
+[data-trips="4"] .nq-trips--4, [data-trips="5"] .nq-trips--5,
+[data-trips="6"] .nq-trips--6, [data-trips="7"] .nq-trips--7,
+[data-trips="8"] .nq-trips--8, [data-trips="9"] .nq-trips--9,
+[data-trips="10"] .nq-trips--10, [data-trips="11"] .nq-trips--11,
+[data-trips="12"] .nq-trips--12, [data-trips="13"] .nq-trips--13,
+[data-trips="14"] .nq-trips--14, [data-trips="15"] .nq-trips--15,
+[data-trips="16"] .nq-trips--16, [data-trips="17"] .nq-trips--17,
+[data-trips="18"] .nq-trips--18, [data-trips="19"] .nq-trips--19,
+[data-trips="20"] .nq-trips--20, [data-trips="21"] .nq-trips--21 {
+  opacity: 1;
+}
+
+.nq-log {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  opacity: 0;
+}
+
+.nq-log[data-log-shown="1"] {
+  opacity: 1;
+}
+
+/* The label for whatever the query is doing differently. */
+.nq-mode {
+  fill: var(--accent);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+[data-mode="include"] .nq-mode--include,
+[data-mode="select"] .nq-mode--select,
+[data-mode="in"] .nq-mode--in {
+  opacity: 1;
+}
+
+/* The time bar is the only thing in the scene that measures the real cost. */
+.nq-time-label {
+  font-size: 22px;
+}
+
+.nq-time-track {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.nq-time-fill {
+  fill: var(--state-half);
+}
+
+.nq-time-tick {
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+
+.nq-time-more {
+  fill: var(--state-open);
+  font-size: 26px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-overflow="on"] .nq-time-more {
+  opacity: 1;
+}
+
+/* What a query brings back: a chip as thick as the rows it carries. */
+.scene-req-chip-box {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+  stroke-width: 2;
+}
