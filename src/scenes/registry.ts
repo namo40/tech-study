@@ -3,6 +3,10 @@ import {
   stageMarkup as circuitBreakerStage,
 } from './circuit-breaker/stage';
 import {
+  SCENE_DURATION as cacheInvalidationDuration,
+  stageMarkup as cacheInvalidationStage,
+} from './cache-invalidation/stage';
+import {
   SCENE_DURATION as cacheAsideDuration,
   stageMarkup as cacheAsideStage,
 } from './cache-aside/stage';
@@ -47,6 +51,10 @@ const scenes: Record<string, SceneAsset> = {
   'cache-aside': {
     markup: cacheAsideStage,
     duration: cacheAsideDuration,
+  },
+  'cache-invalidation': {
+    markup: cacheInvalidationStage,
+    duration: cacheInvalidationDuration,
   },
 };
 

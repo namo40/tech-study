@@ -768,3 +768,204 @@
   font-size: 22px;
   font-weight: 700;
 }
+
+/* ---------------------------------------------------------------- */
+/* Cache Invalidation stage                                          */
+/* ---------------------------------------------------------------- */
+
+.ci-bus {
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 7 9;
+}
+
+.ci-bus-label {
+  fill: var(--fg-soft);
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+
+.ci-msg {
+  fill: var(--state-open);
+}
+
+.ci-inst-box {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.ci-inst-label {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.ci-key {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 20px;
+  opacity: 0;
+}
+
+.ci-inst[data-key="plain"] .ci-key--plain,
+.ci-inst[data-key="v4"] .ci-key--v4,
+.ci-inst[data-key="v5"] .ci-key--v5 {
+  opacity: 1;
+}
+
+/* An empty slot shows the outline of the chip it does not have. */
+.ci-chip-empty {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-dasharray: 8 7;
+  opacity: 0;
+}
+
+.ci-inst[data-entry="empty"] .ci-chip-empty {
+  opacity: 1;
+}
+
+.ci-inst[data-entry="empty"] .ci-chip,
+.ci-inst[data-entry="empty"] .ci-ttl-fill {
+  opacity: 0;
+}
+
+.ci-chip-bg {
+  fill: var(--state-closed);
+}
+
+.ci-inst[data-entry="stale"] .ci-chip-bg {
+  fill: var(--state-half);
+}
+
+.ci-chip-text {
+  fill: var(--bg);
+  font-size: 24px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.ci-inst[data-value="v1"] .ci-chip-text--v1,
+.ci-inst[data-value="v2"] .ci-chip-text--v2,
+.ci-inst[data-value="v3"] .ci-chip-text--v3,
+.ci-inst[data-value="v4"] .ci-chip-text--v4,
+.ci-inst[data-value="v5"] .ci-chip-text--v5 {
+  opacity: 1;
+}
+
+.ci-ttl-track {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.ci-ttl-fill {
+  fill: var(--accent);
+}
+
+.ci-inst[data-entry="stale"] .ci-ttl-fill {
+  fill: var(--state-half);
+}
+
+/* The entry the version bump orphaned, on its way out. */
+.ci-old {
+  opacity: 0;
+}
+
+.ci-inst[data-old="v4"] .ci-old {
+  opacity: 1;
+}
+
+.ci-old-key {
+  fill: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 17px;
+}
+
+.ci-old-chip {
+  fill: var(--surface-2);
+  stroke: var(--muted);
+  stroke-width: 2;
+}
+
+.ci-old-text {
+  fill: var(--muted);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Database: the authoritative value, its version, and the damage count. */
+.ci-db-title {
+  font-size: 38px;
+}
+
+.ci-db-chip-bg {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.ci-db-value {
+  fill: var(--fg);
+  font-size: 28px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-db="v1"] .ci-db-value--v1,
+[data-db="v2"] .ci-db-value--v2,
+[data-db="v3"] .ci-db-value--v3,
+[data-db="v4"] .ci-db-value--v4,
+[data-db="v5"] .ci-db-value--v5 {
+  opacity: 1;
+}
+
+.ci-version {
+  opacity: 0;
+}
+
+[data-version="4"] .ci-version,
+[data-version="5"] .ci-version {
+  opacity: 1;
+}
+
+.ci-version-bg {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.ci-version-text {
+  fill: var(--accent);
+  font-size: 22px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-version="4"] .ci-version-text--4,
+[data-version="5"] .ci-version-text--5 {
+  opacity: 1;
+}
+
+.ci-stale-reads {
+  fill: var(--state-half);
+  font-size: 22px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-stale-reads="0"] .ci-stale-reads--0,
+[data-stale-reads="1"] .ci-stale-reads--1,
+[data-stale-reads="2"] .ci-stale-reads--2,
+[data-stale-reads="3"] .ci-stale-reads--3,
+[data-stale-reads="4"] .ci-stale-reads--4,
+[data-stale-reads="5"] .ci-stale-reads--5,
+[data-stale-reads="6"] .ci-stale-reads--6 {
+  opacity: 1;
+}
+
+[data-stale-reads="0"] .ci-stale-reads--0 {
+  fill: var(--fg-soft);
+}

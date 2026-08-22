@@ -16,6 +16,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./bulkhead/scene')).default;
     case 'cache-aside':
       return (await import('./cache-aside/scene')).default;
+    case 'cache-invalidation':
+      return (await import('./cache-invalidation/scene')).default;
     default:
       return null;
   }
