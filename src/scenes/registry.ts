@@ -3,6 +3,10 @@ import {
   stageMarkup as circuitBreakerStage,
 } from './circuit-breaker/stage';
 import {
+  SCENE_DURATION as connectionPoolDuration,
+  stageMarkup as connectionPoolStage,
+} from './database-connection-pool/stage';
+import {
   SCENE_DURATION as cacheInvalidationDuration,
   stageMarkup as cacheInvalidationStage,
 } from './cache-invalidation/stage';
@@ -55,6 +59,10 @@ const scenes: Record<string, SceneAsset> = {
   'cache-invalidation': {
     markup: cacheInvalidationStage,
     duration: cacheInvalidationDuration,
+  },
+  'database-connection-pool': {
+    markup: connectionPoolStage,
+    duration: connectionPoolDuration,
   },
 };
 

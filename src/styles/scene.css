@@ -969,3 +969,128 @@
 [data-stale-reads="0"] .ci-stale-reads--0 {
   fill: var(--fg-soft);
 }
+
+/* ---------------------------------------------------------------- */
+/* Database Connection Pool stage                                    */
+/* ---------------------------------------------------------------- */
+
+/* A slot with no connection is an outline; opening, idle, busy and held
+   each fill it differently, so the state never rests on colour alone. */
+.dp-slot {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 9 8;
+}
+
+.dp-slot[data-slot-state="opening"] {
+  stroke: var(--accent);
+  stroke-width: 4;
+  animation: dp-open-pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes dp-open-pulse {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dp-slot[data-slot-state="opening"] {
+    animation: none;
+  }
+}
+
+.dp-slot[data-slot-state="idle"] {
+  fill: var(--surface-2);
+  stroke: var(--muted);
+  stroke-dasharray: none;
+}
+
+.dp-slot[data-slot-state="busy"] {
+  fill: var(--request);
+  stroke: var(--request);
+  stroke-dasharray: none;
+}
+
+.dp-slot[data-slot-state="held"] {
+  fill: var(--request);
+  stroke: var(--state-half);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+/* The handshake being drawn from the slot down to the database. */
+.dp-handshake {
+  stroke: var(--accent);
+  stroke-width: 4;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+.dp-open,
+.dp-connections {
+  fill: var(--fg-soft);
+  font-size: 26px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-open="0"] .dp-open--0,
+[data-open="1"] .dp-open--1,
+[data-open="2"] .dp-open--2,
+[data-open="3"] .dp-open--3,
+[data-open="4"] .dp-open--4 {
+  opacity: 1;
+}
+
+[data-connections="0"] .dp-connections--0,
+[data-connections="1"] .dp-connections--1,
+[data-connections="2"] .dp-connections--2,
+[data-connections="3"] .dp-connections--3,
+[data-connections="4"] .dp-connections--4 {
+  opacity: 1;
+}
+
+.dp-waiting {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-waiting="0"] .dp-waiting--0,
+[data-waiting="1"] .dp-waiting--1,
+[data-waiting="2"] .dp-waiting--2,
+[data-waiting="3"] .dp-waiting--3 {
+  opacity: 1;
+}
+
+[data-waiting="1"] .dp-waiting--1,
+[data-waiting="2"] .dp-waiting--2,
+[data-waiting="3"] .dp-waiting--3 {
+  fill: var(--state-half);
+}
+
+/* Shown while a connection is borrowed but no longer being used. */
+.dp-held {
+  fill: var(--state-half);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+[data-held="on"] .dp-held {
+  opacity: 1;
+}
+
+.scene-req-timeout {
+  fill: var(--state-open);
+  font-size: 22px;
+  font-weight: 700;
+}

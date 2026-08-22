@@ -18,6 +18,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./cache-aside/scene')).default;
     case 'cache-invalidation':
       return (await import('./cache-invalidation/scene')).default;
+    case 'database-connection-pool':
+      return (await import('./database-connection-pool/scene')).default;
     default:
       return null;
   }
