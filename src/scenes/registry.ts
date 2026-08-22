@@ -3,6 +3,10 @@ import {
   stageMarkup as circuitBreakerStage,
 } from './circuit-breaker/stage';
 import {
+  SCENE_DURATION as threadPoolDuration,
+  stageMarkup as threadPoolStage,
+} from './thread-pool/stage';
+import {
   SCENE_DURATION as connectionPoolDuration,
   stageMarkup as connectionPoolStage,
 } from './database-connection-pool/stage';
@@ -63,6 +67,10 @@ const scenes: Record<string, SceneAsset> = {
   'database-connection-pool': {
     markup: connectionPoolStage,
     duration: connectionPoolDuration,
+  },
+  'thread-pool': {
+    markup: threadPoolStage,
+    duration: threadPoolDuration,
   },
 };
 

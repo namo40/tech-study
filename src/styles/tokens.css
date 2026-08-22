@@ -19,6 +19,7 @@
   --state-open: #ff5c5c;
   --state-half: #ffb94d;
   --request: #7cc4ff;
+  --cpu: #b58cff;
 
   /* Chrome palette derived from the scene palette. */
   --surface: #171a22;
@@ -73,6 +74,7 @@
   --state-open: #d93636;
   --state-half: #d98a00;
   --request: #2b7fd4;
+  --cpu: #7a3ff2;
 
   --surface: #ffffff;
   --surface-2: #edeff5;
@@ -94,6 +96,7 @@
     --state-open: #d93636;
     --state-half: #d98a00;
     --request: #2b7fd4;
+    --cpu: #7a3ff2;
 
     --surface: #ffffff;
     --surface-2: #edeff5;

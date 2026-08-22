@@ -26,7 +26,7 @@ related:
   - label: Rate Limiter
     slug: rate-limiter
   - label: Thread Pool Starvation
-    slug: thread-pool-starvation
+    slug: threadpool-starvation
   - label: Pool Exhaustion
     slug: pool-exhaustion
   - label: Noisy Neighbor
