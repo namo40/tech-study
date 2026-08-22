@@ -6,8 +6,11 @@
  * scene correct in both themes and lets a timeline change state by flipping
  * `data-*` attributes instead of interpolating colours.
  *
- * `scene-` classes are shared by every scene. `cb-` and `rt-` belong to the
- * Circuit Breaker and Retry stages.
+ * `scene-` classes are shared by every scene: the boxes and connectors every
+ * stage is built from, and the widgets under "Shared widgets" that carry the
+ * behaviour a stage would otherwise redescribe. A scene puts the widget class
+ * next to its own prefixed one and overrides only what it needs. Prefixes name
+ * the scene: `cb-` is Circuit Breaker, `rt-` is Retry, and so on.
  */
 
 .scene-stage {
@@ -56,16 +59,22 @@
   stroke-linecap: round;
 }
 
-/* Service health */
+/*
+ * Service health. A scene with one service flips `data-health` on the stage
+ * root; a scene with several puts `data-health-state` on each dot. Both
+ * spellings mean the same three things, so the rules answer to either.
+ */
 .scene-health {
   fill: var(--state-closed);
 }
 
-[data-health="down"] .scene-health {
+[data-health="down"] .scene-health,
+.scene-health[data-health-state="down"] {
   fill: var(--state-open);
 }
 
-[data-health="recovering"] .scene-health {
+[data-health="recovering"] .scene-health,
+.scene-health[data-health-state="recovering"] {
   fill: var(--state-half);
 }
 
@@ -76,13 +85,15 @@
   opacity: 0;
 }
 
-[data-health="down"] .scene-health-ring {
+[data-health="down"] .scene-health-ring,
+.scene-health-ring[data-health-state="down"] {
   stroke: var(--state-open);
   stroke-dasharray: 6 10;
   opacity: 0.9;
 }
 
-[data-health="recovering"] .scene-health-ring {
+[data-health="recovering"] .scene-health-ring,
+.scene-health-ring[data-health-state="recovering"] {
   stroke: var(--state-half);
   stroke-dasharray: 14 10;
   opacity: 0.9;
@@ -113,6 +124,155 @@
   fill: none;
   stroke: var(--state-half);
   stroke-width: 5;
+}
+
+/* What a request carries with it: a value, a marker, a verdict, a label. */
+.scene-req-chip {
+  fill: var(--fg);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.scene-req-chip-box {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+  stroke-width: 2;
+}
+
+.scene-req-square {
+  fill: var(--request);
+}
+
+.scene-req-hollow {
+  fill: none;
+  stroke: var(--request);
+  stroke-width: 4;
+}
+
+.scene-req-diamond {
+  fill: var(--state-open);
+}
+
+.scene-req-label {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.scene-req-code {
+  fill: var(--fg);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.scene-req-cpu {
+  fill: var(--cpu);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.scene-req-timeout {
+  fill: var(--state-open);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* ---------------------------------------------------------------- */
+/* Shared widgets                                                    */
+/* ---------------------------------------------------------------- */
+
+/*
+ * The parts every stage is assembled from. A scene writes the widget class
+ * next to its own prefixed one and then says only what is different about it:
+ * the colour of a fill, the width of a ring, the size of a label.
+ */
+
+/* A bar is a fixed track with a fill the timeline tweens the width of. */
+.scene-track {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.scene-fill {
+  fill: var(--fill-color);
+}
+
+/* A countdown drawn as an arc, hidden until the thing it measures starts. */
+.scene-ring {
+  opacity: 0;
+}
+
+.scene-ring-track {
+  fill: none;
+  stroke: var(--surface-2);
+  stroke-width: var(--ring-width);
+}
+
+.scene-ring-progress {
+  fill: none;
+  stroke: var(--ring-color);
+  stroke-width: var(--ring-width);
+  stroke-linecap: round;
+}
+
+/* A counter is n+1 labels on one spot; the state picks the one that shows. */
+.scene-counter {
+  font-weight: 700;
+  opacity: 0;
+}
+
+/* A label that appears while one `data-*` value holds, then goes again. */
+.scene-flash {
+  fill: var(--flash-color);
+  font-weight: 700;
+  opacity: 0;
+}
+
+/* A slot in a fixed pool. Busy means the same thing wherever it appears. */
+.scene-slot[data-slot-state="busy"],
+.scene-slot[data-lane-state="running"] {
+  fill: var(--request);
+  stroke: var(--request);
+  stroke-dasharray: none;
+}
+
+/* A rounded plate carrying a value: filled in a cache, outlined at the source. */
+.scene-chip-bg {
+  fill: var(--state-closed);
+}
+
+.scene-chip-outline {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.scene-chip-text {
+  fill: var(--bg);
+  font-weight: 700;
+  opacity: 0;
+}
+
+/* An entry past its time is not wrong yet, so it warns rather than clears. */
+[data-entry="stale"] .scene-chip-bg {
+  fill: var(--state-half);
+}
+
+[data-entry="stale"] .scene-fill {
+  --fill-color: var(--state-half);
+}
+
+/* An entry with nothing in it has no value and no time left to run. */
+[data-entry="empty"] .scene-chip,
+[data-entry="empty"] .scene-fill {
+  opacity: 0;
+}
+
+/* Keys, log lines and anything else that reads as code. */
+.scene-mono {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
 }
 
 /* ---------------------------------------------------------------- */
@@ -185,38 +345,20 @@
 }
 
 .cb-timer {
-  opacity: 0;
-}
-
-.cb-timer-track {
-  fill: none;
-  stroke: var(--surface-2);
-  stroke-width: 11;
-}
-
-.cb-timer-progress {
-  fill: none;
-  stroke: var(--state-open);
-  stroke-width: 11;
-  stroke-linecap: round;
-}
-
-.cb-meter-track {
-  fill: var(--surface-2);
-  stroke: var(--border);
-  stroke-width: 2;
+  --ring-width: 11;
+  --ring-color: var(--state-open);
 }
 
 .cb-meter-fill {
-  fill: var(--state-closed);
+  --fill-color: var(--state-closed);
 }
 
 [data-meter="2"] .cb-meter-fill {
-  fill: var(--state-half);
+  --fill-color: var(--state-half);
 }
 
 [data-meter="3"] .cb-meter-fill {
-  fill: var(--state-open);
+  --fill-color: var(--state-open);
 }
 
 .cb-threshold {
@@ -286,14 +428,8 @@
 }
 
 /* Backoff bar */
-.rt-bar-track {
-  fill: var(--surface-2);
-  stroke: var(--border);
-  stroke-width: 2;
-}
-
 .rt-bar-fill {
-  fill: var(--request);
+  --fill-color: var(--request);
 }
 
 .rt-bar-tick {
@@ -314,11 +450,10 @@
 }
 
 .rt-jitter {
-  fill: var(--state-half);
+  --flash-color: var(--state-half);
+
   font-size: 22px;
-  font-weight: 700;
   letter-spacing: 1px;
-  opacity: 0;
 }
 
 [data-jitter="on"] .rt-jitter {
@@ -334,11 +469,10 @@
 
 /* Shown once the retry budget is spent. */
 .rt-budget {
-  fill: var(--state-open);
+  --flash-color: var(--state-open);
+
   font-size: 26px;
-  font-weight: 700;
   letter-spacing: 1px;
-  opacity: 0;
 }
 
 [data-budget="on"] .rt-budget {
@@ -408,8 +542,6 @@
 .rl-count {
   fill: var(--fg);
   font-size: 30px;
-  font-weight: 700;
-  opacity: 0;
 }
 
 [data-tokens="0"] .rl-count--0,
@@ -427,11 +559,10 @@
 }
 
 .rl-key {
-  fill: var(--fg-soft);
+  --flash-color: var(--fg-soft);
+
   font-size: 24px;
-  font-weight: 700;
   letter-spacing: 1px;
-  opacity: 0;
 }
 
 [data-split="on"] .rl-key {
@@ -451,10 +582,9 @@
 }
 
 .rl-429 {
-  fill: var(--state-open);
+  --flash-color: var(--state-open);
+
   font-size: 44px;
-  font-weight: 700;
-  opacity: 0;
 }
 
 [data-reject="on"] .rl-429 {
@@ -463,20 +593,8 @@
 
 /* Retry-After sweep under the client box */
 .rl-retry {
-  opacity: 0;
-}
-
-.rl-retry-track {
-  fill: none;
-  stroke: var(--surface-2);
-  stroke-width: 10;
-}
-
-.rl-retry-progress {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 10;
-  stroke-linecap: round;
+  --ring-width: 10;
+  --ring-color: var(--accent);
 }
 
 .rl-drip {
@@ -487,16 +605,11 @@
 /* Bulkhead stage                                                    */
 /* ---------------------------------------------------------------- */
 
-/* Slots: an outline while free, filled while a call holds one. */
+/* Slots: an outline while free; `.scene-slot` fills one a call is holding. */
 .bh-slot {
   fill: var(--surface-2);
   stroke: var(--muted);
   stroke-width: 3;
-}
-
-.bh-slot[data-slot-state="busy"] {
-  fill: var(--request);
-  stroke: var(--request);
 }
 
 .bh-slot[data-slot-state="stuck"] {
@@ -524,8 +637,6 @@
 .bh-count {
   fill: var(--fg);
   font-size: 30px;
-  font-weight: 700;
-  opacity: 0;
 }
 
 [data-inflight="0"] .bh-count--0,
@@ -539,11 +650,10 @@
 }
 
 .bh-key {
-  fill: var(--fg-soft);
+  --flash-color: var(--fg-soft);
+
   font-size: 26px;
-  font-weight: 700;
   letter-spacing: 1px;
-  opacity: 0;
 }
 
 [data-wall="on"] .bh-key {
@@ -552,11 +662,10 @@
 
 /* One status line under the B compartment, used by two different steps. */
 .bh-alert {
-  fill: var(--state-open);
+  --flash-color: var(--state-open);
+
   font-size: 30px;
-  font-weight: 700;
   letter-spacing: 1px;
-  opacity: 0;
 }
 
 [data-bfull="on"] .bh-alert--full,
@@ -566,52 +675,8 @@
 
 /* Timeout arcs above the stuck slots. */
 .bh-timer {
-  opacity: 0;
-}
-
-.bh-timer-track {
-  fill: none;
-  stroke: var(--surface-2);
-  stroke-width: 7;
-}
-
-.bh-timer-progress {
-  fill: none;
-  stroke: var(--state-open);
-  stroke-width: 7;
-  stroke-linecap: round;
-}
-
-/* Two services, each with its own health, so neither can use the shared rule. */
-.bh-health {
-  fill: var(--state-closed);
-}
-
-.bh-health[data-health-state="down"] {
-  fill: var(--state-open);
-}
-
-.bh-health[data-health-state="recovering"] {
-  fill: var(--state-half);
-}
-
-.bh-health-ring {
-  fill: none;
-  stroke: var(--state-closed);
-  stroke-width: 4;
-  opacity: 0;
-}
-
-.bh-health-ring[data-health-state="down"] {
-  stroke: var(--state-open);
-  stroke-dasharray: 6 10;
-  opacity: 0.9;
-}
-
-.bh-health-ring[data-health-state="recovering"] {
-  stroke: var(--state-half);
-  stroke-dasharray: 14 10;
-  opacity: 0.9;
+  --ring-width: 7;
+  --ring-color: var(--state-open);
 }
 
 .bh-service-title {
@@ -643,30 +708,11 @@
 }
 
 .ca-key {
-  fill: var(--fg-soft);
-  font-family: var(--font-mono);
   font-size: 26px;
-}
-
-/* An empty row has no value and no time left to run. */
-.ca-row[data-entry="empty"] .ca-chip,
-.ca-row[data-entry="empty"] .ca-ttl-fill {
-  opacity: 0;
-}
-
-.ca-chip-bg {
-  fill: var(--state-closed);
-}
-
-.ca-row[data-entry="stale"] .ca-chip-bg {
-  fill: var(--state-half);
 }
 
 .ca-chip-text {
-  fill: var(--bg);
   font-size: 26px;
-  font-weight: 700;
-  opacity: 0;
 }
 
 .ca-row[data-value="v1"] .ca-chip-text--v1,
@@ -674,18 +720,8 @@
   opacity: 1;
 }
 
-.ca-ttl-track {
-  fill: var(--surface-2);
-  stroke: var(--border);
-  stroke-width: 2;
-}
-
 .ca-ttl-fill {
-  fill: var(--accent);
-}
-
-.ca-row[data-entry="stale"] .ca-ttl-fill {
-  fill: var(--state-half);
+  --fill-color: var(--accent);
 }
 
 .ca-ttl-label {
@@ -695,22 +731,20 @@
 /* One flash slot at the top right of the node, four possible words. */
 .ca-flash {
   font-size: 32px;
-  font-weight: 700;
   letter-spacing: 1px;
-  opacity: 0;
 }
 
 .ca-flash--hit {
-  fill: var(--state-closed);
+  --flash-color: var(--state-closed);
 }
 
 .ca-flash--miss,
 .ca-flash--stale {
-  fill: var(--state-half);
+  --flash-color: var(--state-half);
 }
 
 .ca-flash--invalidate {
-  fill: var(--state-open);
+  --flash-color: var(--state-open);
 }
 
 [data-flash="hit"] .ca-flash--hit,
@@ -721,17 +755,9 @@
 }
 
 /* Database: the authoritative value and how often it was read. */
-.ca-db-chip-bg {
-  fill: var(--surface);
-  stroke: var(--fg-soft);
-  stroke-width: 3;
-}
-
 .ca-db-value {
   fill: var(--fg);
   font-size: 28px;
-  font-weight: 700;
-  opacity: 0;
 }
 
 [data-db="v1"] .ca-db-value--v1,
@@ -739,10 +765,11 @@
   opacity: 1;
 }
 
+/* The one counter the design leaves at normal weight. */
 .ca-reads {
   fill: var(--fg-soft);
   font-size: 24px;
-  opacity: 0;
+  font-weight: 400;
 }
 
 [data-reads="0"] .ca-reads--0,
@@ -750,23 +777,6 @@
 [data-reads="2"] .ca-reads--2,
 [data-reads="3"] .ca-reads--3 {
   opacity: 1;
-}
-
-/* Decoration carried by a request: the value it fetched, and a write marker. */
-.scene-req-chip {
-  fill: var(--fg);
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.scene-req-square {
-  fill: var(--request);
-}
-
-.scene-req-label {
-  fill: var(--fg-soft);
-  font-size: 22px;
-  font-weight: 700;
 }
 
 /* ---------------------------------------------------------------- */
@@ -790,8 +800,6 @@
 }
 
 .ci-inst-box {
-  fill: var(--surface);
-  stroke: var(--border);
   stroke-width: 2;
 }
 
@@ -802,8 +810,6 @@
 }
 
 .ci-key {
-  fill: var(--fg-soft);
-  font-family: var(--font-mono);
   font-size: 20px;
   opacity: 0;
 }
@@ -827,24 +833,8 @@
   opacity: 1;
 }
 
-.ci-inst[data-entry="empty"] .ci-chip,
-.ci-inst[data-entry="empty"] .ci-ttl-fill {
-  opacity: 0;
-}
-
-.ci-chip-bg {
-  fill: var(--state-closed);
-}
-
-.ci-inst[data-entry="stale"] .ci-chip-bg {
-  fill: var(--state-half);
-}
-
 .ci-chip-text {
-  fill: var(--bg);
   font-size: 24px;
-  font-weight: 700;
-  opacity: 0;
 }
 
 .ci-inst[data-value="v1"] .ci-chip-text--v1,
@@ -855,18 +845,8 @@
   opacity: 1;
 }
 
-.ci-ttl-track {
-  fill: var(--surface-2);
-  stroke: var(--border);
-  stroke-width: 2;
-}
-
 .ci-ttl-fill {
-  fill: var(--accent);
-}
-
-.ci-inst[data-entry="stale"] .ci-ttl-fill {
-  fill: var(--state-half);
+  --fill-color: var(--accent);
 }
 
 /* The entry the version bump orphaned, on its way out. */
@@ -880,7 +860,6 @@
 
 .ci-old-key {
   fill: var(--muted);
-  font-family: var(--font-mono);
   font-size: 17px;
 }
 
@@ -901,17 +880,9 @@
   font-size: 38px;
 }
 
-.ci-db-chip-bg {
-  fill: var(--surface);
-  stroke: var(--fg-soft);
-  stroke-width: 3;
-}
-
 .ci-db-value {
   fill: var(--fg);
   font-size: 28px;
-  font-weight: 700;
-  opacity: 0;
 }
 
 [data-db="v1"] .ci-db-value--v1,
@@ -940,8 +911,6 @@
 .ci-version-text {
   fill: var(--accent);
   font-size: 22px;
-  font-weight: 700;
-  opacity: 0;
 }
 
 [data-version="4"] .ci-version-text--4,
@@ -952,8 +921,6 @@
 .ci-stale-reads {
   fill: var(--state-half);
   font-size: 22px;
-  font-weight: 700;
-  opacity: 0;
 }
 
 [data-stale-reads="0"] .ci-stale-reads--0,
@@ -974,8 +941,9 @@
 /* Database Connection Pool stage                                    */
 /* ---------------------------------------------------------------- */
 
-/* A slot with no connection is an outline; opening, idle, busy and held
-   each fill it differently, so the state never rests on colour alone. */
+/* A slot with no connection is an outline; opening, idle, held and the busy
+   state `.scene-slot` carries each fill it differently, so the state never
+   rests on colour alone. */
 .dp-slot {
   fill: none;
   stroke: var(--muted);
@@ -1011,12 +979,6 @@
   stroke-dasharray: none;
 }
 
-.dp-slot[data-slot-state="busy"] {
-  fill: var(--request);
-  stroke: var(--request);
-  stroke-dasharray: none;
-}
-
 .dp-slot[data-slot-state="held"] {
   fill: var(--request);
   stroke: var(--state-half);
@@ -1036,8 +998,6 @@
 .dp-connections {
   fill: var(--fg-soft);
   font-size: 26px;
-  font-weight: 700;
-  opacity: 0;
 }
 
 [data-open="0"] .dp-open--0,
@@ -1059,8 +1019,6 @@
 .dp-waiting {
   fill: var(--fg-soft);
   font-size: 22px;
-  font-weight: 700;
-  opacity: 0;
 }
 
 [data-waiting="0"] .dp-waiting--0,
@@ -1078,21 +1036,14 @@
 
 /* Shown while a connection is borrowed but no longer being used. */
 .dp-held {
-  fill: var(--state-half);
+  --flash-color: var(--state-half);
+
   font-size: 26px;
-  font-weight: 700;
   letter-spacing: 1px;
-  opacity: 0;
 }
 
 [data-held="on"] .dp-held {
   opacity: 1;
-}
-
-.scene-req-timeout {
-  fill: var(--state-open);
-  font-size: 22px;
-  font-weight: 700;
 }
 
 /* ---------------------------------------------------------------- */
@@ -1100,22 +1051,16 @@
 /* ---------------------------------------------------------------- */
 
 .tp-lane-label {
-  fill: var(--fg-soft);
-  font-family: var(--font-mono);
   font-size: 20px;
 }
 
-/* A lane is a bar. Idle is thin and grey, running is filled, blocked is
-   hatched so it never rests on colour alone, and CPU has its own fill. */
+/* A lane is a bar. Idle is thin and grey, running is filled by `.scene-slot`,
+   blocked is hatched so it never rests on colour alone, and CPU has its own
+   fill. */
 .tp-bar {
   fill: var(--surface-2);
   stroke: var(--border);
   stroke-width: 2;
-}
-
-.tp-bar[data-lane-state="running"] {
-  fill: var(--request);
-  stroke: var(--request);
 }
 
 .tp-hatch-line {
@@ -1169,8 +1114,6 @@
 .tp-threads {
   fill: var(--fg-soft);
   font-size: 22px;
-  font-weight: 700;
-  opacity: 0;
 }
 
 .tp-threads {
@@ -1214,33 +1157,19 @@
 
 /* Flashed each time the pool decides to add one more thread. */
 .tp-inject {
-  fill: var(--accent);
+  --flash-color: var(--accent);
+
   font-size: 24px;
-  font-weight: 700;
   letter-spacing: 1px;
-  opacity: 0;
 }
 
 [data-inject="on"] .tp-inject {
   opacity: 1;
 }
 
-/* The label a long computation carries with it. */
-.scene-req-cpu {
-  fill: var(--cpu);
-  font-size: 20px;
-  font-weight: 700;
-}
-
 /* ---------------------------------------------------------------- */
 /* Middleware Pipeline stage                                         */
 /* ---------------------------------------------------------------- */
-
-.mw-layer-box {
-  fill: var(--surface);
-  stroke: var(--border);
-  stroke-width: 3;
-}
 
 /* On the way in, on the way out, and the four ways a layer can end a chain. */
 .mw-layer[data-layer-state="in"] .mw-layer-box {
@@ -1285,8 +1214,6 @@
 
 /* The hint only makes sense on the way in, so it follows that state. */
 .mw-next {
-  fill: var(--fg-soft);
-  font-family: var(--font-mono);
   font-size: 20px;
   opacity: 0;
 }
@@ -1337,23 +1264,6 @@
   stroke-width: 5;
 }
 
-/* What a request carries: a status code, a file marker, an exception. */
-.scene-req-code {
-  fill: var(--fg);
-  font-size: 22px;
-  font-weight: 700;
-}
-
-.scene-req-hollow {
-  fill: none;
-  stroke: var(--request);
-  stroke-width: 4;
-}
-
-.scene-req-diamond {
-  fill: var(--state-open);
-}
-
 /* ---------------------------------------------------------------- */
 /* N+1 Query stage                                                   */
 /* ---------------------------------------------------------------- */
@@ -1400,8 +1310,6 @@
 }
 
 .nq-row-label {
-  fill: var(--fg-soft);
-  font-family: var(--font-mono);
   font-size: 16px;
 }
 
@@ -1423,8 +1331,6 @@
 .nq-trips {
   fill: var(--fg-soft);
   font-size: 24px;
-  font-weight: 700;
-  opacity: 0;
 }
 
 [data-queries="0"] .nq-queries--0, [data-queries="1"] .nq-queries--1,
@@ -1453,8 +1359,6 @@
 }
 
 .nq-log {
-  fill: var(--fg-soft);
-  font-family: var(--font-mono);
   font-size: 18px;
   opacity: 0;
 }
@@ -1465,11 +1369,10 @@
 
 /* The label for whatever the query is doing differently. */
 .nq-mode {
-  fill: var(--accent);
+  --flash-color: var(--accent);
+
   font-size: 22px;
-  font-weight: 700;
   letter-spacing: 1px;
-  opacity: 0;
 }
 
 [data-mode="include"] .nq-mode--include,
@@ -1483,14 +1386,8 @@
   font-size: 22px;
 }
 
-.nq-time-track {
-  fill: var(--surface-2);
-  stroke: var(--border);
-  stroke-width: 2;
-}
-
 .nq-time-fill {
-  fill: var(--state-half);
+  --fill-color: var(--state-half);
 }
 
 .nq-time-tick {
@@ -1499,19 +1396,11 @@
 }
 
 .nq-time-more {
-  fill: var(--state-open);
+  --flash-color: var(--state-open);
+
   font-size: 26px;
-  font-weight: 700;
-  opacity: 0;
 }
 
 [data-overflow="on"] .nq-time-more {
   opacity: 1;
-}
-
-/* What a query brings back: a chip as thick as the rows it carries. */
-.scene-req-chip-box {
-  fill: var(--state-closed);
-  stroke: var(--state-closed);
-  stroke-width: 2;
 }

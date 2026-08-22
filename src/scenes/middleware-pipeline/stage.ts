@@ -13,6 +13,15 @@
  * its direction tick, so a request never covers either.
  */
 
+import {
+  VIEWBOX,
+  clientBox,
+  nodeFrame,
+  requestsLayer,
+  serviceBox,
+  verticalLink,
+} from '../shared/stage';
+
 /** Total length of the scene in seconds. */
 export const SCENE_DURATION = 24;
 
@@ -38,36 +47,40 @@ export const Y_ENDPOINT = 1710;
 const layer = (index: number): string => {
   const y = LAYER_Y[index] ?? 0;
   return `<g class="mw-layer mw-layer--${index + 1}" data-layer-state="idle">
-      <rect class="mw-layer-box" x="190" y="${y - 60}" width="700" height="120" rx="20" />
+      <rect class="scene-box mw-layer-box" x="190" y="${y - 60}" width="700" height="120" rx="20" />
       <text class="mw-layer-name" x="215" y="${y + 9}">${LAYER_NAMES[index]}</text>
-      <text class="mw-next" x="215" y="${y + 45}">next()</text>
-      <text class="mw-tick mw-tick--down" x="860" y="${y + 12}" text-anchor="middle">\u25bc</text>
-      <text class="mw-tick mw-tick--up" x="860" y="${y + 12}" text-anchor="middle">\u25b2</text>
+      <text class="scene-mono mw-next" x="215" y="${y + 45}">next()</text>
+      <text class="mw-tick mw-tick--down" x="860" y="${y + 12}" text-anchor="middle">▼</text>
+      <text class="mw-tick mw-tick--up" x="860" y="${y + 12}" text-anchor="middle">▲</text>
     </g>`;
 };
 
-export const stageMarkup = `<svg class="scene-stage" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg" data-order="a" aria-hidden="true" focusable="false">
+export const stageMarkup = `<svg class="scene-stage" viewBox="${VIEWBOX}" xmlns="http://www.w3.org/2000/svg" data-order="a" aria-hidden="true" focusable="false">
   <rect class="scene-bg" x="0" y="0" width="1080" height="1920" />
 
-  <line class="scene-link" x1="540" y1="640" x2="540" y2="760" />
-  <line class="scene-link" x1="540" y1="1560" x2="540" y2="1620" />
+  ${verticalLink(540, 640, 760)}
+  ${verticalLink(540, 1560, 1620)}
 
-  <g class="scene-client">
-    <rect class="scene-box" x="280" y="440" width="520" height="200" rx="28" />
-    <text class="scene-node-title" x="540" y="555" text-anchor="middle">Client</text>
-  </g>
+  ${clientBox({ height: 200, title: 'Client', titleY: 555 })}
 
-  <g class="scene-node">
-    <rect class="scene-box" x="130" y="760" width="820" height="800" rx="28" />
-    <text class="scene-node-label" x="170" y="802">Pipeline</text>
+  ${nodeFrame({
+    y: 760,
+    height: 800,
+    label: 'Pipeline',
+    labelY: 802,
+    children: `
+    ${LAYER_NAMES.map((_name, index) => layer(index)).join('\n    ')}`,
+  })}
 
-    ${LAYER_NAMES.map((_name, index) => layer(index)).join('\n    ')}
-  </g>
+  ${serviceBox({
+    y: 1620,
+    height: 180,
+    className: 'mw-endpoint',
+    attrs: ' data-endpoint-state="idle"',
+    boxClass: 'scene-box mw-endpoint-box',
+    title: 'Endpoint',
+    titleY: 1725,
+  })}
 
-  <g class="mw-endpoint" data-endpoint-state="idle">
-    <rect class="scene-box mw-endpoint-box" x="280" y="1620" width="520" height="180" rx="28" />
-    <text class="scene-node-title" x="540" y="1725" text-anchor="middle">Endpoint</text>
-  </g>
-
-  <g class="scene-requests"></g>
+  ${requestsLayer()}
 </svg>`;

@@ -13,6 +13,18 @@
  * covered by the request itself.
  */
 
+import {
+  VIEWBOX,
+  chip,
+  clientBox,
+  counterVariants,
+  nodeFrame,
+  requestsLayer,
+  serviceBox,
+  trackAndFill,
+  verticalLink,
+} from '../shared/stage';
+
 /** Total length of the scene in seconds. */
 export const SCENE_DURATION = 24;
 
@@ -45,23 +57,38 @@ const instance = (index: number): string => {
   const left = cx - 110;
   const chips = VALUES.map(
     (v) =>
-      `<text class="ci-chip-text ci-chip-text--${v}" x="${cx}" y="1107" text-anchor="middle">${v}</text>`,
+      `<text class="scene-chip-text ci-chip-text ci-chip-text--${v}" x="${cx}" y="1107" text-anchor="middle">${v}</text>`,
   ).join('\n        ');
   return `<g class="ci-inst ci-inst--${index + 1}" data-entry="fresh" data-value="v1" data-key="plain" data-old="off">
-      <rect class="ci-inst-box" x="${left}" y="958" width="220" height="280" rx="18" />
+      <rect class="scene-box ci-inst-box" x="${left}" y="958" width="220" height="280" rx="18" />
       <text class="ci-inst-label" x="${left + 12}" y="990">inst ${index + 1}</text>
-      <text class="ci-key ci-key--plain" x="${cx}" y="1068" text-anchor="middle">user:42</text>
-      <text class="ci-key ci-key--v4" x="${cx}" y="1068" text-anchor="middle">user:42@v4</text>
-      <text class="ci-key ci-key--v5" x="${cx}" y="1068" text-anchor="middle">user:42@v5</text>
+      <text class="scene-mono ci-key ci-key--plain" x="${cx}" y="1068" text-anchor="middle">user:42</text>
+      <text class="scene-mono ci-key ci-key--v4" x="${cx}" y="1068" text-anchor="middle">user:42@v4</text>
+      <text class="scene-mono ci-key ci-key--v5" x="${cx}" y="1068" text-anchor="middle">user:42@v5</text>
       <rect class="ci-chip-empty" x="${cx - 38}" y="1082" width="76" height="34" rx="17" />
-      <g class="ci-chip">
-        <rect class="ci-chip-bg" x="${cx - 38}" y="1082" width="76" height="34" rx="17" />
-        ${chips}
-      </g>
-      <rect class="ci-ttl-track" x="${cx - 80}" y="1128" width="${TTL_WIDTH}" height="10" rx="5" />
-      <rect class="ci-ttl-fill" x="${cx - 80}" y="1128" width="${TTL_WIDTH * 0.7}" height="10" rx="5" />
+      ${chip({
+        x: cx - 38,
+        y: 1082,
+        width: 76,
+        height: 34,
+        rx: 17,
+        className: 'ci-chip',
+        variant: 'filled',
+        text: chips,
+        indent: 6,
+      })}
+      ${trackAndFill({
+        x: cx - 80,
+        y: 1128,
+        width: TTL_WIDTH,
+        height: 10,
+        rx: 5,
+        className: 'ci-ttl',
+        fillWidth: TTL_WIDTH * 0.7,
+        indent: 6,
+      })}
       <g class="ci-old">
-        <text class="ci-old-key" x="${cx}" y="1176" text-anchor="middle">user:42@v4</text>
+        <text class="scene-mono ci-old-key" x="${cx}" y="1176" text-anchor="middle">user:42@v4</text>
         <rect class="ci-old-chip" x="${cx - 30}" y="1188" width="60" height="26" rx="13" />
         <text class="ci-old-text" x="${cx}" y="1208" text-anchor="middle">v4</text>
       </g>
@@ -69,64 +96,77 @@ const instance = (index: number): string => {
 };
 
 const dbValues = VALUES.map(
-  (v) => `<text class="ci-db-value ci-db-value--${v}" x="470" y="1671" text-anchor="middle">${v}</text>`,
+  (v) => `<text class="scene-chip-text ci-db-value ci-db-value--${v}" x="470" y="1671" text-anchor="middle">${v}</text>`,
 ).join('\n      ');
 
 const versions = ['4', '5']
   .map(
     (n) =>
-      `<text class="ci-version-text ci-version-text--${n}" x="620" y="1670" text-anchor="middle">version ${n}</text>`,
+      `<text class="scene-chip-text ci-version-text ci-version-text--${n}" x="620" y="1670" text-anchor="middle">version ${n}</text>`,
   )
   .join('\n        ');
 
-const staleReads = [0, 1, 2, 3, 4, 5, 6]
-  .map(
-    (n) =>
-      `<text class="ci-stale-reads ci-stale-reads--${n}" x="780" y="1725" text-anchor="end">stale reads ${n}</text>`,
-  )
-  .join('\n      ');
+const staleReads = counterVariants({
+  x: 780,
+  y: 1725,
+  className: 'ci-stale-reads',
+  count: 7,
+  anchor: 'end',
+  format: (n) => `stale reads ${n}`,
+  indent: 6,
+});
 
 const links = LANE_X.map(
-  (x) =>
-    `<line class="scene-link" x1="${x}" y1="680" x2="${x}" y2="880" />
-  <line class="scene-link" x1="${x}" y1="1270" x2="${x}" y2="1500" />`,
+  (x) => `${verticalLink(x, 680, 880)}
+  ${verticalLink(x, 1270, 1500)}`,
 ).join('\n  ');
 
-export const stageMarkup = `<svg class="scene-stage" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg" data-db="v1" data-version="off" data-stale-reads="0" aria-hidden="true" focusable="false">
+export const stageMarkup = `<svg class="scene-stage" viewBox="${VIEWBOX}" xmlns="http://www.w3.org/2000/svg" data-db="v1" data-version="off" data-stale-reads="0" aria-hidden="true" focusable="false">
   <rect class="scene-bg" x="0" y="0" width="1080" height="1920" />
 
   ${links}
 
-  <g class="scene-client">
-    <rect class="scene-box" x="280" y="440" width="520" height="240" rx="28" />
-    <text class="scene-node-title" x="540" y="575" text-anchor="middle">Client</text>
-  </g>
+  ${clientBox({ title: 'Client', titleY: 575 })}
 
-  <g class="scene-node">
-    <rect class="scene-box" x="130" y="880" width="820" height="390" rx="28" />
-    <text class="scene-node-label" x="170" y="918">Caches</text>
-    <line class="ci-bus" x1="${BUS.from}" y1="${BUS.y}" x2="${BUS.to}" y2="${BUS.y}" />
+  ${nodeFrame({
+    label: 'Caches',
+    labelY: 918,
+    children: `    <line class="ci-bus" x1="${BUS.from}" y1="${BUS.y}" x2="${BUS.to}" y2="${BUS.y}" />
     <text class="ci-bus-label" x="${BUS.to}" y="922" text-anchor="end">invalidate</text>
     <g class="ci-messages"></g>
 
     ${instance(0)}
     ${instance(1)}
-    ${instance(2)}
-  </g>
+    ${instance(2)}`,
+  })}
 
-  <g class="ci-db">
-    <rect class="scene-box" x="280" y="1500" width="520" height="240" rx="28" />
-    <text class="scene-node-title ci-db-title" x="540" y="1552" text-anchor="middle">Database</text>
-    <g class="ci-db-chip">
-      <rect class="ci-db-chip-bg" x="420" y="1640" width="100" height="44" rx="22" />
-      ${dbValues}
-    </g>
-    <g class="ci-version">
-      <rect class="ci-version-bg" x="560" y="1646" width="120" height="32" rx="16" />
-      ${versions}
-    </g>
-    ${staleReads}
-  </g>
+  ${serviceBox({
+    className: 'ci-db',
+    titleClass: 'scene-node-title ci-db-title',
+    title: 'Database',
+    titleY: 1552,
+    children: `
+    ${chip({
+      x: 420,
+      y: 1640,
+      width: 100,
+      height: 44,
+      rx: 22,
+      className: 'ci-db-chip',
+      variant: 'outline',
+      text: dbValues,
+    })}
+    ${chip({
+      x: 560,
+      y: 1646,
+      width: 120,
+      height: 32,
+      rx: 16,
+      className: 'ci-version',
+      text: versions,
+    })}
+    ${staleReads}`,
+  })}
 
-  <g class="scene-requests"></g>
+  ${requestsLayer()}
 </svg>`;

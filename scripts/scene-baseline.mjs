@@ -23,9 +23,12 @@
  * Usage:
  *   node scripts/scene-baseline.mjs [--out <dir>] [--scene <id>]
  *   node scripts/scene-baseline.mjs --compare [--out <dir>] [--scene <id>]
+ *   node scripts/scene-baseline.mjs --verify [--scene <id>]
  *
  * The output directory defaults to `./.scene-baseline/` and is meant to stay
- * out of version control.
+ * out of version control. `--verify` needs no snapshots at all: it checks only
+ * the contract every scene has to keep, which is what a new scene should be
+ * held to before there is anything to compare it against.
  */
 
 import { createRequire } from 'node:module';
@@ -64,10 +67,11 @@ const VISIBLE_OPACITY = 0.05;
 // --- command line ---------------------------------------------------------
 
 function parseArgs(argv) {
-  const options = { compare: false, out: './.scene-baseline', scenes: SCENE_IDS };
+  const options = { compare: false, verify: false, out: './.scene-baseline', scenes: SCENE_IDS };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--compare') options.compare = true;
+    else if (arg === '--verify') options.verify = true;
     else if (arg === '--out') {
       i += 1;
       options.out = argv[i] ?? options.out;
@@ -160,7 +164,16 @@ function roundNumbers(value) {
   return String(value).replace(NUMBER, (match) => String(Number(Number(match).toFixed(3))));
 }
 
-/** A stable address for an element: its child index path from the stage root. */
+/**
+ * A stable address for an element: its child index path from the stage root,
+ * plus its tag name.
+ *
+ * The path alone already identifies the element, so the class list is not part
+ * of it. That is deliberate: a class name is presentation, and adding a shared
+ * widget class to markup that already had a scene-prefixed one must not read as
+ * a behaviour change. Snapshots written before this rule carry the class list
+ * in their keys and are normalised on the way in — see `stripKeyClasses`.
+ */
 function pathOf(element, root) {
   const parts = [];
   let node = element;
@@ -171,8 +184,27 @@ function pathOf(element, root) {
     node = parent;
   }
   const tag = element.tagName ?? '?';
-  const className = element.getAttribute ? element.getAttribute('class') : null;
-  return `${parts.join('/')}:${tag}${className ? `.${className.split(/\s+/).join('.')}` : ''}`;
+  return `${parts.join('/')}:${tag}`;
+}
+
+/** `4/2:rect.ca-ttl-fill#width` -> `4/2:rect#width`. */
+const KEY_CLASSES = /^([^:]*:[^.@#]+)\.[^@#]*/;
+
+function stripKeyClasses(key) {
+  return key.replace(KEY_CLASSES, '$1');
+}
+
+/** Rewrites an older snapshot's keys into the class-free form. */
+function normaliseSnapshotKeys(snapshot) {
+  for (const frame of snapshot.frames ?? []) {
+    if (frame.set) {
+      const set = {};
+      for (const [key, value] of Object.entries(frame.set)) set[stripKeyClasses(key)] = value;
+      frame.set = set;
+    }
+    if (Array.isArray(frame.del)) frame.del = frame.del.map(stripKeyClasses);
+  }
+  return snapshot;
 }
 
 /**
@@ -522,6 +554,9 @@ function compareSnapshots(stored, fresh) {
 
 // --- contract report ------------------------------------------------------
 
+/** The four sounds a scene is allowed to raise. */
+const CUE_NAMES = ['success', 'failure', 'state', 'trip'];
+
 function contractProblems(snapshot) {
   const failures = [];
   const c = snapshot.contract;
@@ -545,6 +580,26 @@ function contractProblems(snapshot) {
       `forward/backward disagree at t=${s.at} on ${s.key} (${JSON.stringify(s.forward)} vs ${JSON.stringify(s.backward)})`,
     );
   }
+
+  // Cues are the scene's other output. A scene that raises none is either
+  // silent by mistake or wiring its sounds outside the timeline.
+  if (snapshot.cues.length === 0) {
+    failures.push('no sound cue was raised during playback');
+  }
+  const unknown = [...new Set(snapshot.cues.map(([, name]) => name))].filter(
+    (name) => !CUE_NAMES.includes(name),
+  );
+  if (unknown.length > 0) {
+    failures.push(`cue name(s) outside the vocabulary: ${unknown.join(', ')}`);
+  }
+  for (let i = 1; i < snapshot.cues.length; i += 1) {
+    if (snapshot.cues[i][0] < snapshot.cues[i - 1][0]) {
+      failures.push(
+        `cues are not in time order: #${i} at ${snapshot.cues[i][0]} follows ${snapshot.cues[i - 1][0]}`,
+      );
+      break;
+    }
+  }
   return failures;
 }
 
@@ -555,9 +610,10 @@ async function main() {
   if (options.help) {
     process.stdout.write(
       [
-        'Usage: node scripts/scene-baseline.mjs [--compare] [--out <dir>] [--scene <id>]',
+        'Usage: node scripts/scene-baseline.mjs [--compare|--verify] [--out <dir>] [--scene <id>]',
         '',
         '  --compare      compare against the stored snapshots instead of writing them',
+        '  --verify       check the scene contract only; needs no snapshots',
         '  --out <dir>    snapshot directory (default ./.scene-baseline)',
         '  --scene <id>   only this scene',
         '',
@@ -568,7 +624,7 @@ async function main() {
 
   const outDir = path.resolve(ROOT, options.out);
   await mkdir(CACHE_DIR, { recursive: true });
-  if (!options.compare) await mkdir(outDir, { recursive: true });
+  if (!options.compare && !options.verify) await mkdir(outDir, { recursive: true });
   await setUpDom();
 
   let failed = 0;
@@ -586,13 +642,26 @@ async function main() {
     const { _first, _last, ...stored } = snapshot;
     const failures = contractProblems(snapshot);
 
-    if (options.compare) {
+    if (options.verify) {
+      if (failures.length === 0) {
+        process.stdout.write(
+          `PASS  ${id}  ${stored.duration.toFixed(2)}s, ${stored.steps.length} steps, ` +
+            `${stored.cues.length} cues (${Object.entries(stored.cueCounts)
+              .map(([name, count]) => `${name}:${count}`)
+              .join(' ')})\n`,
+        );
+      } else {
+        failed += 1;
+        process.stdout.write(`FAIL  ${id}\n`);
+        for (const failure of failures) process.stdout.write(`    ${failure}\n`);
+      }
+    } else if (options.compare) {
       if (!existsSync(target)) {
         failed += 1;
         process.stdout.write(`FAIL  ${id}  no snapshot at ${path.relative(ROOT, target)}\n`);
         continue;
       }
-      const previous = JSON.parse(await readFile(target, 'utf8'));
+      const previous = normaliseSnapshotKeys(JSON.parse(await readFile(target, 'utf8')));
       const problems = compareSnapshots(previous, stored);
       if (problems.length === 0 && failures.length === 0) {
         process.stdout.write(
@@ -624,7 +693,13 @@ async function main() {
 
   await rm(CACHE_DIR, { recursive: true, force: true });
 
-  if (options.compare) {
+  if (options.verify) {
+    process.stdout.write(
+      failed === 0
+        ? `\nAll ${options.scenes.length} scenes keep the contract.\n`
+        : `\n${failed} of ${options.scenes.length} scenes break the contract.\n`,
+    );
+  } else if (options.compare) {
     process.stdout.write(
       failed === 0
         ? `\nAll ${options.scenes.length} scenes match the baseline.\n`

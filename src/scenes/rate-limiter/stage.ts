@@ -13,6 +13,18 @@
  * only becomes visible when the limiter is partitioned in step 4.
  */
 
+import {
+  VIEWBOX,
+  clientBox,
+  counterVariants,
+  healthDot,
+  nodeFrame,
+  requestsLayer,
+  serviceBox,
+  timerRing,
+  verticalLink,
+} from '../shared/stage';
+
 /** Total length of the scene in seconds. */
 export const SCENE_DURATION = 24;
 
@@ -61,33 +73,38 @@ const bucket = (variant: 'a' | 'b'): string => {
     </g>`;
 };
 
-const counts = Array.from(
-  { length: CAPACITY + 1 },
-  (_value, n) => `<text class="rl-count rl-count--${n}" x="170" y="1118">${n}/5</text>`,
-).join('\n      ');
+const counts = counterVariants({
+  x: 170,
+  y: 1118,
+  className: 'rl-count',
+  count: CAPACITY + 1,
+  format: (n) => `${n}/5`,
+  indent: 6,
+});
 
-export const stageMarkup = `<svg class="scene-stage" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg" data-tokens="5" data-reject="off" data-split="off" data-health="ok" aria-hidden="true" focusable="false">
+export const stageMarkup = `<svg class="scene-stage" viewBox="${VIEWBOX}" xmlns="http://www.w3.org/2000/svg" data-tokens="5" data-reject="off" data-split="off" data-health="ok" aria-hidden="true" focusable="false">
   <rect class="scene-bg" x="0" y="0" width="1080" height="1920" />
 
-  <line class="scene-link scene-link--upper" x1="540" y1="680" x2="540" y2="880" />
-  <line class="scene-link scene-link--lower" x1="540" y1="1270" x2="540" y2="1500" />
+  ${verticalLink(540, 680, 880, 'scene-link scene-link--upper')}
+  ${verticalLink(540, 1270, 1500, 'scene-link scene-link--lower')}
   <path class="scene-link rl-fork" d="M 540 680 L 540 720 M 350 720 L 730 720 M 350 720 L 350 880 M 730 720 L 730 880" fill="none" />
 
-  <g class="scene-client">
-    <rect class="scene-box" x="280" y="440" width="520" height="240" rx="28" />
-    <text class="scene-node-title" x="540" y="575" text-anchor="middle">Client</text>
-  </g>
+  ${clientBox({ title: 'Client', titleY: 575 })}
 
-  <g class="rl-retry">
-    <circle class="rl-retry-track" cx="720" cy="775" r="${RETRY_RADIUS}" />
-    <circle class="rl-retry-progress" cx="720" cy="775" r="${RETRY_RADIUS}" transform="rotate(-90 720 775)" stroke-dasharray="${RETRY_CIRCUMFERENCE.toFixed(2)}" stroke-dashoffset="${RETRY_CIRCUMFERENCE.toFixed(2)}" />
-    <text class="scene-caption-label" x="720" y="852" text-anchor="middle">Retry-After</text>
-  </g>
+  ${timerRing({
+    cx: 720,
+    cy: 775,
+    r: RETRY_RADIUS,
+    className: 'rl-retry',
+    labelText: 'Retry-After',
+    labelY: 852,
+    indent: 2,
+  })}
 
-  <g class="scene-node">
-    <rect class="scene-box" x="130" y="880" width="820" height="390" rx="28" />
-    <text class="scene-node-label" x="170" y="938">Rate Limiter</text>
-
+  ${nodeFrame({
+    label: 'Rate Limiter',
+    labelY: 938,
+    children: `
     <g class="rl-legend">
       <text class="scene-caption-label" x="170" y="1010">refill 2/s</text>
       <text class="scene-caption-label" x="170" y="1070">tokens</text>
@@ -97,20 +114,20 @@ export const stageMarkup = `<svg class="scene-stage" viewBox="0 0 1080 1920" xml
     ${bucket('a')}
     ${bucket('b')}
 
-    <text class="rl-key rl-key--a" x="350" y="1215" text-anchor="middle">key A</text>
-    <text class="rl-key rl-key--b" x="730" y="1215" text-anchor="middle">key B</text>
+    <text class="scene-flash rl-key rl-key--a" x="350" y="1215" text-anchor="middle">key A</text>
+    <text class="scene-flash rl-key rl-key--b" x="730" y="1215" text-anchor="middle">key B</text>
 
-    <text class="rl-429" x="855" y="1065" text-anchor="middle">429</text>
+    <text class="scene-flash rl-429" x="855" y="1065" text-anchor="middle">429</text>
 
-    <g class="rl-drips"></g>
-  </g>
+    <g class="rl-drips"></g>`,
+  })}
 
-  <g class="scene-service">
-    <rect class="scene-box" x="280" y="1500" width="520" height="240" rx="28" />
-    <text class="scene-node-title" x="540" y="1590" text-anchor="middle">Service</text>
-    <circle class="scene-health-ring" cx="540" cy="1680" r="32" />
-    <circle class="scene-health" cx="540" cy="1680" r="20" />
-  </g>
+  ${serviceBox({
+    title: 'Service',
+    titleY: 1590,
+    children: `
+    ${healthDot({ cx: 540, cy: 1680 })}`,
+  })}
 
-  <g class="scene-requests"></g>
+  ${requestsLayer()}
 </svg>`;

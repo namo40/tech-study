@@ -28,6 +28,9 @@ npm run dev
 | `npm run build` | 静的サイトを `dist/` にビルドします |
 | `npm run preview` | ビルド結果をローカルで配信します |
 | `npm run check` | `astro check` で型を検査します |
+| `npm run verify` | すべてのシーンがタイムラインの約束を守っているか検査します |
+| `npm run baseline` | すべてのシーンのフレームごとの指紋を記録します |
+| `npm run baseline:compare` | 記録した指紋とシーンを比べます |
 
 ## 設定
 
@@ -59,6 +62,24 @@ src/
   scripts/              プレーヤー、効果音、テーマ切り替え
   styles/               デザイントークン、全体スタイル、シーンスタイル
 ```
+
+## シーンを追加する
+
+1 つのシーンは `src/scenes/<id>/` フォルダーで、その中にモジュールを 2 つ置きます。
+
+`stage.ts` は、ページにそのまま載る静的な SVG である `stageMarkup` を公開します。`src/scenes/shared/stage.ts` の共通ビルダーで組み立ててください。`clientBox`、`nodeFrame`、`serviceBox`、`verticalLink`、`healthDot`、`slotRow`、`counterVariants`、`timerRing`、`trackAndFill`、`chip`、`requestsLayer` があります。座標はすべて引数なので、シーンごとに自分の数値を保ったまま、隣のシーンと同じ図として読めます。このモジュールはサーバー側で import されるため GSAP を持ち込んではならず、プレーヤーが実行時に埋める空の `scene-requests` レイヤーで終わる必要があります。
+
+`scene.ts` は既定の export として `SceneModule` を公開し、タイムラインを組み立てます。始めは `src/scenes/shared/timeline.ts` の `createSceneTimeline()`、終わりは `finishSceneTimeline(tl, SCENE_DURATION)` です。前者は停止したタイムラインを返し、後者は長さを固定したうえでタイムラインを前後 1 往復ぶん温めます。こうしておくと、まだ順方向に通っていない状態変化を逆方向にスクラブしても正しく戻ります。仕上がったシーンは `src/scenes/registry.ts` に登録します。
+
+状態は属性で変え、コールバックでは変えません。`src/scenes/shared/state.ts` の `attr(tl, target, name, value, at)` が長さ 0 の tween で `data-*` の値を書き、その属性を見る CSS が見た目を決めます。色を補間しないので、スクラブの両方向でも 2 つのテーマでも正しいままです。
+
+ステージのスタイルには `src/styles/scene.css` のウィジェットクラスを使います。`.scene-track`、`.scene-fill`、`.scene-ring`、`.scene-counter`、`.scene-flash`、`.scene-slot`、`.scene-chip`、`.scene-mono`、`.scene-health` を、シーンの接頭辞付きクラスの隣に並べて書きます。するとシーン側の規則には違うところだけが残り、たいていはカスタムプロパティ（`--fill-color`、`--ring-color`、`--ring-width`、`--flash-color`）1 つとフォントサイズだけになります。
+
+キューやプールのように 1 つの出来事が次の出来事を呼ぶシーンは、先に予定を計算してから tween を並べます。`src/scenes/shared/simulation.ts` の `createScheduler()` は予約した出来事を早い順に実行し、実行の途中で新しい出来事を予約することもできます。`collapseLast` と `collapseAtInstant` は同じ瞬間に重なる変化を 1 つにたたみ、その 1 フレームが読む人のスクラブ方向で変わらないようにします。
+
+効果音は `success`、`failure`、`state`、`trip` の 4 つです。それぞれを、見ている人がその出来事に気づく瞬間に置きます。キャッシュミスは、シミュレーションがそう決めた時刻ではなく、リクエストがキャッシュに届く瞬間に鳴らします。
+
+すべてのシーンが同じ約束を守ります。長さは 24 秒、`step-1` から `step-4` までの昇順のラベルが 4 つ、そのラベルと一致する `steps[]` の時刻、最初と最後のフレームに見えているリクエストがないこと、10 ミリ秒ごとに順方向と逆方向が一致すること。`npm run verify` がこれらをまとめて検査し、あらかじめ記録したデータは必要ありません。シーンが仕上がったら `npm run baseline` でフレームを記録し、`npm run baseline:compare` でその後の変更が記録から外れていないか確かめます。
 
 ## 言語
 

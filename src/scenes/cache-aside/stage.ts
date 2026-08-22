@@ -12,6 +12,18 @@
  * and its TTL bar, so a request passes through the rows without covering them.
  */
 
+import {
+  VIEWBOX,
+  chip,
+  clientBox,
+  counterVariants,
+  nodeFrame,
+  requestsLayer,
+  serviceBox,
+  trackAndFill,
+  verticalLink,
+} from '../shared/stage';
+
 /** Total length of the scene in seconds. */
 export const SCENE_DURATION = 24;
 
@@ -33,65 +45,98 @@ const row = (index: number): string => {
   const centre = ROW_Y[index] ?? 0;
   const top = centre - 29;
   const state = index === 0 ? 'empty' : 'fresh';
+  const values = ['v1', 'v2']
+    .map(
+      (v) =>
+        `<text class="scene-chip-text ca-chip-text ca-chip-text--${v}" x="445" y="${centre + 9}" text-anchor="middle">${v}</text>`,
+    )
+    .join('\n        ');
   return `<g class="ca-row ca-row--${index + 1}" data-entry="${state}" data-value="v1">
       <rect class="ca-row-bg" x="170" y="${top}" width="740" height="58" rx="16" />
-      <text class="ca-key" x="195" y="${centre + 9}">${KEYS[index]}</text>
-      <g class="ca-chip">
-        <rect class="ca-chip-bg" x="400" y="${centre - 22}" width="90" height="44" rx="22" />
-        <text class="ca-chip-text ca-chip-text--v1" x="445" y="${centre + 9}" text-anchor="middle">v1</text>
-        <text class="ca-chip-text ca-chip-text--v2" x="445" y="${centre + 9}" text-anchor="middle">v2</text>
-      </g>
-      <rect class="ca-ttl-track" x="600" y="${centre - 7}" width="${TTL_WIDTH}" height="14" rx="7" />
-      <rect class="ca-ttl-fill" x="600" y="${centre - 7}" width="${index === 0 ? 0 : TTL_WIDTH}" height="14" rx="7" />
+      <text class="scene-mono ca-key" x="195" y="${centre + 9}">${KEYS[index]}</text>
+      ${chip({
+        x: 400,
+        y: centre - 22,
+        width: 90,
+        height: 44,
+        rx: 22,
+        className: 'ca-chip',
+        variant: 'filled',
+        text: values,
+        indent: 6,
+      })}
+      ${trackAndFill({
+        x: 600,
+        y: centre - 7,
+        width: TTL_WIDTH,
+        height: 14,
+        rx: 7,
+        className: 'ca-ttl',
+        fillWidth: index === 0 ? 0 : TTL_WIDTH,
+        indent: 6,
+      })}
     </g>`;
 };
 
 const flashes = ['hit', 'miss', 'stale', 'invalidate']
   .map(
     (name) =>
-      `<text class="ca-flash ca-flash--${name}" x="890" y="940" text-anchor="end">${name}</text>`,
+      `<text class="scene-flash ca-flash ca-flash--${name}" x="890" y="940" text-anchor="end">${name}</text>`,
   )
   .join('\n    ');
 
-const reads = [0, 1, 2, 3]
+const dbValues = ['v1', 'v2']
   .map(
-    (n) =>
-      `<text class="ca-reads ca-reads--${n}" x="780" y="1725" text-anchor="end">db reads ${n}</text>`,
+    (v) =>
+      `<text class="scene-chip-text ca-db-value ca-db-value--${v}" x="540" y="1699" text-anchor="middle">${v}</text>`,
   )
-  .join('\n    ');
+  .join('\n      ');
 
-export const stageMarkup = `<svg class="scene-stage" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg" data-flash="none" data-reads="0" data-db="v1" aria-hidden="true" focusable="false">
+const reads = counterVariants({
+  x: 780,
+  y: 1725,
+  className: 'ca-reads',
+  count: 4,
+  anchor: 'end',
+  format: (n) => `db reads ${n}`,
+});
+
+export const stageMarkup = `<svg class="scene-stage" viewBox="${VIEWBOX}" xmlns="http://www.w3.org/2000/svg" data-flash="none" data-reads="0" data-db="v1" aria-hidden="true" focusable="false">
   <rect class="scene-bg" x="0" y="0" width="1080" height="1920" />
 
-  <line class="scene-link" x1="540" y1="680" x2="540" y2="880" />
-  <line class="scene-link" x1="540" y1="1270" x2="540" y2="1500" />
+  ${verticalLink(540, 680, 880)}
+  ${verticalLink(540, 1270, 1500)}
 
-  <g class="scene-client">
-    <rect class="scene-box" x="280" y="440" width="520" height="240" rx="28" />
-    <text class="scene-node-title" x="540" y="575" text-anchor="middle">Client</text>
-  </g>
+  ${clientBox({ title: 'Client', titleY: 575 })}
 
-  <g class="scene-node">
-    <rect class="scene-box" x="130" y="880" width="820" height="390" rx="28" />
-    <text class="scene-node-label" x="170" y="938">Cache</text>
-    <text class="scene-caption-label ca-ttl-label" x="700" y="972" text-anchor="middle">TTL</text>
+  ${nodeFrame({
+    label: 'Cache',
+    labelY: 938,
+    children: `    <text class="scene-caption-label ca-ttl-label" x="700" y="972" text-anchor="middle">TTL</text>
     ${flashes}
 
     ${row(0)}
     ${row(1)}
-    ${row(2)}
-  </g>
+    ${row(2)}`,
+  })}
 
-  <g class="ca-db">
-    <rect class="scene-box" x="280" y="1500" width="520" height="240" rx="28" />
-    <text class="scene-node-title" x="540" y="1565" text-anchor="middle">Database</text>
-    <g class="ca-db-chip">
-      <rect class="ca-db-chip-bg" x="490" y="1668" width="100" height="44" rx="22" />
-      <text class="ca-db-value ca-db-value--v1" x="540" y="1699" text-anchor="middle">v1</text>
-      <text class="ca-db-value ca-db-value--v2" x="540" y="1699" text-anchor="middle">v2</text>
-    </g>
-    ${reads}
-  </g>
+  ${serviceBox({
+    className: 'ca-db',
+    title: 'Database',
+    titleY: 1565,
+    children: `
+    ${chip({
+      x: 490,
+      y: 1668,
+      width: 100,
+      height: 44,
+      rx: 22,
+      className: 'ca-db-chip',
+      variant: 'outline',
+      text: dbValues,
+    })}
+    ${reads}`,
+  })}
 
-  <g class="scene-requests"></g>
+  ${requestsLayer()}
 </svg>`;

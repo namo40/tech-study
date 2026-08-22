@@ -9,6 +9,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "verify": "node scripts/scene-baseline.mjs --verify",
     "baseline": "node scripts/scene-baseline.mjs",
     "baseline:compare": "node scripts/scene-baseline.mjs --compare"
   },

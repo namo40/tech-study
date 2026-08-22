@@ -12,6 +12,17 @@
  * request never covers a slot on its way past.
  */
 
+import {
+  VIEWBOX,
+  clientBox,
+  counterVariants,
+  nodeFrame,
+  requestsLayer,
+  serviceBox,
+  slotRow,
+  verticalLink,
+} from '../shared/stage';
+
 /** Total length of the scene in seconds. */
 export const SCENE_DURATION = 24;
 
@@ -37,60 +48,76 @@ export const HANDSHAKE_LENGTH = 410;
 /** How long a request will stand in the column before giving up. */
 export const WAIT_TIMEOUT = 1.5;
 
-const slots = SLOT_X.map(
-  (x, index) =>
-    `<rect class="dp-slot dp-slot--${index + 1}" data-slot-state="none" x="${x - SLOT_SIDE / 2}" y="${SLOT_Y}" width="${SLOT_SIDE}" height="${SLOT_SIDE}" rx="16" />`,
-).join('\n    ');
+const slots = slotRow({
+  xs: SLOT_X,
+  y: SLOT_Y,
+  side: SLOT_SIDE,
+  rx: 16,
+  className: 'dp-slot',
+  initialState: 'none',
+  attrName: 'data-slot-state',
+});
 
 const handshakes = SLOT_X.map(
   (x, index) =>
     `<line class="dp-handshake dp-handshake--${index + 1}" x1="${x}" y1="1090" x2="${x}" y2="1500" stroke-dasharray="${HANDSHAKE_LENGTH}" stroke-dashoffset="${HANDSHAKE_LENGTH}" />`,
 ).join('\n    ');
 
-const counters = (cls: string, x: number, y: number, anchor: string, label: (n: number) => string) =>
-  [0, 1, 2, 3, 4]
-    .map(
-      (n) =>
-        `<text class="${cls} ${cls}--${n}" x="${x}" y="${y}" text-anchor="${anchor}">${label(n)}</text>`,
-    )
-    .join('\n    ');
+const open = counterVariants({
+  x: 910,
+  y: 938,
+  className: 'dp-open',
+  count: POOL_MAX + 1,
+  anchor: 'end',
+  format: (n) => `open ${n}/4`,
+});
 
-const waiting = [0, 1, 2, 3]
-  .map(
-    (n) =>
-      `<text class="dp-waiting dp-waiting--${n}" x="${WAIT_X}" y="975" text-anchor="middle">waiting ${n}</text>`,
-  )
-  .join('\n    ');
+const connections = counterVariants({
+  x: 540,
+  y: 1690,
+  className: 'dp-connections',
+  count: POOL_MAX + 1,
+  anchor: 'middle',
+  format: (n) => `connections ${n}`,
+});
 
-export const stageMarkup = `<svg class="scene-stage" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg" data-open="0" data-connections="0" data-waiting="0" data-held="off" aria-hidden="true" focusable="false">
+const waiting = counterVariants({
+  x: WAIT_X,
+  y: 975,
+  className: 'dp-waiting',
+  count: 4,
+  anchor: 'middle',
+  format: (n) => `waiting ${n}`,
+});
+
+export const stageMarkup = `<svg class="scene-stage" viewBox="${VIEWBOX}" xmlns="http://www.w3.org/2000/svg" data-open="0" data-connections="0" data-waiting="0" data-held="off" aria-hidden="true" focusable="false">
   <rect class="scene-bg" x="0" y="0" width="1080" height="1920" />
 
-  <line class="scene-link" x1="540" y1="680" x2="540" y2="880" />
-  <line class="scene-link" x1="540" y1="1270" x2="540" y2="1500" />
+  ${verticalLink(540, 680, 880)}
+  ${verticalLink(540, 1270, 1500)}
 
-  <g class="scene-client">
-    <rect class="scene-box" x="280" y="440" width="520" height="240" rx="28" />
-    <text class="scene-node-title" x="540" y="575" text-anchor="middle">App</text>
-  </g>
+  ${clientBox({ title: 'App', titleY: 575 })}
 
   ${handshakes}
 
-  <g class="scene-node">
-    <rect class="scene-box" x="130" y="880" width="820" height="390" rx="28" />
-    <text class="scene-node-label" x="170" y="938">Connection Pool</text>
-    ${counters('dp-open', 910, 938, 'end', (n) => `open ${n}/4`)}
+  ${nodeFrame({
+    label: 'Connection Pool',
+    labelY: 938,
+    children: `    ${open}
 
     ${slots}
-    <text class="dp-held" x="300" y="1178" text-anchor="middle">held</text>
+    <text class="scene-flash dp-held" x="300" y="1178" text-anchor="middle">held</text>
 
-    ${waiting}
-  </g>
+    ${waiting}`,
+  })}
 
-  <g class="dp-db">
-    <rect class="scene-box" x="280" y="1500" width="520" height="240" rx="28" />
-    <text class="scene-node-title" x="540" y="1580" text-anchor="middle">Database</text>
-    ${counters('dp-connections', 540, 1690, 'middle', (n) => `connections ${n}`)}
-  </g>
+  ${serviceBox({
+    className: 'dp-db',
+    title: 'Database',
+    titleY: 1580,
+    children: `
+    ${connections}`,
+  })}
 
-  <g class="scene-requests"></g>
+  ${requestsLayer()}
 </svg>`;

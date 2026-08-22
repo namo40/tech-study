@@ -28,6 +28,9 @@ npm run dev
 | `npm run build` | Builds the static site into `dist/` |
 | `npm run preview` | Serves the built site locally |
 | `npm run check` | Type checks the project with `astro check` |
+| `npm run verify` | Checks every scene against the timeline contract |
+| `npm run baseline` | Records a frame-by-frame fingerprint of every scene |
+| `npm run baseline:compare` | Compares the scenes against the recorded fingerprint |
 
 ## Configuration
 
@@ -59,6 +62,24 @@ src/
   scripts/              Player, sound cues, theme toggle
   styles/               Design tokens, global styles, scene styles
 ```
+
+## Adding a scene
+
+A scene is a folder under `src/scenes/<id>/` holding two modules.
+
+`stage.ts` exports `stageMarkup`, the static SVG the page ships with. Build it from the shared builders in `src/scenes/shared/stage.ts`: `clientBox`, `nodeFrame`, `serviceBox`, `verticalLink`, `healthDot`, `slotRow`, `counterVariants`, `timerRing`, `trackAndFill`, `chip`, `requestsLayer`. Every coordinate is an argument, so a stage keeps its own numbers and still reads as the same diagram as its neighbours. The module is imported on the server, so it must not pull in GSAP, and it has to end with the empty `scene-requests` layer the player fills at run time.
+
+`scene.ts` exports the default `SceneModule` and builds the timeline. Open with `createSceneTimeline()` and close with `finishSceneTimeline(tl, SCENE_DURATION)` from `src/scenes/shared/timeline.ts`: the first gives you a paused timeline, and the second pins the length and warms the timeline up in both directions so a state change scrubbed backwards for the first time still reverts. Register the finished scene in `src/scenes/registry.ts`.
+
+Change state by attribute, never from a callback. `attr(tl, target, name, value, at)` in `src/scenes/shared/state.ts` writes a `data-*` value with a zero-length tween, and CSS keyed on that attribute decides what it looks like. That is what keeps both scrub directions and both themes correct, because the colour is never interpolated.
+
+Style the stage with the widget classes in `src/styles/scene.css` — `.scene-track`, `.scene-fill`, `.scene-ring`, `.scene-counter`, `.scene-flash`, `.scene-slot`, `.scene-chip`, `.scene-mono`, `.scene-health` — written next to your own prefixed class. The scene rule then says only what is different, which is usually a custom property (`--fill-color`, `--ring-color`, `--ring-width`, `--flash-color`) and a font size.
+
+A scene with a queue, a pool, or anything else where one event books the next should work out its schedule first and lay tweens down afterwards. `createScheduler()` in `src/scenes/shared/simulation.ts` runs booked events earliest first and lets a running event book more, and `collapseLast` and `collapseAtInstant` fold changes that land on the same instant so a single frame does not depend on which way the reader scrubbed.
+
+Sounds come from four cues: `success`, `failure`, `state`, `trip`. Anchor each one where the viewer sees the thing happen — a cache miss sounds when the request reaches the cache, not when the simulation decided it.
+
+Every scene keeps the same contract: 24 seconds long, four steps labelled `step-1` to `step-4` in ascending order, `steps[]` times matching those labels, no request visible on the first or last frame, and forward and backward scrubbing agreeing at every 10 ms. `npm run verify` checks all of it and needs nothing recorded in advance. Once a scene is finished, `npm run baseline` records its frames and `npm run baseline:compare` holds later edits to them.
 
 ## Languages
 

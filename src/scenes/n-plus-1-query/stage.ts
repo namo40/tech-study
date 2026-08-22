@@ -13,6 +13,17 @@
  * is shown at a time. Compressing one into the other would move every row.
  */
 
+import {
+  VIEWBOX,
+  clientBox,
+  counterVariants,
+  nodeFrame,
+  requestsLayer,
+  serviceBox,
+  trackAndFill,
+  verticalLink,
+} from '../shared/stage';
+
 /** Total length of the scene in seconds. */
 export const SCENE_DURATION = 24;
 
@@ -38,31 +49,31 @@ const LOG_STEP = 38;
 /** Every line the log ever shows, with the slot it occupies. */
 export const LOG_LINES: { slot: number; text: string }[] = [
   // Step 1: the list, then one per row.
-  { slot: 0, text: 'SELECT \u2026 FROM Orders' },
+  { slot: 0, text: 'SELECT … FROM Orders' },
   ...Array.from({ length: 5 }, (_v, i) => ({
     slot: i + 1,
-    text: `SELECT \u2026 Customers Id = ${i + 1}`,
+    text: `SELECT … Customers Id = ${i + 1}`,
   })),
   // Step 2: the same shape, but the tail is collapsed.
-  { slot: 0, text: 'SELECT \u2026 FROM Orders' },
+  { slot: 0, text: 'SELECT … FROM Orders' },
   ...Array.from({ length: 5 }, (_v, i) => ({
     slot: i + 1,
-    text: `SELECT \u2026 Customers Id = ${i + 1}`,
+    text: `SELECT … Customers Id = ${i + 1}`,
   })),
-  { slot: 6, text: '\u2026 +15 more' },
+  { slot: 6, text: '… +15 more' },
   // Step 3: one query with a join.
-  { slot: 0, text: 'SELECT \u2026 Orders JOIN Customers' },
+  { slot: 0, text: 'SELECT … Orders JOIN Customers' },
   // Step 4: a projection, then a list plus one batched lookup.
-  { slot: 0, text: 'SELECT Id, Total, Name \u2026' },
-  { slot: 0, text: 'SELECT \u2026 FROM Orders' },
-  { slot: 1, text: '\u2026 WHERE Id IN (1, 2, 3, 4, 5)' },
+  { slot: 0, text: 'SELECT Id, Total, Name …' },
+  { slot: 0, text: 'SELECT … FROM Orders' },
+  { slot: 1, text: '… WHERE Id IN (1, 2, 3, 4, 5)' },
 ];
 
 const smallRow = (index: number): string => {
   const y = 505 + index * 23;
   return `<g class="nq-row">
         <rect class="nq-row-box" data-row-loaded="0" x="320" y="${y - 10}" width="440" height="20" rx="5" />
-        <text class="nq-row-label" x="332" y="${y + 6}">order #${index + 1}</text>
+        <text class="scene-mono nq-row-label" x="332" y="${y + 6}">order #${index + 1}</text>
         <rect class="nq-slot" data-slot-filled="0" x="600" y="${y - 8}" width="150" height="16" rx="4" />
       </g>`;
 };
@@ -75,17 +86,30 @@ const largeRow = (index: number): string => {
       </g>`;
 };
 
-const counter = (cls: string, x: number, y: number, anchor: string, label: (n: number) => string) =>
-  Array.from({ length: 22 }, (_v, n) => n)
-    .map(
-      (n) =>
-        `<text class="${cls} ${cls}--${n}" x="${x}" y="${y}" text-anchor="${anchor}">${label(n)}</text>`,
-    )
-    .join('\n    ');
+/** Both counters run to 21, which is one list query plus twenty lookups. */
+const COUNTER_VARIANTS = 22;
+
+const queries = counterVariants({
+  x: 910,
+  y: 920,
+  className: 'nq-queries',
+  count: COUNTER_VARIANTS,
+  anchor: 'end',
+  format: (n) => `queries ${n}`,
+});
+
+const trips = counterVariants({
+  x: 540,
+  y: 1640,
+  className: 'nq-trips',
+  count: COUNTER_VARIANTS,
+  anchor: 'middle',
+  format: (n) => `round trips ${n}`,
+});
 
 const logLines = LOG_LINES.map(
   (line, index) =>
-    `<text class="nq-log" data-log-shown="0" data-log-index="${index}" x="170" y="${LOG_Y + line.slot * LOG_STEP}">${line.text}</text>`,
+    `<text class="scene-mono nq-log" data-log-shown="0" data-log-index="${index}" x="170" y="${LOG_Y + line.slot * LOG_STEP}">${line.text}</text>`,
 ).join('\n    ');
 
 const ticks = Array.from({ length: TIME_CELLS - 1 }, (_v, i) => i + 1)
@@ -95,47 +119,61 @@ const ticks = Array.from({ length: TIME_CELLS - 1 }, (_v, i) => i + 1)
   )
   .join('\n  ');
 
-export const stageMarkup = `<svg class="scene-stage" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg" data-rows="5" data-mode="none" data-queries="0" data-trips="0" data-overflow="off" aria-hidden="true" focusable="false">
+export const stageMarkup = `<svg class="scene-stage" viewBox="${VIEWBOX}" xmlns="http://www.w3.org/2000/svg" data-rows="5" data-mode="none" data-queries="0" data-trips="0" data-overflow="off" aria-hidden="true" focusable="false">
   <rect class="scene-bg" x="0" y="0" width="1080" height="1920" />
 
-  <line class="scene-link" x1="540" y1="680" x2="540" y2="880" />
-  <line class="scene-link" x1="540" y1="1270" x2="540" y2="1500" />
+  ${verticalLink(540, 680, 880)}
+  ${verticalLink(540, 1270, 1500)}
 
-  <g class="scene-client">
-    <rect class="scene-box" x="280" y="440" width="520" height="240" rx="28" />
-    <text class="nq-title" x="300" y="478">App</text>
-    <text class="nq-times" x="770" y="478" text-anchor="end">\u00d720</text>
+  ${clientBox({
+    title: 'App',
+    titleY: 478,
+    titleX: 300,
+    titleClass: 'nq-title',
+    titleAnchor: null,
+    children: `
+    <text class="nq-times" x="770" y="478" text-anchor="end">×20</text>
 
     <g class="nq-list nq-list--small">
       ${Array.from({ length: SMALL_ROWS }, (_v, i) => smallRow(i)).join('\n      ')}
     </g>
     <g class="nq-list nq-list--large">
       ${Array.from({ length: LARGE_ROWS }, (_v, i) => largeRow(i)).join('\n      ')}
-    </g>
-  </g>
+    </g>`,
+  })}
 
-  <g class="scene-node">
-    <rect class="scene-box" x="130" y="880" width="820" height="390" rx="28" />
-    <text class="scene-node-label" x="170" y="920">EF Core</text>
-    ${counter('nq-queries', 910, 920, 'end', (n) => `queries ${n}`)}
-    <text class="nq-mode nq-mode--include" x="910" y="975" text-anchor="end">Include</text>
-    <text class="nq-mode nq-mode--select" x="910" y="975" text-anchor="end">Select</text>
-    <text class="nq-mode nq-mode--in" x="910" y="975" text-anchor="end">IN (\u2026)</text>
+  ${nodeFrame({
+    label: 'EF Core',
+    labelY: 920,
+    children: `    ${queries}
+    <text class="scene-flash nq-mode nq-mode--include" x="910" y="975" text-anchor="end">Include</text>
+    <text class="scene-flash nq-mode nq-mode--select" x="910" y="975" text-anchor="end">Select</text>
+    <text class="scene-flash nq-mode nq-mode--in" x="910" y="975" text-anchor="end">IN (…)</text>
 
-    ${logLines}
-  </g>
+    ${logLines}`,
+  })}
 
-  <g class="nq-db">
-    <rect class="scene-box nq-db-box" x="280" y="1500" width="520" height="240" rx="28" />
-    <text class="scene-node-title" x="540" y="1570" text-anchor="middle">Database</text>
-    ${counter('nq-trips', 540, 1640, 'middle', (n) => `round trips ${n}`)}
-  </g>
+  ${serviceBox({
+    className: 'nq-db',
+    boxClass: 'scene-box nq-db-box',
+    title: 'Database',
+    titleY: 1570,
+    children: `
+    ${trips}`,
+  })}
 
   <text class="scene-caption-label nq-time-label" x="130" y="1806">time</text>
-  <rect class="nq-time-track" x="${TIME_X}" y="1788" width="${TIME_CELL * TIME_CELLS}" height="20" rx="4" />
-  <rect class="nq-time-fill" x="${TIME_X}" y="1788" width="0" height="20" rx="4" />
+  ${trackAndFill({
+    x: TIME_X,
+    y: 1788,
+    width: TIME_CELL * TIME_CELLS,
+    height: 20,
+    rx: 4,
+    className: 'nq-time',
+    indent: 2,
+  })}
   ${ticks}
-  <text class="nq-time-more" x="790" y="1806">\u2026</text>
+  <text class="scene-flash nq-time-more" x="790" y="1806">…</text>
 
-  <g class="scene-requests"></g>
+  ${requestsLayer()}
 </svg>`;

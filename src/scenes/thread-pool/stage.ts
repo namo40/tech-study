@@ -12,6 +12,16 @@
  * injecting or retiring a thread never moves the other lanes.
  */
 
+import {
+  VIEWBOX,
+  clientBox,
+  counterVariants,
+  nodeFrame,
+  requestsLayer,
+  serviceBox,
+  verticalLink,
+} from '../shared/stage';
+
 /** Total length of the scene in seconds. */
 export const SCENE_DURATION = 24;
 
@@ -47,8 +57,8 @@ export const Y_CLIENT = 620;
 const lanes = LANE_Y.map(
   (y, index) =>
     `<g class="tp-lane tp-lane--${index + 1}">
-      <text class="tp-lane-label" x="285" y="${y + 7}" text-anchor="end">T${index + 1}</text>
-      <rect class="tp-bar" data-lane-state="${index < BASE_THREADS ? 'idle' : 'absent'}" x="${BAR_X}" y="${y - BAR_H / 2}" width="${BAR_W}" height="${BAR_H}" rx="13" />
+      <text class="scene-mono tp-lane-label" x="285" y="${y + 7}" text-anchor="end">T${index + 1}</text>
+      <rect class="scene-slot tp-bar" data-lane-state="${index < BASE_THREADS ? 'idle' : 'absent'}" x="${BAR_X}" y="${y - BAR_H / 2}" width="${BAR_W}" height="${BAR_H}" rx="13" />
     </g>`,
 ).join('\n    ');
 
@@ -58,15 +68,34 @@ const blockedLines = LANE_Y.map(
     `<line class="tp-blocked-line tp-blocked-line--${index + 1}" x1="${BAR_X + BAR_W}" y1="${y}" x2="${460 + index * 45}" y2="1500" />`,
 ).join('\n  ');
 
-const counter = (cls: string, x: number, y: number, anchor: string, max: number, label: (n: number) => string) =>
-  Array.from({ length: max + 1 }, (_v, n) => n)
-    .map(
-      (n) =>
-        `<text class="${cls} ${cls}--${n}" x="${x}" y="${y}" text-anchor="${anchor}">${label(n)}</text>`,
-    )
-    .join('\n    ');
+const threads = counterVariants({
+  x: 910,
+  y: 912,
+  className: 'tp-threads',
+  max: 6,
+  anchor: 'end',
+  format: (n) => `threads ${n}`,
+});
 
-export const stageMarkup = `<svg class="scene-stage" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg" data-queue="0" data-awaiting="0" data-threads="4" data-inject="off" aria-hidden="true" focusable="false">
+const queue = counterVariants({
+  x: QUEUE_X,
+  y: 1252,
+  className: 'tp-queue',
+  max: 6,
+  anchor: 'middle',
+  format: (n) => `queue ${n}`,
+});
+
+const awaiting = counterVariants({
+  x: 850,
+  y: 1252,
+  className: 'tp-awaiting',
+  max: 8,
+  anchor: 'middle',
+  format: (n) => `awaiting ${n}`,
+});
+
+export const stageMarkup = `<svg class="scene-stage" viewBox="${VIEWBOX}" xmlns="http://www.w3.org/2000/svg" data-queue="0" data-awaiting="0" data-threads="4" data-inject="off" aria-hidden="true" focusable="false">
   <defs>
     <pattern id="tp-hatch" width="12" height="12" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
       <line class="tp-hatch-line" x1="0" y1="0" x2="0" y2="12" stroke-width="5" />
@@ -75,34 +104,28 @@ export const stageMarkup = `<svg class="scene-stage" viewBox="0 0 1080 1920" xml
 
   <rect class="scene-bg" x="0" y="0" width="1080" height="1920" />
 
-  <line class="scene-link" x1="540" y1="680" x2="540" y2="880" />
-  <line class="scene-link" x1="540" y1="1270" x2="540" y2="1500" />
+  ${verticalLink(540, 680, 880)}
+  ${verticalLink(540, 1270, 1500)}
 
   ${blockedLines}
 
-  <g class="scene-client">
-    <rect class="scene-box" x="280" y="440" width="520" height="240" rx="28" />
-    <text class="scene-node-title" x="540" y="575" text-anchor="middle">Requests</text>
-  </g>
+  ${clientBox({ title: 'Requests', titleY: 575 })}
 
-  <g class="scene-node">
-    <rect class="scene-box" x="130" y="880" width="820" height="390" rx="28" />
-    <text class="scene-node-label" x="170" y="912">Thread Pool</text>
-    <text class="tp-inject" x="540" y="912" text-anchor="middle">+1 thread</text>
-    ${counter('tp-threads', 910, 912, 'end', 6, (n) => `threads ${n}`)}
+  ${nodeFrame({
+    label: 'Thread Pool',
+    labelY: 912,
+    children: `    <text class="scene-flash tp-inject" x="540" y="912" text-anchor="middle">+1 thread</text>
+    ${threads}
 
     ${lanes}
 
-    ${counter('tp-queue', QUEUE_X, 1252, 'middle', 6, (n) => `queue ${n}`)}
+    ${queue}
 
     <rect class="tp-await-box" x="770" y="940" width="160" height="285" rx="16" />
-    ${counter('tp-awaiting', 850, 1252, 'middle', 8, (n) => `awaiting ${n}`)}
-  </g>
+    ${awaiting}`,
+  })}
 
-  <g class="tp-io">
-    <rect class="scene-box" x="280" y="1500" width="520" height="240" rx="28" />
-    <text class="scene-node-title" x="540" y="1640" text-anchor="middle">I/O</text>
-  </g>
+  ${serviceBox({ className: 'tp-io', title: 'I/O', titleY: 1640 })}
 
-  <g class="scene-requests"></g>
+  ${requestsLayer()}
 </svg>`;

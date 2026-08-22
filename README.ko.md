@@ -28,6 +28,9 @@ npm run dev
 | `npm run build` | 정적 사이트를 `dist/`에 빌드합니다 |
 | `npm run preview` | 빌드 결과를 로컬에서 서비스합니다 |
 | `npm run check` | `astro check`로 타입을 검사합니다 |
+| `npm run verify` | 모든 장면이 타임라인 규약을 지키는지 검사합니다 |
+| `npm run baseline` | 모든 장면의 프레임별 지문을 기록합니다 |
+| `npm run baseline:compare` | 기록해 둔 지문과 장면을 비교합니다 |
 
 ## 설정
 
@@ -59,6 +62,24 @@ src/
   scripts/              플레이어, 효과음, 테마 전환
   styles/               디자인 토큰, 전역 스타일, 장면 스타일
 ```
+
+## 장면 추가하기
+
+장면 하나는 `src/scenes/<id>/` 폴더이고, 그 안에 모듈 두 개를 둡니다.
+
+`stage.ts`는 페이지에 그대로 실리는 정적 SVG인 `stageMarkup`을 내보냅니다. `src/scenes/shared/stage.ts`의 공용 빌더로 조립하세요. `clientBox`, `nodeFrame`, `serviceBox`, `verticalLink`, `healthDot`, `slotRow`, `counterVariants`, `timerRing`, `trackAndFill`, `chip`, `requestsLayer`가 있습니다. 좌표는 전부 인자이므로 장면마다 자기 숫자를 그대로 쓰면서도 옆 장면과 같은 그림으로 읽힙니다. 이 모듈은 서버에서 import되므로 GSAP을 끌어오면 안 되고, 플레이어가 실행 시점에 채우는 빈 `scene-requests` 레이어로 끝나야 합니다.
+
+`scene.ts`는 기본 export로 `SceneModule`을 내보내며 타임라인을 만듭니다. 시작은 `src/scenes/shared/timeline.ts`의 `createSceneTimeline()`으로, 마무리는 `finishSceneTimeline(tl, SCENE_DURATION)`으로 합니다. 앞쪽은 정지 상태의 타임라인을 주고, 뒤쪽은 길이를 고정한 뒤 타임라인을 양방향으로 한 번씩 예열합니다. 그래야 한 번도 정방향으로 지나지 않은 상태 변화를 역방향으로 스크럽해도 제대로 되돌아갑니다. 완성한 장면은 `src/scenes/registry.ts`에 등록합니다.
+
+상태는 속성으로 바꾸고, 콜백에서 바꾸지 않습니다. `src/scenes/shared/state.ts`의 `attr(tl, target, name, value, at)`가 길이 0짜리 tween으로 `data-*` 값을 쓰고, 그 속성을 보는 CSS가 모습을 결정합니다. 색을 보간하지 않기 때문에 스크럽 양방향과 두 테마가 모두 맞아떨어집니다.
+
+무대 스타일은 `src/styles/scene.css`의 위젯 클래스로 씁니다. `.scene-track`, `.scene-fill`, `.scene-ring`, `.scene-counter`, `.scene-flash`, `.scene-slot`, `.scene-chip`, `.scene-mono`, `.scene-health`를 장면 접두어 클래스 옆에 함께 적으면 됩니다. 그러면 장면 규칙에는 다른 점만 남는데, 보통 커스텀 속성(`--fill-color`, `--ring-color`, `--ring-width`, `--flash-color`) 하나와 글자 크기입니다.
+
+큐나 풀처럼 한 사건이 다음 사건을 부르는 장면은 일정을 먼저 계산하고 tween은 그다음에 깝니다. `src/scenes/shared/simulation.ts`의 `createScheduler()`는 예약된 사건을 이른 순서로 실행하고 실행 도중에 새 사건을 예약할 수 있게 해 줍니다. `collapseLast`와 `collapseAtInstant`는 같은 시각에 떨어지는 변화를 하나로 접어, 그 한 프레임이 읽는 사람의 스크럽 방향에 따라 달라지지 않게 합니다.
+
+효과음은 `success`, `failure`, `state`, `trip` 네 가지입니다. 각각을 보는 사람이 그 일을 목격하는 순간에 겁니다. 캐시 미스는 시뮬레이션이 그렇게 정한 시각이 아니라 요청이 캐시에 닿는 순간에 울려야 합니다.
+
+모든 장면은 같은 규약을 지킵니다. 길이 24초, `step-1`부터 `step-4`까지 오름차순 라벨 네 개, 그 라벨과 일치하는 `steps[]` 시각, 첫 프레임과 끝 프레임에 보이는 요청 없음, 10ms 간격으로 정방향과 역방향이 일치할 것. `npm run verify`가 이를 모두 검사하며, 미리 기록해 둔 자료가 없어도 됩니다. 장면을 완성한 뒤에는 `npm run baseline`으로 프레임을 기록하고, `npm run baseline:compare`로 이후 수정이 그 기록에서 벗어나지 않는지 확인합니다.
 
 ## 언어
 

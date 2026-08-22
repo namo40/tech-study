@@ -13,6 +13,18 @@
  *   - y 1500..1740  Service box with a health dot
  */
 
+import {
+  VIEWBOX,
+  clientBox,
+  healthDot,
+  nodeFrame,
+  requestsLayer,
+  serviceBox,
+  timerRing,
+  trackAndFill,
+  verticalLink,
+} from '../shared/stage';
+
 /** Total length of the scene in seconds. */
 export const SCENE_DURATION = 24;
 
@@ -21,21 +33,18 @@ export const TIMER_RADIUS = 42;
 /** Circumference used for the `stroke-dasharray` sweep. */
 export const TIMER_CIRCUMFERENCE = 2 * Math.PI * TIMER_RADIUS;
 
-export const stageMarkup = `<svg class="scene-stage" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg" data-state="closed" data-meter="0" data-health="ok" aria-hidden="true" focusable="false">
+export const stageMarkup = `<svg class="scene-stage" viewBox="${VIEWBOX}" xmlns="http://www.w3.org/2000/svg" data-state="closed" data-meter="0" data-health="ok" aria-hidden="true" focusable="false">
   <rect class="scene-bg" x="0" y="0" width="1080" height="1920" />
 
-  <line class="scene-link scene-link--upper" x1="540" y1="680" x2="540" y2="990" />
-  <line class="scene-link scene-link--lower" x1="540" y1="1100" x2="540" y2="1500" />
+  ${verticalLink(540, 680, 990, 'scene-link scene-link--upper')}
+  ${verticalLink(540, 1100, 1500, 'scene-link scene-link--lower')}
 
-  <g class="scene-client">
-    <rect class="scene-box" x="280" y="440" width="520" height="240" rx="28" />
-    <text class="scene-node-title" x="540" y="575" text-anchor="middle">Client</text>
-  </g>
+  ${clientBox({ title: 'Client', titleY: 575 })}
 
-  <g class="scene-node">
-    <rect class="scene-box" x="130" y="880" width="820" height="390" rx="28" />
-    <text class="scene-node-label" x="170" y="938">Circuit Breaker</text>
-
+  ${nodeFrame({
+    label: 'Circuit Breaker',
+    labelY: 938,
+    children: `
     <line class="cb-arm" x1="540" y1="990" x2="540" y2="1100" />
     <circle class="cb-contact" cx="540" cy="990" r="16" />
     <circle class="cb-contact" cx="540" cy="1100" r="16" />
@@ -48,25 +57,27 @@ export const stageMarkup = `<svg class="scene-stage" viewBox="0 0 1080 1920" xml
       <text class="cb-badge-text cb-badge-text--half" x="714" y="1056" text-anchor="middle">HALF-OPEN</text>
     </g>
 
-    <g class="cb-timer">
-      <circle class="cb-timer-track" cx="876" cy="1045" r="${TIMER_RADIUS}" />
-      <circle class="cb-timer-progress" cx="876" cy="1045" r="${TIMER_RADIUS}" transform="rotate(-90 876 1045)" stroke-dasharray="${TIMER_CIRCUMFERENCE.toFixed(2)}" stroke-dashoffset="${TIMER_CIRCUMFERENCE.toFixed(2)}" />
-      <text class="scene-caption-label" x="876" y="1125" text-anchor="middle">break duration</text>
-    </g>
+    ${timerRing({
+      cx: 876,
+      cy: 1045,
+      r: TIMER_RADIUS,
+      className: 'cb-timer',
+      labelText: 'break duration',
+      labelY: 1125,
+    })}
 
     <text class="scene-caption-label" x="170" y="1182">failure rate</text>
-    <rect class="cb-meter-track" x="170" y="1198" width="400" height="20" rx="10" />
-    <rect class="cb-meter-fill" x="170" y="1198" width="0" height="20" rx="10" />
+    ${trackAndFill({ x: 170, y: 1198, width: 400, height: 20, rx: 10, className: 'cb-meter' })}
     <line class="cb-threshold" x1="370" y1="1186" x2="370" y2="1238" />
-    <text class="cb-threshold-label" x="370" y="1262" text-anchor="middle">threshold</text>
-  </g>
+    <text class="cb-threshold-label" x="370" y="1262" text-anchor="middle">threshold</text>`,
+  })}
 
-  <g class="scene-service">
-    <rect class="scene-box" x="280" y="1500" width="520" height="240" rx="28" />
-    <text class="scene-node-title" x="540" y="1590" text-anchor="middle">Service</text>
-    <circle class="scene-health-ring" cx="540" cy="1680" r="32" />
-    <circle class="scene-health" cx="540" cy="1680" r="20" />
-  </g>
+  ${serviceBox({
+    title: 'Service',
+    titleY: 1590,
+    children: `
+    ${healthDot({ cx: 540, cy: 1680 })}`,
+  })}
 
-  <g class="scene-requests"></g>
+  ${requestsLayer()}
 </svg>`;
