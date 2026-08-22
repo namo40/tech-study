@@ -55,6 +55,7 @@ const SCENE_IDS = [
   'thread-pool',
   'middleware-pipeline',
   'n-plus-1-query',
+  'tail-latency',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */

@@ -35,6 +35,10 @@ import {
   stageMarkup as rateLimiterStage,
 } from './rate-limiter/stage';
 import { SCENE_DURATION as retryDuration, stageMarkup as retryStage } from './retry/stage';
+import {
+  SCENE_DURATION as tailLatencyDuration,
+  stageMarkup as tailLatencyStage,
+} from './tail-latency/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -87,6 +91,10 @@ const scenes: Record<string, SceneAsset> = {
   'n-plus-1-query': {
     markup: nPlusOneStage,
     duration: nPlusOneDuration,
+  },
+  'tail-latency': {
+    markup: tailLatencyStage,
+    duration: tailLatencyDuration,
   },
 };
 

@@ -1404,3 +1404,257 @@
 [data-overflow="on"] .nq-time-more {
   opacity: 1;
 }
+
+/* ---------------------------------------------------------------- */
+/* Tail Latency stage                                                */
+/* ---------------------------------------------------------------- */
+
+/* The node is a chart: twenty bars against a millisecond axis. A bar's length
+   is the signal that matters, and every state below adds an outline or a
+   marker of its own, so nothing here is told apart by colour alone. */
+.tl-grid {
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.tl-axis {
+  font-size: 20px;
+}
+
+.tl-bar {
+  --fill-color: var(--request);
+}
+
+.tl-bar[data-bar-state="fast"] {
+  --fill-color: var(--state-closed);
+}
+
+.tl-bar[data-bar-state="slow"] {
+  --fill-color: var(--state-open);
+}
+
+/* A call the timeout cut ends in a dashed edge, and a second copy sent to the
+   other replica is dashed as well as differently coloured. */
+.tl-bar[data-bar-state="cut"] {
+  --fill-color: var(--state-open);
+
+  stroke: var(--bg);
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+}
+
+.tl-bar[data-bar-state="hedge"] {
+  --fill-color: var(--cpu);
+
+  stroke: var(--cpu);
+  stroke-width: 2;
+  stroke-dasharray: 8 5;
+}
+
+.tl-bar[data-bar-state="dropped"] {
+  --fill-color: var(--muted);
+}
+
+/* Percentile markers. Each one owns a label row of its own, so two that land on
+   nearly the same millisecond never write over each other. */
+.tl-marker {
+  opacity: 0;
+}
+
+.tl-marker[data-shown="1"] {
+  opacity: 1;
+}
+
+.tl-line {
+  stroke-width: 3;
+}
+
+.tl-marker-label {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.tl-line--mean {
+  stroke: var(--muted);
+  stroke-dasharray: 10 8;
+}
+
+.tl-marker-label--mean {
+  fill: var(--muted);
+}
+
+.tl-line--p50 {
+  stroke: var(--state-closed);
+}
+
+.tl-marker-label--p50 {
+  fill: var(--state-closed);
+}
+
+.tl-line--p95 {
+  stroke: var(--state-half);
+  stroke-dasharray: 16 6;
+}
+
+.tl-marker-label--p95 {
+  fill: var(--state-half);
+}
+
+.tl-line--p99 {
+  stroke: var(--state-open);
+  stroke-width: 4;
+}
+
+.tl-marker-label--p99 {
+  fill: var(--state-open);
+}
+
+/* Thickened rather than pulsed, so scrubbing back through it thins it again. */
+[data-p99="hot"] .tl-line--p99 {
+  stroke-width: 9;
+}
+
+.tl-line--page {
+  stroke: var(--accent);
+  stroke-dasharray: 3 7;
+}
+
+.tl-marker-label--page {
+  fill: var(--accent);
+}
+
+.tl-line--target {
+  stroke: var(--fg-soft);
+  stroke-dasharray: 6 6;
+}
+
+.tl-marker-label--target {
+  fill: var(--fg-soft);
+}
+
+/* The verdict rides on the p99 line, because that is what it judges. It is
+   drawn as a check or a cross, the same way a request result is. */
+.tl-slo-label,
+.tl-slo {
+  opacity: 0;
+}
+
+.tl-slo-label {
+  fill: var(--fg-soft);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.tl-slo-glyph {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tl-slo--ok .tl-slo-glyph {
+  stroke: var(--state-closed);
+}
+
+.tl-slo--bad .tl-slo-glyph {
+  stroke: var(--state-open);
+}
+
+[data-slo="ok"] .tl-slo-label,
+[data-slo="bad"] .tl-slo-label,
+[data-slo="ok"] .tl-slo--ok,
+[data-slo="bad"] .tl-slo--bad {
+  opacity: 1;
+}
+
+/* Labels that belong to one step only. */
+.tl-calls {
+  --flash-color: var(--accent);
+
+  font-size: 28px;
+}
+
+[data-calls="on"] .tl-calls {
+  opacity: 1;
+}
+
+.tl-hedged {
+  fill: var(--fg-soft);
+  font-size: 26px;
+}
+
+[data-replicas="on"][data-hedged="0"] .tl-hedged--0,
+[data-replicas="on"][data-hedged="1"] .tl-hedged--1,
+[data-replicas="on"][data-hedged="2"] .tl-hedged--2 {
+  opacity: 1;
+}
+
+.tl-budget {
+  --flash-color: var(--state-half);
+
+  font-size: 24px;
+}
+
+[data-budget="on"] .tl-budget {
+  opacity: 1;
+}
+
+.tl-fanout {
+  --flash-color: var(--fg-soft);
+
+  font-size: 24px;
+}
+
+[data-fanout="on"] .tl-fanout {
+  opacity: 1;
+}
+
+.tl-timeout {
+  --flash-color: var(--state-open);
+
+  font-size: 22px;
+}
+
+[data-timeout="on"] .tl-timeout {
+  opacity: 1;
+}
+
+.tl-fallback {
+  opacity: 0;
+}
+
+[data-fallback="on"] .tl-fallback {
+  opacity: 1;
+}
+
+.tl-fallback-text {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* The cross that marks the copy nobody ended up waiting for. */
+.tl-cancel {
+  fill: var(--muted);
+  font-size: 26px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-cancel="on"] .tl-cancel {
+  opacity: 1;
+}
+
+/* The replicas only matter once a call can be sent to either of them. */
+.tl-replica {
+  opacity: 0.35;
+}
+
+[data-replicas="on"] .tl-replica {
+  opacity: 1;
+}
+
+.tl-replica[data-replica-state="busy"] .tl-replica-box {
+  stroke: var(--accent);
+  stroke-width: 5;
+}

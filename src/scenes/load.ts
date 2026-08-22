@@ -26,6 +26,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./middleware-pipeline/scene')).default;
     case 'n-plus-1-query':
       return (await import('./n-plus-1-query/scene')).default;
+    case 'tail-latency':
+      return (await import('./tail-latency/scene')).default;
     default:
       return null;
   }
