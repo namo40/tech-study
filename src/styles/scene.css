@@ -1231,3 +1231,125 @@
   font-size: 20px;
   font-weight: 700;
 }
+
+/* ---------------------------------------------------------------- */
+/* Middleware Pipeline stage                                         */
+/* ---------------------------------------------------------------- */
+
+.mw-layer-box {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+/* On the way in, on the way out, and the four ways a layer can end a chain. */
+.mw-layer[data-layer-state="in"] .mw-layer-box {
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+.mw-layer[data-layer-state="out"] .mw-layer-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+.mw-layer[data-layer-state="ok"] .mw-layer-box {
+  fill: color-mix(in srgb, var(--state-closed) 22%, var(--surface));
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+.mw-layer[data-layer-state="stop"] .mw-layer-box {
+  fill: color-mix(in srgb, var(--state-open) 22%, var(--surface));
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+.mw-layer[data-layer-state="error"] .mw-layer-box {
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: 12 10;
+}
+
+.mw-layer[data-layer-state="handled"] .mw-layer-box {
+  fill: color-mix(in srgb, var(--state-half) 22%, var(--surface));
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+.mw-layer-name {
+  fill: var(--fg);
+  font-size: 30px;
+  font-weight: 600;
+}
+
+/* The hint only makes sense on the way in, so it follows that state. */
+.mw-next {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 20px;
+  opacity: 0;
+}
+
+.mw-layer[data-layer-state="in"] .mw-next {
+  opacity: 1;
+}
+
+.mw-tick {
+  font-size: 30px;
+  opacity: 0;
+}
+
+.mw-tick--down {
+  fill: var(--request);
+}
+
+.mw-tick--up {
+  fill: var(--state-closed);
+}
+
+.mw-layer[data-layer-state="in"] .mw-tick--down,
+.mw-layer[data-layer-state="out"] .mw-tick--up,
+.mw-layer[data-layer-state="ok"] .mw-tick--up {
+  opacity: 1;
+}
+
+.mw-layer[data-layer-state="stop"] .mw-tick--up,
+.mw-layer[data-layer-state="error"] .mw-tick--up,
+.mw-layer[data-layer-state="handled"] .mw-tick--up {
+  opacity: 1;
+  fill: var(--state-open);
+}
+
+.mw-layer[data-layer-state="handled"] .mw-tick--up {
+  fill: var(--state-half);
+}
+
+/* The endpoint reacts too: green when it answers, red when it throws. */
+.mw-endpoint[data-endpoint-state="hit"] .mw-endpoint-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+.mw-endpoint[data-endpoint-state="throw"] .mw-endpoint-box {
+  fill: color-mix(in srgb, var(--state-open) 22%, var(--surface));
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+/* What a request carries: a status code, a file marker, an exception. */
+.scene-req-code {
+  fill: var(--fg);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.scene-req-hollow {
+  fill: none;
+  stroke: var(--request);
+  stroke-width: 4;
+}
+
+.scene-req-diamond {
+  fill: var(--state-open);
+}

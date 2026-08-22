@@ -3,6 +3,10 @@ import {
   stageMarkup as circuitBreakerStage,
 } from './circuit-breaker/stage';
 import {
+  SCENE_DURATION as middlewareDuration,
+  stageMarkup as middlewareStage,
+} from './middleware-pipeline/stage';
+import {
   SCENE_DURATION as threadPoolDuration,
   stageMarkup as threadPoolStage,
 } from './thread-pool/stage';
@@ -71,6 +75,10 @@ const scenes: Record<string, SceneAsset> = {
   'thread-pool': {
     markup: threadPoolStage,
     duration: threadPoolDuration,
+  },
+  'middleware-pipeline': {
+    markup: middlewareStage,
+    duration: middlewareDuration,
   },
 };
 

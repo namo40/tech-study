@@ -22,6 +22,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./database-connection-pool/scene')).default;
     case 'thread-pool':
       return (await import('./thread-pool/scene')).default;
+    case 'middleware-pipeline':
+      return (await import('./middleware-pipeline/scene')).default;
     default:
       return null;
   }
