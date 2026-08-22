@@ -10,7 +10,9 @@ import {
   parkRequest,
   showRequest,
 } from '../shared/request';
-import type { SceneBuildOptions, SceneInstance, SceneModule, SceneStep } from '../types';
+import { fadeAt, round } from '../shared/state';
+import { createSceneTimeline, defineScene, finishSceneTimeline } from '../shared/timeline';
+import type { SceneBuildOptions, SceneInstance, SceneStep } from '../types';
 
 /**
  * Middleware Pipeline scene: a 24 second, four step timeline.
@@ -106,9 +108,6 @@ const REQUESTS: RequestPlan[] = [
     ],
   })),
 ];
-
-const round = (value: number): number => Number(value.toFixed(3));
-const fadeAt = (home: number): number => Math.max(0.05, Math.min(0.15, SCENE_DURATION - home));
 
 /** Which layer occupies a position at a given moment. */
 const layerAt = (position: number, at: number): number =>
@@ -294,7 +293,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   const sim = simulate();
   const requests = mountRequests(requestLayer, REQUESTS.length, ID);
 
-  const tl = gsap.timeline({ paused: true });
+  const tl = createSceneTimeline();
 
   // --- layer and endpoint state, straight from the simulation -------------
 
@@ -391,7 +390,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     markRequest(tl, parts, journey.markOk ? 'ok' : 'fail', journey.markAt);
     if (journey.markOk) tl.call(() => cue('success'), undefined, journey.homeAt);
     else if (journey.code !== '500') tl.call(() => cue('failure'), undefined, journey.homeAt);
-    hideRequest(tl, parts, journey.homeAt, fadeAt(journey.homeAt));
+    hideRequest(tl, parts, journey.homeAt, fadeAt(journey.homeAt, SCENE_DURATION));
   });
 
   // --- step labels ---------------------------------------------------------
@@ -402,20 +401,9 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   tl.addLabel('step-3', 12);
   tl.addLabel('step-4', 18);
 
-  // Pin the total length so the scrub bar covers the closing hold.
-  tl.to({}, { duration: 0.01 }, SCENE_DURATION - 0.01);
-
-  // Render once in each direction so every zero-duration tween records its
-  // start value before a reader can scrub backwards past it.
-  tl.progress(1, true).progress(0, true).pause();
+  finishSceneTimeline(tl, SCENE_DURATION);
 
   return { tl, steps: STEPS };
 }
 
-const scene: SceneModule = {
-  id: ID,
-  duration: SCENE_DURATION,
-  build,
-};
-
-export default scene;
+export default defineScene({ id: ID, duration: SCENE_DURATION, build });

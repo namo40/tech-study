@@ -8,3 +8,4 @@ dist/
 .astro/
 .env
 npm-debug.log*
+.scene-baseline/

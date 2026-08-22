@@ -1,4 +1,3 @@
-import gsap from 'gsap';
 import {
   HANDSHAKE_LENGTH,
   OPEN_TIME,
@@ -19,7 +18,15 @@ import {
   parkRequest,
   showRequest,
 } from '../shared/request';
-import type { SceneBuildOptions, SceneInstance, SceneModule, SceneStep } from '../types';
+import {
+  collapseAtInstant,
+  collapseLast,
+  createScheduler,
+  pairInstant,
+} from '../shared/simulation';
+import { attr, fadeAt, round } from '../shared/state';
+import { createSceneTimeline, defineScene, finishSceneTimeline } from '../shared/timeline';
+import type { SceneBuildOptions, SceneInstance, SceneStep } from '../types';
 
 /**
  * Database Connection Pool scene: a 24 second, four step timeline.
@@ -91,9 +98,6 @@ const REQUESTS: RequestPlan[] = [
   ...[18.6, 19.0, 19.4, 19.8, 20.2].map((start) => req(start)),
 ];
 
-const round = (value: number): number => Number(value.toFixed(3));
-const fadeAt = (home: number): number => Math.max(0.05, Math.min(0.15, SCENE_DURATION - home));
-
 interface SlotChange {
   at: number;
   slot: number;
@@ -150,43 +154,16 @@ function simulate(): Simulation {
   const queue: number[] = [];
   let nextWaitIndex = 0;
 
-  interface Task {
-    at: number;
-    order: number;
-    run: () => void;
-  }
-  const tasks: Task[] = [];
-  let order = 0;
-  const schedule = (at: number, run: () => void): void => {
-    order += 1;
-    tasks.push({ at: round(at), order, run });
-  };
+  const { schedule, drain } = createScheduler();
 
-  /*
-   * Two changes to the same thing at one instant would render in insertion
-   * order going forwards and in reverse going backwards, so that frame would
-   * depend on which way the reader scrubbed. Collapse them.
-   */
-  const recordSlot = (at: number, slot: number, state: SlotState): void => {
-    for (let i = slots.length - 1; i >= 0; i -= 1) {
-      const candidate = slots[i];
-      if (!candidate || candidate.at !== at) break;
-      if (candidate.slot === slot) {
-        candidate.state = state;
-        return;
-      }
-    }
-    slots.push({ at, slot, state });
-  };
-  const recordPair = <T>(series: [number, T][], at: number, next: T): void => {
-    const previous = series[series.length - 1];
-    if (previous && previous[0] === at) previous[1] = next;
-    else series.push([at, next]);
-  };
+  const recordPair = <T>(series: [number, T][], at: number, next: T): void =>
+    collapseLast<[number, T]>(series, [at, next], pairInstant);
 
   const setSlot = (at: number, slot: number, state: SlotState): void => {
     states[slot] = state;
-    recordSlot(at, slot, state);
+    // Guard (B), not (A): a release frees one slot and can fill another in the
+    // same instant, so the scan has to reach past the entry just recorded.
+    collapseAtInstant(slots, { at, slot, state }, (change) => change.slot);
     const openCount = states.filter((value) => value !== 'none' && value !== 'opening').length;
     recordPair(open, at, openCount);
   };
@@ -283,17 +260,7 @@ function simulate(): Simulation {
     });
   });
 
-  const done = new Set<Task>();
-  for (;;) {
-    let next: Task | undefined;
-    for (const task of tasks) {
-      if (done.has(task)) continue;
-      if (!next || task.at < next.at || (task.at === next.at && task.order < next.order)) next = task;
-    }
-    if (!next) break;
-    done.add(next);
-    next.run();
-  }
+  drain();
 
   return { outcomes, slots, handshakes, open, waiting, held };
 }
@@ -308,11 +275,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   const sim = simulate();
   const requests = mountRequests(requestLayer, REQUESTS.length, ID);
 
-  const tl = gsap.timeline({ paused: true });
-
-  const attr = (name: string, value: string, at: number): void => {
-    tl.set(stage, { attr: { [name]: value }, immediateRender: false }, at);
-  };
+  const tl = createSceneTimeline();
 
   // --- pool state, straight from the simulation ---------------------------
 
@@ -322,13 +285,13 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     tl.set(element, { attr: { 'data-slot-state': change.state }, immediateRender: false }, change.at);
   }
   for (const [at, count] of sim.open) {
-    attr('data-open', String(count), at);
+    attr(tl, stage, 'data-open', String(count), at);
     // The database sees exactly the connections the pool has opened.
-    attr('data-connections', String(count), at);
+    attr(tl, stage, 'data-connections', String(count), at);
   }
-  for (const [at, count] of sim.waiting) attr('data-waiting', String(count), at);
+  for (const [at, count] of sim.waiting) attr(tl, stage, 'data-waiting', String(count), at);
   for (const [at, value] of sim.held) {
-    attr('data-held', value, at);
+    attr(tl, stage, 'data-held', value, at);
     if (value === 'on') tl.call(() => cue('trip'), undefined, at);
   }
 
@@ -392,7 +355,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
       );
       tl.call(() => cue('failure'), undefined, home);
       tl.set(label, { opacity: 0, immediateRender: false }, home);
-      hideRequest(tl, parts, home, fadeAt(home));
+      hideRequest(tl, parts, home, fadeAt(home, SCENE_DURATION));
       return;
     }
 
@@ -415,7 +378,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     moveRequest(tl, parts, Y_POOL, plan.dbToPool, round(dbAt + plan.query));
     moveRequest(tl, parts, Y_CLIENT, plan.poolToApp, releaseAt);
     tl.call(() => cue('success'), undefined, home);
-    hideRequest(tl, parts, home, fadeAt(home));
+    hideRequest(tl, parts, home, fadeAt(home, SCENE_DURATION));
   });
 
   // --- step labels ---------------------------------------------------------
@@ -427,20 +390,9 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   tl.addLabel('step-3', 12);
   tl.addLabel('step-4', 18);
 
-  // Pin the total length so the scrub bar covers the closing hold.
-  tl.to({}, { duration: 0.01 }, SCENE_DURATION - 0.01);
-
-  // Render once in each direction so every zero-duration tween records its
-  // start value before a reader can scrub backwards past it.
-  tl.progress(1, true).progress(0, true).pause();
+  finishSceneTimeline(tl, SCENE_DURATION);
 
   return { tl, steps: STEPS };
 }
 
-const scene: SceneModule = {
-  id: ID,
-  duration: SCENE_DURATION,
-  build,
-};
-
-export default scene;
+export default defineScene({ id: ID, duration: SCENE_DURATION, build });

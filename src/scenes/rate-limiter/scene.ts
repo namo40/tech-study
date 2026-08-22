@@ -10,7 +10,9 @@ import {
 } from './stage';
 import { q, qa } from '../shared/dom';
 import { addTrip, haloRequest, mountRequests, parkRequest } from '../shared/request';
-import type { SceneBuildOptions, SceneInstance, SceneModule, SceneStep } from '../types';
+import { attr, round } from '../shared/state';
+import { createSceneTimeline, defineScene, finishSceneTimeline } from '../shared/timeline';
+import type { SceneBuildOptions, SceneInstance, SceneStep } from '../types';
 
 /**
  * Rate Limiter scene: a 24 second, four step timeline.
@@ -72,8 +74,6 @@ interface RequestPlan {
   bucket: BucketId;
 }
 
-const round = (value: number): number => Number(value.toFixed(3));
-
 function burst(from: number, count: number, gap: number, lane: number, bucket: BucketId): RequestPlan[] {
   return Array.from({ length: count }, (_value, index) => ({
     start: round(from + index * gap),
@@ -126,6 +126,10 @@ interface Simulation {
 /**
  * Plays refill ticks against request arrivals. At equal times the refill lands
  * first: the token has dripped in and is there for the request to take.
+ *
+ * That tie-break is a domain rule, not insertion order, and nothing here books
+ * new events while the walk is running, so this scene builds every event up
+ * front and sorts once instead of using `shared/simulation`'s drain loop.
  */
 function simulate(requests: RequestPlan[]): Simulation {
   const events: SimEvent[] = [];
@@ -206,18 +210,14 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   dripLayer.innerHTML = sim.drips.map(() => DRIP_MARKUP).join('');
   const drips = qa<SVGCircleElement>(dripLayer, '.rl-drip');
 
-  const tl = gsap.timeline({ paused: true });
-
-  const attr = (name: string, value: string, at: number): void => {
-    tl.set(stage, { attr: { [name]: value }, immediateRender: false }, at);
-  };
+  const tl = createSceneTimeline();
 
   // --- token counts, straight from the simulation ------------------------
 
   for (const [at, count] of sim.counts.a) {
     tl.set(bucketA, { attr: { 'data-count': String(count) }, immediateRender: false }, at);
     // The legend text reads the stage, not the bucket, so it survives the split.
-    attr('data-tokens', String(count), at);
+    attr(tl, stage, 'data-tokens', String(count), at);
   }
   for (const [at, count] of sim.counts.b) {
     tl.set(bucketB, { attr: { 'data-count': String(count) }, immediateRender: false }, at);
@@ -303,8 +303,8 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     const end = rejectedAt[last] ?? from;
     const nextGranted = grantedAt.find((time) => time > end) ?? Number.POSITIVE_INFINITY;
     const to = Math.max(from + 0.08, Math.min(end + 0.3, nextGranted));
-    attr('data-reject', 'on', from);
-    attr('data-reject', 'off', to);
+    attr(tl, stage, 'data-reject', 'on', from);
+    attr(tl, stage, 'data-reject', 'off', to);
     i = last + 1;
   }
 
@@ -327,7 +327,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   tl.to(retry, { opacity: 0, duration: 0.25, immediateRender: false }, 15.9);
 
   tl.addLabel('step-4', SPLIT_AT);
-  attr('data-split', 'on', SPLIT_AT);
+  attr(tl, stage, 'data-split', 'on', SPLIT_AT);
   tl.call(() => cue('state'), undefined, SPLIT_AT);
   tl.to(
     bucketA,
@@ -342,20 +342,9 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     SPLIT_AT,
   );
 
-  // Pin the total length so the scrub bar covers the closing hold.
-  tl.to({}, { duration: 0.01 }, SCENE_DURATION - 0.01);
-
-  // Render once in each direction so every zero-duration tween records its
-  // start value before a reader can scrub backwards past it.
-  tl.progress(1, true).progress(0, true).pause();
+  finishSceneTimeline(tl, SCENE_DURATION);
 
   return { tl, steps: STEPS };
 }
 
-const scene: SceneModule = {
-  id: ID,
-  duration: SCENE_DURATION,
-  build,
-};
-
-export default scene;
+export default defineScene({ id: ID, duration: SCENE_DURATION, build });

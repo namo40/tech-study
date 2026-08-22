@@ -104,15 +104,20 @@ export function markRequest(
   tl.fromTo(marker, { scale: scaleFrom, transformOrigin: '50% 50%' }, { ...POP }, at);
 }
 
-/** Highlights a request with a ring, for a call that deserves attention. */
+/**
+ * Highlights a request with a ring, for a call that deserves attention. The
+ * ring appears at `from` and fades from `to`; scenes that ring a result rather
+ * than a journey pass a shorter `fade` so the ring is gone with the request.
+ */
 export function haloRequest(
   tl: gsap.core.Timeline,
   parts: RequestParts,
   from: number,
   to: number,
+  fade = 0.3,
 ): void {
   tl.set(parts.halo, { opacity: 1, immediateRender: false }, from);
-  tl.to(parts.halo, { opacity: 0, duration: 0.3, immediateRender: false }, to);
+  tl.to(parts.halo, { opacity: 0, duration: fade, immediateRender: false }, to);
 }
 
 export interface TripLeg {

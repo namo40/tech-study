@@ -1,4 +1,3 @@
-import gsap from 'gsap';
 import {
   AWAIT_SLOTS,
   BASE_THREADS,
@@ -12,13 +11,22 @@ import {
 import { q, qa } from '../shared/dom';
 import {
   attachToRequest,
+  haloRequest,
   hideRequest,
   markRequest,
   mountRequests,
   parkRequest,
   showRequest,
 } from '../shared/request';
-import type { SceneBuildOptions, SceneInstance, SceneModule, SceneStep } from '../types';
+import {
+  collapseAtInstant,
+  collapseLast,
+  createScheduler,
+  pairInstant,
+} from '../shared/simulation';
+import { attr, fadeAt, round } from '../shared/state';
+import { createSceneTimeline, defineScene, finishSceneTimeline } from '../shared/timeline';
+import type { SceneBuildOptions, SceneInstance, SceneStep } from '../types';
 
 /**
  * Thread Pool scene: a 24 second, four step timeline.
@@ -97,12 +105,6 @@ const WORK: WorkPlan[] = [
   ...Array.from({ length: 6 }, (_v, i) => work(round(18.5 + i * 0.4), 'await', 0.2)),
 ];
 
-function round(value: number): number {
-  return Number(value.toFixed(3));
-}
-
-const fadeAt = (home: number): number => Math.max(0.05, Math.min(0.15, SCENE_DURATION - home));
-
 type LaneState = 'absent' | 'idle' | 'running' | 'blocked' | 'cpu';
 
 interface LaneChange {
@@ -163,43 +165,16 @@ function simulate(): Simulation {
   const awaitSlotUsed = AWAIT_SLOTS.map(() => false);
   let parked = 0;
 
-  interface Task {
-    at: number;
-    order: number;
-    run: () => void;
-  }
-  const tasks: Task[] = [];
-  let order = 0;
-  const schedule = (at: number, run: () => void): void => {
-    order += 1;
-    tasks.push({ at: round(at), order, run });
-  };
+  const { schedule, drain } = createScheduler();
 
-  /*
-   * Two changes to the same thing at one instant would render in insertion
-   * order going forwards and in reverse going backwards, so that frame would
-   * depend on which way the reader scrubbed. Collapse them.
-   */
-  const recordLane = (at: number, lane: number, state: LaneState): void => {
-    for (let i = lanes.length - 1; i >= 0; i -= 1) {
-      const candidate = lanes[i];
-      if (!candidate || candidate.at !== at) break;
-      if (candidate.lane === lane) {
-        candidate.state = state;
-        return;
-      }
-    }
-    lanes.push({ at, lane, state });
-  };
-  const recordPair = <T>(series: [number, T][], at: number, next: T): void => {
-    const previous = series[series.length - 1];
-    if (previous && previous[0] === at) previous[1] = next;
-    else series.push([at, next]);
-  };
+  const recordPair = <T>(series: [number, T][], at: number, next: T): void =>
+    collapseLast<[number, T]>(series, [at, next], pairInstant);
 
   const setLane = (at: number, lane: number, state: LaneState): void => {
     states[lane] = state;
-    recordLane(at, lane, state);
+    // Guard (B), not (A): one lane going idle dispatches into another in the
+    // same instant, so the scan has to reach past the entry just recorded.
+    collapseAtInstant(lanes, { at, lane, state }, (change) => change.lane);
     recordPair(threads, at, states.filter((value) => value !== 'absent').length);
   };
   const setQueue = (at: number): void => recordPair(queue, at, pending.length);
@@ -370,17 +345,7 @@ function simulate(): Simulation {
     }
   });
 
-  const done = new Set<Task>();
-  for (;;) {
-    let next: Task | undefined;
-    for (const task of tasks) {
-      if (done.has(task)) continue;
-      if (!next || task.at < next.at || (task.at === next.at && task.order < next.order)) next = task;
-    }
-    if (!next) break;
-    done.add(next);
-    next.run();
-  }
+  drain();
 
   return { items, lanes, queue, awaiting, threads, blockedLines };
 }
@@ -395,11 +360,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   const sim = simulate();
   const items = mountRequests(requestLayer, WORK.length, ID);
 
-  const tl = gsap.timeline({ paused: true });
-
-  const attr = (name: string, value: string, at: number): void => {
-    tl.set(stage, { attr: { [name]: value }, immediateRender: false }, at);
-  };
+  const tl = createSceneTimeline();
 
   // --- pool state, straight from the simulation ---------------------------
 
@@ -408,9 +369,9 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     if (!bar) continue;
     tl.set(bar, { attr: { 'data-lane-state': change.state }, immediateRender: false }, change.at);
   }
-  for (const [at, count] of sim.queue) attr('data-queue', String(count), at);
-  for (const [at, count] of sim.awaiting) attr('data-awaiting', String(count), at);
-  for (const [at, count] of sim.threads) attr('data-threads', String(count), at);
+  for (const [at, count] of sim.queue) attr(tl, stage, 'data-queue', String(count), at);
+  for (const [at, count] of sim.awaiting) attr(tl, stage, 'data-awaiting', String(count), at);
+  for (const [at, count] of sim.threads) attr(tl, stage, 'data-threads', String(count), at);
 
   // Each dashed line is up for exactly as long as its thread is stuck.
   for (const line of sim.blockedLines) {
@@ -423,8 +384,8 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
 
   // The pool announcing that it has added one more thread.
   for (const at of INJECTIONS) {
-    attr('data-inject', 'on', at);
-    attr('data-inject', 'off', round(at + FLASH_HOLD));
+    attr(tl, stage, 'data-inject', 'on', at);
+    attr(tl, stage, 'data-inject', 'off', round(at + FLASH_HOLD));
     tl.call(() => cue('trip'), undefined, at);
   }
 
@@ -455,13 +416,12 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     // Work that stood in the queue too long comes back ringed amber.
     markRequest(tl, parts, 'ok', item.doneAt);
     if (item.late) {
-      tl.set(parts.halo, { opacity: 1, immediateRender: false }, item.doneAt);
-      tl.to(parts.halo, { opacity: 0, duration: 0.2, immediateRender: false }, item.homeAt);
+      haloRequest(tl, parts, item.doneAt, item.homeAt, 0.2);
       tl.call(() => cue('failure'), undefined, item.homeAt);
     } else {
       tl.call(() => cue('success'), undefined, item.homeAt);
     }
-    hideRequest(tl, parts, item.homeAt, fadeAt(item.homeAt));
+    hideRequest(tl, parts, item.homeAt, fadeAt(item.homeAt, SCENE_DURATION));
   });
 
   // --- step labels ---------------------------------------------------------
@@ -472,20 +432,9 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   tl.addLabel('step-3', 12);
   tl.addLabel('step-4', 18);
 
-  // Pin the total length so the scrub bar covers the closing hold.
-  tl.to({}, { duration: 0.01 }, SCENE_DURATION - 0.01);
-
-  // Render once in each direction so every zero-duration tween records its
-  // start value before a reader can scrub backwards past it.
-  tl.progress(1, true).progress(0, true).pause();
+  finishSceneTimeline(tl, SCENE_DURATION);
 
   return { tl, steps: STEPS };
 }
 
-const scene: SceneModule = {
-  id: ID,
-  duration: SCENE_DURATION,
-  build,
-};
-
-export default scene;
+export default defineScene({ id: ID, duration: SCENE_DURATION, build });

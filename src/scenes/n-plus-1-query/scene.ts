@@ -1,4 +1,3 @@
-import gsap from 'gsap';
 import {
   LARGE_ROWS,
   SCENE_DURATION,
@@ -9,6 +8,7 @@ import {
   Y_DB,
 } from './stage';
 import { q, qa } from '../shared/dom';
+import { shakeService } from '../shared/effects';
 import {
   attachToRequest,
   hideRequest,
@@ -17,7 +17,15 @@ import {
   parkRequest,
   showRequest,
 } from '../shared/request';
-import type { SceneBuildOptions, SceneInstance, SceneModule, SceneStep } from '../types';
+import {
+  collapseAtInstant,
+  collapseLast,
+  createScheduler,
+  pairInstant,
+} from '../shared/simulation';
+import { attr, fadeAt, round } from '../shared/state';
+import { createSceneTimeline, defineScene, finishSceneTimeline } from '../shared/timeline';
+import type { SceneBuildOptions, SceneInstance, SceneStep } from '../types';
 
 /**
  * N+1 Query scene: a 24 second, four step timeline.
@@ -123,12 +131,6 @@ const RESETS: ResetSpec[] = [
 /** When the database finally buckles, at the end of step 2. */
 const SHAKE_AT = 11.3;
 
-function round(value: number): number {
-  return Number(value.toFixed(3));
-}
-
-const fadeAt = (home: number): number => Math.max(0.05, Math.min(0.15, SCENE_DURATION - home));
-
 interface Simulation {
   queries: [number, number][];
   trips: [number, number][];
@@ -169,50 +171,23 @@ function simulate(): Simulation {
   let large = false;
   const shownLines = new Set<number>();
 
-  /*
-   * Two changes to the same thing at one instant would render in insertion
-   * order going forwards and in reverse going backwards, so that frame would
-   * depend on which way the reader scrubbed. Collapse them.
-   */
-  const pushPair = <T>(series: [number, T][], at: number, next: T): void => {
-    const previous = series[series.length - 1];
-    if (previous && previous[0] === at) previous[1] = next;
-    else series.push([at, next]);
-  };
-  const pushKeyed = <T extends { at: number }>(series: T[], entry: T, same: (a: T, b: T) => boolean): void => {
-    for (let i = series.length - 1; i >= 0; i -= 1) {
-      const candidate = series[i];
-      if (!candidate || candidate.at !== entry.at) break;
-      if (same(candidate, entry)) {
-        series[i] = entry;
-        return;
-      }
-    }
-    series.push(entry);
-  };
+  const pushPair = <T>(series: [number, T][], at: number, next: T): void =>
+    collapseLast<[number, T]>(series, [at, next], pairInstant);
+  // Guard (B) for anything drawn per element: a reset clears every row and log
+  // line at one instant, and a query then refills them at that same instant.
   const setLog = (at: number, line: number, shown: number): void => {
-    pushKeyed(log, { at, line, shown }, (a, b) => a.line === b.line);
+    collapseAtInstant(log, { at, line, shown }, (entry) => entry.line);
     if (shown) shownLines.add(line);
     else shownLines.delete(line);
   };
   const setRow = (at: number, index: number, on: number): void => {
-    pushKeyed(rowState, { at, large, index, on }, (a, b) => a.large === b.large && a.index === b.index);
+    collapseAtInstant(rowState, { at, large, index, on }, (entry) => `${entry.large}:${entry.index}`);
   };
   const setSlot = (at: number, index: number, on: number): void => {
-    pushKeyed(slotState, { at, large, index, on }, (a, b) => a.large === b.large && a.index === b.index);
+    collapseAtInstant(slotState, { at, large, index, on }, (entry) => `${entry.large}:${entry.index}`);
   };
 
-  interface Task {
-    at: number;
-    order: number;
-    run: () => void;
-  }
-  const tasks: Task[] = [];
-  let order = 0;
-  const schedule = (at: number, run: () => void): void => {
-    order += 1;
-    tasks.push({ at: round(at), order, run });
-  };
+  const { schedule, drain } = createScheduler();
 
   pushPair(rows, 0, SMALL_ROWS);
   pushPair(mode, 0, 'none');
@@ -273,17 +248,7 @@ function simulate(): Simulation {
     });
   }
 
-  const done = new Set<Task>();
-  for (;;) {
-    let next: Task | undefined;
-    for (const task of tasks) {
-      if (done.has(task)) continue;
-      if (!next || task.at < next.at || (task.at === next.at && task.order < next.order)) next = task;
-    }
-    if (!next) break;
-    done.add(next);
-    next.run();
-  }
+  drain();
 
   return { queries, trips, overflow, rows, mode, time, log, rowState, slotState, legs };
 }
@@ -303,20 +268,16 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   const sim = simulate();
   const requests = mountRequests(requestLayer, QUERIES.length, ID);
 
-  const tl = gsap.timeline({ paused: true });
-
-  const attr = (name: string, value: string, at: number): void => {
-    tl.set(stage, { attr: { [name]: value }, immediateRender: false }, at);
-  };
+  const tl = createSceneTimeline();
 
   // --- counters, log and list, straight from the simulation ---------------
 
-  for (const [at, value] of sim.queries) attr('data-queries', String(value), at);
-  for (const [at, value] of sim.trips) attr('data-trips', String(value), at);
-  for (const [at, value] of sim.overflow) attr('data-overflow', value, at);
-  for (const [at, value] of sim.rows) attr('data-rows', String(value), at);
+  for (const [at, value] of sim.queries) attr(tl, stage, 'data-queries', String(value), at);
+  for (const [at, value] of sim.trips) attr(tl, stage, 'data-trips', String(value), at);
+  for (const [at, value] of sim.overflow) attr(tl, stage, 'data-overflow', value, at);
+  for (const [at, value] of sim.rows) attr(tl, stage, 'data-rows', String(value), at);
   for (const [at, value] of sim.mode) {
-    attr('data-mode', value, at);
+    attr(tl, stage, 'data-mode', value, at);
     if (value !== 'none') tl.call(() => cue('trip'), undefined, at);
   }
 
@@ -376,11 +337,11 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     tl.set(chip, { opacity: 1, immediateRender: false }, leg.atDb);
     moveRequest(tl, parts, Y_CLIENT, plan.toApp, leg.atDb);
     tl.call(() => cue('success'), undefined, leg.atHome);
-    hideRequest(tl, parts, leg.atHome, fadeAt(leg.atHome));
+    hideRequest(tl, parts, leg.atHome, fadeAt(leg.atHome, SCENE_DURATION));
   });
 
   // The database finally buckles under twenty-one round trips.
-  tl.to(dbBox, { x: 9, duration: 0.07, repeat: 5, yoyo: true, ease: 'none' }, SHAKE_AT);
+  shakeService(tl, dbBox, SHAKE_AT);
   tl.call(() => cue('failure'), undefined, SHAKE_AT);
 
   // --- step labels ---------------------------------------------------------
@@ -391,20 +352,9 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   tl.addLabel('step-3', 12);
   tl.addLabel('step-4', 18);
 
-  // Pin the total length so the scrub bar covers the closing hold.
-  tl.to({}, { duration: 0.01 }, SCENE_DURATION - 0.01);
-
-  // Render once in each direction so every zero-duration tween records its
-  // start value before a reader can scrub backwards past it.
-  tl.progress(1, true).progress(0, true).pause();
+  finishSceneTimeline(tl, SCENE_DURATION);
 
   return { tl, steps: STEPS };
 }
 
-const scene: SceneModule = {
-  id: ID,
-  duration: SCENE_DURATION,
-  build,
-};
-
-export default scene;
+export default defineScene({ id: ID, duration: SCENE_DURATION, build });

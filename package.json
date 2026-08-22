@@ -8,7 +8,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "baseline": "node scripts/scene-baseline.mjs",
+    "baseline:compare": "node scripts/scene-baseline.mjs --compare"
   },
   "dependencies": {
     "astro": "^7.2.4",
@@ -17,6 +19,8 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@types/node": "^26.2.0",
+    "esbuild": "^0.28.2",
+    "jsdom": "^29.1.1",
     "typescript": "^6.0.3"
   }
 }

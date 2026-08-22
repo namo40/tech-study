@@ -1,6 +1,6 @@
-import gsap from 'gsap';
 import { SCENE_DURATION, TIMER_CIRCUMFERENCE } from './stage';
 import { q } from '../shared/dom';
+import { shakeService } from '../shared/effects';
 import {
   addTrip,
   haloRequest,
@@ -12,7 +12,8 @@ import {
   showRequest,
   type RequestParts,
 } from '../shared/request';
-import type { SceneBuildOptions, SceneCue, SceneInstance, SceneModule, SceneStep } from '../types';
+import { createSceneTimeline, defineScene, finishSceneTimeline } from '../shared/timeline';
+import type { SceneBuildOptions, SceneCue, SceneInstance, SceneStep } from '../types';
 
 /**
  * Circuit Breaker scene: a 24 second, four step timeline.
@@ -155,7 +156,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
 
   const requests = mountRequests(requestLayer, REQUESTS.length, ID);
 
-  const tl = gsap.timeline({ paused: true });
+  const tl = createSceneTimeline();
 
   // --- Step 1: closed, then the service starts failing -------------------
   // The stage is drawn in full from the very first frame. Nothing fades the
@@ -165,7 +166,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
 
   // The service goes down.
   tl.set(stage, { attr: { 'data-health': 'down' }, immediateRender: false }, 3.8);
-  tl.to(service, { x: 9, duration: 0.07, repeat: 5, yoyo: true, ease: 'none' }, 3.8);
+  shakeService(tl, service, 3.8);
 
   // Failures come back and push the meter past the 50% threshold tick.
   const meterSteps: { at: number; ratio: number; level: string }[] = [
@@ -243,21 +244,9 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     if (parts) addRequest(tl, parts, spec, cue);
   });
 
-  // Pin the total length so the scrub bar covers the closing hold.
-  tl.to({}, { duration: 0.01 }, SCENE_DURATION - 0.01);
-
-  // Render the whole timeline once in each direction so every zero-duration
-  // tween records its start value. Without this, scrubbing backwards before a
-  // state change has ever played forward would leave the wrong state behind.
-  tl.progress(1, true).progress(0, true).pause();
+  finishSceneTimeline(tl, SCENE_DURATION);
 
   return { tl, steps: STEPS };
 }
 
-const scene: SceneModule = {
-  id: ID,
-  duration: SCENE_DURATION,
-  build,
-};
-
-export default scene;
+export default defineScene({ id: ID, duration: SCENE_DURATION, build });

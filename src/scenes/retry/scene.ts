@@ -1,6 +1,6 @@
-import gsap from 'gsap';
 import { BAR_FULL, SCENE_DURATION } from './stage';
 import { q, qa } from '../shared/dom';
+import { shakeService } from '../shared/effects';
 import {
   addTrip,
   hideRequest,
@@ -9,7 +9,9 @@ import {
   parkRequest,
   type RequestParts,
 } from '../shared/request';
-import type { SceneBuildOptions, SceneCue, SceneInstance, SceneModule, SceneStep } from '../types';
+import { attr } from '../shared/state';
+import { createSceneTimeline, defineScene, finishSceneTimeline } from '../shared/timeline';
+import type { SceneBuildOptions, SceneCue, SceneInstance, SceneStep } from '../types';
 
 /**
  * Retry scene: a 24 second, four step timeline.
@@ -59,13 +61,9 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   const scaleTicks = qa<SVGTextElement>(stage, '.rt-scale');
 
   const requests = mountRequests(requestLayer, REQUEST_COUNT, ID);
-  const tl = gsap.timeline({ paused: true });
+  const tl = createSceneTimeline();
 
   // --- small helpers, all writing absolute positions ---------------------
-
-  const attr = (name: string, value: string, at: number): void => {
-    tl.set(stage, { attr: { [name]: value }, immediateRender: false }, at);
-  };
 
   const pill = (index: number, state: string, at: number): void => {
     const target = pills[index];
@@ -78,7 +76,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
 
   /** One backoff wait: the bar fills, ticks, and clears. */
   const backoff = (from: number, duration: number, label: string): void => {
-    attr('data-wait', label, from);
+    attr(tl, stage, 'data-wait', label, from);
     tl.to(
       barFill,
       { attr: { width: BAR_FULL }, duration, ease: 'none', immediateRender: false },
@@ -86,22 +84,18 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     );
     tl.call(() => cue('trip'), undefined, from + duration);
     tl.set(barFill, { attr: { width: 0 }, immediateRender: false }, from + duration);
-    attr('data-wait', 'none', from + duration);
+    attr(tl, stage, 'data-wait', 'none', from + duration);
   };
 
   /** Jitter turns on and the end of the wait wobbles twice, then settles. */
   const jitterOn = (at: number): void => {
-    attr('data-jitter', 'on', at);
+    attr(tl, stage, 'data-jitter', 'on', at);
     tl.call(() => cue('state'), undefined, at);
     tl.to(
       barEnd,
       { x: 14, duration: 0.12, repeat: 3, yoyo: true, ease: 'sine.inOut', immediateRender: false },
       at,
     );
-  };
-
-  const shakeService = (at: number): void => {
-    tl.to(service, { x: 9, duration: 0.07, repeat: 5, yoyo: true, ease: 'none' }, at);
   };
 
   let nextRequest = 0;
@@ -159,8 +153,8 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     sound: 'failure',
   });
   pill(0, 'active', 1.0);
-  attr('data-health', 'down', 1.3);
-  attr('data-health', 'ok', 2.0);
+  attr(tl, stage, 'data-health', 'down', 1.3);
+  attr(tl, stage, 'data-health', 'ok', 2.0);
   pill(0, 'fail', 2.2);
   backoff(2.2, 1.0, '1s');
 
@@ -182,7 +176,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
 
   // --- Step 2: exponential backoff with jitter ---------------------------
   tl.addLabel('step-2', 6);
-  attr('data-health', 'down', 6.0);
+  attr(tl, stage, 'data-health', 'down', 6.0);
 
   trip({
     from: Y_CLIENT,
@@ -211,7 +205,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   pill(1, 'fail', 8.4);
   backoff(8.4, 1.4, '2s');
   jitterOn(9.0);
-  attr('data-health', 'ok', 9.5);
+  attr(tl, stage, 'data-health', 'ok', 9.5);
 
   trip({
     from: Y_RETRY,
@@ -235,14 +229,14 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     tl.to(tick, { opacity: 1, duration: 0.25, immediateRender: false }, at);
     tl.to(tick, { opacity: 0, duration: 0.2, immediateRender: false }, 13.0);
     const label = tickLabels[index];
-    if (label) attr('data-wait', label, at);
+    if (label) attr(tl, stage, 'data-wait', label, at);
   });
 
   // --- Step 3: retry storm ------------------------------------------------
   tl.addLabel('step-3', 13);
-  attr('data-wait', 'none', 13.0);
-  attr('data-jitter', 'off', 13.0);
-  attr('data-health', 'recovering', 13.0);
+  attr(tl, stage, 'data-wait', 'none', 13.0);
+  attr(tl, stage, 'data-jitter', 'off', 13.0);
+  attr(tl, stage, 'data-health', 'recovering', 13.0);
   resetPills(13.0);
 
   // Wave one: three clients retry in lockstep and knock the service over.
@@ -258,10 +252,10 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
       sound: index === 0 ? 'failure' : undefined,
     });
   });
-  attr('data-health', 'down', 13.8);
-  shakeService(13.8);
+  attr(tl, stage, 'data-health', 'down', 13.8);
+  shakeService(tl, service, 13.8);
   backoff(14.5, 0.8, '1s');
-  attr('data-health', 'recovering', 15.0);
+  attr(tl, stage, 'data-health', 'recovering', 15.0);
 
   // Wave two: still in lockstep, so the service goes down again.
   STORM_X.forEach((lane, index) => {
@@ -275,12 +269,12 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
       sound: index === 0 ? 'failure' : undefined,
     });
   });
-  attr('data-health', 'down', 16.1);
-  shakeService(16.1);
+  attr(tl, stage, 'data-health', 'down', 16.1);
+  shakeService(tl, service, 16.1);
 
   // Jitter spreads the third wave out and the service stays up.
   jitterOn(17.0);
-  attr('data-health', 'recovering', 17.0);
+  attr(tl, stage, 'data-health', 'recovering', 17.0);
   const staggered = [17.2, 17.55, 17.9];
   STORM_X.forEach((lane, index) => {
     trip({
@@ -293,12 +287,12 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
       sound: 'success',
     });
   });
-  attr('data-health', 'ok', 18.2);
+  attr(tl, stage, 'data-health', 'ok', 18.2);
 
   // --- Step 4: the budget runs out ---------------------------------------
   tl.addLabel('step-4', 19);
-  attr('data-jitter', 'off', 19.0);
-  attr('data-health', 'down', 19.0);
+  attr(tl, stage, 'data-jitter', 'off', 19.0);
+  attr(tl, stage, 'data-health', 'down', 19.0);
   resetPills(19.0);
 
   trip({
@@ -340,27 +334,16 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   });
   pill(2, 'active', 22.0);
   pill(2, 'fail', 22.7);
-  attr('data-budget', 'on', 22.9);
+  attr(tl, stage, 'data-budget', 'on', 22.9);
 
   if (last) {
     moveRequest(tl, last.parts, Y_CLIENT, 0.6, 23.0);
     hideRequest(tl, last.parts, 23.6);
   }
 
-  // Pin the total length so the scrub bar covers the closing hold.
-  tl.to({}, { duration: 0.01 }, SCENE_DURATION - 0.01);
-
-  // Render once in each direction so every zero-duration tween records its
-  // start value before a reader can scrub backwards past it.
-  tl.progress(1, true).progress(0, true).pause();
+  finishSceneTimeline(tl, SCENE_DURATION);
 
   return { tl, steps: STEPS };
 }
 
-const scene: SceneModule = {
-  id: ID,
-  duration: SCENE_DURATION,
-  build,
-};
-
-export default scene;
+export default defineScene({ id: ID, duration: SCENE_DURATION, build });

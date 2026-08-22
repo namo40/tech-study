@@ -1,4 +1,3 @@
-import gsap from 'gsap';
 import {
   COMPARTMENT_SIZE,
   LANE_X,
@@ -15,7 +14,9 @@ import {
   parkRequest,
   showRequest,
 } from '../shared/request';
-import type { SceneBuildOptions, SceneInstance, SceneModule, SceneStep } from '../types';
+import { attr, round } from '../shared/state';
+import { createSceneTimeline, defineScene, finishSceneTimeline } from '../shared/timeline';
+import type { SceneBuildOptions, SceneInstance, SceneStep } from '../types';
 
 /**
  * Bulkhead scene: a 24 second, four step timeline.
@@ -83,8 +84,6 @@ interface RequestPlan {
   endReason?: Exclude<ReleaseReason, 'return'>;
 }
 
-const round = (value: number): number => Number(value.toFixed(3));
-
 const plan = (start: number, lane: Lane, extra: Partial<RequestPlan> = {}): RequestPlan => ({
   start,
   lane,
@@ -141,6 +140,10 @@ interface Simulation {
 /**
  * Plays arrivals against the pool. At equal times a release lands before an
  * acquire, so a slot freed at that instant is available to take.
+ *
+ * That tie-break is a domain rule, not insertion order, and nothing here books
+ * new events while the walk is running, so this scene builds every event up
+ * front and sorts once instead of using `shared/simulation`'s drain loop.
  */
 function simulate(requests: RequestPlan[]): Simulation {
   const events: SimEvent[] = [];
@@ -183,6 +186,11 @@ function simulate(requests: RequestPlan[]): Simulation {
    * Two changes at one instant would render in insertion order going forwards
    * and in reverse going backwards, so that single frame would depend on which
    * way the reader scrubbed. Collapse them to the value that ends up applying.
+   *
+   * This guard is neither of the two in `shared/simulation`: it keys on the
+   * instant *and* the slot but looks only at the last entry, so a change to
+   * another slot in between stops it collapsing. The sort at the end of the
+   * walk is what puts same-instant changes back in slot order.
    */
   const recordSlot = (at: number, slot: number, state: SlotState): void => {
     const previous = slots[slots.length - 1];
@@ -266,16 +274,10 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   const sim = simulate(REQUESTS);
   const requests = mountRequests(requestLayer, REQUESTS.length, ID);
 
-  const tl = gsap.timeline({ paused: true });
-
-  const attr = (name: string, value: string, at: number): void => {
-    tl.set(stage, { attr: { [name]: value }, immediateRender: false }, at);
-  };
+  const tl = createSceneTimeline();
 
   const setHealth = (dots: SVGCircleElement[], value: string, at: number): void => {
-    for (const dot of dots) {
-      tl.set(dot, { attr: { 'data-health-state': value }, immediateRender: false }, at);
-    }
+    for (const dot of dots) attr(tl, dot, 'data-health-state', value, at);
   };
 
   // --- slot occupancy and the in-flight count, straight from the simulation
@@ -286,7 +288,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     tl.set(element, { attr: { 'data-slot-state': change.state }, immediateRender: false }, change.at);
   }
   for (const [at, count] of sim.inflight) {
-    attr('data-inflight', String(count), at);
+    attr(tl, stage, 'data-inflight', String(count), at);
   }
 
   // --- requests, granted or turned away as the simulation decided ---------
@@ -346,8 +348,8 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
 
   for (const at of sim.rejectedAt) {
     if (at < WALL_AT) continue;
-    attr('data-bfull', 'on', at);
-    attr('data-bfull', 'off', round(at + 0.3));
+    attr(tl, stage, 'data-bfull', 'on', at);
+    attr(tl, stage, 'data-bfull', 'off', round(at + 0.3));
   }
 
   // --- set pieces ----------------------------------------------------------
@@ -366,7 +368,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   );
 
   tl.addLabel('step-3', WALL_AT);
-  attr('data-wall', 'on', WALL_AT);
+  attr(tl, stage, 'data-wall', 'on', WALL_AT);
   tl.call(() => cue('state'), undefined, WALL_AT);
   tl.fromTo(
     wall,
@@ -376,7 +378,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   );
 
   tl.addLabel('step-4', 19);
-  attr('data-timeout', 'on', 19);
+  attr(tl, stage, 'data-timeout', 'on', 19);
   for (const timer of timerEls) {
     tl.to(timer, { opacity: 1, duration: 0.2, immediateRender: false }, 19);
     tl.to(timer, { opacity: 0, duration: 0.2, immediateRender: false }, round(TIMEOUT_AT + TIMEOUT_FLASH));
@@ -390,25 +392,14 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     );
   }
   tl.call(() => cue('trip'), undefined, TIMEOUT_AT);
-  attr('data-timeout', 'off', round(TIMEOUT_AT + TIMEOUT_FLASH));
+  attr(tl, stage, 'data-timeout', 'off', round(TIMEOUT_AT + TIMEOUT_FLASH));
 
   setHealth(healthB, 'recovering', 21);
   setHealth(healthB, 'ok', 22.5);
 
-  // Pin the total length so the scrub bar covers the closing hold.
-  tl.to({}, { duration: 0.01 }, SCENE_DURATION - 0.01);
-
-  // Render once in each direction so every zero-duration tween records its
-  // start value before a reader can scrub backwards past it.
-  tl.progress(1, true).progress(0, true).pause();
+  finishSceneTimeline(tl, SCENE_DURATION);
 
   return { tl, steps: STEPS };
 }
 
-const scene: SceneModule = {
-  id: ID,
-  duration: SCENE_DURATION,
-  build,
-};
-
-export default scene;
+export default defineScene({ id: ID, duration: SCENE_DURATION, build });

@@ -11,6 +11,7 @@ import {
 import { q, qa } from '../shared/dom';
 import {
   attachToRequest,
+  haloRequest,
   hideRequest,
   markRequest,
   mountRequests,
@@ -18,7 +19,15 @@ import {
   parkRequest,
   showRequest,
 } from '../shared/request';
-import type { SceneBuildOptions, SceneInstance, SceneModule, SceneStep } from '../types';
+import {
+  collapseAtInstant,
+  collapseLast,
+  createScheduler,
+  pairInstant,
+} from '../shared/simulation';
+import { attr, fadeAt, round } from '../shared/state';
+import { createSceneTimeline, defineScene, finishSceneTimeline } from '../shared/timeline';
+import type { SceneBuildOptions, SceneInstance, SceneStep } from '../types';
 
 /**
  * Cache Invalidation scene: a 24 second, four step timeline.
@@ -129,9 +138,6 @@ const MESSAGE_ARRIVALS = [
   [13.9, 14.2, 14.5],
 ];
 
-const round = (value: number): number => Number(value.toFixed(3));
-const fadeAt = (home: number): number => Math.max(0.05, Math.min(0.15, SCENE_DURATION - home));
-
 interface Change<T> {
   at: number;
   inst: number;
@@ -199,30 +205,12 @@ function simulate(): Simulation {
   let dbValue: Value = 'v1';
   let staleCount = 0;
 
-  /*
-   * Two changes to the same thing at one instant would render in insertion
-   * order going forwards and in reverse going backwards, so that frame would
-   * depend on which way the reader scrubbed. Collapse them.
-   */
-  const push = <T>(series: Change<T>[], at: number, inst: number, next: T): void => {
-    // Scan back over everything already recorded at this instant, not just the
-    // last entry: the version bump touches all three instances in two passes,
-    // so a second change for instance 1 arrives after instance 3's first one.
-    for (let i = series.length - 1; i >= 0; i -= 1) {
-      const candidate = series[i];
-      if (!candidate || candidate.at !== at) break;
-      if (candidate.inst === inst) {
-        candidate.value = next;
-        return;
-      }
-    }
-    series.push({ at, inst, value: next });
-  };
-  const pushPair = <T>(series: [number, T][], at: number, next: T): void => {
-    const previous = series[series.length - 1];
-    if (previous && previous[0] === at) previous[1] = next;
-    else series.push([at, next]);
-  };
+  // Guard (B), not (A): the version bump touches all three instances in two
+  // passes, so a second change for instance 1 arrives after instance 3's first.
+  const push = <T>(series: Change<T>[], at: number, inst: number, next: T): void =>
+    collapseAtInstant(series, { at, inst, value: next }, (change) => change.inst);
+  const pushPair = <T>(series: [number, T][], at: number, next: T): void =>
+    collapseLast<[number, T]>(series, [at, next], pairInstant);
 
   const setDb = (at: number, next: Value): void => {
     if (dbValue === next) return;
@@ -261,17 +249,7 @@ function simulate(): Simulation {
     fills.push({ inst, at, width, seconds });
   };
 
-  interface Task {
-    at: number;
-    order: number;
-    run: () => void;
-  }
-  const queue: Task[] = [];
-  let order = 0;
-  const schedule = (at: number, run: () => void): void => {
-    order += 1;
-    queue.push({ at: round(at), order, run });
-  };
+  const { schedule, drain } = createScheduler();
 
   /** Fills a slot and books the expiry that goes with it. */
   const fill = (at: number, inst: number, next: Value, width: number, seconds: number): void => {
@@ -384,17 +362,7 @@ function simulate(): Simulation {
     });
   });
 
-  const done = new Set<Task>();
-  for (;;) {
-    let next: Task | undefined;
-    for (const task of queue) {
-      if (done.has(task)) continue;
-      if (!next || task.at < next.at || (task.at === next.at && task.order < next.order)) next = task;
-    }
-    if (!next) break;
-    done.add(next);
-    next.run();
-  }
+  drain();
 
   const ttl: TtlSegment[] = fills.map((entryFill) => {
     const stop = ttlClears
@@ -433,15 +401,11 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   messageLayer.innerHTML = published.map(() => MESSAGE_MARKUP).join('');
   const messages = qa<SVGPathElement>(messageLayer, '.ci-msg');
 
-  const tl = gsap.timeline({ paused: true });
+  const tl = createSceneTimeline();
 
-  const attr = (name: string, value: string, at: number): void => {
-    tl.set(stage, { attr: { [name]: value }, immediateRender: false }, at);
-  };
   const instAttr = (inst: number, name: string, value: string, at: number): void => {
     const target = instances[inst];
-    if (!target) return;
-    tl.set(target, { attr: { [name]: value }, immediateRender: false }, at);
+    if (target) attr(tl, target, name, value, at);
   };
 
   // --- instance state, database and counters, from the simulation ---------
@@ -450,9 +414,9 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   for (const change of sim.value) instAttr(change.inst, 'data-value', change.value, change.at);
   for (const change of sim.key) instAttr(change.inst, 'data-key', change.value, change.at);
   for (const change of sim.old) instAttr(change.inst, 'data-old', change.value, change.at);
-  for (const [at, value] of sim.db) attr('data-db', value, at);
-  for (const [at, value] of sim.version) attr('data-version', value, at);
-  for (const [at, count] of sim.staleReads) attr('data-stale-reads', String(count), at);
+  for (const [at, value] of sim.db) attr(tl, stage, 'data-db', value, at);
+  for (const [at, value] of sim.version) attr(tl, stage, 'data-version', value, at);
+  for (const [at, count] of sim.staleReads) attr(tl, stage, 'data-stale-reads', String(count), at);
 
   // --- TTL bars ------------------------------------------------------------
 
@@ -514,14 +478,13 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
       markRequest(tl, parts, 'ok', tCache);
       if (sim.stale[index]) {
         // A value the database has already replaced comes back ringed amber.
-        tl.set(parts.halo, { opacity: 1, immediateRender: false }, tCache);
-        tl.to(parts.halo, { opacity: 0, duration: 0.2, immediateRender: false }, home);
+        haloRequest(tl, parts, tCache, home, 0.2);
         tl.call(() => cue('failure'), undefined, home);
       } else {
         tl.call(() => cue('success'), undefined, home);
       }
       moveRequest(tl, parts, Y_CLIENT, plan.hitBack, tCache);
-      hideRequest(tl, parts, home, fadeAt(home));
+      hideRequest(tl, parts, home, fadeAt(home, SCENE_DURATION));
       return;
     }
 
@@ -544,7 +507,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     markRequest(tl, parts, 'ok', tRefill);
     moveRequest(tl, parts, Y_CLIENT, plan.toClient, tRefill);
     tl.call(() => cue('success'), undefined, home);
-    hideRequest(tl, parts, home, fadeAt(home));
+    hideRequest(tl, parts, home, fadeAt(home, SCENE_DURATION));
   });
 
   // --- writes --------------------------------------------------------------
@@ -577,7 +540,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     tl.set([square, label], { opacity: 0, immediateRender: false }, tDb);
     markRequest(tl, parts, 'ok', tDb);
     moveRequest(tl, parts, Y_CLIENT, plan.toClient, tDb);
-    hideRequest(tl, parts, home, fadeAt(home));
+    hideRequest(tl, parts, home, fadeAt(home, SCENE_DURATION));
   });
 
   // --- set pieces ----------------------------------------------------------
@@ -589,20 +552,9 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   tl.addLabel('step-3', 12);
   tl.addLabel('step-4', 18);
 
-  // Pin the total length so the scrub bar covers the closing hold.
-  tl.to({}, { duration: 0.01 }, SCENE_DURATION - 0.01);
-
-  // Render once in each direction so every zero-duration tween records its
-  // start value before a reader can scrub backwards past it.
-  tl.progress(1, true).progress(0, true).pause();
+  finishSceneTimeline(tl, SCENE_DURATION);
 
   return { tl, steps: STEPS };
 }
 
-const scene: SceneModule = {
-  id: ID,
-  duration: SCENE_DURATION,
-  build,
-};
-
-export default scene;
+export default defineScene({ id: ID, duration: SCENE_DURATION, build });

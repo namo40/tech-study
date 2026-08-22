@@ -3,6 +3,7 @@ import { ROW_Y, SCENE_DURATION, TTL_DURATION, TTL_WIDTH } from './stage';
 import { q, qa } from '../shared/dom';
 import {
   attachToRequest,
+  haloRequest,
   hideRequest,
   markRequest,
   mountRequests,
@@ -10,7 +11,10 @@ import {
   parkRequest,
   showRequest,
 } from '../shared/request';
-import type { SceneBuildOptions, SceneInstance, SceneModule, SceneStep } from '../types';
+import { collapseLast, createScheduler, pairInstant } from '../shared/simulation';
+import { attr, fadeAt, round } from '../shared/state';
+import { createSceneTimeline, defineScene, finishSceneTimeline } from '../shared/timeline';
+import type { SceneBuildOptions, SceneInstance, SceneStep } from '../types';
 
 /**
  * Cache-Aside scene: a 24 second, four step timeline.
@@ -118,11 +122,6 @@ const WRITES: WritePlan[] = [
 /** The write that leaves the row stale, and when the row shows it. */
 const STALE_AT = 19.4;
 
-const round = (value: number): number => Number(value.toFixed(3));
-
-/** Fade time for a request that lands, never running past the end of the scene. */
-const fadeAt = (home: number): number => Math.max(0.05, Math.min(0.15, SCENE_DURATION - home));
-
 interface Flash {
   at: number;
   word: 'hit' | 'miss' | 'stale' | 'invalidate';
@@ -151,12 +150,6 @@ interface Simulation {
   ttlClears: number[];
 }
 
-interface SimEvent {
-  at: number;
-  order: number;
-  run: () => void;
-}
-
 /**
  * Walks the scene in time order, keeping the state of the `user:42` row. Reads
  * ask the row what it holds at the instant they arrive, so hit and miss are
@@ -179,16 +172,10 @@ function simulate(): Simulation {
   let readCount = 0;
   let generation = 0;
 
-  /*
-   * Two changes to the same thing at one instant would render in insertion
-   * order going forwards and in reverse going backwards, so that frame would
-   * depend on which way the reader scrubbed. Collapse them to what applies.
-   */
-  const push = <T>(series: [number, T][], at: number, next: T): void => {
-    const previous = series[series.length - 1];
-    if (previous && previous[0] === at) previous[1] = next;
-    else series.push([at, next]);
-  };
+  // Guard (A) is enough here only because the scene follows one row. A second
+  // animated row would need the element-keyed guard instead.
+  const push = <T>(series: [number, T][], at: number, next: T): void =>
+    collapseLast<[number, T]>(series, [at, next], pairInstant);
 
   const setState = (at: number, next: EntryState): void => {
     state = next;
@@ -207,12 +194,7 @@ function simulate(): Simulation {
     fills.push(at);
   };
 
-  const queue: SimEvent[] = [];
-  let order = 0;
-  const schedule = (at: number, run: () => void): void => {
-    order += 1;
-    queue.push({ at: round(at), order, run });
-  };
+  const { schedule, drain } = createScheduler();
 
   READS.forEach((plan, index) => {
     const tCache = round(plan.start + plan.toCache);
@@ -266,19 +248,7 @@ function simulate(): Simulation {
     flashes.push({ at: STALE_AT, word: 'stale' });
   });
 
-  const done = new Set<SimEvent>();
-  for (;;) {
-    let next: SimEvent | undefined;
-    for (const event of queue) {
-      if (done.has(event)) continue;
-      if (!next || event.at < next.at || (event.at === next.at && event.order < next.order)) {
-        next = event;
-      }
-    }
-    if (!next) break;
-    done.add(next);
-    next.run();
-  }
+  drain();
 
   // A bar starts full at each refill and drains until the row is emptied or
   // the scene ends, whichever comes first.
@@ -305,26 +275,22 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
   const sim = simulate();
   const requests = mountRequests(requestLayer, READS.length + WRITES.length, ID);
 
-  const tl = gsap.timeline({ paused: true });
+  const tl = createSceneTimeline();
 
-  const attr = (name: string, value: string, at: number): void => {
-    tl.set(stage, { attr: { [name]: value }, immediateRender: false }, at);
-  };
   const rowAttr = (name: string, value: string, at: number): void => {
-    if (!mainRow) return;
-    tl.set(mainRow, { attr: { [name]: value }, immediateRender: false }, at);
+    if (mainRow) attr(tl, mainRow, name, value, at);
   };
 
   // --- row state, counters and flashes, straight from the simulation ------
 
   for (const [at, state] of sim.entry) rowAttr('data-entry', state, at);
   for (const [at, value] of sim.value) rowAttr('data-value', value, at);
-  for (const [at, count] of sim.reads) attr('data-reads', String(count), at);
-  for (const [at, value] of sim.db) attr('data-db', value, at);
+  for (const [at, count] of sim.reads) attr(tl, stage, 'data-reads', String(count), at);
+  for (const [at, value] of sim.db) attr(tl, stage, 'data-db', value, at);
 
   for (const flash of sim.flashes) {
-    attr('data-flash', flash.word, flash.at);
-    attr('data-flash', 'none', round(flash.at + FLASH_HOLD));
+    attr(tl, stage, 'data-flash', flash.word, flash.at);
+    attr(tl, stage, 'data-flash', 'none', round(flash.at + FLASH_HOLD));
     if (flash.word === 'miss') tl.call(() => cue('state'), undefined, flash.at);
     if (flash.word === 'hit') tl.call(() => cue('success'), undefined, flash.at);
     if (flash.word === 'invalidate') tl.call(() => cue('trip'), undefined, flash.at);
@@ -372,10 +338,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
       const home = round(tCache + plan.hitBack);
       markRequest(tl, parts, 'ok', tCache);
       // A hit on a row the writer left behind comes back ringed, not just green.
-      if (sim.staleHit[index]) {
-        tl.set(parts.halo, { opacity: 1, immediateRender: false }, tCache);
-        tl.to(parts.halo, { opacity: 0, duration: 0.2, immediateRender: false }, home);
-      }
+      if (sim.staleHit[index]) haloRequest(tl, parts, tCache, home, 0.2);
       moveRequest(tl, parts, Y_CLIENT, plan.hitBack, tCache);
       tl.call(() => cue('success'), undefined, home);
       hideRequest(tl, parts, home);
@@ -402,7 +365,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     markRequest(tl, parts, 'ok', tRefill);
     moveRequest(tl, parts, Y_CLIENT, plan.toClient, tRefill);
     tl.call(() => cue('success'), undefined, home);
-    hideRequest(tl, parts, home, fadeAt(home));
+    hideRequest(tl, parts, home, fadeAt(home, SCENE_DURATION));
   });
 
   // --- writes --------------------------------------------------------------
@@ -444,7 +407,7 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
       moveRequest(tl, parts, Y_CLIENT, plan.toClient, tDb);
     }
     tl.call(() => cue('success'), undefined, home);
-    hideRequest(tl, parts, home, fadeAt(home));
+    hideRequest(tl, parts, home, fadeAt(home, SCENE_DURATION));
   });
 
   // --- set pieces ----------------------------------------------------------
@@ -475,20 +438,9 @@ function build(stage: SVGSVGElement, options: SceneBuildOptions): SceneInstance 
     );
   }
 
-  // Pin the total length so the scrub bar covers the closing hold.
-  tl.to({}, { duration: 0.01 }, SCENE_DURATION - 0.01);
-
-  // Render once in each direction so every zero-duration tween records its
-  // start value before a reader can scrub backwards past it.
-  tl.progress(1, true).progress(0, true).pause();
+  finishSceneTimeline(tl, SCENE_DURATION);
 
   return { tl, steps: STEPS };
 }
 
-const scene: SceneModule = {
-  id: ID,
-  duration: SCENE_DURATION,
-  build,
-};
-
-export default scene;
+export default defineScene({ id: ID, duration: SCENE_DURATION, build });
