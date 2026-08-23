@@ -28,6 +28,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./n-plus-1-query/scene')).default;
     case 'tail-latency':
       return (await import('./tail-latency/scene')).default;
+    case 'sticky-session':
+      return (await import('./sticky-session/scene')).default;
     default:
       return null;
   }

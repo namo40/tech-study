@@ -39,6 +39,10 @@ import {
   SCENE_DURATION as tailLatencyDuration,
   stageMarkup as tailLatencyStage,
 } from './tail-latency/stage';
+import {
+  SCENE_DURATION as stickySessionDuration,
+  stageMarkup as stickySessionStage,
+} from './sticky-session/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -95,6 +99,10 @@ const scenes: Record<string, SceneAsset> = {
   'tail-latency': {
     markup: tailLatencyStage,
     duration: tailLatencyDuration,
+  },
+  'sticky-session': {
+    markup: stickySessionStage,
+    duration: stickySessionDuration,
   },
 };
 
