@@ -3440,3 +3440,273 @@
 .lb-server[data-server="absent"] .scene-flash.lb-rotation {
   opacity: 0;
 }
+
+/* ---------------------------------------------------------------- */
+/* Materialized View stage                                           */
+/* ---------------------------------------------------------------- */
+
+/* The two stores inside the Database box. They are drawn a step quieter than
+   the box that holds them, so the reader sees one database with two things in
+   it rather than three boxes of equal weight. */
+.mv-store-box {
+  fill: var(--surface-2);
+  stroke-width: 2;
+}
+
+/* A base table: a glyph that lights while a plan is reading it, its name, and
+   the rows it holds. Only `orders` counts, because only `orders` is written. */
+.mv-glyph {
+  fill: var(--surface);
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+.mv-glyph-line {
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.mv-table-name {
+  fill: var(--fg);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.mv-table-count,
+.mv-orders {
+  fill: var(--fg-soft);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.mv-table[data-table="scan"] .mv-glyph {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+}
+
+.mv-table[data-table="scan"] .mv-glyph-line {
+  stroke: var(--bg);
+}
+
+/* A write lands on the table it is written to, in the request colour rather
+   than the scan colour, because a write is not a read that took a while. */
+.mv-table[data-table="write"] .mv-glyph {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+.mv-table[data-table="write"] .mv-glyph-line {
+  stroke: var(--bg);
+}
+
+[data-orders="0"] .mv-orders--0, [data-orders="1"] .mv-orders--1,
+[data-orders="2"] .mv-orders--2, [data-orders="3"] .mv-orders--3,
+[data-orders="4"] .mv-orders--4, [data-orders="5"] .mv-orders--5,
+[data-orders="6"] .mv-orders--6, [data-orders="7"] .mv-orders--7 {
+  opacity: 1;
+}
+
+/* The view. Before it is built it is an outline with nothing in it, which is
+   what makes step 2 the moment a table appears rather than a table changing. */
+.mv-view-name {
+  fill: var(--fg);
+  font-size: 22px;
+}
+
+.mv-view-row {
+  fill: var(--state-closed);
+  opacity: 0.55;
+}
+
+[data-view="absent"] .mv-view-box {
+  stroke-dasharray: 16 14;
+  opacity: 0.45;
+}
+
+[data-view="absent"] .mv-view-body {
+  opacity: 0;
+}
+
+[data-view="building"] .mv-view-body {
+  opacity: 0.3;
+}
+
+/* A view past its refresh is not wrong yet, so it warns rather than clears. */
+[data-view="stale"] .mv-view-box {
+  stroke: var(--state-half);
+}
+
+[data-view="stale"] .mv-view-row {
+  fill: var(--state-half);
+}
+
+/* The row the reader is standing on, lit for as long as the read takes. */
+[data-read="on"] .mv-view-box {
+  stroke: var(--accent);
+  stroke-width: 4;
+}
+
+.mv-fresh {
+  --flash-color: var(--state-half);
+
+  font-size: 20px;
+}
+
+.mv-fresh--fresh {
+  --flash-color: var(--state-closed);
+}
+
+[data-view="stale"] .mv-fresh--stale,
+[data-view="fresh"] .mv-fresh--fresh {
+  opacity: 1;
+}
+
+/* The refresh route: the track is the arrow, and the fill is how much of a
+   scheduled refresh has been done. A per-write refresh sends one row instead,
+   so the track stays empty and only the row crosses. */
+.mv-refresh-fill {
+  --fill-color: var(--state-half);
+}
+
+.mv-route-head {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-refresh="full"] .mv-route-head,
+[data-refresh="inc"] .mv-route-head {
+  stroke: var(--state-half);
+}
+
+.mv-route-label {
+  --flash-color: var(--state-half);
+
+  font-size: 17px;
+}
+
+[data-refresh="full"] .mv-route-label--refresh,
+[data-refresh="inc"] .mv-route-label--incremental {
+  opacity: 1;
+}
+
+/* One row crossing to the view, which is the whole of a per-write refresh. */
+.mv-hop {
+  fill: var(--state-half);
+}
+
+.mv-write {
+  fill: var(--request);
+}
+
+/* The interval the scheduled refresh runs on, drawn only while it is the
+   policy: once every write refreshes the view, there is no interval to show. */
+.mv-timer {
+  --ring-color: var(--state-half);
+  --ring-width: 7px;
+}
+
+[data-timer="on"] .mv-timer {
+  opacity: 1;
+}
+
+.mv-timer-label {
+  fill: var(--fg-soft);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* The plan the node chose. It is the one line that says why the same question
+   costs a million rows on one frame and thirty on the next. */
+.mv-plan {
+  fill: var(--fg);
+  font-size: 22px;
+  font-weight: 600;
+  opacity: 0;
+}
+
+[data-plan="scan"] .mv-plan--scan,
+[data-plan="read"] .mv-plan--read,
+[data-plan="adhoc"] .mv-plan--adhoc {
+  opacity: 1;
+}
+
+[data-plan="read"] .mv-plan--read {
+  fill: var(--state-closed);
+}
+
+.mv-time-fill {
+  --fill-color: var(--state-half);
+}
+
+[data-plan="read"] .mv-time-fill {
+  --fill-color: var(--state-closed);
+}
+
+/* What a view costs and what it saves, opened in the last step. */
+.mv-panel {
+  opacity: 0;
+}
+
+[data-panel="on"] .mv-panel {
+  opacity: 1;
+}
+
+.mv-cost-label {
+  fill: var(--fg-soft);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.mv-cost-1-fill,
+.mv-cost-2-fill {
+  --fill-color: var(--state-half);
+}
+
+.mv-cost-3-fill {
+  --fill-color: var(--state-closed);
+}
+
+/* The readouts under the box: how busy the database is, how far the view is
+   behind, and how many scans it has saved. */
+.mv-readout-label {
+  fill: var(--fg-soft);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.mv-load-fill {
+  --fill-color: var(--state-closed);
+}
+
+.mv-behind,
+.mv-saved {
+  fill: var(--fg);
+  font-size: 20px;
+}
+
+.mv-behind {
+  fill: var(--fg-soft);
+}
+
+[data-behind="0"] .mv-behind--0, [data-behind="1"] .mv-behind--1,
+[data-behind="2"] .mv-behind--2, [data-behind="3"] .mv-behind--3 {
+  opacity: 1;
+}
+
+[data-view="stale"] .mv-behind {
+  fill: var(--state-half);
+}
+
+[data-saved="0"] .mv-saved--0, [data-saved="1"] .mv-saved--1,
+[data-saved="2"] .mv-saved--2, [data-saved="3"] .mv-saved--3,
+[data-saved="4"] .mv-saved--4, [data-saved="5"] .mv-saved--5,
+[data-saved="6"] .mv-saved--6, [data-saved="7"] .mv-saved--7,
+[data-saved="8"] .mv-saved--8, [data-saved="9"] .mv-saved--9,
+[data-saved="10"] .mv-saved--10, [data-saved="11"] .mv-saved--11,
+[data-saved="12"] .mv-saved--12, [data-saved="13"] .mv-saved--13 {
+  opacity: 1;
+}

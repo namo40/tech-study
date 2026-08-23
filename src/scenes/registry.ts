@@ -71,6 +71,10 @@ import {
   SCENE_DURATION as loadBalancerDuration,
   stageMarkup as loadBalancerStage,
 } from './load-balancer/stage';
+import {
+  SCENE_DURATION as materializedViewDuration,
+  stageMarkup as materializedViewStage,
+} from './materialized-view/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -159,6 +163,10 @@ const scenes: Record<string, SceneAsset> = {
   'load-balancer': {
     markup: loadBalancerStage,
     duration: loadBalancerDuration,
+  },
+  'materialized-view': {
+    markup: materializedViewStage,
+    duration: materializedViewDuration,
   },
 };
 

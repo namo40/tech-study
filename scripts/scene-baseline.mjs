@@ -64,6 +64,7 @@ const SCENE_IDS = [
   'idempotency-key',
   'competing-consumers',
   'load-balancer',
+  'materialized-view',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */
