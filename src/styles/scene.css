@@ -2330,3 +2330,277 @@
   stroke: var(--bg);
   stroke-width: 3;
 }
+
+/* ---------------------------------------------------------------- */
+/* Strangler Fig stage                                               */
+/* ---------------------------------------------------------------- */
+
+/* The elbow a request takes from the router down onto one of the two lanes.
+   It is drawn as a path rather than a line, so it has to say it is not a
+   shape; everything else about it is the shared connector. */
+.sf-lane {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The route table. A row is a path on the left and where it points on the
+   right, and the whole argument of the pattern is that the right-hand side is
+   configuration: it changes without the left-hand side changing. */
+.sf-path {
+  fill: var(--fg-soft);
+  font-size: 24px;
+}
+
+.sf-row[data-match="on"] .sf-path {
+  fill: var(--fg);
+}
+
+.sf-target-bg {
+  fill: var(--muted);
+}
+
+.sf-row[data-target="new"] .sf-target-bg {
+  fill: var(--state-closed);
+}
+
+.sf-row[data-match="on"] .sf-target-bg {
+  stroke: var(--request);
+  stroke-width: 4;
+}
+
+.sf-target-text {
+  font-size: 26px;
+}
+
+.sf-row[data-target="legacy"] .sf-target-text--legacy,
+.sf-row[data-target="new"] .sf-target-text--new {
+  opacity: 1;
+}
+
+/* The share of a row's traffic the new system is taking. It only exists while
+   the answer is a share rather than all or nothing. */
+.sf-share {
+  opacity: 0;
+}
+
+.sf-row:not([data-pct="off"]) .sf-share {
+  opacity: 1;
+}
+
+.sf-share-bg {
+  stroke: var(--state-half);
+}
+
+.sf-share-text {
+  fill: var(--state-half);
+  font-size: 26px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.sf-row[data-pct="10"] .sf-share-text--10 {
+  opacity: 1;
+}
+
+.sf-row[data-pct="50"] .sf-share-text--50 {
+  opacity: 1;
+}
+
+.sf-row[data-pct="100"] .sf-share-text--100 {
+  opacity: 1;
+}
+
+/* Where the migration has got to, which is how many capabilities the old
+   system has actually let go of rather than how many routes have moved. */
+.sf-migrated {
+  fill: var(--fg-soft);
+  font-size: 24px;
+}
+
+[data-migrated="0"] .sf-migrated--0,
+[data-migrated="1"] .sf-migrated--1,
+[data-migrated="2"] .sf-migrated--2,
+[data-migrated="3"] .sf-migrated--3 {
+  opacity: 1;
+}
+
+.sf-migrated-fill {
+  --fill-color: var(--state-closed);
+}
+
+/* What each system has answered so far. The two tallies are the plainest
+   statement the scene makes: one goes up and then stops, the other does not. */
+.sf-tally-legacy,
+.sf-tally-new {
+  fill: var(--fg-soft);
+  font-size: 24px;
+}
+
+[data-legacy-count="0"] .sf-tally-legacy--0,
+[data-legacy-count="1"] .sf-tally-legacy--1,
+[data-legacy-count="2"] .sf-tally-legacy--2,
+[data-legacy-count="3"] .sf-tally-legacy--3,
+[data-legacy-count="4"] .sf-tally-legacy--4,
+[data-legacy-count="5"] .sf-tally-legacy--5,
+[data-legacy-count="6"] .sf-tally-legacy--6,
+[data-legacy-count="7"] .sf-tally-legacy--7,
+[data-legacy-count="8"] .sf-tally-legacy--8,
+[data-legacy-count="9"] .sf-tally-legacy--9,
+[data-legacy-count="10"] .sf-tally-legacy--10,
+[data-legacy-count="11"] .sf-tally-legacy--11,
+[data-legacy-count="12"] .sf-tally-legacy--12,
+[data-legacy-count="13"] .sf-tally-legacy--13,
+[data-legacy-count="14"] .sf-tally-legacy--14,
+[data-legacy-count="15"] .sf-tally-legacy--15,
+[data-legacy-count="16"] .sf-tally-legacy--16,
+[data-legacy-count="17"] .sf-tally-legacy--17,
+[data-legacy-count="18"] .sf-tally-legacy--18,
+[data-legacy-count="19"] .sf-tally-legacy--19,
+[data-legacy-count="20"] .sf-tally-legacy--20,
+[data-legacy-count="21"] .sf-tally-legacy--21,
+[data-legacy-count="22"] .sf-tally-legacy--22,
+[data-legacy-count="23"] .sf-tally-legacy--23,
+[data-legacy-count="24"] .sf-tally-legacy--24,
+[data-legacy-count="25"] .sf-tally-legacy--25 {
+  opacity: 1;
+}
+
+[data-new-count="0"] .sf-tally-new--0,
+[data-new-count="1"] .sf-tally-new--1,
+[data-new-count="2"] .sf-tally-new--2,
+[data-new-count="3"] .sf-tally-new--3,
+[data-new-count="4"] .sf-tally-new--4,
+[data-new-count="5"] .sf-tally-new--5,
+[data-new-count="6"] .sf-tally-new--6,
+[data-new-count="7"] .sf-tally-new--7,
+[data-new-count="8"] .sf-tally-new--8,
+[data-new-count="9"] .sf-tally-new--9,
+[data-new-count="10"] .sf-tally-new--10,
+[data-new-count="11"] .sf-tally-new--11,
+[data-new-count="12"] .sf-tally-new--12,
+[data-new-count="13"] .sf-tally-new--13,
+[data-new-count="14"] .sf-tally-new--14,
+[data-new-count="15"] .sf-tally-new--15,
+[data-new-count="16"] .sf-tally-new--16,
+[data-new-count="17"] .sf-tally-new--17,
+[data-new-count="18"] .sf-tally-new--18 {
+  opacity: 1;
+}
+
+/* Pointing a route back at the old system, which is a configuration change and
+   not a deployment. It is on the stage only while the route is back. */
+.sf-rollback {
+  --flash-color: var(--state-open);
+
+  font-size: 26px;
+  letter-spacing: 1px;
+}
+
+[data-rollback="on"] .sf-rollback {
+  opacity: 1;
+}
+
+/* The two systems. Both are drawn the same way and hold the same kind of slot,
+   so a capability looks like itself before and after it moves. */
+.sf-legacy-box {
+  stroke: var(--muted);
+}
+
+.sf-new-box {
+  stroke: var(--state-closed);
+}
+
+.sf-retired {
+  --flash-color: var(--muted);
+
+  font-size: 26px;
+  letter-spacing: 1px;
+}
+
+[data-retired="on"] .sf-retired {
+  opacity: 1;
+}
+
+/* One capability. Absent is a slot the new system has not built yet, retired is
+   an old copy nothing reaches any more, and gone is one that has been removed. */
+.sf-mod[data-mod="absent"],
+.sf-mod[data-mod="gone"] {
+  opacity: 0;
+}
+
+.sf-mod-box {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.sf-mod--new[data-mod="live"] .sf-mod-box {
+  stroke: var(--state-closed);
+}
+
+.sf-mod[data-mod="retired"] .sf-mod-box {
+  fill: none;
+  stroke: var(--muted);
+  stroke-dasharray: 12 10;
+}
+
+.sf-mod[data-busy="on"] .sf-mod-box {
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+.sf-mod-text {
+  fill: var(--fg-soft);
+  font-size: 22px;
+}
+
+.sf-mod[data-mod="retired"] .sf-mod-text {
+  fill: var(--muted);
+}
+
+/* The anti-corruption layer: a dashed run across the gap between the systems,
+   carrying translations rather than the old model itself. It is only there
+   while the new system still needs data it does not own. */
+.sf-acl {
+  opacity: 0;
+}
+
+[data-acl="on"] .sf-acl {
+  opacity: 1;
+}
+
+.sf-acl-line {
+  stroke: var(--muted);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 14 14;
+}
+
+.sf-acl-head {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sf-acl-label {
+  letter-spacing: 1px;
+}
+
+.sf-token-shape {
+  fill: var(--cpu);
+  stroke: var(--bg);
+  stroke-width: 3;
+}
+
+/* The path a request is asking for, which travels with it until the router has
+   read it. */
+.sf-req-path {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-weight: 700;
+}

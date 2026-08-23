@@ -51,6 +51,10 @@ import {
   SCENE_DURATION as cqrsDuration,
   stageMarkup as cqrsStage,
 } from './command-query-responsibility-segregation/stage';
+import {
+  SCENE_DURATION as stranglerFigDuration,
+  stageMarkup as stranglerFigStage,
+} from './strangler-fig/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -119,6 +123,10 @@ const scenes: Record<string, SceneAsset> = {
   'command-query-responsibility-segregation': {
     markup: cqrsStage,
     duration: cqrsDuration,
+  },
+  'strangler-fig': {
+    markup: stranglerFigStage,
+    duration: stranglerFigDuration,
   },
 };
 
