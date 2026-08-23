@@ -43,6 +43,10 @@ import {
   SCENE_DURATION as stickySessionDuration,
   stageMarkup as stickySessionStage,
 } from './sticky-session/stage';
+import {
+  SCENE_DURATION as webQueueWorkerDuration,
+  stageMarkup as webQueueWorkerStage,
+} from './web-queue-worker/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -103,6 +107,10 @@ const scenes: Record<string, SceneAsset> = {
   'sticky-session': {
     markup: stickySessionStage,
     duration: stickySessionDuration,
+  },
+  'web-queue-worker': {
+    markup: webQueueWorkerStage,
+    duration: webQueueWorkerDuration,
   },
 };
 

@@ -57,6 +57,7 @@ const SCENE_IDS = [
   'n-plus-1-query',
   'tail-latency',
   'sticky-session',
+  'web-queue-worker',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */

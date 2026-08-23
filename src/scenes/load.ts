@@ -30,6 +30,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./tail-latency/scene')).default;
     case 'sticky-session':
       return (await import('./sticky-session/scene')).default;
+    case 'web-queue-worker':
+      return (await import('./web-queue-worker/scene')).default;
     default:
       return null;
   }
