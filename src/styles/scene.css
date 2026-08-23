@@ -2981,3 +2981,272 @@
 .scene-req[data-req="lost"] .scene-req-ok-bg {
   fill: var(--muted);
 }
+
+/* ---------------------------------------------------------------- */
+/* Competing Consumers stage                                         */
+/* ---------------------------------------------------------------- */
+
+/* The queue is named from its top left and counted from its top right, with
+   the prefetch rule between them, because a chip slides along the row just
+   under that line on its way into a slot. */
+.cc-prefetch {
+  letter-spacing: 1px;
+}
+
+.cc-depth {
+  fill: var(--fg-soft);
+  font-size: 22px;
+}
+
+[data-depth="0"] .cc-depth--0,
+[data-depth="1"] .cc-depth--1,
+[data-depth="2"] .cc-depth--2,
+[data-depth="3"] .cc-depth--3,
+[data-depth="4"] .cc-depth--4,
+[data-depth="5"] .cc-depth--5,
+[data-depth="6"] .cc-depth--6,
+[data-depth="7"] .cc-depth--7,
+[data-depth="8"] .cc-depth--8,
+[data-depth="9"] .cc-depth--9,
+[data-depth="10"] .cc-depth--10 {
+  opacity: 1;
+}
+
+/* How long the message just taken had waited. It is named from x 430 rather
+   than from the margin, because the head column comes down the left of it. */
+.cc-lat-label {
+  letter-spacing: 1px;
+}
+
+.cc-lat-fill {
+  --fill-color: var(--request);
+}
+
+[data-latency="warn"] .cc-lat-fill {
+  --fill-color: var(--state-half);
+}
+
+[data-latency="hot"] .cc-lat-fill {
+  --fill-color: var(--state-open);
+}
+
+/* A message chip: outlined while it waits, filled while a consumer runs it,
+   green once acknowledged, amber once it has been round more than once, red
+   once it has been given up on. The note under it says which of the two green
+   endings this was, so a skipped duplicate never reads as work done twice. */
+.cc-chip-bg {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.cc-chip-text {
+  fill: var(--fg);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.cc-chip[data-chip="running"] .cc-chip-bg {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+.cc-chip[data-chip="done"] .cc-chip-bg,
+.cc-chip[data-chip="skipped"] .cc-chip-bg {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+}
+
+.cc-chip[data-chip="dead"] .cc-chip-bg {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+.cc-chip[data-chip="redelivered"] .cc-chip-bg {
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+.cc-chip[data-chip="duplicate"] .cc-chip-bg {
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 10 8;
+}
+
+.cc-chip[data-chip="running"] .cc-chip-text,
+.cc-chip[data-chip="done"] .cc-chip-text,
+.cc-chip[data-chip="skipped"] .cc-chip-text,
+.cc-chip[data-chip="dead"] .cc-chip-text {
+  fill: var(--bg);
+}
+
+.cc-chip-note {
+  fill: var(--fg-soft);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+.cc-chip[data-chip="done"] .cc-chip-ack,
+.cc-chip[data-chip="skipped"] .cc-chip-skip {
+  opacity: 1;
+}
+
+.cc-chip[data-chip="skipped"] .cc-chip-skip {
+  fill: var(--state-half);
+}
+
+/* Consumers. One is there from the first frame, two arrive with step 2 and two
+   more with step 4; the name sits under the bar because a chip stops well
+   above it and never travels that far down. */
+.cc-consumer-label {
+  fill: var(--fg-soft);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.cc-consumer[data-consumer="absent"] {
+  opacity: 0.4;
+}
+
+.cc-consumer[data-consumer="absent"] .cc-consumer-box {
+  stroke-dasharray: 16 14;
+}
+
+.cc-consumer[data-consumer="absent"] .cc-bar-track {
+  opacity: 0;
+}
+
+.cc-consumer[data-consumer="busy"] .cc-consumer-box {
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+.cc-consumer[data-consumer="fail"] .cc-consumer-box {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+/* A dead process is still on the stage, because the message it was holding is
+   the whole point of the step: dimmed, dashed, and struck through in red. */
+.cc-consumer[data-consumer="down"] {
+  opacity: 0.45;
+}
+
+.cc-consumer[data-consumer="down"] .cc-consumer-box {
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: 16 14;
+}
+
+.cc-bar-fill {
+  --fill-color: var(--request);
+}
+
+.cc-consumer[data-consumer="fail"] .cc-bar-fill,
+.cc-consumer[data-consumer="down"] .cc-bar-fill {
+  --fill-color: var(--state-open);
+}
+
+/* The three labels that come up for a moment. They share the strip above the
+   fan rail, which is the one band no chip crosses except the head column. */
+.cc-redeliver {
+  --flash-color: var(--state-half);
+
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.cc-warn {
+  --flash-color: var(--state-half);
+
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.cc-scale {
+  --flash-color: var(--accent);
+
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+[data-redeliver="on"] .cc-redeliver,
+[data-warn="on"] .cc-warn,
+[data-scale="on"] .cc-scale {
+  opacity: 1;
+}
+
+/* The dead-letter queue stands in the consumer row rather than under it: a
+   message reaches it along the same rail every other message travels, so no
+   column has to be cut through the row for it. */
+.cc-dlq-box {
+  stroke-dasharray: 16 14;
+  opacity: 0.4;
+}
+
+.cc-dlq-label {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  font-weight: 600;
+  opacity: 0.4;
+}
+
+[data-dlq="on"] .cc-dlq-box {
+  stroke: var(--state-open);
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+[data-dlq="on"] .cc-dlq-label {
+  fill: var(--fg);
+  opacity: 1;
+}
+
+/* One box below the consumers, holding whichever table the step needs: the ids
+   every consumer has already handled, and then the key each consumer owns. It
+   is drawn dashed because it is shared rather than owned by any one of them. */
+.cc-store-box {
+  fill: none;
+  stroke-dasharray: 14 12;
+  opacity: 0.55;
+}
+
+.cc-store-label {
+  font-size: 24px;
+  opacity: 0;
+}
+
+[data-store="seen"] .cc-store-label--seen,
+[data-store="keys"] .cc-store-label--keys {
+  opacity: 1;
+}
+
+.cc-entry {
+  opacity: 0;
+}
+
+[data-store="seen"] .cc-entry--seen[data-entry="on"],
+[data-store="keys"] .cc-entry--key[data-entry="on"] {
+  opacity: 1;
+}
+
+.cc-entry-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.cc-entry-text {
+  fill: var(--fg);
+  font-weight: 700;
+}
+
+.cc-entry-text--seen {
+  font-size: 20px;
+}
+
+.cc-entry-text--key {
+  font-size: 17px;
+}

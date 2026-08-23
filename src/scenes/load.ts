@@ -40,6 +40,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./request-timeout/scene')).default;
     case 'idempotency-key':
       return (await import('./idempotency-key/scene')).default;
+    case 'competing-consumers':
+      return (await import('./competing-consumers/scene')).default;
     default:
       return null;
   }

@@ -63,6 +63,10 @@ import {
   SCENE_DURATION as idempotencyKeyDuration,
   stageMarkup as idempotencyKeyStage,
 } from './idempotency-key/stage';
+import {
+  SCENE_DURATION as competingConsumersDuration,
+  stageMarkup as competingConsumersStage,
+} from './competing-consumers/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -143,6 +147,10 @@ const scenes: Record<string, SceneAsset> = {
   'idempotency-key': {
     markup: idempotencyKeyStage,
     duration: idempotencyKeyDuration,
+  },
+  'competing-consumers': {
+    markup: competingConsumersStage,
+    duration: competingConsumersDuration,
   },
 };
 
