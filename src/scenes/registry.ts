@@ -55,6 +55,10 @@ import {
   SCENE_DURATION as stranglerFigDuration,
   stageMarkup as stranglerFigStage,
 } from './strangler-fig/stage';
+import {
+  SCENE_DURATION as requestTimeoutDuration,
+  stageMarkup as requestTimeoutStage,
+} from './request-timeout/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -127,6 +131,10 @@ const scenes: Record<string, SceneAsset> = {
   'strangler-fig': {
     markup: stranglerFigStage,
     duration: stranglerFigDuration,
+  },
+  'request-timeout': {
+    markup: requestTimeoutStage,
+    duration: requestTimeoutDuration,
   },
 };
 

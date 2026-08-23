@@ -2604,3 +2604,180 @@
   font-size: 24px;
   font-weight: 700;
 }
+
+/* ---------------------------------------------------------------- */
+/* Request Timeout stage                                             */
+/* ---------------------------------------------------------------- */
+
+/* The waiting meter under the client box. It measures a person rather than a
+   network, so it is the one bar on this stage that is not milliseconds. */
+.rq-meter-fill {
+  --fill-color: var(--request);
+}
+
+[data-wait="over"] .rq-meter-fill {
+  --fill-color: var(--state-half);
+}
+
+[data-wait="gave"] .rq-meter-fill {
+  --fill-color: var(--state-open);
+}
+
+.rq-gaveup {
+  --flash-color: var(--state-open);
+
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+[data-wait="gave"] .rq-gaveup {
+  opacity: 1;
+}
+
+/* A thread the Service is holding. Empty is a thread free to take work, and
+   filled is one that is blocked on an answer that may never come. */
+.rq-thread {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 9 8;
+}
+
+/* The deadline the whole request runs on. It is only on the stage while a
+   request is carrying one. */
+.rq-gauge-group {
+  opacity: 0;
+}
+
+.scene-stage:not([data-deadline="off"]) .rq-gauge-group {
+  opacity: 1;
+}
+
+.rq-gauge-fill {
+  --fill-color: var(--state-closed);
+}
+
+[data-deadline="spent"] .rq-gauge-fill,
+[data-deadline="over"] .rq-gauge-fill {
+  --fill-color: var(--state-open);
+}
+
+/* What is left of the deadline, or how far past it the request has got. */
+.rq-budget {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-family: var(--font-mono);
+}
+
+[data-budget="800"] .rq-budget--800,
+[data-budget="700"] .rq-budget--700,
+[data-budget="600"] .rq-budget--600,
+[data-budget="500"] .rq-budget--500,
+[data-budget="400"] .rq-budget--400,
+[data-budget="300"] .rq-budget--300,
+[data-budget="200"] .rq-budget--200,
+[data-budget="100"] .rq-budget--100,
+[data-budget="0"] .rq-budget--0,
+[data-budget="over1"] .rq-budget--over1,
+[data-budget="over2"] .rq-budget--over2,
+[data-budget="over3"] .rq-budget--over3 {
+  opacity: 1;
+}
+
+[data-budget="0"] .rq-budget--0,
+[data-budget="over1"] .rq-budget--over1,
+[data-budget="over2"] .rq-budget--over2,
+[data-budget="over3"] .rq-budget--over3 {
+  fill: var(--state-open);
+}
+
+/* The three ceilings. They are settings, so they are on the stage from the
+   moment they are configured; the one that fires is the one that lights up. */
+.rq-limit {
+  fill: var(--muted);
+  font-size: 26px;
+  font-family: var(--font-mono);
+  opacity: 0;
+}
+
+[data-limits="on"] .rq-limit {
+  opacity: 1;
+}
+
+[data-limit="connect"] .rq-limit--connect,
+[data-limit="attempt"] .rq-limit--attempt {
+  fill: var(--state-open);
+  font-weight: 700;
+}
+
+/* A dependency. The bar is how far it has got with the work it was given, and
+   the colour says whether anybody is still waiting for the result. */
+.rq-bar--db-fill,
+.rq-bar--http-fill {
+  --fill-color: var(--request);
+}
+
+.rq-dep[data-work="stalled"] .scene-fill {
+  --fill-color: var(--state-half);
+}
+
+.rq-dep[data-work="ghost"] .scene-fill {
+  --fill-color: var(--muted);
+}
+
+.rq-dep[data-work="cancelled"] .scene-fill {
+  --fill-color: var(--state-closed);
+}
+
+.rq-dep[data-work="connecting"] .scene-track {
+  stroke: var(--state-half);
+  stroke-dasharray: 12 10;
+}
+
+.rq-dep[data-work="cancelled"] .scene-box {
+  stroke: var(--state-closed);
+}
+
+.rq-dep[data-work="stalled"] .scene-box,
+.rq-dep[data-work="ghost"] .scene-box {
+  stroke: var(--state-half);
+}
+
+/* What the box is doing, in the one word that explains the bar. */
+.rq-status {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.rq-dep[data-work="connecting"] .rq-status--connecting,
+.rq-dep[data-work="stalled"] .rq-status--stalled,
+.rq-dep[data-work="ghost"] .rq-status--ghost,
+.rq-dep[data-work="cancelled"] .rq-status--cancelled {
+  opacity: 1;
+}
+
+.rq-status--stalled,
+.rq-status--ghost {
+  fill: var(--state-half);
+}
+
+.rq-status--cancelled {
+  fill: var(--state-closed);
+}
+
+/* What a request carries above it: the budget it was handed down, or the
+   verdict it is taking home. */
+.rq-carry {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+/* The answer that arrives with nobody left to take it. */
+.rq-ghost .scene-req-dot {
+  fill: var(--muted);
+}

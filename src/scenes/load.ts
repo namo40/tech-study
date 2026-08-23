@@ -36,6 +36,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./command-query-responsibility-segregation/scene')).default;
     case 'strangler-fig':
       return (await import('./strangler-fig/scene')).default;
+    case 'request-timeout':
+      return (await import('./request-timeout/scene')).default;
     default:
       return null;
   }
