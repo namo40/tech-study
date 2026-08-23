@@ -40,6 +40,9 @@ export interface ClientBoxOptions {
   /** Top edge. Middleware sits its client box in a shorter band. */
   y?: number;
   height?: number;
+  /** Left edge and width, for a stage whose lane is not at x 540. */
+  x?: number;
+  width?: number;
   title: string;
   titleY: number;
   titleX?: number;
@@ -55,6 +58,8 @@ export interface ClientBoxOptions {
 export function clientBox({
   y = 440,
   height = 240,
+  x = 280,
+  width = 520,
   title,
   titleY,
   titleX = 540,
@@ -64,7 +69,7 @@ export function clientBox({
   children = '',
 }: ClientBoxOptions): string {
   return `<g class="scene-client${extraClass ? ` ${extraClass}` : ''}">
-    <rect class="scene-box" x="280" y="${y}" width="520" height="${height}" rx="${BOX_RADIUS}" />
+    <rect class="scene-box" x="${x}" y="${y}" width="${width}" height="${height}" rx="${BOX_RADIUS}" />
     <text class="${titleClass}" x="${titleX}" y="${titleY}"${anchorOf(titleAnchor)}>${title}</text>${children}
   </g>`;
 }

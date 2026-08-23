@@ -38,6 +38,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./strangler-fig/scene')).default;
     case 'request-timeout':
       return (await import('./request-timeout/scene')).default;
+    case 'idempotency-key':
+      return (await import('./idempotency-key/scene')).default;
     default:
       return null;
   }

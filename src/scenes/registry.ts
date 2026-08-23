@@ -59,6 +59,10 @@ import {
   SCENE_DURATION as requestTimeoutDuration,
   stageMarkup as requestTimeoutStage,
 } from './request-timeout/stage';
+import {
+  SCENE_DURATION as idempotencyKeyDuration,
+  stageMarkup as idempotencyKeyStage,
+} from './idempotency-key/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -135,6 +139,10 @@ const scenes: Record<string, SceneAsset> = {
   'request-timeout': {
     markup: requestTimeoutStage,
     duration: requestTimeoutDuration,
+  },
+  'idempotency-key': {
+    markup: idempotencyKeyStage,
+    duration: idempotencyKeyDuration,
   },
 };
 
