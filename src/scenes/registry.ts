@@ -47,6 +47,10 @@ import {
   SCENE_DURATION as webQueueWorkerDuration,
   stageMarkup as webQueueWorkerStage,
 } from './web-queue-worker/stage';
+import {
+  SCENE_DURATION as cqrsDuration,
+  stageMarkup as cqrsStage,
+} from './command-query-responsibility-segregation/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -111,6 +115,10 @@ const scenes: Record<string, SceneAsset> = {
   'web-queue-worker': {
     markup: webQueueWorkerStage,
     duration: webQueueWorkerDuration,
+  },
+  'command-query-responsibility-segregation': {
+    markup: cqrsStage,
+    duration: cqrsDuration,
   },
 };
 

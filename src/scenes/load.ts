@@ -32,6 +32,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./sticky-session/scene')).default;
     case 'web-queue-worker':
       return (await import('./web-queue-worker/scene')).default;
+    case 'command-query-responsibility-segregation':
+      return (await import('./command-query-responsibility-segregation/scene')).default;
     default:
       return null;
   }
