@@ -42,6 +42,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./idempotency-key/scene')).default;
     case 'competing-consumers':
       return (await import('./competing-consumers/scene')).default;
+    case 'load-balancer':
+      return (await import('./load-balancer/scene')).default;
     default:
       return null;
   }

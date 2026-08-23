@@ -3250,3 +3250,193 @@
 .cc-entry-text--key {
   font-size: 17px;
 }
+
+/* ---------------------------------------------------------------- */
+/* Load Balancer stage                                               */
+/* ---------------------------------------------------------------- */
+
+/* Connection lanes. Twelve of them drawn at full strength would read louder
+   than the servers they belong to, so they sit back until the balancer picks
+   one set, which is the only moment the routing decision is visible. */
+.lb-lane {
+  stroke-width: 4;
+  opacity: 0.4;
+}
+
+[data-fourth="absent"] .lb-lanes--4 .lb-lane {
+  stroke-dasharray: 14 12;
+  opacity: 0.22;
+}
+
+[data-pick="1"] .lb-lanes--1 .lb-lane,
+[data-pick="2"] .lb-lanes--2 .lb-lane,
+[data-pick="3"] .lb-lanes--3 .lb-lane,
+[data-pick="4"] .lb-lanes--4 .lb-lane {
+  stroke: var(--accent);
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+/* The policy, which is the one setting the whole scene turns. */
+.lb-policy-text {
+  fill: var(--fg);
+  font-size: 28px;
+  font-weight: 600;
+  opacity: 0;
+}
+
+[data-policy="round-robin"] .lb-policy-text--round-robin,
+[data-policy="least-connections"] .lb-policy-text--least-connections {
+  opacity: 1;
+}
+
+[data-policy="least-connections"] .lb-policy-bg {
+  stroke: var(--accent);
+}
+
+.lb-probe-label {
+  font-size: 22px;
+}
+
+/* The share of the traffic a warming server is given. It is off until there is
+   a warming server, and it steps rather than sliding, so a scrub always lands
+   on a value the balancer actually used. */
+.lb-share {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-weight: 600;
+  opacity: 0;
+}
+
+[data-share="1-8"] .lb-share--1-8,
+[data-share="1-6"] .lb-share--1-6,
+[data-share="1-5"] .lb-share--1-5,
+[data-share="1-4"] .lb-share--1-4 {
+  opacity: 1;
+}
+
+/* The balancer's table: what it believes about each server, which is all it
+   has to route from. A row it has taken out of the rotation goes quiet. */
+.lb-row-name {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.lb-count {
+  fill: var(--fg);
+  font-size: 24px;
+}
+
+.lb-row[data-active="0"] .lb-count--0,
+.lb-row[data-active="1"] .lb-count--1,
+.lb-row[data-active="2"] .lb-count--2,
+.lb-row[data-active="3"] .lb-count--3 {
+  opacity: 1;
+}
+
+.lb-row[data-row="out"] {
+  opacity: 0.35;
+}
+
+/* Servers. One that has not joined yet is an outline; one that has stopped
+   answering is outlined in the failure colour, whether or not the balancer has
+   noticed, because the reader is allowed to know before the probes do. */
+.lb-server-label {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.lb-server[data-server="absent"] .lb-server-box {
+  stroke-dasharray: 16 14;
+  opacity: 0.45;
+}
+
+.lb-server[data-server="absent"] .lb-server-label {
+  opacity: 0.5;
+}
+
+.lb-server[data-server="absent"] .lb-health,
+.lb-server[data-server="absent"] .lb-health-ring,
+.lb-server[data-server="absent"] .lb-meter-track,
+.lb-server[data-server="absent"] .lb-meter-fill {
+  opacity: 0;
+}
+
+.lb-server[data-server="broken"] .lb-server-box {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+/* The probe pulse, drawn around the health dot at the interval the node names.
+   Green when the server answered it, red when it did not. */
+.lb-probe {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+  opacity: 0;
+}
+
+.lb-server[data-probe="pass"] .lb-probe {
+  opacity: 0.85;
+}
+
+.lb-server[data-probe="fail"] .lb-probe {
+  stroke: var(--state-open);
+  opacity: 1;
+}
+
+/* The load meter, which is how full the server's connection lanes are. */
+.lb-meter-fill {
+  --fill-color: var(--state-closed);
+}
+
+.lb-server[data-load="busy"] .lb-meter-fill {
+  --fill-color: var(--state-half);
+}
+
+.lb-server[data-load="hot"] .lb-meter-fill {
+  --fill-color: var(--state-open);
+}
+
+/* The two rows under a server: what the probes decided, and whether the
+   balancer is still sending it anything. */
+.lb-verdict {
+  --flash-color: var(--state-open);
+
+  font-size: 22px;
+}
+
+.lb-verdict--warm {
+  --flash-color: var(--state-half);
+}
+
+.lb-server[data-verdict="unhealthy"] .lb-verdict--unhealthy,
+.lb-server[data-verdict="warm"] .lb-verdict--warm {
+  opacity: 1;
+}
+
+.lb-rotation {
+  --flash-color: var(--muted);
+
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.lb-rotation--in {
+  --flash-color: var(--state-closed);
+}
+
+.lb-server[data-rotation="out"] .lb-rotation--out,
+.lb-server[data-rotation="in"] .lb-rotation--in {
+  opacity: 1;
+}
+
+/* A server that has not joined yet is an outline with nothing to say about the
+   rotation, so the row stays empty until there is a server to be out of it.
+   `out` on a live server is deliberate: server 4 is up from 18.3 but the
+   balancer sends it nothing until its second probe passes. */
+.lb-server[data-server="absent"] .scene-flash.lb-rotation {
+  opacity: 0;
+}

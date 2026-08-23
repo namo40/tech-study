@@ -63,6 +63,7 @@ const SCENE_IDS = [
   'request-timeout',
   'idempotency-key',
   'competing-consumers',
+  'load-balancer',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */

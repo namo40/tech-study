@@ -67,6 +67,10 @@ import {
   SCENE_DURATION as competingConsumersDuration,
   stageMarkup as competingConsumersStage,
 } from './competing-consumers/stage';
+import {
+  SCENE_DURATION as loadBalancerDuration,
+  stageMarkup as loadBalancerStage,
+} from './load-balancer/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -151,6 +155,10 @@ const scenes: Record<string, SceneAsset> = {
   'competing-consumers': {
     markup: competingConsumersStage,
     duration: competingConsumersDuration,
+  },
+  'load-balancer': {
+    markup: loadBalancerStage,
+    duration: loadBalancerDuration,
   },
 };
 
