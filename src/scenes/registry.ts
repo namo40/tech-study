@@ -75,6 +75,10 @@ import {
   SCENE_DURATION as materializedViewDuration,
   stageMarkup as materializedViewStage,
 } from './materialized-view/stage';
+import {
+  SCENE_DURATION as deadlockDuration,
+  stageMarkup as deadlockStage,
+} from './deadlock/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -167,6 +171,10 @@ const scenes: Record<string, SceneAsset> = {
   'materialized-view': {
     markup: materializedViewStage,
     duration: materializedViewDuration,
+  },
+  deadlock: {
+    markup: deadlockStage,
+    duration: deadlockDuration,
   },
 };
 

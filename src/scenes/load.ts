@@ -46,6 +46,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./load-balancer/scene')).default;
     case 'materialized-view':
       return (await import('./materialized-view/scene')).default;
+    case 'deadlock':
+      return (await import('./deadlock/scene')).default;
     default:
       return null;
   }
