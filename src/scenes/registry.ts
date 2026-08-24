@@ -83,6 +83,7 @@ import {
   SCENE_DURATION as deadlockDuration,
   stageMarkup as deadlockStage,
 } from './deadlock/stage';
+import { SCENE_DURATION as sagaDuration, stageMarkup as sagaStage } from './saga/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -183,6 +184,10 @@ const scenes: Record<string, SceneAsset> = {
   'replication-lag': {
     markup: replicationLagStage,
     duration: replicationLagDuration,
+  },
+  saga: {
+    markup: sagaStage,
+    duration: sagaDuration,
   },
 };
 

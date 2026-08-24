@@ -50,6 +50,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./deadlock/scene')).default;
     case 'replication-lag':
       return (await import('./replication-lag/scene')).default;
+    case 'saga':
+      return (await import('./saga/scene')).default;
     default:
       return null;
   }

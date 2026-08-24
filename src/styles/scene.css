@@ -4280,3 +4280,282 @@
 [data-lost="on"] .rl-rpo {
   opacity: 1;
 }
+
+/* ---------------------------------------------------------------- */
+/* Saga stage                                                        */
+/* ---------------------------------------------------------------- */
+
+/* The coordination band is drawn twice over. While the services call each
+   other it is the bus and the subscriptions it delivers by; once a coordinator
+   is there it is the saga itself, its id and the state it has reached. Only one
+   of the two is ever on, which is why the state row may span the band: the
+   trunk carries nothing through it while a coordinator is holding the order. */
+.sg-node-label--saga,
+.sg-saga-id,
+.sg-cell {
+  opacity: 0;
+}
+
+[data-mode="orchestration"] .scene-node > .scene-node-label:not(.sg-node-label--saga),
+[data-mode="orchestration"] .sg-rule {
+  opacity: 0;
+}
+
+[data-mode="orchestration"] .sg-node-label--saga,
+[data-mode="orchestration"] .sg-saga-id,
+[data-mode="orchestration"] .sg-cell {
+  opacity: 1;
+}
+
+.sg-rule {
+  fill: var(--fg-soft);
+  font-size: 19px;
+}
+
+.sg-saga-id-text {
+  fill: var(--fg);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* One cell per state the saga can be in, of which one is lit. Blue while the
+   order is still moving, green once it is done, red once it has been undone. */
+.sg-cell-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.sg-cell-text {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+[data-state="submitted"] .sg-cell--submitted .sg-cell-bg,
+[data-state="paid"] .sg-cell--paid .sg-cell-bg,
+[data-state="reserved"] .sg-cell--reserved .sg-cell-bg {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+[data-state="confirmed"] .sg-cell--confirmed .sg-cell-bg {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+}
+
+[data-state="cancelled"] .sg-cell--cancelled .sg-cell-bg {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+[data-state="submitted"] .sg-cell--submitted .sg-cell-text,
+[data-state="paid"] .sg-cell--paid .sg-cell-text,
+[data-state="reserved"] .sg-cell--reserved .sg-cell-text,
+[data-state="confirmed"] .sg-cell--confirmed .sg-cell-text,
+[data-state="cancelled"] .sg-cell--cancelled .sg-cell-text {
+  fill: var(--bg);
+}
+
+/* The step that cannot be undone, and what a coordinator does past it. */
+.sg-pivot {
+  fill: var(--state-half);
+  font-size: 22px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-mode="orchestration"][data-pivot="on"] .sg-pivot {
+  opacity: 1;
+}
+
+.sg-retry {
+  fill: var(--state-half);
+  font-size: 22px;
+}
+
+[data-retry="1"] .sg-retry--1,
+[data-retry="2"] .sg-retry--2 {
+  opacity: 1;
+}
+
+/* A service: the bar its local transaction fills, and the result it reached.
+   Amber is the colour of an undo throughout, on the bar, on the box and on the
+   row that is left behind, because compensating is not the same as failing. */
+.sg-tx-label {
+  font-size: 22px;
+}
+
+.sg-bar-fill {
+  --fill-color: var(--request);
+}
+
+.sg-svc[data-tx="ok"] .sg-bar-fill {
+  --fill-color: var(--state-closed);
+}
+
+.sg-svc[data-tx="fail"] .sg-bar-fill {
+  --fill-color: var(--state-open);
+}
+
+.sg-svc[data-tx="undo-run"] .sg-bar-fill,
+.sg-svc[data-tx="undo"] .sg-bar-fill {
+  --fill-color: var(--state-half);
+}
+
+.sg-svc[data-tx="fail"] .sg-svc-box {
+  stroke: var(--state-open);
+}
+
+.sg-svc[data-tx="undo-run"] .sg-svc-box,
+.sg-svc[data-tx="undo"] .sg-svc-box {
+  stroke: var(--state-half);
+}
+
+.sg-mark {
+  opacity: 0;
+}
+
+.sg-svc[data-tx="ok"] .sg-mark--ok,
+.sg-svc[data-tx="fail"] .sg-mark--fail,
+.sg-svc[data-tx="undo"] .sg-mark--undo {
+  opacity: 1;
+}
+
+.sg-mark-bg {
+  fill: var(--state-closed);
+}
+
+.sg-mark--fail .sg-mark-bg {
+  fill: var(--state-open);
+}
+
+.sg-mark--undo .sg-mark-bg {
+  fill: var(--state-half);
+}
+
+.sg-mark-glyph {
+  fill: none;
+  stroke: var(--bg);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The row a service wrote. It is the only thing on the stage that outlives the
+   step that wrote it, so an order that was undone still says so afterwards. */
+.sg-rec[data-rec="none"] {
+  opacity: 0;
+}
+
+.sg-rec-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.sg-rec[data-rec="confirmed"] .sg-rec-bg {
+  stroke: var(--state-closed);
+}
+
+.sg-rec[data-rec="cancelled"] .sg-rec-bg,
+.sg-rec[data-rec="refunded"] .sg-rec-bg,
+.sg-rec[data-rec="released"] .sg-rec-bg {
+  stroke: var(--state-half);
+}
+
+.sg-rec-text {
+  fill: var(--fg);
+  font-size: 22px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.sg-rec[data-rec="open"] .sg-rec-text--open,
+.sg-rec[data-rec="confirmed"] .sg-rec-text--confirmed,
+.sg-rec[data-rec="cancelled"] .sg-rec-text--cancelled,
+.sg-rec[data-rec="charged"] .sg-rec-text--charged,
+.sg-rec[data-rec="refunded"] .sg-rec-text--refunded,
+.sg-rec[data-rec="reserved"] .sg-rec-text--reserved,
+.sg-rec[data-rec="released"] .sg-rec-text--released {
+  opacity: 1;
+}
+
+/* What travels between the boxes: an event with a diamond on it, or a command
+   with room on the right for the answer it comes back with. */
+.sg-chip-bg {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.sg-chip--command .sg-chip-bg {
+  stroke: var(--request);
+}
+
+.sg-chip[data-result="ok"] .sg-chip-bg {
+  stroke: var(--state-closed);
+}
+
+.sg-chip[data-result="fail"] .sg-chip-bg {
+  stroke: var(--state-open);
+}
+
+.sg-chip[data-result="undo"] .sg-chip-bg {
+  stroke: var(--state-half);
+}
+
+.sg-chip-text {
+  fill: var(--fg);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.sg-chip-diamond {
+  fill: var(--request);
+}
+
+.sg-chip[data-result="fail"] .sg-chip-diamond {
+  fill: var(--state-open);
+}
+
+.sg-chip[data-result="undo"] .sg-chip-diamond {
+  fill: var(--state-half);
+}
+
+.sg-chip-mark {
+  opacity: 0;
+}
+
+.sg-chip[data-result="ok"] .sg-chip-mark--ok,
+.sg-chip[data-result="fail"] .sg-chip-mark--fail,
+.sg-chip[data-result="undo"] .sg-chip-mark--undo {
+  opacity: 1;
+}
+
+.sg-chip-mark-bg {
+  fill: var(--state-closed);
+}
+
+.sg-chip-mark--fail .sg-chip-mark-bg {
+  fill: var(--state-open);
+}
+
+.sg-chip-mark--undo .sg-chip-mark-bg {
+  fill: var(--state-half);
+}
+
+.sg-chip-mark-glyph {
+  fill: none;
+  stroke: var(--bg);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The Client only ever gets a cross when a saga was undone rather than lost, so
+   the marker is amber here: the order did not happen, and nothing is left half
+   done. The glyph still says failure, so the colour is not carrying it alone. */
+.scene-req:not(.sg-chip) .scene-req-fail-bg {
+  fill: var(--state-half);
+}
