@@ -84,6 +84,10 @@ import {
   stageMarkup as deadlockStage,
 } from './deadlock/stage';
 import { SCENE_DURATION as sagaDuration, stageMarkup as sagaStage } from './saga/stage';
+import {
+  SCENE_DURATION as distributedLockDuration,
+  stageMarkup as distributedLockStage,
+} from './distributed-lock/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -188,6 +192,10 @@ const scenes: Record<string, SceneAsset> = {
   saga: {
     markup: sagaStage,
     duration: sagaDuration,
+  },
+  'distributed-lock': {
+    markup: distributedLockStage,
+    duration: distributedLockDuration,
   },
 };
 

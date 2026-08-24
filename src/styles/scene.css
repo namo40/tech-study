@@ -4559,3 +4559,272 @@
 .scene-req:not(.sg-chip) .scene-req-fail-bg {
   fill: var(--state-half);
 }
+/* ---------------------------------------------------------------- */
+/* Distributed Lock stage                                            */
+/* ---------------------------------------------------------------- */
+
+/* Two instances, and the whole scene is about telling them apart: blue is the
+   one that took the key first, amber is the one that waited for it. Every
+   traveller, every log cell and every box border answers to those two. */
+.dk-inst--a .scene-box {
+  stroke: var(--request);
+}
+
+.dk-inst--b .scene-box {
+  stroke: var(--state-half);
+}
+
+.dk-inst--a .dk-inst-title {
+  fill: var(--request);
+}
+
+.dk-inst--b .dk-inst-title {
+  fill: var(--state-half);
+}
+
+/* A paused instance is drawn as absent rather than as failed: it has not
+   crashed, it simply is not answering, and that is the point of the step. */
+[data-a="paused"] .dk-inst--a .scene-box,
+[data-b="paused"] .dk-inst--b .scene-box {
+  stroke: var(--muted);
+  stroke-dasharray: 14 12;
+}
+
+[data-a="paused"] .dk-inst--a .dk-inst-title,
+[data-b="paused"] .dk-inst--b .dk-inst-title {
+  fill: var(--muted);
+}
+
+.dk-inst-state {
+  font-size: 26px;
+}
+
+.dk-inst-state--running {
+  --flash-color: var(--state-closed);
+}
+
+.dk-inst-state--waiting {
+  --flash-color: var(--fg-soft);
+}
+
+.dk-inst-state--paused {
+  --flash-color: var(--muted);
+}
+
+[data-a="running"] .dk-inst--a .dk-inst-state--running,
+[data-a="waiting"] .dk-inst--a .dk-inst-state--waiting,
+[data-a="paused"] .dk-inst--a .dk-inst-state--paused,
+[data-b="running"] .dk-inst--b .dk-inst-state--running,
+[data-b="waiting"] .dk-inst--b .dk-inst-state--waiting,
+[data-b="paused"] .dk-inst--b .dk-inst-state--paused {
+  opacity: 1;
+}
+
+/* The lock row. One key, and three things the service knows about it: who has
+   it, how long it has left, and which token that holder was handed. */
+.dk-card {
+  fill: var(--surface-2);
+}
+
+.dk-field-name {
+  font-size: 22px;
+}
+
+.dk-value {
+  fill: var(--fg);
+  font-size: 26px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.dk-value--key-fixed,
+[data-owner="none"] .dk-value--owner-none,
+[data-owner="a"] .dk-value--owner-a,
+[data-owner="b"] .dk-value--owner-b,
+[data-ttl="none"] .dk-value--TTL-none,
+[data-ttl="set"] .dk-value--TTL-set,
+[data-token="none"] .dk-value--token-none,
+[data-token="33"] .dk-value--token-33,
+[data-token="34"] .dk-value--token-34,
+[data-token="35"] .dk-value--token-35,
+[data-token="36"] .dk-value--token-36,
+[data-token="37"] .dk-value--token-37,
+[data-token="38"] .dk-value--token-38 {
+  opacity: 1;
+}
+
+[data-owner="a"] .dk-value--owner-a {
+  fill: var(--request);
+}
+
+[data-owner="b"] .dk-value--owner-b {
+  fill: var(--state-half);
+}
+
+/* The lease, drawn as an arc that drains. It is green while it is running
+   because a lease that is being renewed is the healthy case; when it reaches
+   zero the arc is simply gone and the word takes over. */
+.dk-ttl {
+  --ring-width: 12;
+  --ring-color: var(--state-closed);
+}
+
+[data-lease="held"] .dk-ttl {
+  opacity: 1;
+}
+
+.dk-expired {
+  --flash-color: var(--state-open);
+  font-size: 24px;
+}
+
+.dk-renew {
+  --flash-color: var(--state-closed);
+  font-size: 24px;
+}
+
+[data-expiry="on"] .dk-expired,
+[data-tick="on"] .dk-renew {
+  opacity: 1;
+}
+
+/* Storage. The report is one value with a version on it, and once fencing is
+   on Storage also says out loud the highest token it has accepted. */
+.dk-fencing {
+  --flash-color: var(--state-half);
+  font-size: 22px;
+}
+
+[data-fencing="on"] .dk-fencing {
+  opacity: 1;
+}
+
+.dk-report-text {
+  fill: var(--fg);
+  font-size: 30px;
+}
+
+[data-value="v3"] .dk-report-text--v3,
+[data-value="v4"] .dk-report-text--v4,
+[data-value="v5"] .dk-report-text--v5,
+[data-value="v6"] .dk-report-text--v6,
+[data-value="v7"] .dk-report-text--v7,
+[data-value="broken"] .dk-report-text--broken {
+  opacity: 1;
+}
+
+[data-value="broken"] .dk-report-text--broken {
+  fill: var(--state-open);
+}
+
+[data-value="broken"] .dk-report-bg {
+  stroke: var(--state-open);
+}
+
+.dk-last-token {
+  fill: var(--fg);
+  font-size: 26px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-fencing="on"][data-last-token="36"] .dk-last-token--36,
+[data-fencing="on"][data-last-token="37"] .dk-last-token--37,
+[data-fencing="on"][data-last-token="38"] .dk-last-token--38 {
+  opacity: 1;
+}
+
+.dk-rejected {
+  --flash-color: var(--state-open);
+  font-size: 22px;
+}
+
+[data-verdict="rejected"] .dk-rejected {
+  opacity: 1;
+}
+
+/* The write log: the order the writes actually landed in, which is the one
+   thing neither instance can see for itself. */
+.dk-log-frame {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+[data-log="corrupt"] .dk-log-frame {
+  stroke: var(--state-open);
+}
+
+.dk-log-label {
+  font-size: 22px;
+}
+
+.dk-slot-box {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.dk-slot-text {
+  fill: var(--bg);
+  font-size: 30px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.dk-slot[data-slot="none"] {
+  opacity: 0;
+}
+
+.dk-slot[data-slot="a"] .dk-slot-box {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+.dk-slot[data-slot="b"] .dk-slot-box {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+}
+
+.dk-slot[data-slot="a"] .dk-slot-text--a,
+.dk-slot[data-slot="b"] .dk-slot-text--b {
+  opacity: 1;
+}
+
+.dk-corrupt {
+  --flash-color: var(--state-open);
+  font-size: 26px;
+}
+
+[data-log="corrupt"] .dk-corrupt {
+  opacity: 1;
+}
+
+/* What travels. A lock call is a dot, sized by what it is asking for; a write
+   is a square, because a write is the thing that changes what the report says
+   and it carries its token with it once Storage is checking them. */
+.dk-req--b .scene-req-dot {
+  fill: var(--state-half);
+}
+
+.dk-req--release .scene-req-dot {
+  fill: var(--fg-soft);
+}
+
+.dk-req--renew .scene-req-dot {
+  fill: var(--state-closed);
+}
+
+.dk-req-write {
+  fill: var(--request);
+}
+
+.dk-req--b .dk-req-write {
+  fill: var(--state-half);
+}
+
+.dk-req-token {
+  fill: var(--bg);
+  font-size: 22px;
+  font-weight: 700;
+}
