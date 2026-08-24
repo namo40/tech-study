@@ -92,6 +92,7 @@ import {
   SCENE_DURATION as authorizationCodeDuration,
   stageMarkup as authorizationCodeStage,
 } from './authorization-code/stage';
+import { SCENE_DURATION as corsDuration, stageMarkup as corsStage } from './cors/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -204,6 +205,10 @@ const scenes: Record<string, SceneAsset> = {
   'authorization-code': {
     markup: authorizationCodeStage,
     duration: authorizationCodeDuration,
+  },
+  cors: {
+    markup: corsStage,
+    duration: corsDuration,
   },
 };
 

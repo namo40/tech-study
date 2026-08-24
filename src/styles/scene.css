@@ -5197,3 +5197,371 @@
 .ac-req--ghost .ac-chip-text {
   fill: var(--fg-soft);
 }
+
+/* ---------------------------------------------------------------- */
+/* CORS stage                                                        */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Two things decide everything on this stage, and they are drawn apart on
+ * purpose: the browser's gate in the middle, which only ever looks at answers,
+ * and the server's policy table at the bottom, which is what the gate is
+ * reading out. The shell beside the browser is drawn in the same weight as the
+ * browser rather than dimmed, because it is not an attacker: it is an ordinary
+ * client that simply has no gate in it.
+ */
+
+/* The Browser: two tabs, of which one is the page making the call. */
+.cors-tab-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.cors-tab-text {
+  fill: var(--fg-soft);
+  font-size: 20px;
+}
+
+[data-tab="shop"] .cors-tab--shop .cors-tab-bg {
+  stroke: var(--request);
+}
+
+[data-tab="shop"] .cors-tab--shop .cors-tab-text {
+  fill: var(--request);
+}
+
+[data-tab="evil"] .cors-tab--evil .cors-tab-bg {
+  stroke: var(--state-open);
+}
+
+[data-tab="evil"] .cors-tab--evil .cors-tab-text {
+  fill: var(--state-open);
+}
+
+/* What a blocked answer leaves behind, which is all the page ever sees of it. */
+.cors-console {
+  --flash-color: var(--state-open);
+  font-family: var(--font-mono);
+  font-size: 20px;
+}
+
+[data-console="on"] .cors-console {
+  opacity: 1;
+}
+
+/* Who answered the call to the page's own origin, which is off stage. */
+.cors-same {
+  --flash-color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 18px;
+}
+
+[data-same="on"] .cors-same {
+  opacity: 1;
+}
+
+/* The client that is not a browser, and so has nothing to enforce. */
+.cors-curl .scene-node-title,
+.cors-curl-caption {
+  fill: var(--muted);
+}
+
+[data-curl="active"] .cors-curl .scene-node-title {
+  fill: var(--cpu);
+}
+
+[data-curl="active"] .cors-curl .scene-box {
+  stroke: var(--cpu);
+}
+
+/* The gate: a cell on the lane, with two leaves that meet or part. */
+.cors-gate-cell {
+  fill: var(--surface-2);
+}
+
+.cors-leaf {
+  fill: var(--muted);
+}
+
+.cors-leaves--open {
+  opacity: 0;
+}
+
+[data-gate="open"] .cors-leaves--shut {
+  opacity: 0;
+}
+
+[data-gate="open"] .cors-leaves--open {
+  opacity: 1;
+}
+
+[data-gate="open"] .cors-leaf {
+  fill: var(--state-closed);
+}
+
+[data-gate="blocked"] .cors-leaf {
+  fill: var(--state-open);
+}
+
+[data-gate="blocked"] .cors-gate-cell {
+  stroke: var(--state-open);
+}
+
+/* What the browser wrote down on the way out, and read on the way back. */
+.cors-origin,
+.cors-acao,
+.cors-acac,
+.cors-header-name {
+  font-size: 16px;
+  opacity: 0;
+}
+
+.cors-header-name {
+  fill: var(--fg-soft);
+}
+
+.cors-origin,
+.cors-acao {
+  fill: var(--fg);
+}
+
+.cors-acac {
+  fill: var(--state-closed);
+}
+
+[data-origin="shop"] .cors-origin--shop,
+[data-origin="evil"] .cors-origin--evil {
+  opacity: 1;
+}
+
+[data-acao="none"] .cors-acao--none,
+[data-acao="origin"] .cors-acao--origin,
+[data-acao="wildcard"] .cors-acao--wildcard,
+[data-acao="none"] .cors-header-name,
+[data-acao="origin"] .cors-header-name,
+[data-acao="wildcard"] .cors-header-name {
+  opacity: 1;
+}
+
+[data-acao="none"] .cors-acao--none {
+  fill: var(--muted);
+}
+
+[data-acac="on"] .cors-acac {
+  opacity: 1;
+}
+
+/* What the gate decided, said in words as well as in colour. */
+.cors-verdict {
+  font-family: var(--font-mono);
+  font-size: 22px;
+}
+
+.cors-verdict--allowed {
+  --flash-color: var(--state-closed);
+}
+
+.cors-verdict--blocked,
+.cors-verdict--method,
+.cors-verdict--credentials {
+  --flash-color: var(--state-open);
+}
+
+[data-verdict="allowed"] .cors-verdict--allowed,
+[data-verdict="blocked"] .cors-verdict--blocked,
+[data-verdict="method"] .cors-verdict--method,
+[data-verdict="credentials"] .cors-verdict--credentials {
+  opacity: 1;
+}
+
+/* The preflight answer the browser is still holding, and how long it has left. */
+.cors-cache {
+  opacity: 0;
+}
+
+.cors-cache-line {
+  font-size: 16px;
+}
+
+.cors-maxage-fill {
+  --fill-color: var(--state-half);
+}
+
+[data-cache="live"] .cors-cache,
+[data-cache="hit"] .cors-cache {
+  opacity: 1;
+}
+
+[data-cache="hit"] .cors-cache-label,
+[data-cache="hit"] .cors-cache-line {
+  fill: var(--state-closed);
+}
+
+/* api.example: what it is configured to allow, and what it has run. */
+.cors-api .scene-node-title {
+  fill: var(--fg);
+}
+
+[data-hit="on"] .cors-api-box {
+  stroke: var(--state-open);
+}
+
+.cors-handled {
+  fill: var(--fg-soft);
+  font-size: 32px;
+}
+
+[data-handled="0"] .cors-handled--0,
+[data-handled="1"] .cors-handled--1,
+[data-handled="2"] .cors-handled--2,
+[data-handled="3"] .cors-handled--3,
+[data-handled="4"] .cors-handled--4 {
+  opacity: 1;
+}
+
+.cors-policy-name {
+  fill: var(--fg-soft);
+  font-size: 16px;
+}
+
+.cors-policy-value {
+  fill: var(--fg);
+  font-size: 16px;
+  opacity: 0;
+}
+
+[data-origins="none"] .cors-policy-row--origins .cors-policy-value--none,
+[data-origins="shop"] .cors-policy-row--origins .cors-policy-value--shop,
+[data-origins="any"] .cors-policy-row--origins .cors-policy-value--any,
+[data-methods="none"] .cors-policy-row--methods .cors-policy-value--none,
+[data-methods="set"] .cors-policy-row--methods .cors-policy-value--set,
+[data-headers="none"] .cors-policy-row--headers .cors-policy-value--none,
+[data-headers="set"] .cors-policy-row--headers .cors-policy-value--set,
+[data-samesite="none"] .cors-policy-row--samesite .cors-policy-value--none,
+[data-samesite="lax"] .cors-policy-row--samesite .cors-policy-value--lax,
+[data-antiforgery="off"] .cors-policy-row--antiforgery .cors-policy-value--off,
+[data-antiforgery="on"] .cors-policy-row--antiforgery .cors-policy-value--on {
+  opacity: 1;
+}
+
+.cors-policy-value--none,
+.cors-policy-value--off {
+  fill: var(--muted);
+}
+
+.cors-policy-value--any {
+  fill: var(--state-half);
+}
+
+.cors-policy-value--lax,
+.cors-policy-value--on {
+  fill: var(--state-closed);
+}
+
+/* What the server did with the last call that would have changed something. */
+.cors-note {
+  font-family: var(--font-mono);
+  font-size: 20px;
+}
+
+.cors-note--executed {
+  --flash-color: var(--state-open);
+}
+
+.cors-note--refused {
+  --flash-color: var(--state-closed);
+}
+
+[data-note="executed"] .cors-note--executed,
+[data-note="refused"] .cors-note--refused {
+  opacity: 1;
+}
+
+/*
+ * What travels. A call from the shell is a plain dot, because nothing about it
+ * is a browser's business; a call from a page is a plate with the method on it,
+ * which becomes `response` when it turns around, and under it the small plate
+ * that says what the browser attached to it.
+ */
+.cors-chip-bg {
+  fill: var(--request);
+}
+
+.cors-chip-text {
+  fill: var(--bg);
+  font-size: 20px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.cors-req[data-method="GET"] .cors-chip-text--get,
+.cors-req[data-method="PUT"] .cors-chip-text--put,
+.cors-req[data-method="POST"] .cors-chip-text--post,
+.cors-req[data-method="DELETE"] .cors-chip-text--delete,
+.cors-req[data-method="OPTIONS"] .cors-chip-text--options,
+.cors-req[data-method="response"] .cors-chip-text--response {
+  opacity: 1;
+}
+
+.cors-req--preflight .cors-chip-bg {
+  fill: var(--state-half);
+}
+
+.cors-req[data-method="response"] .cors-chip-bg {
+  fill: var(--fg-soft);
+}
+
+.cors-tag {
+  opacity: 0;
+}
+
+.cors-tag-bg {
+  fill: var(--cpu);
+}
+
+.cors-tag-text {
+  fill: var(--bg);
+  font-size: 16px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.cors-tag-strike {
+  stroke: var(--bg);
+  stroke-width: 3;
+  opacity: 0;
+}
+
+.cors-req[data-tag="cookie"] .cors-tag,
+.cors-req[data-tag="dropped"] .cors-tag,
+.cors-req[data-tag="token"] .cors-tag,
+.cors-req[data-tag="put"] .cors-tag,
+.cors-req[data-tag="delete"] .cors-tag {
+  opacity: 1;
+}
+
+.cors-req[data-tag="cookie"] .cors-tag-text--cookie,
+.cors-req[data-tag="dropped"] .cors-tag-text--cookie,
+.cors-req[data-tag="token"] .cors-tag-text--token,
+.cors-req[data-tag="put"] .cors-tag-text--put,
+.cors-req[data-tag="delete"] .cors-tag-text--delete {
+  opacity: 1;
+}
+
+.cors-req[data-tag="dropped"] .cors-tag-bg {
+  fill: var(--muted);
+}
+
+.cors-req[data-tag="dropped"] .cors-tag-strike {
+  opacity: 1;
+}
+
+.cors-req[data-tag="token"] .cors-tag-bg {
+  fill: var(--state-closed);
+}
+
+.cors-req[data-tag="put"] .cors-tag-bg,
+.cors-req[data-tag="delete"] .cors-tag-bg {
+  fill: var(--state-half);
+}
