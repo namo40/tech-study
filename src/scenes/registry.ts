@@ -88,6 +88,10 @@ import {
   SCENE_DURATION as distributedLockDuration,
   stageMarkup as distributedLockStage,
 } from './distributed-lock/stage';
+import {
+  SCENE_DURATION as authorizationCodeDuration,
+  stageMarkup as authorizationCodeStage,
+} from './authorization-code/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -196,6 +200,10 @@ const scenes: Record<string, SceneAsset> = {
   'distributed-lock': {
     markup: distributedLockStage,
     duration: distributedLockDuration,
+  },
+  'authorization-code': {
+    markup: authorizationCodeStage,
+    duration: authorizationCodeDuration,
   },
 };
 
