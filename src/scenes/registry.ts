@@ -76,6 +76,10 @@ import {
   stageMarkup as materializedViewStage,
 } from './materialized-view/stage';
 import {
+  SCENE_DURATION as replicationLagDuration,
+  stageMarkup as replicationLagStage,
+} from './replication-lag/stage';
+import {
   SCENE_DURATION as deadlockDuration,
   stageMarkup as deadlockStage,
 } from './deadlock/stage';
@@ -175,6 +179,10 @@ const scenes: Record<string, SceneAsset> = {
   deadlock: {
     markup: deadlockStage,
     duration: deadlockDuration,
+  },
+  'replication-lag': {
+    markup: replicationLagStage,
+    duration: replicationLagDuration,
   },
 };
 
