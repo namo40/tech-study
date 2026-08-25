@@ -60,6 +60,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./cors/scene')).default;
     case 'distributed-tracing':
       return (await import('./distributed-tracing/scene')).default;
+    case 'horizontal-pod-autoscaler':
+      return (await import('./horizontal-pod-autoscaler/scene')).default;
     default:
       return null;
   }

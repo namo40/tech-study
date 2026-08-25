@@ -5859,3 +5859,414 @@
 .dt-req[data-slow="1"] .scene-req-ok-bg {
   fill: var(--state-half);
 }
+
+/* ---------------------------------------------------------------- */
+/* Horizontal Pod Autoscaler stage                                   */
+/* ---------------------------------------------------------------- */
+
+/* The eight lanes into the pod row. Drawn at full strength they would read
+   louder than the pods they belong to, so they sit back and let the row and
+   the dots travelling down them carry the picture. */
+.hpa-lane {
+  stroke-width: 4;
+  opacity: 0.4;
+}
+
+/* What the clients are waiting. The bar and the word read off the same number,
+   so the band is stated as well as coloured. */
+.hpa-lat-fill {
+  --fill-color: var(--state-closed);
+}
+
+[data-latency="slow"] .hpa-lat-fill {
+  --fill-color: var(--state-half);
+}
+
+[data-latency="overload"] .hpa-lat-fill {
+  --fill-color: var(--state-open);
+}
+
+.hpa-lat-word {
+  --flash-color: var(--state-closed);
+
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+
+.hpa-lat-word--slow {
+  --flash-color: var(--state-half);
+}
+
+.hpa-lat-word--overload {
+  --flash-color: var(--state-open);
+}
+
+[data-latency="fast"] .hpa-lat-word--fast,
+[data-latency="slow"] .hpa-lat-word--slow,
+[data-latency="overload"] .hpa-lat-word--overload {
+  opacity: 1;
+}
+
+/* The arrival rate, which is the one thing about the scene that is an input. */
+.hpa-rps {
+  fill: var(--fg);
+  font-size: 28px;
+}
+[data-rps="20"] .hpa-rps--20,
+[data-rps="45"] .hpa-rps--45,
+[data-rps="60"] .hpa-rps--60,
+[data-rps="120"] .hpa-rps--120 {
+  opacity: 1;
+}
+
+/* The autoscaler's configuration: the two limits it clamps to, and the metric
+   it is told to hold, which is the one line of it step 4 changes. */
+.hpa-limits {
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+
+.hpa-config {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-weight: 600;
+  opacity: 0;
+}
+
+[data-metric="cpu"] .hpa-config--cpu,
+[data-metric="queue"] .hpa-config--queue {
+  opacity: 1;
+}
+
+[data-metric="queue"] .hpa-config--queue {
+  fill: var(--accent);
+}
+
+/* Why a CPU percentage is a percentage of anything at all. */
+.hpa-request-note {
+  --flash-color: var(--cpu);
+
+  font-size: 22px;
+}
+
+[data-request-note="on"] .hpa-request-note {
+  opacity: 1;
+}
+
+/* The formula: the shape it always has, and under it the same formula with the
+   values this tick read written into it. */
+.hpa-formula {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.hpa-live {
+  fill: var(--fg);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.hpa-live-fixed {
+  fill: var(--fg-soft);
+  font-weight: 400;
+}
+
+.scene-counter.hpa-replicas,
+.scene-counter.hpa-avg,
+.scene-counter.hpa-qavg,
+.scene-counter.hpa-des {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 28px;
+}
+
+.scene-counter.hpa-des {
+  fill: var(--accent);
+}
+
+/* One average field per unit, so the scene never has to draw a percent sign on
+   a queue depth. The metric decides which of the two stacks is on. */
+[data-metric="queue"] .hpa-avg-cpu {
+  opacity: 0;
+}
+
+[data-metric="cpu"] .hpa-avg-queue {
+  opacity: 0;
+}
+
+.hpa-target {
+  opacity: 0;
+}
+
+[data-metric="cpu"] .hpa-target--cpu,
+[data-metric="queue"] .hpa-target--queue {
+  opacity: 1;
+}
+
+/* The node lights for as long as one evaluation takes, which is the only way
+   the reader can see a control loop that is otherwise silent. */
+[data-tick="on"] .scene-node > .scene-box {
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+/* What it decided, kept next to the window that may be holding it back. */
+.hpa-desired {
+  fill: var(--fg);
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.hpa-window-label {
+  font-size: 22px;
+}
+
+.hpa-window {
+  --ring-width: 10;
+  --ring-color: var(--accent);
+}
+
+[data-stabilizing="on"] .hpa-window {
+  opacity: 1;
+}
+[data-replicas="0"] .hpa-replicas--0,
+[data-replicas="1"] .hpa-replicas--1,
+[data-replicas="2"] .hpa-replicas--2,
+[data-replicas="3"] .hpa-replicas--3,
+[data-replicas="4"] .hpa-replicas--4,
+[data-replicas="5"] .hpa-replicas--5,
+[data-replicas="6"] .hpa-replicas--6,
+[data-replicas="7"] .hpa-replicas--7,
+[data-replicas="8"] .hpa-replicas--8 {
+  opacity: 1;
+}
+[data-desired="0"] .hpa-des--0,
+[data-desired="1"] .hpa-des--1,
+[data-desired="2"] .hpa-des--2,
+[data-desired="3"] .hpa-des--3,
+[data-desired="4"] .hpa-des--4,
+[data-desired="5"] .hpa-des--5,
+[data-desired="6"] .hpa-des--6,
+[data-desired="7"] .hpa-des--7,
+[data-desired="8"] .hpa-des--8 {
+  opacity: 1;
+}
+[data-desired="0"] .hpa-desired--0,
+[data-desired="1"] .hpa-desired--1,
+[data-desired="2"] .hpa-desired--2,
+[data-desired="3"] .hpa-desired--3,
+[data-desired="4"] .hpa-desired--4,
+[data-desired="5"] .hpa-desired--5,
+[data-desired="6"] .hpa-desired--6,
+[data-desired="7"] .hpa-desired--7,
+[data-desired="8"] .hpa-desired--8 {
+  opacity: 1;
+}
+[data-avg="0"] .hpa-avg--0,
+[data-avg="1"] .hpa-avg--1,
+[data-avg="2"] .hpa-avg--2,
+[data-avg="3"] .hpa-avg--3,
+[data-avg="4"] .hpa-avg--4,
+[data-avg="5"] .hpa-avg--5,
+[data-avg="6"] .hpa-avg--6,
+[data-avg="7"] .hpa-avg--7,
+[data-avg="8"] .hpa-avg--8,
+[data-avg="9"] .hpa-avg--9,
+[data-avg="10"] .hpa-avg--10,
+[data-avg="11"] .hpa-avg--11,
+[data-avg="12"] .hpa-avg--12,
+[data-avg="13"] .hpa-avg--13,
+[data-avg="14"] .hpa-avg--14,
+[data-avg="15"] .hpa-avg--15,
+[data-avg="16"] .hpa-avg--16,
+[data-avg="17"] .hpa-avg--17,
+[data-avg="18"] .hpa-avg--18,
+[data-avg="19"] .hpa-avg--19,
+[data-avg="20"] .hpa-avg--20,
+[data-avg="21"] .hpa-avg--21,
+[data-avg="22"] .hpa-avg--22,
+[data-avg="23"] .hpa-avg--23,
+[data-avg="24"] .hpa-avg--24,
+[data-avg="25"] .hpa-avg--25,
+[data-avg="26"] .hpa-avg--26,
+[data-avg="27"] .hpa-avg--27,
+[data-avg="28"] .hpa-avg--28,
+[data-avg="29"] .hpa-avg--29,
+[data-avg="30"] .hpa-avg--30,
+[data-avg="31"] .hpa-avg--31,
+[data-avg="32"] .hpa-avg--32,
+[data-avg="33"] .hpa-avg--33,
+[data-avg="34"] .hpa-avg--34,
+[data-avg="35"] .hpa-avg--35,
+[data-avg="36"] .hpa-avg--36,
+[data-avg="37"] .hpa-avg--37,
+[data-avg="38"] .hpa-avg--38,
+[data-avg="39"] .hpa-avg--39,
+[data-avg="40"] .hpa-avg--40,
+[data-avg="41"] .hpa-avg--41,
+[data-avg="42"] .hpa-avg--42,
+[data-avg="43"] .hpa-avg--43,
+[data-avg="44"] .hpa-avg--44,
+[data-avg="45"] .hpa-avg--45,
+[data-avg="46"] .hpa-avg--46,
+[data-avg="47"] .hpa-avg--47,
+[data-avg="48"] .hpa-avg--48,
+[data-avg="49"] .hpa-avg--49,
+[data-avg="50"] .hpa-avg--50,
+[data-avg="51"] .hpa-avg--51,
+[data-avg="52"] .hpa-avg--52,
+[data-avg="53"] .hpa-avg--53,
+[data-avg="54"] .hpa-avg--54,
+[data-avg="55"] .hpa-avg--55,
+[data-avg="56"] .hpa-avg--56,
+[data-avg="57"] .hpa-avg--57,
+[data-avg="58"] .hpa-avg--58,
+[data-avg="59"] .hpa-avg--59,
+[data-avg="60"] .hpa-avg--60,
+[data-avg="61"] .hpa-avg--61,
+[data-avg="62"] .hpa-avg--62,
+[data-avg="63"] .hpa-avg--63,
+[data-avg="64"] .hpa-avg--64,
+[data-avg="65"] .hpa-avg--65,
+[data-avg="66"] .hpa-avg--66,
+[data-avg="67"] .hpa-avg--67,
+[data-avg="68"] .hpa-avg--68,
+[data-avg="69"] .hpa-avg--69,
+[data-avg="70"] .hpa-avg--70,
+[data-avg="71"] .hpa-avg--71,
+[data-avg="72"] .hpa-avg--72,
+[data-avg="73"] .hpa-avg--73,
+[data-avg="74"] .hpa-avg--74,
+[data-avg="75"] .hpa-avg--75,
+[data-avg="76"] .hpa-avg--76,
+[data-avg="77"] .hpa-avg--77,
+[data-avg="78"] .hpa-avg--78,
+[data-avg="79"] .hpa-avg--79,
+[data-avg="80"] .hpa-avg--80,
+[data-avg="81"] .hpa-avg--81,
+[data-avg="82"] .hpa-avg--82,
+[data-avg="83"] .hpa-avg--83,
+[data-avg="84"] .hpa-avg--84,
+[data-avg="85"] .hpa-avg--85,
+[data-avg="86"] .hpa-avg--86,
+[data-avg="87"] .hpa-avg--87,
+[data-avg="88"] .hpa-avg--88,
+[data-avg="89"] .hpa-avg--89,
+[data-avg="90"] .hpa-avg--90,
+[data-avg="91"] .hpa-avg--91,
+[data-avg="92"] .hpa-avg--92,
+[data-avg="93"] .hpa-avg--93,
+[data-avg="94"] .hpa-avg--94,
+[data-avg="95"] .hpa-avg--95,
+[data-avg="96"] .hpa-avg--96,
+[data-avg="97"] .hpa-avg--97,
+[data-avg="98"] .hpa-avg--98,
+[data-avg="99"] .hpa-avg--99,
+[data-avg="100"] .hpa-avg--100 {
+  opacity: 1;
+}
+[data-qavg="0"] .hpa-qavg--0,
+[data-qavg="25"] .hpa-qavg--25,
+[data-qavg="50"] .hpa-qavg--50,
+[data-qavg="75"] .hpa-qavg--75,
+[data-qavg="100"] .hpa-qavg--100,
+[data-qavg="125"] .hpa-qavg--125,
+[data-qavg="150"] .hpa-qavg--150,
+[data-qavg="175"] .hpa-qavg--175,
+[data-qavg="200"] .hpa-qavg--200,
+[data-qavg="225"] .hpa-qavg--225,
+[data-qavg="250"] .hpa-qavg--250,
+[data-qavg="275"] .hpa-qavg--275,
+[data-qavg="300"] .hpa-qavg--300,
+[data-qavg="325"] .hpa-qavg--325,
+[data-qavg="350"] .hpa-qavg--350,
+[data-qavg="375"] .hpa-qavg--375,
+[data-qavg="400"] .hpa-qavg--400 {
+  opacity: 1;
+}
+
+/* The pod row. A slot that has not been asked for is an outline, one that is
+   still coming up is an outline with a countdown in it, and only a pod that
+   has finished starting is sent anything or draws a CPU meter. */
+.hpa-pod[data-pod="absent"] .hpa-pod-box {
+  stroke-dasharray: 16 14;
+  opacity: 0.45;
+}
+
+.hpa-pod[data-pod="starting"] .hpa-pod-box {
+  stroke: var(--state-half);
+  stroke-dasharray: 16 14;
+}
+
+.hpa-pod[data-pod="absent"] .hpa-cpu-track,
+.hpa-pod[data-pod="absent"] .hpa-cpu-fill,
+.hpa-pod[data-pod="starting"] .hpa-cpu-track,
+.hpa-pod[data-pod="starting"] .hpa-cpu-fill {
+  opacity: 0;
+}
+
+.hpa-cpu-fill {
+  --fill-color: var(--cpu);
+}
+
+.hpa-start {
+  --ring-width: 8;
+  --ring-color: var(--state-half);
+}
+
+.hpa-pod[data-pod="starting"] .hpa-start {
+  opacity: 1;
+}
+
+.hpa-status {
+  font-size: 18px;
+}
+
+.hpa-status--starting {
+  --flash-color: var(--state-half);
+}
+
+.hpa-status--ready {
+  --flash-color: var(--state-closed);
+}
+
+.hpa-pod[data-pod="starting"] .hpa-status--starting,
+.hpa-pod[data-pod="ready"] .hpa-status--ready {
+  opacity: 1;
+}
+
+/* The work the pods have not got to yet, which is the metric step 4 is about
+   and the reason CPU was the wrong thing to watch. */
+.scene-counter.hpa-queue {
+  fill: var(--fg-soft);
+  font-size: 26px;
+  font-weight: 600;
+}
+
+[data-metric="queue"] .scene-counter.hpa-queue {
+  fill: var(--accent);
+}
+
+.hpa-queue-fill {
+  --fill-color: var(--accent);
+}
+[data-queue="0"] .hpa-queue--0,
+[data-queue="25"] .hpa-queue--25,
+[data-queue="50"] .hpa-queue--50,
+[data-queue="75"] .hpa-queue--75,
+[data-queue="100"] .hpa-queue--100,
+[data-queue="125"] .hpa-queue--125,
+[data-queue="150"] .hpa-queue--150,
+[data-queue="175"] .hpa-queue--175,
+[data-queue="200"] .hpa-queue--200,
+[data-queue="225"] .hpa-queue--225,
+[data-queue="250"] .hpa-queue--250,
+[data-queue="275"] .hpa-queue--275,
+[data-queue="300"] .hpa-queue--300,
+[data-queue="325"] .hpa-queue--325,
+[data-queue="350"] .hpa-queue--350,
+[data-queue="375"] .hpa-queue--375,
+[data-queue="400"] .hpa-queue--400 {
+  opacity: 1;
+}

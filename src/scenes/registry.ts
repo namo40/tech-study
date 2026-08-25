@@ -97,6 +97,10 @@ import {
   SCENE_DURATION as distributedTracingDuration,
   stageMarkup as distributedTracingStage,
 } from './distributed-tracing/stage';
+import {
+  SCENE_DURATION as horizontalPodAutoscalerDuration,
+  stageMarkup as horizontalPodAutoscalerStage,
+} from './horizontal-pod-autoscaler/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -217,6 +221,10 @@ const scenes: Record<string, SceneAsset> = {
   'distributed-tracing': {
     markup: distributedTracingStage,
     duration: distributedTracingDuration,
+  },
+  'horizontal-pod-autoscaler': {
+    markup: horizontalPodAutoscalerStage,
+    duration: horizontalPodAutoscalerDuration,
   },
 };
 
