@@ -62,6 +62,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./distributed-tracing/scene')).default;
     case 'horizontal-pod-autoscaler':
       return (await import('./horizontal-pod-autoscaler/scene')).default;
+    case 'rolling-update':
+      return (await import('./rolling-update/scene')).default;
     default:
       return null;
   }

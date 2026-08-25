@@ -73,6 +73,7 @@ const SCENE_IDS = [
   'cors',
   'distributed-tracing',
   'horizontal-pod-autoscaler',
+  'rolling-update',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */

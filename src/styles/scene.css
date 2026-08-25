@@ -6270,3 +6270,313 @@
 [data-queue="400"] .hpa-queue--400 {
   opacity: 1;
 }
+
+/* ---------------------------------------------------------------- */
+/* Rolling Update stage                                              */
+/* ---------------------------------------------------------------- */
+
+/* Ten lanes into the pod row. Drawn at full strength they would read louder
+   than the pods they belong to, so they sit back and let the row and the dots
+   travelling down them carry the picture. The stub to the Database is quieter
+   still, because nothing travels along it: it only says who the table is for. */
+.ru-lane {
+  stroke-width: 4;
+  opacity: 0.4;
+}
+
+.ru-db-link {
+  stroke-width: 4;
+  opacity: 0.4;
+}
+
+/* What the rollout is bounded by, which is the whole of its policy. */
+.ru-cfg {
+  letter-spacing: 1px;
+}
+
+/* The endpoints list: who the Service will hand a request to right now. A pod
+   that is not in it is still drawn, because the gap is the point. */
+.ru-ep-label {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.ru-ep-bg {
+  fill: var(--accent);
+}
+
+.ru-ep-text {
+  fill: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.ru-ep[data-ep="out"] .ru-ep-bg {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.ru-ep[data-ep="out"] .ru-ep-text {
+  fill: var(--muted);
+}
+
+/* How far the rollout got: the direction it is going, the count, and the bar
+   the count is drawn as. */
+.ru-arrow {
+  fill: var(--fg-soft);
+  font-size: 26px;
+}
+
+.scene-counter.ru-updated {
+  fill: var(--fg);
+  font-size: 28px;
+}
+
+[data-updated="0"] .ru-updated--0,
+[data-updated="1"] .ru-updated--1,
+[data-updated="2"] .ru-updated--2,
+[data-updated="3"] .ru-updated--3,
+[data-updated="4"] .ru-updated--4 {
+  opacity: 1;
+}
+
+/* Undone, the readout stops counting and names the version still running. */
+[data-rollout="undone"] .ru-updated {
+  opacity: 0;
+}
+
+.ru-rolledback {
+  fill: var(--request);
+  font-size: 28px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-rollout="undone"] .ru-rolledback {
+  opacity: 1;
+}
+
+.ru-stalled {
+  --flash-color: var(--state-half);
+
+  font-size: 26px;
+}
+
+[data-rollout="stalled"] .ru-stalled {
+  opacity: 1;
+}
+
+.ru-undo {
+  --flash-color: var(--state-open);
+
+  font-size: 26px;
+}
+
+[data-rollout="rolling-back"] .ru-undo,
+[data-rollout="undone"] .ru-undo {
+  opacity: 1;
+}
+
+.ru-progress-fill {
+  --fill-color: var(--state-closed);
+}
+
+[data-rollout="stalled"] .ru-progress-fill,
+[data-rollout="rolling-back"] .ru-progress-fill {
+  --fill-color: var(--state-half);
+}
+
+/* A pod slot. An empty one is an outline, one still coming up is an outline
+   with a countdown in it, and only a pod that has finished starting is drawn in
+   the colour of the version it runs. */
+.ru-pod[data-pod="absent"] .ru-pod-box {
+  stroke-dasharray: 16 14;
+  opacity: 0.45;
+}
+
+.ru-pod[data-pod="starting"] .ru-pod-box {
+  stroke: var(--state-half);
+  stroke-dasharray: 16 14;
+}
+
+.ru-pod[data-pod="not-ready"] .ru-pod-box {
+  stroke: var(--state-open);
+  stroke-dasharray: 16 14;
+}
+
+.ru-pod[data-pod="terminating"] .ru-pod-box {
+  stroke: var(--state-half);
+}
+
+.ru-pod[data-pod="ready"][data-ver="v1"] .ru-pod-box {
+  stroke: var(--request);
+}
+
+.ru-pod[data-pod="ready"][data-ver="v2"] .ru-pod-box {
+  stroke: var(--state-closed);
+}
+
+.ru-ver {
+  font-size: 26px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.ru-ver--v1 {
+  fill: var(--request);
+}
+
+.ru-ver--v2 {
+  fill: var(--state-closed);
+}
+
+.ru-pod[data-ver="v1"] .ru-ver--v1,
+.ru-pod[data-ver="v2"] .ru-ver--v2 {
+  opacity: 1;
+}
+
+.ru-pod[data-pod="absent"] .ru-ver--v1,
+.ru-pod[data-pod="absent"] .ru-ver--v2 {
+  opacity: 0;
+}
+
+.ru-status {
+  font-size: 18px;
+}
+
+.ru-status--starting {
+  --flash-color: var(--state-half);
+}
+
+.ru-status--ready {
+  --flash-color: var(--state-closed);
+}
+
+.ru-status--not-ready {
+  --flash-color: var(--state-open);
+}
+
+.ru-status--terminating {
+  --flash-color: var(--state-half);
+}
+
+.ru-pod[data-pod="starting"] .ru-status--starting,
+.ru-pod[data-pod="ready"] .ru-status--ready,
+.ru-pod[data-pod="not-ready"] .ru-status--not-ready,
+.ru-pod[data-pod="terminating"] .ru-status--terminating {
+  opacity: 1;
+}
+
+.ru-start {
+  --ring-width: 8;
+  --ring-color: var(--state-half);
+}
+
+.ru-pod[data-pod="starting"] .ru-start,
+.ru-pod[data-pod="not-ready"] .ru-start {
+  opacity: 1;
+}
+
+.ru-pod[data-pod="not-ready"] .ru-start {
+  --ring-color: var(--state-open);
+}
+
+/* The drain bar only exists while a pod is finishing what it already had. */
+.ru-drain-track,
+.ru-drain-fill {
+  opacity: 0;
+}
+
+.ru-drain-fill {
+  --fill-color: var(--state-half);
+}
+
+.ru-pod[data-pod="terminating"] .ru-drain-track,
+.ru-pod[data-pod="terminating"] .ru-drain-fill {
+  opacity: 1;
+}
+
+/* What a pod told to stop was sent, and the deadline it has to answer it by. */
+.ru-sig {
+  --flash-color: var(--state-half);
+
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.ru-grace {
+  --flash-color: var(--fg-soft);
+
+  font-size: 20px;
+}
+
+.ru-pod[data-sig="on"] .ru-sig,
+.ru-pod[data-sig="on"] .ru-grace {
+  opacity: 1;
+}
+
+/* The one table both versions read, and the columns it has in each state. */
+.ru-db-table {
+  font-size: 24px;
+}
+
+.ru-col-bg {
+  fill: var(--surface-2);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.ru-col-text {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-schema="base"] .ru-col-text--total,
+[data-schema="expand"] .ru-col-text--total,
+[data-schema="renamed"] .ru-col-text--renamed,
+[data-schema="expand"] .ru-col-text--cents,
+[data-schema="contract"] .ru-col-text--cents {
+  opacity: 1;
+}
+
+[data-schema="base"] .ru-col--b,
+[data-schema="renamed"] .ru-col--b,
+[data-schema="contract"] .ru-col--a {
+  opacity: 0;
+}
+
+/* A column added beside the old one is drawn as not settled yet; a column that
+   replaced the old one is drawn as the break it is. */
+[data-schema="expand"] .ru-col-bg--b {
+  stroke: var(--state-closed);
+  stroke-dasharray: 10 8;
+}
+
+[data-schema="renamed"] .ru-col-bg--a {
+  stroke: var(--state-open);
+}
+
+.ru-migrate {
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+
+.ru-migrate--expand {
+  --flash-color: var(--state-closed);
+}
+
+.ru-migrate--contract {
+  --flash-color: var(--accent);
+}
+
+[data-schema="expand"] .ru-migrate--expand,
+[data-schema="contract"] .ru-migrate--contract {
+  opacity: 1;
+}

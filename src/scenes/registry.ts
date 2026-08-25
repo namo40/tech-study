@@ -98,6 +98,10 @@ import {
   stageMarkup as distributedTracingStage,
 } from './distributed-tracing/stage';
 import {
+  SCENE_DURATION as rollingUpdateDuration,
+  stageMarkup as rollingUpdateStage,
+} from './rolling-update/stage';
+import {
   SCENE_DURATION as horizontalPodAutoscalerDuration,
   stageMarkup as horizontalPodAutoscalerStage,
 } from './horizontal-pod-autoscaler/stage';
@@ -225,6 +229,10 @@ const scenes: Record<string, SceneAsset> = {
   'horizontal-pod-autoscaler': {
     markup: horizontalPodAutoscalerStage,
     duration: horizontalPodAutoscalerDuration,
+  },
+  'rolling-update': {
+    markup: rollingUpdateStage,
+    duration: rollingUpdateDuration,
   },
 };
 
