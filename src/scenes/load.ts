@@ -64,6 +64,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./horizontal-pod-autoscaler/scene')).default;
     case 'rolling-update':
       return (await import('./rolling-update/scene')).default;
+    case 'async-await':
+      return (await import('./async-await/scene')).default;
     default:
       return null;
   }

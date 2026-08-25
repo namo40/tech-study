@@ -105,6 +105,10 @@ import {
   SCENE_DURATION as horizontalPodAutoscalerDuration,
   stageMarkup as horizontalPodAutoscalerStage,
 } from './horizontal-pod-autoscaler/stage';
+import {
+  SCENE_DURATION as asyncAwaitDuration,
+  stageMarkup as asyncAwaitStage,
+} from './async-await/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -233,6 +237,10 @@ const scenes: Record<string, SceneAsset> = {
   'rolling-update': {
     markup: rollingUpdateStage,
     duration: rollingUpdateDuration,
+  },
+  'async-await': {
+    markup: asyncAwaitStage,
+    duration: asyncAwaitDuration,
   },
 };
 

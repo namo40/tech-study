@@ -6580,3 +6580,273 @@
 [data-schema="contract"] .ru-migrate--contract {
   opacity: 1;
 }
+
+/* ---------------------------------------------------------------- */
+/* Async/Await stage                                                 */
+/* ---------------------------------------------------------------- */
+
+/* The process the Caller and the Method run inside. It is only ever seen for
+   the moment an exception nobody was awaiting crosses it on its way out. */
+.aw-boundary {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-dasharray: 18 14;
+  opacity: 0;
+}
+
+[data-unhandled="on"] .aw-boundary {
+  opacity: 0.9;
+}
+
+/* The Caller is not idle while it waits, and this says so. */
+.aw-busy {
+  fill: var(--fg-soft);
+  opacity: 0.7;
+}
+
+/* The three cells in the Caller: the Task it is holding, the catch it has
+   ready, and the token it can cancel with. All three are drawn from the first
+   frame as outlines, so nothing ever appears out of nowhere. */
+.aw-task-bg,
+.aw-catch-bg,
+.aw-token-bg {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+  stroke-dasharray: 14 12;
+  opacity: 0.45;
+}
+
+.aw-chip-text {
+  fill: var(--fg);
+  font-size: 24px;
+}
+
+[data-task="pending"] .aw-task-bg,
+[data-task="done"] .aw-task-bg,
+[data-task="cancelled"] .aw-task-bg,
+[data-task="faulted"] .aw-task-bg,
+[data-catch="armed"] .aw-catch-bg,
+[data-catch="caught"] .aw-catch-bg,
+[data-token="on"] .aw-token-bg,
+[data-token="cancelled"] .aw-token-bg {
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+[data-task="pending"] .aw-task-text--pending,
+[data-task="done"] .aw-task-text--done,
+[data-task="cancelled"] .aw-task-text--cancelled,
+[data-task="faulted"] .aw-task-text--faulted,
+[data-catch="armed"] .aw-catch-text--armed,
+[data-catch="caught"] .aw-catch-text--caught,
+[data-token="on"] .aw-token-text--on,
+[data-token="cancelled"] .aw-token-text--cancelled {
+  opacity: 1;
+}
+
+/* A settled Task says how it settled, and never by colour alone: the word in
+   the cell changes at the same time as the cell does. */
+[data-task="done"] .aw-task-bg {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+}
+
+[data-task="cancelled"] .aw-task-bg {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+}
+
+[data-task="faulted"] .aw-task-bg {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+[data-catch="caught"] .aw-catch-bg {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+}
+
+[data-token="cancelled"] .aw-token-bg {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+}
+
+[data-task="done"] .aw-task-text--done,
+[data-task="cancelled"] .aw-task-text--cancelled,
+[data-task="faulted"] .aw-task-text--faulted,
+[data-catch="caught"] .aw-catch-text--caught,
+[data-token="cancelled"] .aw-token-text--cancelled {
+  fill: var(--bg);
+}
+
+/* The token chip carries the longest word on the stage, so it is the one cell
+   that is written smaller than the rest. */
+.aw-token-text {
+  font-size: 22px;
+}
+
+/* The snippet. Every row of every snippet is stacked on the same four
+   baselines and the current `data-code` picks the one that shows, so a swap is
+   a change of attribute rather than a rewrite. */
+.aw-code {
+  font-size: 27px;
+  opacity: 0;
+}
+
+[data-code="s1"] .aw-code--s1,
+[data-code="s2"] .aw-code--s2,
+[data-code="s3a"] .aw-code--s3a,
+[data-code="s3b"] .aw-code--s3b,
+[data-code="s4"] .aw-code--s4 {
+  opacity: 1;
+}
+
+/* The row the thread is on is brighter than the rest of the method. */
+[data-line="0"] .aw-row--0,
+[data-line="1"] .aw-row--1,
+[data-line="2"] .aw-row--2,
+[data-line="3"] .aw-row--3 {
+  fill: var(--fg);
+}
+
+.aw-cursor {
+  fill: var(--surface-2);
+  stroke: var(--accent);
+  stroke-width: 3;
+  opacity: 0;
+}
+
+[data-line="0"] .aw-cursor--0,
+[data-line="1"] .aw-cursor--1,
+[data-line="2"] .aw-cursor--2,
+[data-line="3"] .aw-cursor--3 {
+  opacity: 1;
+}
+
+/* Thread lanes, the same bar the Thread Pool scene uses: idle is thin and
+   grey, running is filled, and a thread held by a blocking call is hatched so
+   it never rests on colour alone. */
+.aw-row-label {
+  font-size: 28px;
+}
+
+.aw-lane-label {
+  font-size: 22px;
+}
+
+.aw-bar {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.aw-hatch-line {
+  stroke: var(--state-open);
+}
+
+.aw-lane[data-lane-state="running"] .aw-bar {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+.aw-lane[data-lane-state="blocked"] .aw-bar {
+  fill: url(#aw-hatch);
+  stroke: var(--state-open);
+  stroke-width: 4;
+}
+
+.aw-blocked {
+  --flash-color: var(--state-open);
+
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.aw-lane[data-lane-state="blocked"] .aw-blocked {
+  opacity: 1;
+}
+
+.aw-deadlock {
+  --flash-color: var(--state-open);
+
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+
+[data-deadlock="on"] .aw-deadlock {
+  opacity: 1;
+}
+
+/* One bar per outstanding call. What the bar reaches is how much of the work
+   was done, so a cancelled call stops partway and a failed one stops sooner. */
+.aw-io-label {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.aw-io-bar-fill {
+  --fill-color: var(--request);
+}
+
+.aw-io[data-work="done"] .aw-io-bar-fill {
+  --fill-color: var(--state-closed);
+}
+
+.aw-io[data-work="cancelled"] .aw-io-bar-fill {
+  --fill-color: var(--state-half);
+}
+
+.aw-io[data-work="failed"] .aw-io-bar-fill {
+  --fill-color: var(--state-open);
+}
+
+.aw-io-status {
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+
+.aw-io-status--cancelled {
+  --flash-color: var(--state-half);
+}
+
+.aw-io-status--failed {
+  --flash-color: var(--state-open);
+}
+
+.aw-io[data-work="cancelled"] ~ .aw-io-status--cancelled,
+.aw-io[data-work="failed"] ~ .aw-io-status--failed {
+  opacity: 1;
+}
+
+/* The two measured rows. GetA and GetB keep the colours they have in the I/O
+   box, so a bar on the axis is recognisably the call it came from. */
+.aw-axis-label {
+  font-size: 24px;
+  fill: var(--fg-soft);
+}
+
+.aw-axis-row--a .aw-axis-fill {
+  --fill-color: var(--request);
+}
+
+.aw-axis-row--b .aw-axis-fill {
+  --fill-color: var(--cpu);
+}
+
+.aw-total {
+  --flash-color: var(--fg);
+
+  font-size: 26px;
+}
+
+[data-seq="on"] .aw-total--seq,
+[data-conc="on"] .aw-total--conc {
+  opacity: 1;
+}
+
+/* What a traveller is carrying, written above it so it never covers the dot. */
+.aw-req-label {
+  font-size: 22px;
+}
