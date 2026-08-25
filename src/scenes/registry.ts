@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as loadTestDuration,
+  stageMarkup as loadTestStage,
+} from './load-test/stage';
+import {
   SCENE_DURATION as circuitBreakerDuration,
   stageMarkup as circuitBreakerStage,
 } from './circuit-breaker/stage';
@@ -249,6 +253,10 @@ const scenes: Record<string, SceneAsset> = {
   'state-machine': {
     markup: stateMachineStage,
     duration: stateMachineDuration,
+  },
+  'load-test': {
+    markup: loadTestStage,
+    duration: loadTestDuration,
   },
 };
 

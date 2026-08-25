@@ -68,6 +68,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./async-await/scene')).default;
     case 'state-machine':
       return (await import('./state-machine/scene')).default;
+    case 'load-test':
+      return (await import('./load-test/scene')).default;
     default:
       return null;
   }
