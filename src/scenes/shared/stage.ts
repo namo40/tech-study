@@ -83,6 +83,8 @@ export interface NodeFrameOptions {
    * whatever the node puts under it.
    */
   labelY: number;
+  /** Added to the label, for a scene that sizes its frame's name itself. */
+  labelClass?: string;
   /** Everything the node contains, indented four spaces. */
   children?: string;
 }
@@ -93,11 +95,12 @@ export function nodeFrame({
   height = 390,
   label,
   labelY,
+  labelClass = 'scene-node-label',
   children = '',
 }: NodeFrameOptions): string {
   return `<g class="scene-node">
     <rect class="scene-box" x="130" y="${y}" width="820" height="${height}" rx="${BOX_RADIUS}" />
-    <text class="scene-node-label" x="170" y="${labelY}">${label}</text>
+    <text class="${labelClass}" x="170" y="${labelY}">${label}</text>
 ${children}
   </g>`;
 }

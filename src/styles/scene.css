@@ -6850,3 +6850,373 @@
 .aw-req-label {
   font-size: 22px;
 }
+
+/* ---------------------------------------------------------------- */
+/* State Machine stage                                               */
+/* ---------------------------------------------------------------- */
+
+/* The alphabet the machine accepts, written once under the Events title. */
+.sm-alphabet {
+  fill: var(--fg-soft);
+  font-size: 20px;
+}
+
+/* The guard, the action and the deadline the table carries. They are part of
+   the diagram, so they are drawn from the first frame and only ever light up. */
+.sm-tag {
+  fill: var(--muted);
+  font-size: 19px;
+}
+
+[data-guard="pass"] .sm-tag--guard {
+  fill: var(--state-closed);
+  font-weight: 700;
+}
+
+[data-guard="fail"] .sm-tag--guard {
+  fill: var(--state-half);
+  font-weight: 700;
+}
+
+[data-action="receipt"] .sm-tag--action,
+[data-action="refund"] .sm-tag--refund {
+  fill: var(--accent);
+  font-weight: 700;
+}
+
+/* A state node. The name is small enough to leave the berth under or over it
+   clear by more than the height of the chip that stands there. */
+.sm-node-title {
+  font-size: 20px;
+  letter-spacing: 0;
+}
+
+/* The frame's own name, which shares a line with the two tags to its right. */
+.sm-frame-label {
+  font-size: 26px;
+}
+
+.sm-node-box {
+  stroke-width: 3;
+}
+
+/* The state the machine is in. Named as well as coloured: the store row under
+   the diagram spells it out in words at the same moment. */
+[data-state="draft"] .sm-node--draft .sm-node-box,
+[data-state="submitted"] .sm-node--submitted .sm-node-box,
+[data-state="paid"] .sm-node--paid .sm-node-box,
+[data-state="shipped"] .sm-node--shipped .sm-node-box,
+[data-state="delivered"] .sm-node--delivered .sm-node-box,
+[data-state="cancelled"] .sm-node--cancelled .sm-node-box,
+[data-state="expired"] .sm-node--expired .sm-node-box {
+  fill: var(--surface-2);
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+[data-state="draft"] .sm-node--draft .sm-node-title,
+[data-state="submitted"] .sm-node--submitted .sm-node-title,
+[data-state="paid"] .sm-node--paid .sm-node-title,
+[data-state="shipped"] .sm-node--shipped .sm-node-title,
+[data-state="delivered"] .sm-node--delivered .sm-node-title,
+[data-state="cancelled"] .sm-node--cancelled .sm-node-title,
+[data-state="expired"] .sm-node--expired .sm-node-title {
+  fill: var(--fg);
+}
+
+/* An event with no row for the state it found. The node says no, and the chip
+   carrying the event takes a cross at the same instant. */
+[data-reject="draft"] .sm-node--draft .sm-node-box,
+[data-reject="submitted"] .sm-node--submitted .sm-node-box,
+[data-reject="paid"] .sm-node--paid .sm-node-box,
+[data-reject="shipped"] .sm-node--shipped .sm-node-box,
+[data-reject="delivered"] .sm-node--delivered .sm-node-box,
+[data-reject="cancelled"] .sm-node--cancelled .sm-node-box,
+[data-reject="expired"] .sm-node--expired .sm-node-box {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+[data-reject="draft"] .sm-node--draft .sm-node-title,
+[data-reject="submitted"] .sm-node--submitted .sm-node-title,
+[data-reject="paid"] .sm-node--paid .sm-node-title,
+[data-reject="shipped"] .sm-node--shipped .sm-node-title,
+[data-reject="delivered"] .sm-node--delivered .sm-node-title,
+[data-reject="cancelled"] .sm-node--cancelled .sm-node-title,
+[data-reject="expired"] .sm-node--expired .sm-node-title {
+  fill: var(--bg);
+}
+
+/* A step the engine is parked on. Declared texture, so the box is dashed
+   rather than moved. */
+[data-hold="on"] .sm-node--paid .sm-node-box {
+  stroke-dasharray: 14 10;
+}
+
+/* The edges. Every one of them is drawn from the first frame, because the
+   table is the diagram; taking one only changes its colour. */
+.sm-edge-line,
+.sm-edge-head {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-edge-state="run"] .sm-edge-line,
+[data-edge-state="run"] .sm-edge-head {
+  stroke: var(--state-closed);
+  stroke-width: 6;
+}
+
+[data-edge-state="deny"] .sm-edge-line,
+[data-edge-state="deny"] .sm-edge-head {
+  stroke: var(--state-half);
+  stroke-width: 6;
+}
+
+[data-edge-state="fail"] .sm-edge-line,
+[data-edge-state="fail"] .sm-edge-head {
+  stroke: var(--state-open);
+  stroke-width: 6;
+}
+
+/* The two things that travel: the order, which is filled because it is the
+   thing itself, and an event, which is outlined because it is only a message. */
+.sm-chip-bg {
+  fill: var(--request);
+}
+
+.sm-chip--event .sm-chip-bg {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.sm-chip-text {
+  font-weight: 700;
+}
+
+.sm-chip-text--order {
+  fill: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 20px;
+}
+
+.sm-chip-text--event {
+  fill: var(--fg);
+  font-size: 20px;
+}
+
+/* The row the state lives in, and the row the deadline lives in. Both are
+   drawn empty until something is written to them. */
+.sm-row-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-store="none"] .sm-row-bg--a,
+[data-due="none"] .sm-row-bg--b {
+  fill: none;
+  stroke: var(--muted);
+  stroke-dasharray: 14 12;
+}
+
+.sm-row-id,
+.sm-row-state {
+  fill: var(--fg);
+  font-size: 22px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.sm-due {
+  fill: var(--fg-soft);
+  font-size: 20px;
+  opacity: 0;
+}
+
+.sm-row-dot {
+  fill: var(--muted);
+  font-size: 22px;
+  opacity: 0;
+}
+
+[data-order="12"] .sm-row-id--12,
+[data-order="13"] .sm-row-id--13,
+[data-order="14"] .sm-row-id--14,
+[data-order="15"] .sm-row-id--15,
+[data-order="12"] .sm-row-dot,
+[data-order="13"] .sm-row-dot,
+[data-order="14"] .sm-row-dot,
+[data-order="15"] .sm-row-dot,
+[data-store="draft"] .sm-row-state--draft,
+[data-store="submitted"] .sm-row-state--submitted,
+[data-store="paid"] .sm-row-state--paid,
+[data-store="shipped"] .sm-row-state--shipped,
+[data-store="delivered"] .sm-row-state--delivered,
+[data-store="cancelled"] .sm-row-state--cancelled,
+[data-store="expired"] .sm-row-state--expired,
+[data-due="armed"] .sm-due--armed,
+[data-due="fired"] .sm-due--fired {
+  opacity: 1;
+}
+
+[data-due="fired"] .sm-due--fired {
+  fill: var(--state-half);
+}
+
+/* The lane the row is written down and read back up. */
+[data-resume="on"] .sm-store-link {
+  stroke: var(--accent);
+  stroke-width: 8;
+  stroke-dasharray: 16 12;
+}
+
+/* The process, and what it becomes once a workflow engine runs the steps. */
+.sm-proc-title--engine {
+  font-size: 34px;
+  opacity: 0;
+}
+
+[data-engine="on"] .sm-proc-title--process {
+  opacity: 0;
+}
+
+[data-engine="on"] .sm-proc-title--engine {
+  opacity: 1;
+}
+
+[data-proc="down"] .sm-proc .scene-box {
+  fill: var(--surface-2);
+  stroke: var(--state-half);
+  stroke-dasharray: 18 14;
+}
+
+/* The twenty four hour timer. The track and its label are always there, and
+   only the arc appears, and only while a deadline is actually running. */
+.scene-ring.sm-timer {
+  opacity: 1;
+  --ring-color: var(--accent);
+  --ring-width: 10;
+}
+
+.sm-timer-progress {
+  opacity: 0;
+}
+
+[data-timer="run"] .sm-timer-progress,
+[data-timer="fired"] .sm-timer-progress {
+  opacity: 1;
+}
+
+[data-timer="fired"] .sm-timer-progress {
+  stroke: var(--state-half);
+}
+
+.sm-timer-label {
+  font-size: 20px;
+}
+
+/* What the process is doing, and how many attempts a step has taken. */
+.sm-readout {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  font-weight: 600;
+  opacity: 0;
+}
+
+[data-step="idle"] .sm-readout--idle,
+[data-step="running"] .sm-readout--running,
+[data-step="restart"] .sm-readout--restart,
+[data-step="wait-for-approval"] .sm-readout--wait-for-approval,
+[data-step="ship"] .sm-readout--ship,
+[data-step="deliver"] .sm-readout--deliver,
+[data-step="replay"] .sm-readout--replay {
+  opacity: 1;
+}
+
+[data-step="restart"] .sm-readout--restart,
+[data-step="replay"] .sm-readout--replay {
+  fill: var(--state-half);
+}
+
+.scene-counter.sm-retry {
+  fill: var(--state-half);
+  font-size: 22px;
+}
+
+[data-retry="1"] .sm-retry--1,
+[data-retry="2"] .sm-retry--2,
+[data-retry="3"] .sm-retry--3 {
+  opacity: 1;
+}
+
+/* The history, which only exists once an engine is keeping one. */
+.sm-hist-label,
+.sm-replay-label,
+.sm-cell,
+.sm-replay-bar {
+  opacity: 0;
+}
+
+[data-engine="on"] .sm-hist-label,
+[data-engine="on"] .sm-cell {
+  opacity: 1;
+}
+
+[data-engine="on"][data-replay="on"] .sm-replay-label,
+[data-engine="on"][data-replay="on"] .sm-replay-bar {
+  opacity: 1;
+}
+
+.sm-cell-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.sm-cell-glyph {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+[data-cell="wait"] .sm-cell-glyph--wait,
+[data-cell="ok"] .sm-cell-glyph--ok,
+[data-cell="fail"] .sm-cell-glyph--fail {
+  opacity: 1;
+}
+
+[data-cell="wait"] .sm-cell-bg {
+  stroke: var(--state-half);
+}
+
+[data-cell="wait"] .sm-cell-glyph--wait {
+  stroke: var(--state-half);
+}
+
+[data-cell="ok"] .sm-cell-bg,
+[data-cell="ok"] .sm-cell-glyph--ok {
+  stroke: var(--state-closed);
+}
+
+[data-cell="fail"] .sm-cell-bg,
+[data-cell="fail"] .sm-cell-glyph--fail {
+  stroke: var(--state-open);
+}
+
+.sm-replay-bar {
+  fill: var(--accent);
+  fill-opacity: 0.28;
+}
+
+.sm-replay-label {
+  fill: var(--state-half);
+  font-size: 20px;
+}

@@ -66,6 +66,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./rolling-update/scene')).default;
     case 'async-await':
       return (await import('./async-await/scene')).default;
+    case 'state-machine':
+      return (await import('./state-machine/scene')).default;
     default:
       return null;
   }

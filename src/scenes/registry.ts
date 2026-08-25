@@ -109,6 +109,10 @@ import {
   SCENE_DURATION as asyncAwaitDuration,
   stageMarkup as asyncAwaitStage,
 } from './async-await/stage';
+import {
+  SCENE_DURATION as stateMachineDuration,
+  stageMarkup as stateMachineStage,
+} from './state-machine/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -241,6 +245,10 @@ const scenes: Record<string, SceneAsset> = {
   'async-await': {
     markup: asyncAwaitStage,
     duration: asyncAwaitDuration,
+  },
+  'state-machine': {
+    markup: stateMachineStage,
+    duration: stateMachineDuration,
   },
 };
 
