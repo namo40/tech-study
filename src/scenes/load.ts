@@ -58,6 +58,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./authorization-code/scene')).default;
     case 'cors':
       return (await import('./cors/scene')).default;
+    case 'distributed-tracing':
+      return (await import('./distributed-tracing/scene')).default;
     default:
       return null;
   }

@@ -93,6 +93,10 @@ import {
   stageMarkup as authorizationCodeStage,
 } from './authorization-code/stage';
 import { SCENE_DURATION as corsDuration, stageMarkup as corsStage } from './cors/stage';
+import {
+  SCENE_DURATION as distributedTracingDuration,
+  stageMarkup as distributedTracingStage,
+} from './distributed-tracing/stage';
 
 /**
  * The part of a scene that renders on the server: its static stage markup and
@@ -209,6 +213,10 @@ const scenes: Record<string, SceneAsset> = {
   cors: {
     markup: corsStage,
     duration: corsDuration,
+  },
+  'distributed-tracing': {
+    markup: distributedTracingStage,
+    duration: distributedTracingDuration,
   },
 };
 
