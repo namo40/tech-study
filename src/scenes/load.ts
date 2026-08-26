@@ -74,6 +74,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./change-tracking/scene')).default;
     case 'garbage-collection':
       return (await import('./garbage-collection/scene')).default;
+    case 'eventual-consistency':
+      return (await import('./eventual-consistency/scene')).default;
     default:
       return null;
   }

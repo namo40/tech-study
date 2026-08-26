@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as eventualConsistencyDuration,
+  stageMarkup as eventualConsistencyStage,
+} from './eventual-consistency/stage';
+import {
   SCENE_DURATION as loadTestDuration,
   stageMarkup as loadTestStage,
 } from './load-test/stage';
@@ -273,6 +277,10 @@ const scenes: Record<string, SceneAsset> = {
   'garbage-collection': {
     markup: garbageCollectionStage,
     duration: garbageCollectionDuration,
+  },
+  'eventual-consistency': {
+    markup: eventualConsistencyStage,
+    duration: eventualConsistencyDuration,
   },
 };
 

@@ -8994,3 +8994,359 @@
 .gc-req--event .scene-req-dot {
   fill: var(--state-half);
 }
+
+/* ---------------------------------------------------------------- */
+/* Eventual Consistency stage                                        */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Every readout on this stage is a stack of text on one spot with one variant
+ * revealed. The base rule is the load bearing half: without it a state nobody
+ * wrote would print the whole stack on top of itself, which is invisible in a
+ * DOM snapshot and obvious on screen.
+ */
+.ec-write,
+.ec-writes,
+.ec-val,
+.ec-lag {
+  opacity: 0;
+}
+
+/* The client: the write it is issuing, the read it is issuing, its session. */
+.ec-write {
+  fill: var(--fg);
+  font-size: 25px;
+}
+
+.ec-read-text {
+  fill: var(--fg-soft);
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.ec-session-text {
+  fill: var(--state-closed);
+  font-size: 25px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-ec-session="on"] .ec-session-text {
+  opacity: 1;
+}
+
+/* The line a pinned session's reads are held to. */
+.ec-pin {
+  opacity: 0;
+}
+
+[data-ec-session="on"] .ec-pin {
+  opacity: 1;
+}
+
+.ec-pin-line {
+  stroke: var(--state-closed);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+/* What a copy holds. The primary says it larger, because it is the original. */
+.ec-val {
+  fill: var(--fg);
+  font-size: 40px;
+}
+
+.ec-primary .ec-val {
+  font-size: 44px;
+}
+
+.ec-writes {
+  fill: var(--fg-soft);
+  font-size: 25px;
+}
+
+/* One cell per write the primary has taken. */
+.ec-cell {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.ec-cell[data-ec-cell="on"] {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+/* How far behind a replica is. */
+.ec-lag {
+  fill: var(--fg-soft);
+  font-size: 25px;
+}
+
+/* Whether the three copies agree yet. */
+.ec-conv-text {
+  fill: var(--fg-soft);
+  font-size: 25px;
+  font-weight: 700;
+  opacity: 0.35;
+}
+
+.ec-conv-check {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+[data-ec-conv="yes"] .ec-conv-text {
+  fill: var(--state-closed);
+  opacity: 1;
+}
+
+[data-ec-conv="yes"] .ec-conv-check {
+  opacity: 1;
+}
+
+/* The staleness bound over Replica B, drawn once it starts taking B out. */
+.ec-gate {
+  opacity: 0;
+}
+
+[data-ec-gate="closed"] .ec-gate,
+[data-ec-gate="open"] .ec-gate {
+  opacity: 1;
+}
+
+.ec-gate-line {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 14 12;
+}
+
+[data-ec-gate="closed"] .ec-gate-line {
+  stroke: var(--state-open);
+  stroke-dasharray: none;
+}
+
+.ec-gate-label {
+  fill: var(--fg-soft);
+}
+
+[data-ec-gate="closed"] .ec-gate-label {
+  fill: var(--state-open);
+}
+
+/* What travels: a write, a change on its way to a replica, a read's answer. */
+.ec-write-dot {
+  fill: var(--request);
+}
+
+.ec-change {
+  fill: var(--state-half);
+}
+
+.ec-result-bg {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.ec-result-text {
+  fill: var(--fg);
+  font-size: 25px;
+}
+
+.ec-kind {
+  font-size: 25px;
+}
+
+.ec-stale {
+  fill: var(--state-half);
+  font-size: 25px;
+  font-weight: 700;
+}
+
+/* The write the client is issuing. */
+[data-ec-write="1"] .ec-write--1,
+[data-ec-write="2"] .ec-write--2,
+[data-ec-write="3"] .ec-write--3,
+[data-ec-write="4"] .ec-write--4,
+[data-ec-write="5"] .ec-write--5,
+[data-ec-write="6"] .ec-write--6,
+[data-ec-write="7"] .ec-write--7,
+[data-ec-write="8"] .ec-write--8,
+[data-ec-write="9"] .ec-write--9,
+[data-ec-write="10"] .ec-write--10,
+[data-ec-write="11"] .ec-write--11,
+[data-ec-write="12"] .ec-write--12,
+[data-ec-write="13"] .ec-write--13,
+[data-ec-write="14"] .ec-write--14,
+[data-ec-write="15"] .ec-write--15 {
+  opacity: 1;
+}
+
+/* The value a copy holds, shared by the primary and both replicas. */
+[data-ec-val="1"] .ec-val--1,
+[data-ec-val="2"] .ec-val--2,
+[data-ec-val="3"] .ec-val--3,
+[data-ec-val="4"] .ec-val--4,
+[data-ec-val="5"] .ec-val--5,
+[data-ec-val="6"] .ec-val--6,
+[data-ec-val="7"] .ec-val--7,
+[data-ec-val="8"] .ec-val--8,
+[data-ec-val="9"] .ec-val--9,
+[data-ec-val="10"] .ec-val--10,
+[data-ec-val="11"] .ec-val--11,
+[data-ec-val="12"] .ec-val--12,
+[data-ec-val="13"] .ec-val--13,
+[data-ec-val="14"] .ec-val--14,
+[data-ec-val="15"] .ec-val--15 {
+  opacity: 1;
+}
+
+/* How many writes the primary has taken. */
+[data-ec-writes="1"] .ec-writes--1,
+[data-ec-writes="2"] .ec-writes--2,
+[data-ec-writes="3"] .ec-writes--3,
+[data-ec-writes="4"] .ec-writes--4,
+[data-ec-writes="5"] .ec-writes--5,
+[data-ec-writes="6"] .ec-writes--6,
+[data-ec-writes="7"] .ec-writes--7,
+[data-ec-writes="8"] .ec-writes--8,
+[data-ec-writes="9"] .ec-writes--9,
+[data-ec-writes="10"] .ec-writes--10,
+[data-ec-writes="11"] .ec-writes--11,
+[data-ec-writes="12"] .ec-writes--12,
+[data-ec-writes="13"] .ec-writes--13,
+[data-ec-writes="14"] .ec-writes--14,
+[data-ec-writes="15"] .ec-writes--15 {
+  opacity: 1;
+}
+
+/* How far behind a replica is, shared by both replicas. */
+[data-ec-lag="0"] .ec-lag--0,
+[data-ec-lag="1"] .ec-lag--1,
+[data-ec-lag="2"] .ec-lag--2,
+[data-ec-lag="3"] .ec-lag--3,
+[data-ec-lag="4"] .ec-lag--4,
+[data-ec-lag="5"] .ec-lag--5,
+[data-ec-lag="6"] .ec-lag--6,
+[data-ec-lag="7"] .ec-lag--7,
+[data-ec-lag="8"] .ec-lag--8,
+[data-ec-lag="9"] .ec-lag--9,
+[data-ec-lag="10"] .ec-lag--10,
+[data-ec-lag="11"] .ec-lag--11,
+[data-ec-lag="12"] .ec-lag--12,
+[data-ec-lag="13"] .ec-lag--13,
+[data-ec-lag="14"] .ec-lag--14,
+[data-ec-lag="15"] .ec-lag--15,
+[data-ec-lag="16"] .ec-lag--16,
+[data-ec-lag="17"] .ec-lag--17,
+[data-ec-lag="18"] .ec-lag--18,
+[data-ec-lag="19"] .ec-lag--19,
+[data-ec-lag="20"] .ec-lag--20,
+[data-ec-lag="21"] .ec-lag--21,
+[data-ec-lag="22"] .ec-lag--22,
+[data-ec-lag="23"] .ec-lag--23,
+[data-ec-lag="24"] .ec-lag--24,
+[data-ec-lag="25"] .ec-lag--25,
+[data-ec-lag="26"] .ec-lag--26,
+[data-ec-lag="27"] .ec-lag--27,
+[data-ec-lag="28"] .ec-lag--28,
+[data-ec-lag="29"] .ec-lag--29,
+[data-ec-lag="30"] .ec-lag--30,
+[data-ec-lag="31"] .ec-lag--31,
+[data-ec-lag="32"] .ec-lag--32,
+[data-ec-lag="33"] .ec-lag--33,
+[data-ec-lag="34"] .ec-lag--34,
+[data-ec-lag="35"] .ec-lag--35,
+[data-ec-lag="36"] .ec-lag--36,
+[data-ec-lag="37"] .ec-lag--37,
+[data-ec-lag="38"] .ec-lag--38,
+[data-ec-lag="39"] .ec-lag--39,
+[data-ec-lag="40"] .ec-lag--40,
+[data-ec-lag="41"] .ec-lag--41,
+[data-ec-lag="42"] .ec-lag--42,
+[data-ec-lag="43"] .ec-lag--43,
+[data-ec-lag="44"] .ec-lag--44,
+[data-ec-lag="45"] .ec-lag--45,
+[data-ec-lag="46"] .ec-lag--46,
+[data-ec-lag="47"] .ec-lag--47,
+[data-ec-lag="48"] .ec-lag--48,
+[data-ec-lag="49"] .ec-lag--49,
+[data-ec-lag="50"] .ec-lag--50,
+[data-ec-lag="51"] .ec-lag--51,
+[data-ec-lag="52"] .ec-lag--52,
+[data-ec-lag="53"] .ec-lag--53,
+[data-ec-lag="54"] .ec-lag--54,
+[data-ec-lag="55"] .ec-lag--55,
+[data-ec-lag="56"] .ec-lag--56,
+[data-ec-lag="57"] .ec-lag--57,
+[data-ec-lag="58"] .ec-lag--58,
+[data-ec-lag="59"] .ec-lag--59,
+[data-ec-lag="60"] .ec-lag--60,
+[data-ec-lag="61"] .ec-lag--61,
+[data-ec-lag="62"] .ec-lag--62,
+[data-ec-lag="63"] .ec-lag--63,
+[data-ec-lag="64"] .ec-lag--64,
+[data-ec-lag="65"] .ec-lag--65,
+[data-ec-lag="66"] .ec-lag--66,
+[data-ec-lag="67"] .ec-lag--67,
+[data-ec-lag="68"] .ec-lag--68,
+[data-ec-lag="69"] .ec-lag--69,
+[data-ec-lag="70"] .ec-lag--70,
+[data-ec-lag="71"] .ec-lag--71,
+[data-ec-lag="72"] .ec-lag--72,
+[data-ec-lag="73"] .ec-lag--73,
+[data-ec-lag="74"] .ec-lag--74,
+[data-ec-lag="75"] .ec-lag--75,
+[data-ec-lag="76"] .ec-lag--76,
+[data-ec-lag="77"] .ec-lag--77,
+[data-ec-lag="78"] .ec-lag--78,
+[data-ec-lag="79"] .ec-lag--79,
+[data-ec-lag="80"] .ec-lag--80,
+[data-ec-lag="81"] .ec-lag--81,
+[data-ec-lag="82"] .ec-lag--82,
+[data-ec-lag="83"] .ec-lag--83,
+[data-ec-lag="84"] .ec-lag--84,
+[data-ec-lag="85"] .ec-lag--85,
+[data-ec-lag="86"] .ec-lag--86,
+[data-ec-lag="87"] .ec-lag--87,
+[data-ec-lag="88"] .ec-lag--88,
+[data-ec-lag="89"] .ec-lag--89,
+[data-ec-lag="90"] .ec-lag--90,
+[data-ec-lag="91"] .ec-lag--91,
+[data-ec-lag="92"] .ec-lag--92,
+[data-ec-lag="93"] .ec-lag--93,
+[data-ec-lag="94"] .ec-lag--94,
+[data-ec-lag="95"] .ec-lag--95,
+[data-ec-lag="96"] .ec-lag--96,
+[data-ec-lag="97"] .ec-lag--97,
+[data-ec-lag="98"] .ec-lag--98,
+[data-ec-lag="99"] .ec-lag--99,
+[data-ec-lag="100"] .ec-lag--100,
+[data-ec-lag="101"] .ec-lag--101,
+[data-ec-lag="102"] .ec-lag--102,
+[data-ec-lag="103"] .ec-lag--103,
+[data-ec-lag="104"] .ec-lag--104,
+[data-ec-lag="105"] .ec-lag--105,
+[data-ec-lag="106"] .ec-lag--106,
+[data-ec-lag="107"] .ec-lag--107,
+[data-ec-lag="108"] .ec-lag--108,
+[data-ec-lag="109"] .ec-lag--109,
+[data-ec-lag="110"] .ec-lag--110,
+[data-ec-lag="111"] .ec-lag--111,
+[data-ec-lag="112"] .ec-lag--112,
+[data-ec-lag="113"] .ec-lag--113,
+[data-ec-lag="114"] .ec-lag--114,
+[data-ec-lag="115"] .ec-lag--115,
+[data-ec-lag="116"] .ec-lag--116,
+[data-ec-lag="117"] .ec-lag--117,
+[data-ec-lag="118"] .ec-lag--118,
+[data-ec-lag="119"] .ec-lag--119,
+[data-ec-lag="120"] .ec-lag--120 {
+  opacity: 1;
+}
