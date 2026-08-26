@@ -12,9 +12,13 @@ related:
   - label: Health-Based Routing
     slug: health-based-routing
   - label: Weighted Round Robin
+    slug: weighted-round-robin
   - label: Layer 7 Load Balancing
+    slug: layer-7-load-balancing
   - label: Reverse Proxy
+    slug: reverse-proxy
   - label: YARP
+    slug: yarp
 references:
   - title: YARP load balancing
     url: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/load-balancing

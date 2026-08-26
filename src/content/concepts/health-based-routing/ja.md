@@ -12,12 +12,17 @@ related:
   - label: Round Robin
     slug: round-robin
   - label: Health Check
+    slug: health-check
   - label: Readiness
+    slug: readiness-probe
   - label: Liveness
+    slug: liveness-probe
   - label: Circuit Breaker
     slug: circuit-breaker
   - label: Graceful Shutdown
+    slug: graceful-shutdown
   - label: YARP
+    slug: yarp
 references:
   - title: YARP destination health checks
     url: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/dests-health-checks

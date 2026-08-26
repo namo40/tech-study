@@ -27,7 +27,7 @@ related:
   - label: Query Plan
     slug: query-plan
   - label: Index
-    slug: index
+    slug: database-index
   - label: Dapper
     slug: dapper
   - label: DataLoader

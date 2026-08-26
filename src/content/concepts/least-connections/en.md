@@ -12,11 +12,13 @@ related:
   - label: Health-Based Routing
     slug: health-based-routing
   - label: Power of Two Choices
+    slug: power-of-two-choices
   - label: Tail Latency
     slug: tail-latency
   - label: Concurrency Limiter
     slug: concurrency-limiter
   - label: YARP
+    slug: yarp
 references:
   - title: YARP load balancing
     url: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/load-balancing

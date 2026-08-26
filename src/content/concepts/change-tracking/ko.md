@@ -28,7 +28,7 @@ related:
   - label: N+1 Query
     slug: n-plus-1-query
   - label: Transaction
-    slug: transaction
+    slug: local-transaction
   - label: Lost Update
     slug: lost-update
 references:

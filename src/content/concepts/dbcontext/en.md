@@ -17,7 +17,7 @@ related:
   - label: Repository
     slug: repository
   - label: Transaction
-    slug: transaction
+    slug: local-transaction
 references:
   - title: DbContext lifetime, configuration and initialization
     url: https://learn.microsoft.com/en-us/ef/core/dbcontext-configuration/

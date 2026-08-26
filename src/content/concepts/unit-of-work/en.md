@@ -9,7 +9,7 @@ related:
   - label: Change Tracking
     slug: change-tracking
   - label: Transaction
-    slug: transaction
+    slug: local-transaction
   - label: Repository
     slug: repository
   - label: DbContext
