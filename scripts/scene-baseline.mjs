@@ -77,6 +77,7 @@ const SCENE_IDS = [
   'async-await',
   'state-machine',
   'load-test',
+  'change-tracking',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */

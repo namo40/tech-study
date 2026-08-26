@@ -3,6 +3,10 @@ import {
   stageMarkup as loadTestStage,
 } from './load-test/stage';
 import {
+  SCENE_DURATION as changeTrackingDuration,
+  stageMarkup as changeTrackingStage,
+} from './change-tracking/stage';
+import {
   SCENE_DURATION as circuitBreakerDuration,
   stageMarkup as circuitBreakerStage,
 } from './circuit-breaker/stage';
@@ -257,6 +261,10 @@ const scenes: Record<string, SceneAsset> = {
   'load-test': {
     markup: loadTestStage,
     duration: loadTestDuration,
+  },
+  'change-tracking': {
+    markup: changeTrackingStage,
+    duration: changeTrackingDuration,
   },
 };
 
