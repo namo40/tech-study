@@ -78,6 +78,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./eventual-consistency/scene')).default;
     case 'transactional-outbox':
       return (await import('./transactional-outbox/scene')).default;
+    case 'readiness-probe':
+      return (await import('./readiness-probe/scene')).default;
     default:
       return null;
   }

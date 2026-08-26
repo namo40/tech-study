@@ -9752,3 +9752,347 @@
 [data-ob-dups="2"] .ob-dups--2 {
   opacity: 1;
 }
+
+/* ---------------------------------------------------------------- */
+/* Readiness Probe stage                                             */
+/* ---------------------------------------------------------------- */
+
+/* The three lanes into the pod row. Drawn at full strength they would read
+   louder than the pods they lead to, so they sit back and let the row and the
+   dots travelling down them carry the picture. */
+.rp-lane {
+  stroke-width: 4;
+  opacity: 0.4;
+}
+
+/* The endpoints list, which is the only thing that decides where a request
+   goes. A slot is lit or it is dashed and empty; the letter is legible either
+   way, so the list is readable without the colour. */
+.rp-ep-label {
+  letter-spacing: 1px;
+}
+
+.rp-ep-box {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.rp-ep-letter {
+  fill: var(--muted);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+[data-rp-ep="on"] .rp-ep-box {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+}
+
+[data-rp-ep="on"] .rp-ep-letter {
+  fill: var(--bg);
+}
+
+[data-rp-ep="off"] .rp-ep-box {
+  stroke-dasharray: 9 9;
+}
+
+.scene-counter.rp-ready {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 30px;
+}
+
+.scene-counter.rp-ready--0 {
+  fill: var(--state-open);
+}
+
+[data-rp-ready="0"] .rp-ready--0,
+[data-rp-ready="1"] .rp-ready--1,
+[data-rp-ready="2"] .rp-ready--2,
+[data-rp-ready="3"] .rp-ready--3 {
+  opacity: 1;
+}
+
+/* A pod. The box says nothing on its own; everything the pod knows about
+   itself is written inside it. */
+.rp-pod-name {
+  fill: var(--fg);
+  font-size: 32px;
+  font-weight: 600;
+}
+
+/* The hatch a container wears while it is being replaced. */
+.rp-hatch-line {
+  stroke: var(--state-open);
+  opacity: 0.5;
+}
+
+.rp-hatch {
+  fill: url(#rp-hatch);
+  opacity: 0;
+}
+
+[data-rp-pod="restarting"] .rp-hatch {
+  opacity: 1;
+}
+
+[data-rp-pod="restarting"] .rp-pod-box {
+  stroke: var(--state-open);
+}
+
+[data-rp-pod="notready"] .rp-pod-box {
+  stroke: var(--state-half);
+}
+
+/* The two answers, one plate each. The letter never moves, so the only thing
+   that changes between the two variants is the mark after it. */
+.rp-chip-box {
+  fill: var(--surface-2);
+  stroke: var(--border);
+}
+
+.scene-counter.rp-chip-text {
+  font-family: var(--font-mono);
+  font-size: 26px;
+}
+
+.rp-r--ok,
+.rp-l--ok {
+  fill: var(--state-closed);
+}
+
+.rp-r--fail,
+.rp-l--fail {
+  fill: var(--state-open);
+}
+
+[data-rp-r="ok"] .rp-r--ok,
+[data-rp-r="fail"] .rp-r--fail,
+[data-rp-l="ok"] .rp-l--ok,
+[data-rp-l="fail"] .rp-l--fail {
+  opacity: 1;
+}
+
+[data-rp-r="fail"] .rp-chip-box--r,
+[data-rp-l="fail"] .rp-chip-box--l {
+  stroke: var(--state-open);
+}
+
+/* What each probe was pointed at, which is the whole of the fourth step. */
+.scene-counter.rp-note {
+  fill: var(--fg-soft);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+[data-rp-wire="liveness"] .rp-note-l--db,
+[data-rp-wire="liveness"] .rp-note-r--self,
+[data-rp-wire="readiness"] .rp-note-r--db,
+[data-rp-wire="readiness"] .rp-note-l--self {
+  opacity: 1;
+}
+
+[data-rp-wire="liveness"] .rp-note-l--db {
+  fill: var(--state-open);
+}
+
+[data-rp-wire="readiness"] .rp-note-r--db {
+  fill: var(--accent);
+}
+
+/* The word a pod says about itself, one of four. */
+.rp-badge {
+  --flash-color: var(--state-closed);
+
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.rp-badge--starting {
+  --flash-color: var(--accent);
+}
+
+.rp-badge--notready {
+  --flash-color: var(--state-half);
+}
+
+.rp-badge--restarting {
+  --flash-color: var(--state-open);
+}
+
+[data-rp-pod="starting"] .rp-badge--starting,
+[data-rp-pod="ready"] .rp-badge--ready,
+[data-rp-pod="notready"] .rp-badge--notready,
+[data-rp-pod="restarting"] .rp-badge--restarting {
+  opacity: 1;
+}
+
+/* How many times this container has been replaced. */
+.scene-counter.rp-restarts {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 24px;
+}
+
+[data-rp-restarts="0"] .rp-restarts--0,
+[data-rp-restarts="1"] .rp-restarts--1,
+[data-rp-restarts="2"] .rp-restarts--2,
+[data-rp-restarts="3"] .rp-restarts--3 {
+  opacity: 1;
+}
+
+/* One ring per pod, counting either a warm-up down or a run of refusals up.
+   The label says which, so the arc is never the only thing that has to be
+   read. */
+.rp-ring {
+  --ring-width: 8;
+  --ring-color: var(--accent);
+}
+
+.rp-ring-label {
+  font-size: 18px;
+  opacity: 0;
+}
+
+[data-rp-ring="delay"] .rp-ring,
+[data-rp-ring="fail"] .rp-ring {
+  opacity: 1;
+}
+
+[data-rp-ring="delay"] .rp-ring-label--delay,
+[data-rp-ring="fail"] .rp-ring-label--fail {
+  opacity: 1;
+}
+
+[data-rp-ring="fail"] .rp-ring {
+  --ring-color: var(--state-half);
+}
+
+[data-rp-ring="fail"] .rp-ring-label--fail {
+  fill: var(--state-half);
+}
+
+/* The two sentences the third step leaves behind. */
+.rp-split {
+  fill: var(--fg-soft);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+[data-rp-split="on"] .rp-split {
+  opacity: 1;
+}
+
+/* The probe timeline. Every mark is drawn at the x its probe time maps to, so
+   the three rows read against one axis rather than against each other. */
+.rp-row-label {
+  fill: var(--fg-soft);
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.rp-lane-label {
+  fill: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.rp-tick-ok,
+.rp-tick-fail {
+  fill: none;
+  stroke-linecap: round;
+  stroke-width: 3;
+  opacity: 0;
+}
+
+.rp-tick-ok {
+  stroke: var(--state-closed);
+}
+
+.rp-tick-fail {
+  stroke: var(--state-open);
+}
+
+[data-rp-tick="ok"] .rp-tick-ok,
+[data-rp-tick="fail"] .rp-tick-fail {
+  opacity: 1;
+}
+
+/* The wire that says which probe is pointed at the database, and the database
+   it is pointed at. Both arrive with the fourth step. */
+.rp-wire {
+  opacity: 0;
+}
+
+.rp-wire-line {
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+[data-rp-wire="liveness"] .rp-wire--l,
+[data-rp-wire="readiness"] .rp-wire--r {
+  opacity: 1;
+}
+
+[data-rp-wire="liveness"] .rp-wire--l .rp-wire-line {
+  stroke: var(--state-open);
+}
+
+[data-rp-wire="readiness"] .rp-wire--r .rp-wire-line {
+  stroke: var(--accent);
+}
+
+.rp-db {
+  opacity: 0;
+}
+
+.rp-db-box {
+  fill: var(--surface-2);
+}
+
+.scene-counter.rp-db-text {
+  font-family: var(--font-mono);
+  font-size: 28px;
+}
+
+.rp-db-text--ok {
+  fill: var(--state-closed);
+}
+
+.rp-db-text--fail {
+  fill: var(--state-open);
+}
+
+[data-rp-db="ok"] .rp-db,
+[data-rp-db="fail"] .rp-db {
+  opacity: 1;
+}
+
+[data-rp-db="ok"] .rp-db-text--ok,
+[data-rp-db="fail"] .rp-db-text--fail {
+  opacity: 1;
+}
+
+[data-rp-db="fail"] .rp-db-box {
+  stroke: var(--state-open);
+}
+
+/* How many restarts the three pods have had between them. */
+.scene-counter.rp-total {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 30px;
+}
+
+[data-rp-total="0"] .rp-total--0,
+[data-rp-total="1"] .rp-total--1,
+[data-rp-total="2"] .rp-total--2,
+[data-rp-total="3"] .rp-total--3,
+[data-rp-total="4"] .rp-total--4 {
+  opacity: 1;
+}

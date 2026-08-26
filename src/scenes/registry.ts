@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as readinessProbeDuration,
+  stageMarkup as readinessProbeStage,
+} from './readiness-probe/stage';
+import {
   SCENE_DURATION as transactionalOutboxDuration,
   stageMarkup as transactionalOutboxStage,
 } from './transactional-outbox/stage';
@@ -289,6 +293,10 @@ const scenes: Record<string, SceneAsset> = {
   'transactional-outbox': {
     markup: transactionalOutboxStage,
     duration: transactionalOutboxDuration,
+  },
+  'readiness-probe': {
+    markup: readinessProbeStage,
+    duration: readinessProbeDuration,
   },
 };
 
