@@ -7,6 +7,10 @@ import {
   stageMarkup as changeTrackingStage,
 } from './change-tracking/stage';
 import {
+  SCENE_DURATION as garbageCollectionDuration,
+  stageMarkup as garbageCollectionStage,
+} from './garbage-collection/stage';
+import {
   SCENE_DURATION as circuitBreakerDuration,
   stageMarkup as circuitBreakerStage,
 } from './circuit-breaker/stage';
@@ -265,6 +269,10 @@ const scenes: Record<string, SceneAsset> = {
   'change-tracking': {
     markup: changeTrackingStage,
     duration: changeTrackingDuration,
+  },
+  'garbage-collection': {
+    markup: garbageCollectionStage,
+    duration: garbageCollectionDuration,
   },
 };
 

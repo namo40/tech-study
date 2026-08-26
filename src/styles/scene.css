@@ -8319,3 +8319,678 @@
 .ct-req--chip .scene-req-dot {
   fill: var(--request);
 }
+
+/* ---------------------------------------------------------------- */
+/* Garbage Collection stage                                          */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Every rule below is scoped by a `gc-` class, so nothing in this block can
+ * reach a shared widget class in another scene: the rightmost compound of
+ * every selector carries one. Where a selector opens on a `data-*` value it is
+ * an attribute only this stage writes, spelled so that it cannot collide with
+ * the `data-tick`, `data-pool`, `data-limit` and `data-p99` other stages use.
+ */
+
+/* The rate the request threads are allocating at, and the gauge beside it. */
+.scene-counter.gc-alloc {
+  fill: var(--fg);
+  font-size: 26px;
+}
+
+[data-alloc="0"] .gc-alloc--0,
+[data-alloc="1"] .gc-alloc--1,
+[data-alloc="2"] .gc-alloc--2,
+[data-alloc="3"] .gc-alloc--3,
+[data-alloc="4"] .gc-alloc--4,
+[data-alloc="5"] .gc-alloc--5,
+[data-alloc="6"] .gc-alloc--6,
+[data-alloc="7"] .gc-alloc--7,
+[data-alloc="8"] .gc-alloc--8,
+[data-alloc="9"] .gc-alloc--9,
+[data-alloc="10"] .gc-alloc--10,
+[data-alloc="11"] .gc-alloc--11,
+[data-alloc="12"] .gc-alloc--12,
+[data-alloc="13"] .gc-alloc--13,
+[data-alloc="14"] .gc-alloc--14,
+[data-alloc="15"] .gc-alloc--15,
+[data-alloc="16"] .gc-alloc--16,
+[data-alloc="17"] .gc-alloc--17,
+[data-alloc="18"] .gc-alloc--18,
+[data-alloc="19"] .gc-alloc--19,
+[data-alloc="20"] .gc-alloc--20,
+[data-alloc="21"] .gc-alloc--21,
+[data-alloc="22"] .gc-alloc--22,
+[data-alloc="23"] .gc-alloc--23,
+[data-alloc="24"] .gc-alloc--24,
+[data-alloc="25"] .gc-alloc--25,
+[data-alloc="26"] .gc-alloc--26,
+[data-alloc="27"] .gc-alloc--27,
+[data-alloc="28"] .gc-alloc--28,
+[data-alloc="29"] .gc-alloc--29,
+[data-alloc="30"] .gc-alloc--30,
+[data-alloc="31"] .gc-alloc--31,
+[data-alloc="32"] .gc-alloc--32,
+[data-alloc="33"] .gc-alloc--33,
+[data-alloc="34"] .gc-alloc--34,
+[data-alloc="35"] .gc-alloc--35,
+[data-alloc="36"] .gc-alloc--36,
+[data-alloc="37"] .gc-alloc--37,
+[data-alloc="38"] .gc-alloc--38,
+[data-alloc="39"] .gc-alloc--39,
+[data-alloc="40"] .gc-alloc--40,
+[data-alloc="41"] .gc-alloc--41,
+[data-alloc="42"] .gc-alloc--42,
+[data-alloc="43"] .gc-alloc--43,
+[data-alloc="44"] .gc-alloc--44,
+[data-alloc="45"] .gc-alloc--45,
+[data-alloc="46"] .gc-alloc--46,
+[data-alloc="47"] .gc-alloc--47,
+[data-alloc="48"] .gc-alloc--48,
+[data-alloc="49"] .gc-alloc--49,
+[data-alloc="50"] .gc-alloc--50,
+[data-alloc="51"] .gc-alloc--51,
+[data-alloc="52"] .gc-alloc--52,
+[data-alloc="53"] .gc-alloc--53,
+[data-alloc="54"] .gc-alloc--54,
+[data-alloc="55"] .gc-alloc--55,
+[data-alloc="56"] .gc-alloc--56,
+[data-alloc="57"] .gc-alloc--57,
+[data-alloc="58"] .gc-alloc--58,
+[data-alloc="59"] .gc-alloc--59,
+[data-alloc="60"] .gc-alloc--60 {
+  opacity: 1;
+}
+
+.gc-gauge-fill {
+  --fill-color: var(--request);
+}
+
+/* What the hot path is doing to get a buffer, which is the whole third step. */
+.gc-chip-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-source="pool"] .gc-chip-bg {
+  stroke: var(--state-closed);
+}
+
+.gc-code {
+  fill: var(--fg);
+  font-size: 22px;
+  opacity: 0;
+}
+
+[data-source="new"] .gc-code--new,
+[data-source="pool"] .gc-code--pool {
+  opacity: 1;
+}
+
+/* One request lane each, and the bar that stops moving when the world does. */
+.scene-track.gc-lane-track {
+  stroke-width: 2;
+}
+
+.gc-lane-fill {
+  fill: var(--request);
+}
+
+[data-stw="on"] .gc-lane-fill {
+  fill: var(--muted);
+}
+
+/* Stopped is drawn as well as named, so it is never only a colour. */
+.gc-hatch-bar {
+  fill: var(--state-open);
+}
+
+.gc-hatch {
+  fill: url(#gc-stopped);
+  opacity: 0;
+}
+
+[data-stw="on"] .gc-hatch {
+  opacity: 0.45;
+}
+
+.gc-stw {
+  --flash-color: var(--state-open);
+  font-family: var(--font-mono);
+  font-size: 24px;
+}
+
+[data-stw="on"] .gc-stw {
+  opacity: 1;
+}
+
+/* How much the process is holding, and the hard limit it was given. */
+.scene-counter.gc-heapv {
+  fill: var(--fg);
+  font-size: 26px;
+}
+
+[data-heap="0"] .gc-heapv--0,
+[data-heap="1"] .gc-heapv--1,
+[data-heap="2"] .gc-heapv--2,
+[data-heap="3"] .gc-heapv--3,
+[data-heap="4"] .gc-heapv--4,
+[data-heap="5"] .gc-heapv--5,
+[data-heap="6"] .gc-heapv--6,
+[data-heap="7"] .gc-heapv--7,
+[data-heap="8"] .gc-heapv--8,
+[data-heap="9"] .gc-heapv--9,
+[data-heap="10"] .gc-heapv--10,
+[data-heap="11"] .gc-heapv--11,
+[data-heap="12"] .gc-heapv--12,
+[data-heap="13"] .gc-heapv--13,
+[data-heap="14"] .gc-heapv--14,
+[data-heap="15"] .gc-heapv--15,
+[data-heap="16"] .gc-heapv--16,
+[data-heap="17"] .gc-heapv--17,
+[data-heap="18"] .gc-heapv--18,
+[data-heap="19"] .gc-heapv--19,
+[data-heap="20"] .gc-heapv--20,
+[data-heap="21"] .gc-heapv--21,
+[data-heap="22"] .gc-heapv--22,
+[data-heap="23"] .gc-heapv--23,
+[data-heap="24"] .gc-heapv--24,
+[data-heap="25"] .gc-heapv--25,
+[data-heap="26"] .gc-heapv--26,
+[data-heap="27"] .gc-heapv--27,
+[data-heap="28"] .gc-heapv--28,
+[data-heap="29"] .gc-heapv--29,
+[data-heap="30"] .gc-heapv--30,
+[data-heap="31"] .gc-heapv--31,
+[data-heap="32"] .gc-heapv--32,
+[data-heap="33"] .gc-heapv--33,
+[data-heap="34"] .gc-heapv--34,
+[data-heap="35"] .gc-heapv--35,
+[data-heap="36"] .gc-heapv--36,
+[data-heap="37"] .gc-heapv--37,
+[data-heap="38"] .gc-heapv--38,
+[data-heap="39"] .gc-heapv--39,
+[data-heap="40"] .gc-heapv--40,
+[data-heap="41"] .gc-heapv--41,
+[data-heap="42"] .gc-heapv--42,
+[data-heap="43"] .gc-heapv--43,
+[data-heap="44"] .gc-heapv--44,
+[data-heap="45"] .gc-heapv--45,
+[data-heap="46"] .gc-heapv--46,
+[data-heap="47"] .gc-heapv--47,
+[data-heap="48"] .gc-heapv--48,
+[data-heap="49"] .gc-heapv--49,
+[data-heap="50"] .gc-heapv--50,
+[data-heap="51"] .gc-heapv--51,
+[data-heap="52"] .gc-heapv--52,
+[data-heap="53"] .gc-heapv--53,
+[data-heap="54"] .gc-heapv--54,
+[data-heap="55"] .gc-heapv--55,
+[data-heap="56"] .gc-heapv--56,
+[data-heap="57"] .gc-heapv--57,
+[data-heap="58"] .gc-heapv--58,
+[data-heap="59"] .gc-heapv--59,
+[data-heap="60"] .gc-heapv--60 {
+  opacity: 1;
+}
+
+.gc-meter-fill {
+  --fill-color: var(--request);
+}
+
+[data-oom="on"] .gc-meter-fill {
+  --fill-color: var(--state-open);
+}
+
+[data-oom="clear"] .gc-meter-fill {
+  --fill-color: var(--state-closed);
+}
+
+.gc-limit-line {
+  stroke: var(--state-half);
+  stroke-width: 5;
+  opacity: 0;
+}
+
+[data-hardlimit="on"] .gc-limit-line {
+  opacity: 1;
+}
+
+.gc-limit-label {
+  --flash-color: var(--state-half);
+  font-family: var(--font-mono);
+  font-size: 22px;
+}
+
+[data-hardlimit="on"] .gc-limit-label {
+  opacity: 1;
+}
+
+.gc-caption {
+  font-size: 22px;
+}
+
+/* One heap per core under Server GC, which is footprint bought with pauses. */
+.gc-glyph {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-gcmode="workstation"] .gc-glyph--0,
+[data-gcmode="server"] .gc-glyph {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+/* The generations themselves: a frame each, filled from the left. */
+.gc-region {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.gc-obj {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.gc-obj[data-obj="dead"] {
+  fill: var(--muted);
+  stroke: var(--muted);
+  opacity: 0.45;
+}
+
+.gc-obj[data-obj="live"] {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+/* A large block, and the hole one leaves behind when it is collected. */
+.gc-block {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.gc-block[data-block="live"] {
+  fill: var(--cpu);
+  stroke: var(--cpu);
+}
+
+.gc-block[data-block="dead"] {
+  fill: var(--muted);
+  stroke: var(--muted);
+  opacity: 0.45;
+}
+
+.gc-block[data-block="gap"] {
+  fill: none;
+  stroke: var(--muted);
+  stroke-dasharray: 10 8;
+}
+
+/* The pool a rented buffer comes from instead of the large object heap. */
+.gc-pool {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 2;
+  opacity: 0.35;
+}
+
+.gc-pool[data-rent="free"] {
+  stroke: var(--state-closed);
+  stroke-dasharray: 10 8;
+  opacity: 1;
+}
+
+.gc-pool[data-rent="rented"] {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+  opacity: 1;
+}
+
+.gc-promoted {
+  --flash-color: var(--state-closed);
+  font-size: 24px;
+}
+
+[data-promoted="on"] .gc-promoted {
+  opacity: 1;
+}
+
+/* Crossing the hard limit is what kills the process, so the frame says so. */
+.gc-oom-frame {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 6;
+  opacity: 0;
+}
+
+[data-oom="on"] .gc-oom-frame {
+  opacity: 1;
+}
+
+/* Which collector is running, and what the last collection cost. */
+.gc-mode {
+  fill: var(--fg);
+  font-size: 24px;
+  opacity: 0;
+}
+
+[data-gcmode="workstation"] .gc-mode--workstation,
+[data-gcmode="server"] .gc-mode--server {
+  opacity: 1;
+}
+
+.gc-parallel {
+  --flash-color: var(--accent);
+  font-size: 22px;
+}
+
+[data-gcmode="server"] .gc-parallel {
+  opacity: 1;
+}
+
+.gc-last {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  opacity: 0;
+}
+
+[data-lastgc="gen0"] .gc-last--gen0,
+[data-lastgc="gen1"] .gc-last--gen1,
+[data-lastgc="gen2"] .gc-last--gen2,
+[data-lastgc="gen2-server"] .gc-last--gen2-server {
+  opacity: 1;
+}
+
+[data-lastgc="gen2"] .gc-last--gen2,
+[data-lastgc="gen2-server"] .gc-last--gen2-server {
+  fill: var(--state-open);
+}
+
+/* The event axis. A tick keeps the shape of the mode it was collected under. */
+.gc-axis {
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.gc-tick-one,
+.gc-tick-quad {
+  opacity: 0;
+}
+
+.gc-tick-one--gen0,
+.gc-tick-one--gen1,
+.gc-tick-quad {
+  fill: var(--request);
+}
+
+.gc-tick-one--gen2 {
+  fill: var(--state-open);
+}
+
+.gc-tick[data-gctick="gen0"] .gc-tick-one--gen0,
+.gc-tick[data-gctick="gen1"] .gc-tick-one--gen1,
+.gc-tick[data-gctick="gen2"] .gc-tick-one--gen2,
+.gc-tick[data-gctick="gen0-server"] .gc-tick-quad,
+.gc-tick[data-gctick="gen1-server"] .gc-tick-quad,
+.gc-tick[data-gctick="gen2-server"] .gc-tick-quad {
+  opacity: 1;
+}
+
+.gc-tick[data-gctick="gen2-server"] .gc-tick-quad {
+  fill: var(--state-open);
+}
+
+/* The three readouts a service actually watches. */
+.scene-counter.gc-count,
+.scene-counter.gc-pause,
+.scene-counter.gc-tail {
+  fill: var(--fg);
+  font-size: 26px;
+}
+
+[data-gccount="0"] .gc-count--0,
+[data-gccount="1"] .gc-count--1,
+[data-gccount="2"] .gc-count--2,
+[data-gccount="3"] .gc-count--3,
+[data-gccount="4"] .gc-count--4,
+[data-gccount="5"] .gc-count--5,
+[data-gccount="6"] .gc-count--6,
+[data-gccount="7"] .gc-count--7,
+[data-gccount="8"] .gc-count--8,
+[data-gccount="9"] .gc-count--9,
+[data-gccount="10"] .gc-count--10,
+[data-gccount="11"] .gc-count--11,
+[data-gccount="12"] .gc-count--12,
+[data-gccount="13"] .gc-count--13,
+[data-gccount="14"] .gc-count--14,
+[data-gccount="15"] .gc-count--15,
+[data-gccount="16"] .gc-count--16,
+[data-gccount="17"] .gc-count--17,
+[data-gccount="18"] .gc-count--18,
+[data-gccount="19"] .gc-count--19,
+[data-gccount="20"] .gc-count--20,
+[data-gccount="21"] .gc-count--21,
+[data-gccount="22"] .gc-count--22,
+[data-gccount="23"] .gc-count--23,
+[data-gccount="24"] .gc-count--24,
+[data-gccount="25"] .gc-count--25,
+[data-gccount="26"] .gc-count--26,
+[data-gccount="27"] .gc-count--27,
+[data-gccount="28"] .gc-count--28,
+[data-gccount="29"] .gc-count--29,
+[data-gccount="30"] .gc-count--30,
+[data-gccount="31"] .gc-count--31,
+[data-gccount="32"] .gc-count--32,
+[data-gccount="33"] .gc-count--33,
+[data-gccount="34"] .gc-count--34,
+[data-gccount="35"] .gc-count--35,
+[data-gccount="36"] .gc-count--36,
+[data-gccount="37"] .gc-count--37,
+[data-gccount="38"] .gc-count--38,
+[data-gccount="39"] .gc-count--39,
+[data-gccount="40"] .gc-count--40,
+[data-gccount="41"] .gc-count--41,
+[data-gccount="42"] .gc-count--42,
+[data-gccount="43"] .gc-count--43,
+[data-gccount="44"] .gc-count--44,
+[data-gccount="45"] .gc-count--45,
+[data-gccount="46"] .gc-count--46,
+[data-gccount="47"] .gc-count--47,
+[data-gccount="48"] .gc-count--48,
+[data-gccount="49"] .gc-count--49,
+[data-gccount="50"] .gc-count--50,
+[data-gccount="51"] .gc-count--51,
+[data-gccount="52"] .gc-count--52,
+[data-gccount="53"] .gc-count--53,
+[data-gccount="54"] .gc-count--54,
+[data-gccount="55"] .gc-count--55,
+[data-gccount="56"] .gc-count--56,
+[data-gccount="57"] .gc-count--57,
+[data-gccount="58"] .gc-count--58,
+[data-gccount="59"] .gc-count--59,
+[data-gccount="60"] .gc-count--60 {
+  opacity: 1;
+}
+
+[data-pause="0"] .gc-pause--0,
+[data-pause="1"] .gc-pause--1,
+[data-pause="2"] .gc-pause--2,
+[data-pause="3"] .gc-pause--3,
+[data-pause="4"] .gc-pause--4,
+[data-pause="5"] .gc-pause--5,
+[data-pause="6"] .gc-pause--6,
+[data-pause="7"] .gc-pause--7,
+[data-pause="8"] .gc-pause--8,
+[data-pause="9"] .gc-pause--9,
+[data-pause="10"] .gc-pause--10,
+[data-pause="11"] .gc-pause--11,
+[data-pause="12"] .gc-pause--12,
+[data-pause="13"] .gc-pause--13,
+[data-pause="14"] .gc-pause--14,
+[data-pause="15"] .gc-pause--15,
+[data-pause="16"] .gc-pause--16,
+[data-pause="17"] .gc-pause--17,
+[data-pause="18"] .gc-pause--18,
+[data-pause="19"] .gc-pause--19,
+[data-pause="20"] .gc-pause--20,
+[data-pause="21"] .gc-pause--21,
+[data-pause="22"] .gc-pause--22,
+[data-pause="23"] .gc-pause--23,
+[data-pause="24"] .gc-pause--24,
+[data-pause="25"] .gc-pause--25,
+[data-pause="26"] .gc-pause--26,
+[data-pause="27"] .gc-pause--27,
+[data-pause="28"] .gc-pause--28,
+[data-pause="29"] .gc-pause--29,
+[data-pause="30"] .gc-pause--30,
+[data-pause="31"] .gc-pause--31,
+[data-pause="32"] .gc-pause--32,
+[data-pause="33"] .gc-pause--33,
+[data-pause="34"] .gc-pause--34,
+[data-pause="35"] .gc-pause--35,
+[data-pause="36"] .gc-pause--36,
+[data-pause="37"] .gc-pause--37,
+[data-pause="38"] .gc-pause--38,
+[data-pause="39"] .gc-pause--39,
+[data-pause="40"] .gc-pause--40,
+[data-pause="41"] .gc-pause--41,
+[data-pause="42"] .gc-pause--42,
+[data-pause="43"] .gc-pause--43,
+[data-pause="44"] .gc-pause--44,
+[data-pause="45"] .gc-pause--45,
+[data-pause="46"] .gc-pause--46,
+[data-pause="47"] .gc-pause--47,
+[data-pause="48"] .gc-pause--48,
+[data-pause="49"] .gc-pause--49,
+[data-pause="50"] .gc-pause--50,
+[data-pause="51"] .gc-pause--51,
+[data-pause="52"] .gc-pause--52,
+[data-pause="53"] .gc-pause--53,
+[data-pause="54"] .gc-pause--54,
+[data-pause="55"] .gc-pause--55,
+[data-pause="56"] .gc-pause--56,
+[data-pause="57"] .gc-pause--57,
+[data-pause="58"] .gc-pause--58,
+[data-pause="59"] .gc-pause--59,
+[data-pause="60"] .gc-pause--60,
+[data-pause="61"] .gc-pause--61,
+[data-pause="62"] .gc-pause--62,
+[data-pause="63"] .gc-pause--63,
+[data-pause="64"] .gc-pause--64,
+[data-pause="65"] .gc-pause--65,
+[data-pause="66"] .gc-pause--66,
+[data-pause="67"] .gc-pause--67,
+[data-pause="68"] .gc-pause--68,
+[data-pause="69"] .gc-pause--69,
+[data-pause="70"] .gc-pause--70,
+[data-pause="71"] .gc-pause--71,
+[data-pause="72"] .gc-pause--72,
+[data-pause="73"] .gc-pause--73,
+[data-pause="74"] .gc-pause--74,
+[data-pause="75"] .gc-pause--75 {
+  opacity: 1;
+}
+
+[data-tail="0"] .gc-tail--0,
+[data-tail="1"] .gc-tail--1,
+[data-tail="2"] .gc-tail--2,
+[data-tail="3"] .gc-tail--3,
+[data-tail="4"] .gc-tail--4,
+[data-tail="5"] .gc-tail--5,
+[data-tail="6"] .gc-tail--6,
+[data-tail="7"] .gc-tail--7,
+[data-tail="8"] .gc-tail--8,
+[data-tail="9"] .gc-tail--9,
+[data-tail="10"] .gc-tail--10,
+[data-tail="11"] .gc-tail--11,
+[data-tail="12"] .gc-tail--12,
+[data-tail="13"] .gc-tail--13,
+[data-tail="14"] .gc-tail--14,
+[data-tail="15"] .gc-tail--15,
+[data-tail="16"] .gc-tail--16,
+[data-tail="17"] .gc-tail--17,
+[data-tail="18"] .gc-tail--18,
+[data-tail="19"] .gc-tail--19,
+[data-tail="20"] .gc-tail--20,
+[data-tail="21"] .gc-tail--21,
+[data-tail="22"] .gc-tail--22,
+[data-tail="23"] .gc-tail--23,
+[data-tail="24"] .gc-tail--24,
+[data-tail="25"] .gc-tail--25,
+[data-tail="26"] .gc-tail--26,
+[data-tail="27"] .gc-tail--27,
+[data-tail="28"] .gc-tail--28,
+[data-tail="29"] .gc-tail--29,
+[data-tail="30"] .gc-tail--30,
+[data-tail="31"] .gc-tail--31,
+[data-tail="32"] .gc-tail--32,
+[data-tail="33"] .gc-tail--33,
+[data-tail="34"] .gc-tail--34,
+[data-tail="35"] .gc-tail--35,
+[data-tail="36"] .gc-tail--36,
+[data-tail="37"] .gc-tail--37,
+[data-tail="38"] .gc-tail--38,
+[data-tail="39"] .gc-tail--39,
+[data-tail="40"] .gc-tail--40,
+[data-tail="41"] .gc-tail--41,
+[data-tail="42"] .gc-tail--42,
+[data-tail="43"] .gc-tail--43,
+[data-tail="44"] .gc-tail--44,
+[data-tail="45"] .gc-tail--45,
+[data-tail="46"] .gc-tail--46,
+[data-tail="47"] .gc-tail--47,
+[data-tail="48"] .gc-tail--48,
+[data-tail="49"] .gc-tail--49,
+[data-tail="50"] .gc-tail--50,
+[data-tail="51"] .gc-tail--51,
+[data-tail="52"] .gc-tail--52 {
+  opacity: 1;
+}
+
+.gc-oom {
+  --flash-color: var(--state-open);
+  font-size: 28px;
+}
+
+[data-oom="on"] .gc-oom {
+  opacity: 1;
+}
+
+.gc-mark {
+  opacity: 0;
+}
+
+[data-oom="on"] .gc-mark--fail,
+[data-oom="clear"] .gc-mark--ok {
+  opacity: 1;
+}
+
+.gc-mark-glyph {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.gc-mark--fail .gc-mark-glyph {
+  stroke: var(--state-open);
+}
+
+.gc-mark--ok .gc-mark-glyph {
+  stroke: var(--state-closed);
+}
+
+/* What each kind of dot is carrying, told apart by more than position. */
+.gc-req--big .scene-req-dot {
+  fill: var(--cpu);
+}
+
+.gc-req--event .scene-req-dot {
+  fill: var(--state-half);
+}
