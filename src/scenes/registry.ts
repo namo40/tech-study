@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as transactionalOutboxDuration,
+  stageMarkup as transactionalOutboxStage,
+} from './transactional-outbox/stage';
+import {
   SCENE_DURATION as eventualConsistencyDuration,
   stageMarkup as eventualConsistencyStage,
 } from './eventual-consistency/stage';
@@ -281,6 +285,10 @@ const scenes: Record<string, SceneAsset> = {
   'eventual-consistency': {
     markup: eventualConsistencyStage,
     duration: eventualConsistencyDuration,
+  },
+  'transactional-outbox': {
+    markup: transactionalOutboxStage,
+    duration: transactionalOutboxDuration,
   },
 };
 

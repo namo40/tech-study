@@ -80,6 +80,7 @@ const SCENE_IDS = [
   'change-tracking',
   'garbage-collection',
   'eventual-consistency',
+  'transactional-outbox',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */
