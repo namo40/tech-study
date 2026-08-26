@@ -13,6 +13,18 @@ const ja: Messages = {
   'home.intro':
     'キーワード 1 つにつき 1 ページです。各ページは短いシーンから始まり、概念を段階ごとに説明し、.NET での書き方を示します。',
   'home.empty': 'まだ公開されている概念はありません。',
+  'home.headline': 'キーワード 1 つに、{scene} 1 つ。',
+  'home.headlineAccent': 'シーン',
+  'home.stats': '概念 {concepts} 件 · カテゴリー {categories} 件 · English / 한국어 / 日本語',
+  'home.nowPlaying': '再生中',
+  'home.watchScene': 'シーン全体を見る',
+  'home.moreScenes': 'ほかのシーン',
+  'home.filterLabel': '名前で概念を絞り込む',
+  'home.filterPlaceholder': '名前で絞り込む…',
+  'home.noMatches': '条件に一致する概念はありません。',
+  'home.sceneBadge': 'シーンのある概念',
+  'home.duration': '{n}秒',
+  'home.allCategories': 'すべて',
 
   'lang.label': '言語',
   'lang.en': 'English',
@@ -48,8 +60,7 @@ const ja: Messages = {
 
   'related.noPage': 'ページは準備中です',
 
-  'footer.license': 'コードとコンテンツは MIT License で公開しています。',
-  'footer.builtWith': 'Astro、SVG、GSAP で作成しています。',
+  'footer.aiNotice': 'Claude Fable 5 を使用して制作されました。',
 };
 
 export default ja;

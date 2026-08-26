@@ -15,6 +15,18 @@ const en = {
   'home.intro':
     'One keyword, one page. Each page opens with a short animated scene, then explains the idea step by step and shows how it looks in .NET.',
   'home.empty': 'No concepts have been published yet.',
+  'home.headline': 'One keyword, one {scene}.',
+  'home.headlineAccent': 'scene',
+  'home.stats': '{concepts} concepts · {categories} categories · English / 한국어 / 日本語',
+  'home.nowPlaying': 'Now playing',
+  'home.watchScene': 'Watch the full scene',
+  'home.moreScenes': 'More scenes',
+  'home.filterLabel': 'Filter concepts by name',
+  'home.filterPlaceholder': 'Filter by name…',
+  'home.noMatches': 'No concept matches that filter.',
+  'home.sceneBadge': 'Has an animated scene',
+  'home.duration': '{n}s',
+  'home.allCategories': 'All',
 
   'lang.label': 'Language',
   'lang.en': 'English',
@@ -50,8 +62,7 @@ const en = {
 
   'related.noPage': 'no page yet',
 
-  'footer.license': 'Code and content are released under the MIT License.',
-  'footer.builtWith': 'Built with Astro, SVG, and GSAP.',
+  'footer.aiNotice': 'Made with Claude Fable 5.',
 } as const;
 
 export type MessageKey = keyof typeof en;

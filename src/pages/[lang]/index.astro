@@ -1,7 +1,9 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import { localePath, locales, t, toLocale } from '../../i18n';
+import { localePath, locales, t, toLocale, tSplit } from '../../i18n';
+import { getSceneAsset } from '../../scenes/registry';
+import '../../styles/scene.css';
 
 export function getStaticPaths() {
   return locales.map((lang) => ({ params: { lang } }));
@@ -13,35 +15,261 @@ const entries = await getCollection('concepts');
 const concepts = entries
   .filter((entry) => entry.id.endsWith(`/${locale}`))
   .map((entry) => ({
-    slug: entry.id.split('/')[0],
+    slug: entry.id.split('/')[0] ?? entry.id,
     title: entry.data.title,
     summary: entry.data.summary,
     category: entry.data.category,
+    // A sub-keyword page borrows its parent's scene, so only the page that
+    // owns the scene gets the play glyph.
+    ownsScene: Boolean(entry.data.scene) && entry.data.sceneStep === undefined,
   }))
   .sort((a, b) => a.title.localeCompare(b.title, locale));
+
+/*
+ * Category sections, biggest first. Ties fall back to the locale-aware name
+ * order so the same list comes out of every build.
+ */
+const grouped = new Map<string, typeof concepts>();
+for (const concept of concepts) {
+  const bucket = grouped.get(concept.category);
+  if (bucket) bucket.push(concept);
+  else grouped.set(concept.category, [concept]);
+}
+const sections = Array.from(grouped, ([name, items]) => ({ name, items }))
+  .sort((a, b) => b.items.length - a.items.length || a.name.localeCompare(b.name, locale))
+  .map((section, index) => ({ ...section, id: `home-section-${index}` }));
+
+/*
+ * The theater opens on the first of these and can switch to any of the others
+ * without leaving the page, so every one of them ships its stage markup.
+ */
+const featuredIds = ['circuit-breaker', 'retry', 'garbage-collection', 'load-test', 'async-await'];
+const featured: { id: string; title: string; href: string; markup: string; duration: number }[] = [];
+for (const id of featuredIds) {
+  const asset = getSceneAsset(id);
+  const entry = entries.find((item) => item.id === `${id}/${locale}`);
+  if (!asset || !entry) continue;
+  featured.push({
+    id,
+    title: entry.data.title,
+    href: localePath(locale, id),
+    markup: asset.markup,
+    duration: Math.round(asset.duration),
+  });
+}
+const active = featured[0];
+
+const formatTime = (seconds: number): string => {
+  const total = Math.max(0, Math.round(seconds));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+};
+const initialTime = active ? `0:00 / ${formatTime(active.duration)}` : '0:00 / 0:00';
+
+// The headline carries one accented word, so the message is split around its
+// placeholder rather than assembled from English fragments.
+const [headlineBefore, headlineAfter] = tSplit(locale, 'home.headline', 'scene');
+// Same idea for the step buttons, whose number is filled in by the browser.
+const [stepLabelBefore, stepLabelAfter] = tSplit(locale, 'player.goToStep', 'n');
 ---
 
 <Base locale={locale} title={t(locale, 'site.name')} description={t(locale, 'site.tagline')}>
-  <div class="intro">
-    <h1 class="intro__title">{t(locale, 'home.heading')}</h1>
-    <p class="intro__text">{t(locale, 'home.intro')}</p>
-  </div>
-
   {
     concepts.length === 0 ? (
       <p>{t(locale, 'home.empty')}</p>
     ) : (
-      <ul class="card-grid">
-        {concepts.map((concept) => (
-          <li>
-            <a class="card" href={localePath(locale, concept.slug)}>
-              <span class="card__category">{concept.category}</span>
-              <h2 class="card__title">{concept.title}</h2>
-              <p class="card__summary">{concept.summary}</p>
+      <div class="home" data-home>
+        <section class="home__head">
+          <h1 class="home-headline">
+            {headlineBefore}
+            <span class="home-headline__accent">{t(locale, 'home.headlineAccent')}</span>
+            {headlineAfter}
+          </h1>
+          <p class="home-intro">{t(locale, 'home.intro')}</p>
+          <p class="home-stats">
+            {t(locale, 'home.stats', { concepts: concepts.length, categories: sections.length })}
+          </p>
+        </section>
+
+        {active && (
+          <section class="home__theater" aria-label={t(locale, 'player.region')}>
+            <div class="home-theater">
+              <div class="home-stage-card">
+                <div class="home-stage-card__head">
+                  <p class="home-stage-card__kicker">{t(locale, 'home.nowPlaying')}</p>
+                  <p class="home-stage-card__title" data-scene-title>
+                    {active.title}
+                  </p>
+                </div>
+
+                <div
+                  class="home-stage"
+                  data-stage
+                  role="img"
+                  aria-label={t(locale, 'player.stageLabel')}
+                  set:html={active.markup}
+                />
+
+                <div
+                  class="home-controls"
+                  data-controls
+                  data-step-label-before={stepLabelBefore}
+                  data-step-label-after={stepLabelAfter}
+                >
+                  <div class="home-controls__row">
+                    <input
+                      class="home-controls__scrub"
+                      type="range"
+                      min="0"
+                      max="1000"
+                      step="1"
+                      value="0"
+                      data-scrub
+                      aria-label={t(locale, 'player.scrub')}
+                    />
+                    <span class="home-controls__time" data-time aria-label={t(locale, 'player.time')}>
+                      {initialTime}
+                    </span>
+                  </div>
+
+                  <div class="home-controls__row">
+                    <button
+                      type="button"
+                      class="home-controls__play"
+                      data-play
+                      aria-pressed="false"
+                      aria-label={t(locale, 'player.play')}
+                      data-label-play={t(locale, 'player.play')}
+                      data-label-pause={t(locale, 'player.pause')}
+                    >
+                      <svg class="home-icon home-icon--filled" data-play-icon="play" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M8 5 L19 12 L8 19 Z" />
+                      </svg>
+                      <svg
+                        class="home-icon home-icon--filled is-hidden"
+                        data-play-icon="pause"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path d="M7 5h3.4v14H7zM13.6 5H17v14h-3.4z" />
+                      </svg>
+                    </button>
+                    <div class="home-controls__steps" data-steps></div>
+                  </div>
+
+                  <a class="home-cta" href={active.href} data-scene-cta>
+                    {t(locale, 'home.watchScene')}
+                    <svg class="home-icon" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+
+              <div class="home-scenes">
+                <p class="home-scenes__label" id="home-scenes-label">{t(locale, 'home.moreScenes')}</p>
+                <ul class="home-scenes__list" aria-labelledby="home-scenes-label">
+                  {featured.map((scene, index) => (
+                    <li>
+                      <button
+                        type="button"
+                        class="home-scene"
+                        data-scene-row={scene.id}
+                        data-href={scene.href}
+                        aria-current={index === 0 ? 'true' : 'false'}
+                      >
+                        <svg class="home-scene__icon" viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M8 5.5v13l11-6.5z" />
+                        </svg>
+                        <span class="home-scene__title">{scene.title}</span>
+                        <span class="home-scene__duration">
+                          {t(locale, 'home.duration', { n: scene.duration })}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {featured.map((scene) => (
+              <template data-scene-markup={scene.id} set:html={scene.markup} />
+            ))}
+          </section>
+        )}
+
+        <div class="home__filter">
+          <label class="visually-hidden" for="home-filter">{t(locale, 'home.filterLabel')}</label>
+          <div class="home-filter">
+            <svg class="home-filter__icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <path d="M20 20l-4-4" />
+            </svg>
+            <input
+              class="home-filter__input"
+              id="home-filter"
+              type="search"
+              autocomplete="off"
+              placeholder={t(locale, 'home.filterPlaceholder')}
+              data-filter
+            />
+          </div>
+        </div>
+
+        <nav class="home__chips" aria-label={t(locale, 'home.heading')}>
+          <a class="home-chip home-chip--all" href="#home-index">
+            {t(locale, 'home.allCategories')}
+            <span class="home-chip__count">{concepts.length}</span>
+          </a>
+          {sections.map((section) => (
+            <a class="home-chip" href={`#${section.id}`}>
+              {section.name}
+              <span class="home-chip__count">{section.items.length}</span>
             </a>
-          </li>
-        ))}
-      </ul>
+          ))}
+        </nav>
+
+        <div class="home__index" id="home-index">
+          <h2 class="visually-hidden">{t(locale, 'home.heading')}</h2>
+          <p class="home-empty" data-empty hidden>{t(locale, 'home.noMatches')}</p>
+          {sections.map((section) => (
+            <section class="home-section" id={section.id} data-section>
+              <div class="home-section__head">
+                <h3 class="home-section__title">{section.name}</h3>
+                <span class="home-section__count">{section.items.length}</span>
+                <span class="home-section__rule"></span>
+              </div>
+              <ul class="home-section__grid">
+                {section.items.map((item) => (
+                  <li data-entry data-title={item.title}>
+                    <a class="home-entry" href={localePath(locale, item.slug)}>
+                      <span class="home-entry__head">
+                        <span class="home-entry__title">{item.title}</span>
+                        {item.ownsScene && (
+                          <svg
+                            class="home-entry__glyph"
+                            viewBox="0 0 24 24"
+                            role="img"
+                            aria-label={t(locale, 'home.sceneBadge')}
+                          >
+                            <path d="M8 5.5v13l11-6.5z" />
+                          </svg>
+                        )}
+                      </span>
+                      <span class="home-entry__summary">{item.summary}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      </div>
     )
   }
 </Base>
+
+<script>
+  import { initHome } from '../../scripts/home';
+
+  initHome();
+</script>

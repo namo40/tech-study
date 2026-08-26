@@ -232,61 +232,479 @@ kbd {
   gap: var(--space-2) var(--space-5);
 }
 
-/* Concept list */
-.intro {
+/*
+ * Concept index.
+ *
+ * A theater on one side that keeps a scene playing while the reader browses,
+ * and the keyword index on the other. Below 60rem the blocks stack in document
+ * order, which is already the reading order: headline, theater, filter, chips,
+ * index. From 60rem the same blocks are placed into a grid and the theater
+ * sticks under the header.
+ */
+.home {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.home-headline {
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-2);
+}
+
+.home-headline__accent {
+  color: var(--accent);
+}
+
+.home-intro {
   max-width: var(--content-width);
-  margin-bottom: var(--space-7);
-}
-
-.intro__title {
-  font-size: var(--text-3xl);
-  margin-bottom: var(--space-3);
-}
-
-.intro__text {
+  margin-bottom: var(--space-2);
   color: var(--fg-soft);
+  font-size: var(--text-sm);
 }
 
-.card-grid {
-  display: grid;
-  gap: var(--space-4);
-  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-  list-style: none;
-  padding: 0;
+.home-stats {
+  color: var(--muted);
+  font-size: var(--text-xs);
 }
 
-.card {
-  display: block;
-  height: 100%;
-  padding: var(--space-5);
+/* Theater */
+.home-theater {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  /* Stacked, the stage takes the column width; a tablet is wide enough that
+     an uncapped 9:16 card would be taller than two screens. */
+  max-width: 26rem;
+}
+
+/*
+ * Nothing in the theater is allowed to be squeezed: on a short viewport the
+ * column scrolls inside itself rather than flattening the stage out of its
+ * 9:16 canvas.
+ */
+.home-theater > * {
+  flex: none;
+}
+
+.home-stage-card {
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: var(--surface);
-  color: inherit;
-  text-decoration: none;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
-.card:hover {
-  border-color: var(--accent);
+.home-stage-card__head {
+  padding: var(--space-5) var(--space-5) 0;
 }
 
-.card__category {
-  display: inline-block;
-  margin-bottom: var(--space-2);
+.home-stage-card__kicker {
   font-size: var(--text-xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--fg-soft);
 }
 
-.card__title {
-  font-size: var(--text-xl);
+/* Short accent rule, the same slate marker the step card uses. */
+.home-stage-card__kicker::before {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 2px;
+  margin-bottom: var(--space-2);
+  background: var(--accent);
+}
+
+.home-stage-card__title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+}
+
+/*
+ * The stage keeps the 9:16 canvas every scene is drawn on. It is framed by the
+ * card rather than by a border of its own, so `.stage-frame` is left alone.
+ */
+.home-stage {
+  flex: none;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  margin-top: var(--space-3);
+  overflow: hidden;
+}
+
+/* Controls */
+.home-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-5) var(--space-5);
+}
+
+.home-controls__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.home-controls__scrub {
+  flex: 1 1 8rem;
+  min-width: 0;
+  min-height: 2.75rem;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.home-controls__time {
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.home-controls__play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.home-controls__play:hover {
+  background: var(--surface-2);
+}
+
+.home-controls__steps {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.home-controls__step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  padding-inline: var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--fg-soft);
+  font-family: inherit;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.home-controls__step:hover {
+  background: var(--surface-2);
+  color: var(--fg);
+}
+
+.home-controls__step[aria-current='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.home-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: var(--bg);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.home-cta:hover {
+  filter: brightness(1.1);
+}
+
+.home-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.home-icon--filled {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: currentColor;
+  stroke: none;
+}
+
+/* Scene switcher */
+.home-scenes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.home-scenes__label {
+  padding: 0 var(--space-1);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.home-scenes__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+}
+
+.home-scene {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--fg-soft);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  text-align: start;
+  cursor: pointer;
+}
+
+.home-scene:hover {
+  background: var(--surface);
+  color: var(--fg);
+}
+
+.home-scene[aria-current='true'] {
+  background: var(--surface-2);
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.home-scene__icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex: none;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.home-scene[aria-current='true'] .home-scene__icon {
+  stroke: var(--accent);
+}
+
+.home-scene__title {
+  margin-inline-end: auto;
+}
+
+.home-scene__duration {
+  font-size: var(--text-xs);
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* Filter and chips */
+.home-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-inline: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.home-filter:focus-within {
+  border-color: var(--accent);
+}
+
+.home-filter__icon {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex: none;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.home-filter__input {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.75rem;
+  border: 0;
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  font-size: var(--text-sm);
+}
+
+.home-filter__input::placeholder {
+  color: var(--muted);
+}
+
+.home__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.home-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.25rem;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--fg-soft);
+  font-size: var(--text-sm);
+  text-decoration: none;
+}
+
+.home-chip:hover {
+  border-color: var(--accent);
+  color: var(--fg);
+}
+
+.home-chip--all {
+  background: var(--surface-2);
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.home-chip__count {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* Index */
+.home__index {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  scroll-margin-top: 6rem;
+}
+
+.home-section {
+  scroll-margin-top: 6rem;
+}
+
+.home-section[hidden] {
+  display: none;
+}
+
+.home-section__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   margin-bottom: var(--space-2);
 }
 
-.card__summary {
-  color: var(--fg-soft);
+.home-section__title {
+  font-size: var(--text-base);
+}
+
+.home-section__count {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.home-section__rule {
+  flex: 1;
+  border-top: 1px solid var(--border);
+}
+
+/*
+ * The summary is truncated rather than wrapped, so both the track and the row
+ * have to be allowed to be narrower than that one long line.
+ */
+.home-section__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-1) var(--space-4);
+  list-style: none;
+  padding: 0;
+}
+
+.home-section__grid > li {
+  min-width: 0;
+}
+
+.home-section__grid > li[hidden] {
+  display: none;
+}
+
+.home-entry {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+}
+
+.home-entry:hover {
+  background: var(--surface-2);
+}
+
+.home-entry__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+}
+
+.home-entry__glyph {
+  width: 0.7rem;
+  height: 0.7rem;
+  flex: none;
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.home-entry__summary {
+  display: block;
   font-size: var(--text-sm);
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home-empty {
+  color: var(--fg-soft);
 }
 
 /* Concept page */
@@ -650,5 +1068,80 @@ kbd {
   .stage-frame {
     height: var(--stage-height);
     max-height: none;
+  }
+
+  /*
+   * Theater on the left, index on the right. The theater column stretches to
+   * the height of the index, which is what gives the sticky card room to
+   * travel. A 9:16 stage plus its controls is taller than a short viewport, so
+   * the theater scrolls inside itself once it runs out of room instead of
+   * hiding its own scene list below the fold.
+   */
+  .home {
+    --home-sticky-top: 5.5rem;
+
+    display: grid;
+    grid-template-columns: 20.625rem minmax(0, 1fr) 15rem;
+    grid-template-areas:
+      'theater head  filter'
+      'theater chips chips'
+      'theater index index';
+    column-gap: var(--space-6);
+    row-gap: var(--space-5);
+  }
+
+  .home__head {
+    grid-area: head;
+    align-self: end;
+  }
+
+  .home__theater {
+    grid-area: theater;
+  }
+
+  .home__filter {
+    grid-area: filter;
+    align-self: end;
+  }
+
+  .home__chips {
+    grid-area: chips;
+    align-self: start;
+  }
+
+  .home__index {
+    grid-area: index;
+    align-self: start;
+  }
+
+  .home-headline {
+    font-size: var(--text-3xl);
+  }
+
+  /* The sub-copy is the mobile lead-in; the wide layout opens on the index. */
+  .home-intro {
+    display: none;
+  }
+
+  /*
+   * A 9:16 stage plus its controls and scene list is taller than a short
+   * viewport, so the column cannot simply pin under the header: it would hide
+   * its own bottom for the whole scroll. `--home-theater-height` is the
+   * measured column height plus the gap wanted below it, written by the page
+   * script. While the column fits, `min()` picks the header offset and it pins
+   * at the top; once it is taller, the second term wins and it pins with its
+   * bottom just inside the viewport, so ordinary page scrolling walks down the
+   * whole column and no inner scrollbar is ever needed.
+   *
+   * Without scripting the fallback makes the second term hugely negative, the
+   * element never reaches its stick point, and it simply scrolls with the page.
+   */
+  .home-theater {
+    position: sticky;
+    top: min(var(--home-sticky-top), calc(100vh - var(--home-theater-height, 99999px)));
+  }
+
+  .home-section__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

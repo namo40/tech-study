@@ -13,6 +13,18 @@ const ko: Messages = {
   'home.intro':
     '키워드 하나에 페이지 하나를 씁니다. 각 페이지는 짧은 장면으로 시작해 개념을 단계별로 설명하고, .NET에서 어떻게 쓰는지 보여 줍니다.',
   'home.empty': '아직 공개된 개념이 없습니다.',
+  'home.headline': '키워드 하나, {scene} 하나.',
+  'home.headlineAccent': '장면',
+  'home.stats': '개념 {concepts}개 · 분류 {categories}개 · English / 한국어 / 日本語',
+  'home.nowPlaying': '지금 재생 중',
+  'home.watchScene': '전체 장면 보기',
+  'home.moreScenes': '다른 장면',
+  'home.filterLabel': '이름으로 개념 찾기',
+  'home.filterPlaceholder': '이름으로 찾기…',
+  'home.noMatches': '조건에 맞는 개념이 없습니다.',
+  'home.sceneBadge': '장면이 있는 개념',
+  'home.duration': '{n}초',
+  'home.allCategories': '전체',
 
   'lang.label': '언어',
   'lang.en': 'English',
@@ -48,8 +60,7 @@ const ko: Messages = {
 
   'related.noPage': '페이지 준비 중',
 
-  'footer.license': '코드와 콘텐츠는 MIT License로 공개합니다.',
-  'footer.builtWith': 'Astro, SVG, GSAP으로 만들었습니다.',
+  'footer.aiNotice': 'Claude Fable 5를 이용하여 제작되었습니다.',
 };
 
 export default ko;
