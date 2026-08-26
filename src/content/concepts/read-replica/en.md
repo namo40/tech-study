@@ -2,6 +2,7 @@
 title: "Read Replica"
 summary: "A read replica is a copy of the database that answers queries and takes no writes. It moves read load off the primary, and every row it serves is as old as the replication lag."
 category: "Data distribution and consistency"
+tags: ["database", "consistency"]
 scene: replication-lag
 sceneStep: 1
 related:

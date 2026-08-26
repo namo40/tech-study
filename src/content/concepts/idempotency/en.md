@@ -2,6 +2,7 @@
 title: "Idempotency"
 summary: "An operation is idempotent when performing it again leaves the system in the state one performance already left it in, which is what makes a retry safe to send."
 category: "APIs and real-time communication"
+tags: ["duplicates"]
 scene: idempotency-key
 related:
   - label: Idempotency-Key

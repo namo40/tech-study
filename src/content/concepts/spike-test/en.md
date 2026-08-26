@@ -2,6 +2,7 @@
 title: "Spike Test"
 summary: "A spike test raises the load in one step instead of a ramp, because a marketing email, a flushed cache, and a failover all arrive that way."
 category: "Testing and verification"
+tags: ["overload"]
 scene: load-test
 sceneStep: 2
 related:

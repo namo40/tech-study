@@ -2,6 +2,7 @@
 title: "Connection Timeout"
 summary: "A connection timeout bounds getting to the dependency rather than getting an answer out of it, which is why it is a separate setting from the one covering the call."
 category: "Resilience"
+tags: ["latency"]
 scene: request-timeout
 sceneStep: 2
 related:

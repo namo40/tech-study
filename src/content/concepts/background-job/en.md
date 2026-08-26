@@ -2,6 +2,7 @@
 title: "Background Job"
 summary: "A background job is work that runs outside the request that asked for it, so the response can come back before the work is done. The caller gets a receipt and finds out the outcome separately."
 category: "Application architecture"
+tags: ["queue"]
 scene: web-queue-worker
 sceneStep: 2
 related:

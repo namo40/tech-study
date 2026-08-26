@@ -2,6 +2,7 @@
 title: "Request Timeout"
 summary: "A request timeout is the upper bound a caller puts on a remote call: without one, a hung dependency holds the caller forever; with one, the caller fails fast, passes the remaining budget down, and cancels the work it no longer needs."
 category: "Resilience"
+tags: ["latency"]
 scene: request-timeout
 steps:
   - title: "No timeout"

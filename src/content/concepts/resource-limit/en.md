@@ -2,6 +2,7 @@
 title: "Resource Limit"
 summary: "A resource limit is the ceiling a container is held to. Above the CPU limit it is throttled, above the memory limit it is killed, and the two failure modes look nothing alike: one is a service that got slow, the other is a process that vanished."
 category: "Containers and orchestration"
+tags: ["kubernetes", "memory"]
 scene: horizontal-pod-autoscaler
 sceneStep: 4
 related:

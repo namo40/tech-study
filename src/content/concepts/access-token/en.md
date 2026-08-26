@@ -2,6 +2,7 @@
 title: "Access Token"
 summary: "An access token is the credential an app presents to an API to act on a user's behalf. It is short-lived, addressed to one audience, and carries only the scopes that were granted, so a leaked one is worth little for long and worth nothing anywhere else."
 category: "Authentication and authorization"
+tags: ["oauth"]
 scene: authorization-code
 sceneStep: 1
 related:

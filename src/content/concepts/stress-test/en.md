@@ -2,6 +2,7 @@
 title: "Stress Test"
 summary: "A stress test keeps raising the load past the point where throughput stops growing, to find out how the system fails rather than when."
 category: "Testing and verification"
+tags: ["overload"]
 scene: load-test
 sceneStep: 2
 related:

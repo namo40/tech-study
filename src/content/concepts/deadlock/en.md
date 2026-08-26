@@ -2,6 +2,7 @@
 title: "Deadlock"
 summary: "A deadlock is two transactions each holding a lock the other needs, so neither can finish. The database breaks it by killing one of them; the code prevents it by taking locks in one order, keeping transactions short, or not holding a lock across the wait at all."
 category: "Transactions and concurrency"
+tags: ["database"]
 scene: deadlock
 steps:
   - title: "Locks serialise"

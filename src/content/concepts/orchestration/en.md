@@ -2,6 +2,7 @@
 title: "Orchestration"
 summary: "Orchestration is a saga with a coordinator: one component sends every command, records the state each answer moves the saga to, and issues the compensations itself when a step fails."
 category: "Distributed transactions and message consistency"
+tags: ["consistency"]
 scene: saga
 sceneStep: 3
 related:

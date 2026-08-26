@@ -2,6 +2,7 @@
 title: "Projection"
 summary: "A projection is the code that keeps a read model up to date from the write side, one change at a time. It runs behind the write, which is where the lag comes from, and it has to be replayable from nothing."
 category: "Application architecture"
+tags: ["consistency"]
 scene: command-query-responsibility-segregation
 sceneStep: 3
 related:

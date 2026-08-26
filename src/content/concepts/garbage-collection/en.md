@@ -2,6 +2,7 @@
 title: "Garbage Collection"
 summary: "The .NET garbage collector reclaims memory by generations: most objects die young and are swept cheaply from gen0, the few that survive are promoted, and a full gen2 collection is the one that stops everything. What you control is how much you allocate, and how much memory the process may use."
 category: "Performance and optimization"
+tags: ["memory", "latency"]
 scene: garbage-collection
 steps:
   - title: "Generations"

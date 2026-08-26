@@ -2,6 +2,7 @@
 title: "Consumer Acknowledgement"
 summary: "A consumer acknowledgement is the message telling the broker the work is finished, which is what removes the message from the queue: until it arrives the broker still owns the message and will give it to somebody else."
 category: "Messaging and event processing"
+tags: ["queue", "duplicates"]
 scene: competing-consumers
 sceneStep: 3
 related:

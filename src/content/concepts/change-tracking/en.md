@@ -2,6 +2,7 @@
 title: "Change Tracking"
 summary: "Change tracking is how a DbContext remembers every entity it handed you, compares it with a snapshot when you call SaveChanges, and writes only what changed, in one transaction. It is also the part you pay for on every query you never meant to modify."
 category: ".NET data access"
+tags: ["ef-core"]
 scene: change-tracking
 steps:
   - title: "Remember, compare, write the difference"

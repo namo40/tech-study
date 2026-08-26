@@ -27,6 +27,22 @@ const en = {
   'home.sceneBadge': 'Has an animated scene',
   'home.duration': '{n}s',
   'home.allCategories': 'All',
+  'home.tagLabel': 'Tags',
+
+  // Cross-cutting keyword tags. The key ends in the slug written in the
+  // English frontmatter, so a new tag needs one line in each message set.
+  'tag.consistency': 'Consistency',
+  'tag.database': 'Database',
+  'tag.deployment': 'Deployment and migration',
+  'tag.duplicates': 'Duplicates',
+  'tag.ef-core': 'EF Core',
+  'tag.kubernetes': 'Kubernetes',
+  'tag.latency': 'Latency',
+  'tag.memory': 'Memory',
+  'tag.metric': 'Metrics',
+  'tag.oauth': 'OAuth',
+  'tag.overload': 'Overload',
+  'tag.queue': 'Queues',
 
   'lang.label': 'Language',
   'lang.en': 'English',

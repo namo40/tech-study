@@ -2,6 +2,7 @@
 title: "Unit of Work"
 summary: "A unit of work is a set of changes that has to succeed or fail together. It collects everything you did in memory and commits it in one transaction, so a half-finished operation never reaches the database."
 category: ".NET data access"
+tags: ["ef-core", "database"]
 scene: change-tracking
 sceneStep: 2
 related:

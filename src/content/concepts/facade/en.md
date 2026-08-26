@@ -2,6 +2,7 @@
 title: "Facade"
 summary: "A facade is the single front door a migration puts in front of the old system, so that where a request is actually served becomes a routing decision rather than a change the caller can see."
 category: "Application architecture"
+tags: ["deployment"]
 scene: strangler-fig
 sceneStep: 1
 related:

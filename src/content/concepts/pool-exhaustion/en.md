@@ -2,6 +2,7 @@
 title: "Pool Exhaustion"
 summary: "Pool exhaustion is when every connection is borrowed and requests queue for one, so the application slows down and starts failing while the database itself is barely working."
 category: "Pools and resources"
+tags: ["database", "overload"]
 scene: database-connection-pool
 sceneStep: 3
 related:

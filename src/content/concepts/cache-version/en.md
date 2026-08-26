@@ -2,6 +2,7 @@
 title: "Cache Version"
 summary: "A cache version puts a number in the key and bumps it on write, so old entries are never read again and expire on their own instead of being deleted."
 category: "Caching"
+tags: ["consistency"]
 scene: cache-invalidation
 sceneStep: 4
 related:

@@ -2,6 +2,7 @@
 title: "ID Token"
 summary: "An ID token is the authorization server's signed statement that a particular user signed in, at a particular time, in answer to a particular request. It is proof of authentication for the client that asked for it, and it is not a credential for calling an API."
 category: "Authentication and authorization"
+tags: ["oauth"]
 scene: authorization-code
 sceneStep: 1
 related:

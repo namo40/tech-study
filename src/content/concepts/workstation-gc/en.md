@@ -2,6 +2,7 @@
 title: "Workstation GC"
 summary: "Workstation GC keeps one heap and collects it on the thread that ran out of room, which makes the process small and its pauses ordinary. It is the right choice for sidecars, tools, and any node running many processes, where a heap per core per process is memory nobody uses."
 category: "Performance and optimization"
+tags: ["memory"]
 scene: garbage-collection
 sceneStep: 4
 related:

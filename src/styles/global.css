@@ -607,6 +607,52 @@ kbd {
   font-weight: 400;
 }
 
+/*
+ * Tags cut across the categories rather than repeating them, so their row sits
+ * under the category chips and stays deliberately quieter: an outline on the
+ * page background, with the accent held back for the one that is active.
+ */
+.home__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.home-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.25rem;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--fg-soft);
+  font: inherit;
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.home-tag:hover {
+  border-color: var(--accent);
+  color: var(--fg);
+}
+
+.home-tag[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.home-tag__count {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.home-tag[aria-pressed='true'] .home-tag__count {
+  color: inherit;
+}
+
 /* Index */
 .home__index {
   display: flex;
@@ -734,6 +780,31 @@ kbd {
   margin-top: var(--space-3);
   font-size: var(--text-sm);
   color: var(--fg-soft);
+}
+
+/* Tag chips, in the outline language of the index row and sized to match it. */
+.concept__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.concept-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.25rem;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--fg-soft);
+  font-size: var(--text-xs);
+  text-decoration: none;
+}
+
+.concept-tag:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .prose {
@@ -1085,6 +1156,7 @@ kbd {
     grid-template-areas:
       'theater head  filter'
       'theater chips chips'
+      'theater tags  tags'
       'theater index index';
     column-gap: var(--space-6);
     row-gap: var(--space-5);
@@ -1106,6 +1178,11 @@ kbd {
 
   .home__chips {
     grid-area: chips;
+    align-self: start;
+  }
+
+  .home__tags {
+    grid-area: tags;
     align-self: start;
   }
 

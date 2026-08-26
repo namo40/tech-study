@@ -2,6 +2,7 @@
 title: "Span<T>"
 summary: "Span<T> is a window onto memory somebody else owns: a start, a length, and no copy. It lets a hot path slice an array or a string without allocating, and it is confined to the stack, which is exactly why it is safe and why it cannot be used everywhere."
 category: "Performance and optimization"
+tags: ["memory"]
 scene: garbage-collection
 sceneStep: 3
 related:

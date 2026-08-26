@@ -2,6 +2,7 @@
 title: "Optimistic Concurrency"
 summary: "Optimistic concurrency takes no lock. It reads the row together with a version, does the work, and writes only if the version has not moved; a conflict is found at save time and the whole unit of work is run again."
 category: "Transactions and concurrency"
+tags: ["database", "consistency"]
 scene: deadlock
 sceneStep: 4
 related:

@@ -2,6 +2,7 @@
 title: "Jitter"
 summary: "Jitter adds a random offset to each backoff wait, so retries from many clients do not land at the same instant."
 category: "Resilience"
+tags: ["overload"]
 scene: retry
 sceneStep: 2
 related:

@@ -2,6 +2,7 @@
 title: "No-Tracking Query"
 summary: "A no-tracking query returns entities the context does not remember. Nothing is snapshotted, nothing is scanned on save, and nothing can be written back, which is exactly what a read wants."
 category: ".NET data access"
+tags: ["ef-core"]
 scene: change-tracking
 sceneStep: 3
 related:

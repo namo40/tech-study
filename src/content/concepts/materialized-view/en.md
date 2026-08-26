@@ -2,6 +2,7 @@
 title: "Materialized View"
 summary: "A materialized view stores the result of an expensive query as a real table, so readers get precomputed rows instead of a scan. It is stale between refreshes, and choosing how and when to refresh is the whole design."
 category: "Data storage"
+tags: ["database", "consistency"]
 scene: materialized-view
 steps:
   - title: "A million rows"

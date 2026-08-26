@@ -2,6 +2,7 @@
 title: "TTL"
 summary: "A TTL is the longest a cached entry may disagree with the truth, and the backstop that repairs every invalidation you miss."
 category: "Caching"
+tags: ["consistency"]
 scene: cache-invalidation
 sceneStep: 1
 related:

@@ -2,6 +2,7 @@
 title: "Rate Limiter"
 summary: "A rate limiter caps how many requests a caller may make in a window of time. A token bucket is the usual way to do it: tokens drip in at a steady rate, each request spends one, and an empty bucket means the request is rejected."
 category: "Resilience"
+tags: ["overload"]
 scene: rate-limiter
 steps:
   - title: "Token bucket"

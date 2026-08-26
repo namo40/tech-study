@@ -2,6 +2,7 @@
 title: "Replication"
 summary: "Replication is keeping a second copy of the data on another machine, kept up to date by shipping every change to it. It buys read capacity and a machine to fail over to, and it costs you a window in which the two copies disagree."
 category: "Data distribution and consistency"
+tags: ["database", "consistency"]
 scene: replication-lag
 related:
   - label: Replication Lag

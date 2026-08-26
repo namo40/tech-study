@@ -2,7 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import ScenePlayer from '../../components/ScenePlayer.astro';
 import Base from '../../layouts/Base.astro';
-import { localePath, t, toLocale, tSplit } from '../../i18n';
+import { localePath, t, toLocale, tSplit, type MessageKey } from '../../i18n';
 
 export async function getStaticPaths() {
   const entries = await getCollection('concepts');
@@ -37,6 +37,17 @@ const steps = entry.data.steps.length > 0 ? entry.data.steps : (parent?.data.ste
 const [partOfBefore, partOfAfter] = tSplit(locale, 'concept.partOf', 'parent');
 const showPartOf = Boolean(entry.data.sceneStep && parent);
 
+/*
+ * Tags live in the English file, so the localized page reads them from there
+ * and every locale shows the same set. Each chip opens the index already
+ * filtered on that tag.
+ */
+const englishEntry = all.find((item) => item.id === `${slug}/en`);
+const tags = (englishEntry ?? entry).data.tags.map((tag) => ({
+  label: t(locale, `tag.${tag}` as MessageKey),
+  href: `${localePath(locale)}?tag=${tag}`,
+}));
+
 const { Content } = await render(entry);
 ---
 
@@ -46,6 +57,15 @@ const { Content } = await render(entry);
       <p class="concept__category">{entry.data.category}</p>
       <h1 class="concept__title">{entry.data.title}</h1>
       <p class="concept__summary">{entry.data.summary}</p>
+      {tags.length > 0 && (
+        <p class="concept__tags" role="group" aria-label={t(locale, 'home.tagLabel')}>
+          {tags.map((tag) => (
+            <a class="concept-tag" href={tag.href}>
+              {tag.label}
+            </a>
+          ))}
+        </p>
+      )}
       {showPartOf && parent && (
         <p class="concept__parent">
           {partOfBefore}

@@ -2,6 +2,7 @@
 title: "Pivot Transaction"
 summary: "The pivot is the step of a saga after which going back is no longer possible. Before it a failure is compensated backwards; after it a failure is retried forwards until the rest of the saga succeeds."
 category: "Distributed transactions and message consistency"
+tags: ["consistency"]
 scene: saga
 sceneStep: 4
 related:

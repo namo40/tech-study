@@ -2,6 +2,7 @@
 title: "Consumer Group"
 summary: "A consumer group is Kafka's form of competing consumers, with the partition rather than the message as the unit that is competed for: each partition is assigned to exactly one member, so order survives per key and parallelism stops at the partition count."
 category: "Messaging and event processing"
+tags: ["queue"]
 scene: competing-consumers
 sceneStep: 4
 related:

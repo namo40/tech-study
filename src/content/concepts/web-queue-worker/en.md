@@ -2,6 +2,7 @@
 title: "Web-Queue-Worker"
 summary: "Web-Queue-Worker splits a service in two: a web tier that accepts a request and answers it in milliseconds, and workers that take the long jobs off a queue at their own pace. The queue absorbs the peaks, and the two tiers scale on their own."
 category: "Application architecture"
+tags: ["queue"]
 scene: web-queue-worker
 steps:
   - title: "Inside the request"

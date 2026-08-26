@@ -2,6 +2,7 @@
 title: "Timeout"
 summary: "A timeout is the moment a caller stops waiting for an answer and decides the call has failed, which is the only thing standing between a slow dependency and a caller that never recovers."
 category: "Resilience"
+tags: ["latency"]
 scene: request-timeout
 related:
   - label: Request Timeout

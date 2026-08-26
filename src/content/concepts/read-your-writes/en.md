@@ -2,6 +2,7 @@
 title: "Read-Your-Writes"
 summary: "Read-your-writes is the guarantee that a session always sees at least its own changes, whatever else it may miss. It is what makes a replica safe to read from after a user has just saved something."
 category: "Data distribution and consistency"
+tags: ["consistency"]
 scene: replication-lag
 sceneStep: 3
 related:

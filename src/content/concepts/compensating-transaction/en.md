@@ -2,6 +2,7 @@
 title: "Compensating Transaction"
 summary: "A compensating transaction is the business action that undoes a step which has already committed. It is not a rollback: the first effect was real and visible, and the compensation is a second fact recorded on top of it."
 category: "Distributed transactions and message consistency"
+tags: ["consistency"]
 scene: saga
 sceneStep: 2
 related:

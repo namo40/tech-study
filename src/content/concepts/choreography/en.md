@@ -2,6 +2,7 @@
 title: "Choreography"
 summary: "Choreography is a saga with no coordinator: each service commits its own local transaction, publishes an event, and whoever subscribed to that event runs the next step. The flow is not written down anywhere; it is the sum of the subscriptions."
 category: "Distributed transactions and message consistency"
+tags: ["consistency"]
 scene: saga
 sceneStep: 1
 related:

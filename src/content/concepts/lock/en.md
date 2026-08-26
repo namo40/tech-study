@@ -2,6 +2,7 @@
 title: "Lock"
 summary: "A lock is how a database makes concurrent statements take turns. A shared lock lets readers in together, an exclusive lock keeps everyone else out, and whoever wants a conflicting lock waits until the holder's transaction ends."
 category: "Transactions and concurrency"
+tags: ["database"]
 scene: deadlock
 sceneStep: 1
 related:

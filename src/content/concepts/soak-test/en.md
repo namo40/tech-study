@@ -2,6 +2,7 @@
 title: "Soak Test"
 summary: "A soak test holds a load the system can handle for hours, and looks for the faults that only appear with time: leaks, drift, and anything that grows and never comes back down."
 category: "Testing and verification"
+tags: ["memory"]
 scene: load-test
 sceneStep: 3
 related:

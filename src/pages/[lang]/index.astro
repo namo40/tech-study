@@ -1,7 +1,8 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import { localePath, locales, t, toLocale, tSplit } from '../../i18n';
+import { TAGS } from '../../content.config';
+import { localePath, locales, t, toLocale, tSplit, type MessageKey } from '../../i18n';
 import { getSceneAsset } from '../../scenes/registry';
 import '../../styles/scene.css';
 
@@ -12,18 +13,40 @@ export function getStaticPaths() {
 const locale = toLocale(Astro.params.lang);
 
 const entries = await getCollection('concepts');
+
+/*
+ * Tags are written in the English file only, so every locale reads them from
+ * there and the same page carries the same tags in all three.
+ */
+const tagsBySlug = new Map<string, readonly string[]>();
+for (const entry of entries) {
+  if (!entry.id.endsWith('/en')) continue;
+  tagsBySlug.set(entry.id.split('/')[0] ?? entry.id, entry.data.tags);
+}
+
 const concepts = entries
   .filter((entry) => entry.id.endsWith(`/${locale}`))
-  .map((entry) => ({
-    slug: entry.id.split('/')[0] ?? entry.id,
-    title: entry.data.title,
-    summary: entry.data.summary,
-    category: entry.data.category,
-    // A sub-keyword page borrows its parent's scene, so only the page that
-    // owns the scene gets the play glyph.
-    ownsScene: Boolean(entry.data.scene) && entry.data.sceneStep === undefined,
-  }))
+  .map((entry) => {
+    const slug = entry.id.split('/')[0] ?? entry.id;
+    return {
+      slug,
+      title: entry.data.title,
+      summary: entry.data.summary,
+      category: entry.data.category,
+      tags: tagsBySlug.get(slug) ?? [],
+      // A sub-keyword page borrows its parent's scene, so only the page that
+      // owns the scene gets the play glyph.
+      ownsScene: Boolean(entry.data.scene) && entry.data.sceneStep === undefined,
+    };
+  })
   .sort((a, b) => a.title.localeCompare(b.title, locale));
+
+// Tag chips carry their own count and a tag nobody uses is left out.
+const tagChips = TAGS.map((tag) => ({
+  slug: tag,
+  label: t(locale, `tag.${tag}` as MessageKey),
+  count: concepts.filter((concept) => concept.tags.includes(tag)).length,
+})).filter((tag) => tag.count > 0);
 
 /*
  * Category sections, biggest first. Ties fall back to the locale-aware name
@@ -228,6 +251,17 @@ const [stepLabelBefore, stepLabelAfter] = tSplit(locale, 'player.goToStep', 'n')
           ))}
         </nav>
 
+        {tagChips.length > 0 && (
+          <div class="home__tags" role="group" aria-label={t(locale, 'home.tagLabel')} data-tags-row>
+            {tagChips.map((tag) => (
+              <button type="button" class="home-tag" data-tag={tag.slug} aria-pressed="false">
+                {tag.label}
+                <span class="home-tag__count">{tag.count}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         <div class="home__index" id="home-index">
           <h2 class="visually-hidden">{t(locale, 'home.heading')}</h2>
           <p class="home-empty" data-empty hidden>{t(locale, 'home.noMatches')}</p>
@@ -240,7 +274,7 @@ const [stepLabelBefore, stepLabelAfter] = tSplit(locale, 'player.goToStep', 'n')
               </div>
               <ul class="home-section__grid">
                 {section.items.map((item) => (
-                  <li data-entry data-title={item.title}>
+                  <li data-entry data-title={item.title} data-tags={item.tags.join(' ')}>
                     <a class="home-entry" href={localePath(locale, item.slug)}>
                       <span class="home-entry__head">
                         <span class="home-entry__title">{item.title}</span>

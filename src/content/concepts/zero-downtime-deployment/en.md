@@ -2,6 +2,7 @@
 title: "Zero-Downtime Deployment"
 summary: "A zero-downtime deployment is one where no request fails because of the deploy. It is not a strategy on its own: it is three conditions holding at the same time, that new instances only take traffic once they can serve it, that old ones finish what they were given before they exit, and that the two versions are compatible while both are running."
 category: "Containers and orchestration"
+tags: ["deployment"]
 scene: rolling-update
 related:
   - label: Rolling Update

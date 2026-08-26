@@ -2,6 +2,7 @@
 title: "Load Test"
 summary: "A load test pushes realistic traffic at a system and watches what bends first. The number you are after is not the peak throughput but the highest load at which latency and errors still meet the objective."
 category: "Testing and verification"
+tags: ["overload"]
 scene: load-test
 steps:
   - title: "Ramp"

@@ -2,6 +2,7 @@
 title: "Connection Draining"
 summary: "Connection draining is the interval between an instance being taken out of the routing table and the instance actually closing: it stops being sent new work, keeps serving what it already has, and only then goes away. The interval exists because routing tables are copies, and copies take time to catch up."
 category: "Containers and orchestration"
+tags: ["kubernetes", "deployment"]
 scene: rolling-update
 sceneStep: 3
 related:

@@ -2,6 +2,7 @@
 title: "Concurrency Limiter"
 summary: "A concurrency limiter caps how many calls may be in flight at once, holds a bounded number more in a queue, and rejects the rest."
 category: "Resilience"
+tags: ["overload"]
 scene: bulkhead
 related:
   - label: Bulkhead

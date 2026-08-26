@@ -7,8 +7,8 @@ import type { SceneInstance, SceneStep } from '../scenes/types';
  * Two independent pieces of behaviour. The theater drives one scene timeline
  * at a time and can swap the scene in place: the markup of every featured
  * scene ships with the page, so switching is a clone plus a fresh timeline and
- * never a navigation. The filter narrows the index by title and hides the
- * sections it empties.
+ * never a navigation. The filter narrows the index by title and by tag and
+ * hides the sections it empties.
  *
  * The theater borrows the driving pattern of the scene player: the scene owns
  * the timeline, this module only mirrors its position into the controls. There
@@ -243,11 +243,22 @@ function initTheater(root: HTMLElement): void {
   void activate(activeId);
 }
 
+/**
+ * Narrows the index by name and by tag at once. The two conditions are an AND,
+ * so a tag plus a query is the intersection of the two, and there is only ever
+ * one tag active: clicking the one already pressed clears it.
+ *
+ * The active tag is mirrored into `?tag=`, which makes the filtered index a
+ * link the tag chips of a concept page can point at.
+ */
 function initFilter(root: HTMLElement): void {
   const input = root.querySelector<HTMLInputElement>('[data-filter]');
   if (!input) return;
 
   const empty = root.querySelector<HTMLElement>('[data-empty]');
+  const tagButtons = Array.from(
+    root.querySelectorAll<HTMLButtonElement>('[data-tags-row] [data-tag]'),
+  );
   const sections = Array.from(root.querySelectorAll<HTMLElement>('[data-section]')).map(
     (section) => ({
       section,
@@ -255,9 +266,13 @@ function initFilter(root: HTMLElement): void {
         row,
         // Titles are matched as the locale wrote them, only case folded.
         title: (row.dataset.title ?? '').toLowerCase(),
+        // Tag slugs are English in every locale, so they need no folding.
+        tags: (row.dataset.tags ?? '').split(' ').filter(Boolean),
       })),
     }),
   );
+
+  let activeTag = '';
 
   const apply = (): void => {
     const query = input.value.trim().toLowerCase();
@@ -266,7 +281,9 @@ function initFilter(root: HTMLElement): void {
     for (const group of sections) {
       let visible = 0;
       for (const item of group.rows) {
-        const hit = query === '' || item.title.includes(query);
+        const hit =
+          (query === '' || item.title.includes(query)) &&
+          (activeTag === '' || item.tags.includes(activeTag));
         item.row.hidden = !hit;
         if (hit) visible += 1;
       }
@@ -278,7 +295,38 @@ function initFilter(root: HTMLElement): void {
     if (empty) empty.hidden = matches > 0;
   };
 
+  const syncTags = (): void => {
+    for (const button of tagButtons) {
+      button.setAttribute('aria-pressed', String(button.dataset.tag === activeTag));
+    }
+  };
+
+  /** Rewrites the address without adding a history entry, so Back still leaves the page. */
+  const syncUrl = (): void => {
+    const url = new URL(window.location.href);
+    if (activeTag) url.searchParams.set('tag', activeTag);
+    else url.searchParams.delete('tag');
+    window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+  };
+
+  for (const button of tagButtons) {
+    button.addEventListener('click', () => {
+      const tag = button.dataset.tag ?? '';
+      activeTag = tag === activeTag ? '' : tag;
+      syncTags();
+      syncUrl();
+      apply();
+    });
+  }
+
   input.addEventListener('input', apply);
+
+  // A `?tag=` the page was opened with picks that chip, and a slug no chip
+  // carries is left alone: the index simply opens unfiltered.
+  const requested = new URLSearchParams(window.location.search).get('tag') ?? '';
+  if (tagButtons.some((button) => button.dataset.tag === requested)) activeTag = requested;
+
+  syncTags();
   apply();
 }
 

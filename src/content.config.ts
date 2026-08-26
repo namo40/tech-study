@@ -3,6 +3,29 @@ import { defineCollection } from 'astro:content';
 import { z } from 'astro/zod';
 
 /**
+ * Cross-cutting keyword tags. They run across the category axis rather than
+ * repeating it, so a page can carry a few of them or none at all. The English
+ * slug is canonical and the display label comes from the `tag.<slug>` message
+ * key, which is why tags are written in the English file only.
+ */
+export const TAGS = [
+  'consistency',
+  'database',
+  'deployment',
+  'duplicates',
+  'ef-core',
+  'kubernetes',
+  'latency',
+  'memory',
+  'metric',
+  'oauth',
+  'overload',
+  'queue',
+] as const;
+
+export type Tag = (typeof TAGS)[number];
+
+/**
  * One markdown file per locale, stored as `<slug>/<locale>.md`. The loader
  * derives the entry id from that path, so `circuit-breaker/ko` identifies the
  * Korean version of the `circuit-breaker` page.
@@ -15,6 +38,12 @@ const concepts = defineCollection({
     summary: z.string(),
     /** Localized category label. */
     category: z.string(),
+    /**
+     * Cross-cutting keyword tags, at most three. Written in the English file
+     * only: the index reads them from there so every locale shows the same
+     * tags on the same page.
+     */
+    tags: z.array(z.enum(TAGS)).max(3).default([]),
     /** Identifier of the animated scene, when the page has one. */
     scene: z.string().optional(),
     /**

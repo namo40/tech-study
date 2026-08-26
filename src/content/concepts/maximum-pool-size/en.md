@@ -2,6 +2,7 @@
 title: "Maximum Pool Size"
 summary: "Maximum Pool Size caps how many connections one process may open for one connection string, which is how each instance is handed its slice of the database's total budget."
 category: "Pools and resources"
+tags: ["database"]
 scene: database-connection-pool
 sceneStep: 3
 related:
