@@ -82,6 +82,7 @@ const SCENE_IDS = [
   'eventual-consistency',
   'transactional-outbox',
   'readiness-probe',
+  'bearer-token',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */

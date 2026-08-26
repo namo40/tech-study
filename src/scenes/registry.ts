@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as bearerTokenDuration,
+  stageMarkup as bearerTokenStage,
+} from './bearer-token/stage';
+import {
   SCENE_DURATION as readinessProbeDuration,
   stageMarkup as readinessProbeStage,
 } from './readiness-probe/stage';
@@ -297,6 +301,10 @@ const scenes: Record<string, SceneAsset> = {
   'readiness-probe': {
     markup: readinessProbeStage,
     duration: readinessProbeDuration,
+  },
+  'bearer-token': {
+    markup: bearerTokenStage,
+    duration: bearerTokenDuration,
   },
 };
 

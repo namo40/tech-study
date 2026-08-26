@@ -80,6 +80,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./transactional-outbox/scene')).default;
     case 'readiness-probe':
       return (await import('./readiness-probe/scene')).default;
+    case 'bearer-token':
+      return (await import('./bearer-token/scene')).default;
     default:
       return null;
   }
