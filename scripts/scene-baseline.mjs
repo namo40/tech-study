@@ -86,6 +86,7 @@ const SCENE_IDS = [
   'dead-letter-queue',
   'correlation-id',
   'cookie-authentication',
+  'isolation-level',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */

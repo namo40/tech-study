@@ -88,6 +88,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./correlation-id/scene')).default;
     case 'cookie-authentication':
       return (await import('./cookie-authentication/scene')).default;
+    case 'isolation-level':
+      return (await import('./isolation-level/scene')).default;
     default:
       return null;
   }

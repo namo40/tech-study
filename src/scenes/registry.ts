@@ -3,6 +3,10 @@ import {
   stageMarkup as cookieAuthenticationStage,
 } from './cookie-authentication/stage';
 import {
+  SCENE_DURATION as isolationLevelDuration,
+  stageMarkup as isolationLevelStage,
+} from './isolation-level/stage';
+import {
   SCENE_DURATION as correlationIdDuration,
   stageMarkup as correlationIdStage,
 } from './correlation-id/stage';
@@ -329,6 +333,10 @@ const scenes: Record<string, SceneAsset> = {
   'cookie-authentication': {
     markup: cookieAuthenticationStage,
     duration: cookieAuthenticationDuration,
+  },
+  'isolation-level': {
+    markup: isolationLevelStage,
+    duration: isolationLevelDuration,
   },
 };
 
