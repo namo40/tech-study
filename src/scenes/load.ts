@@ -86,6 +86,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./dead-letter-queue/scene')).default;
     case 'correlation-id':
       return (await import('./correlation-id/scene')).default;
+    case 'cookie-authentication':
+      return (await import('./cookie-authentication/scene')).default;
     default:
       return null;
   }

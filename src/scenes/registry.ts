@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as cookieAuthenticationDuration,
+  stageMarkup as cookieAuthenticationStage,
+} from './cookie-authentication/stage';
+import {
   SCENE_DURATION as correlationIdDuration,
   stageMarkup as correlationIdStage,
 } from './correlation-id/stage';
@@ -321,6 +325,10 @@ const scenes: Record<string, SceneAsset> = {
   'correlation-id': {
     markup: correlationIdStage,
     duration: correlationIdDuration,
+  },
+  'cookie-authentication': {
+    markup: cookieAuthenticationStage,
+    duration: cookieAuthenticationDuration,
   },
 };
 
