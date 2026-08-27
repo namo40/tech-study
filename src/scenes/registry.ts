@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as deadLetterQueueDuration,
+  stageMarkup as deadLetterQueueStage,
+} from './dead-letter-queue/stage';
+import {
   SCENE_DURATION as bearerTokenDuration,
   stageMarkup as bearerTokenStage,
 } from './bearer-token/stage';
@@ -305,6 +309,10 @@ const scenes: Record<string, SceneAsset> = {
   'bearer-token': {
     markup: bearerTokenStage,
     duration: bearerTokenDuration,
+  },
+  'dead-letter-queue': {
+    markup: deadLetterQueueStage,
+    duration: deadLetterQueueDuration,
   },
 };
 
