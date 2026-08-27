@@ -13254,3 +13254,301 @@
 .fb-call {
   stroke: var(--fg-soft);
 }
+
+/* ---------------------------------------------------------------- */
+/* Backpressure stage                                                */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Three parties and one argument. The Producer says how fast it is actually
+ * getting items away, the Queue says how much of itself is in use, and the
+ * Consumer says how fast it drains; the whole scene is those three numbers
+ * moving each other. Every readout, both lamps and the batch factor are stacks
+ * of text on one spot with the widget class hiding all of them, so the state
+ * picks the one that shows and nothing ever interpolates between two colours.
+ *
+ * The eight cells are the exception, because a cell is a shape rather than a
+ * word: they are drawn from `data-depth` alone, so the number of filled cells
+ * is the depth by construction and the two can never disagree.
+ *
+ * The colours carry the argument. A buffer in use is the colour of traffic,
+ * because what is in it is work that will still be done. One cell short of
+ * capacity turns amber, because that is the last warning a queue can give, and
+ * at capacity it turns red, because from there the only thing left to give is
+ * somebody else's pace. `wait` is amber rather than red: a producer held back
+ * is not a producer that failed, it is the system telling itself the truth, and
+ * `in 0/s` is the violet used elsewhere for work the system chose not to do for
+ * the same reason. `batch` and `out 40/s` are green, because widening the drain
+ * is the only move here that fixes anything.
+ */
+
+/* The two lanes. Nothing ever flows up one of them, so a lane the buffer has
+   closed is drawn as a broken line rather than as an arrow pointing back. */
+[data-wait="on"] .bp-lane-in {
+  stroke-dasharray: 16 16;
+  opacity: 0.45;
+}
+
+[data-wait="on"] .bp-producer > .scene-box {
+  stroke: var(--state-half);
+}
+
+[data-batch="on"] .bp-consumer > .scene-box {
+  stroke: var(--state-closed);
+}
+
+/* The drain is wider now, so it is drawn wider. */
+[data-batch="on"] .bp-lane-out {
+  stroke: var(--state-closed);
+  stroke-width: 9;
+}
+
+/* The rate the producer is achieving. */
+.bp-in {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 34px;
+}
+
+.bp-in--60 {
+  fill: var(--state-half);
+}
+
+.bp-in--0 {
+  fill: var(--cpu);
+}
+[data-in="0"] .bp-in--0,
+[data-in="20"] .bp-in--20,
+[data-in="60"] .bp-in--60 {
+  opacity: 1;
+}
+
+/* How many the producer may have outstanding at once. */
+.bp-admits {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 34px;
+}
+
+.bp-admits--0,
+.bp-admits--1,
+.bp-admits--2,
+.bp-admits--3,
+.bp-admits--4,
+.bp-admits--5,
+.bp-admits--6,
+.bp-admits--7 {
+  fill: var(--cpu);
+}
+[data-admits="0"] .bp-admits--0,
+[data-admits="1"] .bp-admits--1,
+[data-admits="2"] .bp-admits--2,
+[data-admits="3"] .bp-admits--3,
+[data-admits="4"] .bp-admits--4,
+[data-admits="5"] .bp-admits--5,
+[data-admits="6"] .bp-admits--6,
+[data-admits="7"] .bp-admits--7,
+[data-admits="8"] .bp-admits--8 {
+  opacity: 1;
+}
+
+/* The lamp the producer lights when the buffer is holding it back. */
+.bp-chip-wait-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-wait="on"] .bp-chip-wait .bp-chip-wait-bg {
+  stroke: var(--state-half);
+}
+
+.bp-wait {
+  fill: var(--muted);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.bp-wait--on {
+  fill: var(--state-half);
+}
+[data-wait="off"] .bp-wait--off,
+[data-wait="on"] .bp-wait--on {
+  opacity: 1;
+}
+
+/* The badge the buffer raises when it has nothing left to give. */
+.bp-chip-full-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-full="on"] .bp-chip-full .bp-chip-full-bg {
+  stroke: var(--state-open);
+}
+
+.bp-full {
+  fill: var(--muted);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.bp-full--on {
+  fill: var(--state-open);
+}
+[data-full="off"] .bp-full--off,
+[data-full="on"] .bp-full--on {
+  opacity: 1;
+}
+
+/* The buffer itself: one square per cell, filled from the left by the depth. */
+.bp-cell {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+[data-depth="1"] .bp-cell--1,
+[data-depth="2"] .bp-cell--1,
+[data-depth="2"] .bp-cell--2,
+[data-depth="3"] .bp-cell--1,
+[data-depth="3"] .bp-cell--2,
+[data-depth="3"] .bp-cell--3,
+[data-depth="4"] .bp-cell--1,
+[data-depth="4"] .bp-cell--2,
+[data-depth="4"] .bp-cell--3,
+[data-depth="4"] .bp-cell--4,
+[data-depth="5"] .bp-cell--1,
+[data-depth="5"] .bp-cell--2,
+[data-depth="5"] .bp-cell--3,
+[data-depth="5"] .bp-cell--4,
+[data-depth="5"] .bp-cell--5,
+[data-depth="6"] .bp-cell--1,
+[data-depth="6"] .bp-cell--2,
+[data-depth="6"] .bp-cell--3,
+[data-depth="6"] .bp-cell--4,
+[data-depth="6"] .bp-cell--5,
+[data-depth="6"] .bp-cell--6,
+[data-depth="7"] .bp-cell--1,
+[data-depth="7"] .bp-cell--2,
+[data-depth="7"] .bp-cell--3,
+[data-depth="7"] .bp-cell--4,
+[data-depth="7"] .bp-cell--5,
+[data-depth="7"] .bp-cell--6,
+[data-depth="7"] .bp-cell--7,
+[data-depth="8"] .bp-cell--1,
+[data-depth="8"] .bp-cell--2,
+[data-depth="8"] .bp-cell--3,
+[data-depth="8"] .bp-cell--4,
+[data-depth="8"] .bp-cell--5,
+[data-depth="8"] .bp-cell--6,
+[data-depth="8"] .bp-cell--7,
+[data-depth="8"] .bp-cell--8 {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+/* One cell left, and then none. */
+[data-depth="7"] .bp-cell--1,
+[data-depth="7"] .bp-cell--2,
+[data-depth="7"] .bp-cell--3,
+[data-depth="7"] .bp-cell--4,
+[data-depth="7"] .bp-cell--5,
+[data-depth="7"] .bp-cell--6,
+[data-depth="7"] .bp-cell--7 {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+}
+
+[data-depth="8"] .bp-cell--1,
+[data-depth="8"] .bp-cell--2,
+[data-depth="8"] .bp-cell--3,
+[data-depth="8"] .bp-cell--4,
+[data-depth="8"] .bp-cell--5,
+[data-depth="8"] .bp-cell--6,
+[data-depth="8"] .bp-cell--7,
+[data-depth="8"] .bp-cell--8 {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+/* How much of the buffer is in use, written out under it. */
+.bp-depth {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 40px;
+}
+
+.bp-depth--0 {
+  fill: var(--muted);
+}
+
+.bp-depth--7 {
+  fill: var(--state-half);
+}
+
+.bp-depth--8 {
+  fill: var(--state-open);
+}
+[data-depth="0"] .bp-depth--0,
+[data-depth="1"] .bp-depth--1,
+[data-depth="2"] .bp-depth--2,
+[data-depth="3"] .bp-depth--3,
+[data-depth="4"] .bp-depth--4,
+[data-depth="5"] .bp-depth--5,
+[data-depth="6"] .bp-depth--6,
+[data-depth="7"] .bp-depth--7,
+[data-depth="8"] .bp-depth--8 {
+  opacity: 1;
+}
+
+/* The rate the consumer drains at, and how many it takes per trip. */
+.bp-out {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 34px;
+}
+
+.bp-out--40 {
+  fill: var(--state-closed);
+}
+[data-out="20"] .bp-out--20,
+[data-out="40"] .bp-out--40 {
+  opacity: 1;
+}
+
+.bp-chip-batch-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-batch="on"] .bp-chip-batch .bp-chip-batch-bg {
+  stroke: var(--state-closed);
+}
+
+.bp-batch {
+  fill: var(--muted);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.bp-batch--on {
+  fill: var(--state-closed);
+}
+[data-batch="off"] .bp-batch--off,
+[data-batch="on"] .bp-batch--on {
+  opacity: 1;
+}
+
+/* How many go per trip, which only means anything once batching is on. */
+.bp-times {
+  --flash-color: var(--state-closed);
+  font-family: var(--font-mono);
+  font-size: 34px;
+  font-weight: 400;
+}
+[data-batch="on"] .bp-times {
+  opacity: 1;
+}

@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as backpressureDuration,
+  stageMarkup as backpressureStage,
+} from './backpressure/stage';
+import {
   SCENE_DURATION as fallbackDuration,
   stageMarkup as fallbackStage,
 } from './fallback/stage';
@@ -194,6 +198,10 @@ export interface SceneAsset {
 }
 
 const scenes: Record<string, SceneAsset> = {
+  backpressure: {
+    markup: backpressureStage,
+    duration: backpressureDuration,
+  },
   fallback: {
     markup: fallbackStage,
     duration: fallbackDuration,
