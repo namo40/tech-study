@@ -11804,3 +11804,229 @@
 [data-waits="400"] .il-gaugefill--400 {
   opacity: 1;
 }
+
+/* ---------------------------------------------------------------- */
+/* Cache Stampede stage                                              */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One key, one lane, and three things the reader keeps an eye on: what the
+ * entry holds, how much of its life is left, and what the origin is paying.
+ *
+ * The entry's state is a colour the whole card takes from `--badge-color`, so
+ * the value plate, the badge and the ring all say the same word at once and no
+ * two of them can disagree. Everything read off this stage is a stack of text
+ * on one spot, hidden by `.scene-counter`, with exactly one variant revealed by
+ * the `data-*` value the timeline wrote — and the gauge is a stack too, one
+ * rectangle per load the origin can be under, so the bar and the latency
+ * readout are the same number drawn twice.
+ */
+[data-badge="fresh"] .cst-card,
+[data-badge="fresh"] .cst-ttl {
+  --badge-color: var(--state-closed);
+}
+
+[data-badge="expired"] .cst-card,
+[data-badge="expired"] .cst-ttl {
+  --badge-color: var(--state-open);
+}
+
+[data-badge="stale"] .cst-card,
+[data-badge="stale"] .cst-ttl {
+  --badge-color: var(--state-half);
+}
+
+/* The hot key card: the key, what it holds, and what state that is in. */
+.cst-card-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.cst-key {
+  font-size: 24px;
+}
+
+.cst-value-bg {
+  fill: var(--badge-color);
+}
+
+.cst-value-text {
+  fill: var(--bg);
+  font-size: 24px;
+}
+
+.cst-badge-bg {
+  fill: var(--surface);
+  stroke: var(--badge-color);
+  stroke-width: 3;
+}
+
+.cst-badge-text {
+  fill: var(--badge-color);
+  font-size: 24px;
+}
+
+[data-value="7"] .cst-value .cst-value-text--7,
+[data-value="8"] .cst-value .cst-value-text--8,
+[data-value="9"] .cst-value .cst-value-text--9,
+[data-value="10"] .cst-value .cst-value-text--10,
+[data-value="11"] .cst-value .cst-value-text--11 {
+  opacity: 1;
+}
+
+[data-badge="fresh"] .cst-badge .cst-badge-text--fresh,
+[data-badge="expired"] .cst-badge .cst-badge-text--expired,
+[data-badge="stale"] .cst-badge .cst-badge-text--stale {
+  opacity: 1;
+}
+
+/* How many times the same value was computed at once. It is only on the card
+   while there is waste to count, which is why nought has no variant. */
+.cst-dup-bg {
+  fill: var(--surface);
+  stroke: var(--state-open);
+  stroke-width: 3;
+}
+
+.cst-dup-text {
+  fill: var(--state-open);
+  font-size: 24px;
+}
+
+[data-dup="0"] .cst-dup {
+  opacity: 0;
+}
+
+[data-dup="1"] .cst-dup-text--1,
+[data-dup="2"] .cst-dup-text--2,
+[data-dup="3"] .cst-dup-text--3,
+[data-dup="4"] .cst-dup-text--4,
+[data-dup="5"] .cst-dup-text--5,
+[data-dup="6"] .cst-dup-text--6,
+[data-dup="7"] .cst-dup-text--7,
+[data-dup="8"] .cst-dup-text--8 {
+  opacity: 1;
+}
+
+/* The answer "there is nothing here", which is worth storing too. */
+.cst-nf-bg {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+  stroke-dasharray: 8 6;
+}
+
+.cst-nf-text {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+[data-neg="off"] .cst-nf {
+  opacity: 0;
+}
+
+/* The countdown, and the three keys jitter gives different lives to. An empty
+   ring still has to read as a ring, so the track is drawn rather than implied. */
+.cst-ttl-track,
+.cst-mini-track {
+  stroke: var(--border);
+}
+
+.cst-ttl {
+  --ring-width: 14;
+  --ring-color: var(--badge-color);
+
+  opacity: 1;
+}
+
+.cst-mini {
+  --ring-width: 7;
+  --ring-color: var(--state-half);
+
+  opacity: 0;
+}
+
+[data-jitter="on"] .cst-mini {
+  opacity: 1;
+}
+
+/* A design chip is on the stage once its idea is. */
+.cst-design {
+  opacity: 0;
+}
+
+.cst-design-bg {
+  fill: var(--surface-2);
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.cst-design-text {
+  fill: var(--accent);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+[data-sf="on"] .cst-design--sf,
+[data-jitter="on"] .cst-design--jitter,
+[data-early="on"] .cst-design--early,
+[data-neg="on"] .cst-design--neg {
+  opacity: 1;
+}
+
+/* The origin: what it is running, and what that costs everybody. */
+.cst-gauge-track {
+  stroke: var(--border);
+}
+
+.cst-gaugefill {
+  --fill-color: var(--state-half);
+
+  opacity: 0;
+}
+
+.cst-scale {
+  fill: var(--muted);
+  font-size: 22px;
+}
+
+.cst-p95,
+.cst-rps {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 26px;
+}
+
+[data-load="0"] .cst-gaugefill--0,
+[data-load="1"] .cst-gaugefill--1,
+[data-load="2"] .cst-gaugefill--2,
+[data-load="3"] .cst-gaugefill--3,
+[data-load="4"] .cst-gaugefill--4,
+[data-load="5"] .cst-gaugefill--5,
+[data-load="6"] .cst-gaugefill--6,
+[data-load="7"] .cst-gaugefill--7,
+[data-load="8"] .cst-gaugefill--8 {
+  opacity: 1;
+}
+
+[data-load="0"] .cst-p95--0,
+[data-load="1"] .cst-p95--1,
+[data-load="2"] .cst-p95--2,
+[data-load="3"] .cst-p95--3,
+[data-load="4"] .cst-p95--4,
+[data-load="5"] .cst-p95--5,
+[data-load="6"] .cst-p95--6,
+[data-load="7"] .cst-p95--7,
+[data-load="8"] .cst-p95--8 {
+  opacity: 1;
+}
+
+[data-rps="0"] .cst-rps--0,
+[data-rps="10"] .cst-rps--10,
+[data-rps="20"] .cst-rps--20,
+[data-rps="30"] .cst-rps--30,
+[data-rps="40"] .cst-rps--40 {
+  opacity: 1;
+}

@@ -87,6 +87,7 @@ const SCENE_IDS = [
   'correlation-id',
   'cookie-authentication',
   'isolation-level',
+  'cache-stampede',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */

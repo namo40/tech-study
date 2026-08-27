@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as cacheStampedeDuration,
+  stageMarkup as cacheStampedeStage,
+} from './cache-stampede/stage';
+import {
   SCENE_DURATION as cookieAuthenticationDuration,
   stageMarkup as cookieAuthenticationStage,
 } from './cookie-authentication/stage';
@@ -170,6 +174,10 @@ export interface SceneAsset {
 }
 
 const scenes: Record<string, SceneAsset> = {
+  'cache-stampede': {
+    markup: cacheStampedeStage,
+    duration: cacheStampedeDuration,
+  },
   'circuit-breaker': {
     markup: circuitBreakerStage,
     duration: circuitBreakerDuration,

@@ -6,6 +6,8 @@ import type { SceneModule } from './types';
  */
 export async function loadScene(id: string): Promise<SceneModule | null> {
   switch (id) {
+    case 'cache-stampede':
+      return (await import('./cache-stampede/scene')).default;
     case 'circuit-breaker':
       return (await import('./circuit-breaker/scene')).default;
     case 'retry':
