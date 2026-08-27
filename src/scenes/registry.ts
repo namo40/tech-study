@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as blueGreenDeploymentDuration,
+  stageMarkup as blueGreenDeploymentStage,
+} from './blue-green-deployment/stage';
+import {
   SCENE_DURATION as reverseProxyDuration,
   stageMarkup as reverseProxyStage,
 } from './reverse-proxy/stage';
@@ -182,6 +186,10 @@ export interface SceneAsset {
 }
 
 const scenes: Record<string, SceneAsset> = {
+  'blue-green-deployment': {
+    markup: blueGreenDeploymentStage,
+    duration: blueGreenDeploymentDuration,
+  },
   'reverse-proxy': {
     markup: reverseProxyStage,
     duration: reverseProxyDuration,

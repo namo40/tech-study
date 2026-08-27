@@ -12441,3 +12441,296 @@
 [data-private="pulse"] .rvp-private-text {
   fill: var(--accent);
 }
+
+/* ---------------------------------------------------------------- */
+/* Blue-Green Deployment stage                                       */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Two environments and one database, so almost everything here comes in a pair
+ * and one thing pointedly does not.
+ *
+ * The weight is told three times over, because it is the only number in the
+ * scene that decides anything: the rail draws Green's share of the traffic, the
+ * knob sits at that share, and the readout writes it out in words. All three are
+ * stacks keyed on `data-weight`, so nothing interpolates and a frame scrubbed
+ * backwards reads exactly as it did forwards.
+ *
+ * The control under the rail changes because the mechanism does. A switch has
+ * two detents and nothing between them; a dial has graduations, and the point of
+ * the third step is that the graduations are where the safety lives.
+ *
+ * Both badges are stacks on one plate, and their colours are the argument of the
+ * whole pattern: `live` is the colour of traffic, `warm` is the amber of
+ * something standing by at full cost, and `idle` is grey, because an environment
+ * only goes grey once the schema no longer needs it to exist. Blue dims when it
+ * gets there, which is the moment the instant rollback is given up.
+ *
+ * The schema card is three groups on one spot rather than rows that appear and
+ * disappear, so `name`, `name + nickname` and `nickname` are each drawn once and
+ * exactly one of them is ever on the stage. The `v1` and `v2` tags only show
+ * while both columns exist, because that is the only time the question of which
+ * version reads which column has an answer.
+ *
+ * `data-focus` is the scene pointing at something already drawn — the readout,
+ * the split, the ceiling the canary put on the damage, the rate coming back to
+ * zero — and never at anything new, so no label appears that was not on the
+ * first frame.
+ */
+
+/* The rail the weight is set on, and the share of it Green is holding. */
+.bgd-rail {
+  stroke-width: 2;
+}
+
+.bgd-share {
+  --fill-color: var(--state-closed);
+  opacity: 0;
+}
+[data-weight="100-0"] .bgd-share--100-0,
+[data-weight="90-10"] .bgd-share--90-10,
+[data-weight="50-50"] .bgd-share--50-50,
+[data-weight="0-100"] .bgd-share--0-100 {
+  opacity: 1;
+}
+
+/* Where the weight currently stands, which is the same number a third time. */
+.bgd-knob {
+  fill: var(--surface);
+  stroke: var(--fg);
+  stroke-width: 5;
+  opacity: 0;
+}
+[data-weight="100-0"] .bgd-knob--100-0,
+[data-weight="90-10"] .bgd-knob--90-10,
+[data-weight="50-50"] .bgd-knob--50-50,
+[data-weight="0-100"] .bgd-knob--0-100 {
+  opacity: 1;
+}
+
+/* A switch stops at the ends; a dial is graduated, and that is the difference. */
+.bgd-ticks {
+  opacity: 0;
+}
+
+[data-control="switch"] .bgd-ticks--switch,
+[data-control="dial"] .bgd-ticks--dial {
+  opacity: 1;
+}
+
+.bgd-tick {
+  fill: var(--muted);
+}
+
+/* The weight, written out. Every variant is twenty characters, so it never
+   shifts under the reader as the number changes. */
+.bgd-readout {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 32px;
+}
+[data-weight="100-0"] .bgd-readout--100-0,
+[data-weight="90-10"] .bgd-readout--90-10,
+[data-weight="50-50"] .bgd-readout--50-50,
+[data-weight="0-100"] .bgd-readout--0-100 {
+  opacity: 1;
+}
+
+/* An environment, and whether it is the one holding the traffic. */
+.bgd-env > .scene-box {
+  stroke-width: 3;
+}
+
+[data-blue="live"] .bgd-env--blue > .scene-box,
+[data-green="live"] .bgd-env--green > .scene-box {
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+/* Released rather than merely idle: nothing is going back to it now. */
+[data-blue="idle"] .bgd-env--blue {
+  opacity: 0.5;
+}
+
+.bgd-env-title {
+  letter-spacing: 1px;
+}
+
+.bgd-ver {
+  fill: var(--fg);
+  font-size: 34px;
+}
+
+/* The word an environment says about itself. */
+.bgd-badge-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.bgd-badge-blue,
+.bgd-badge-green {
+  fill: var(--fg-soft);
+  font-size: 28px;
+  letter-spacing: 1px;
+}
+
+.bgd-badge-blue--live,
+.bgd-badge-green--live {
+  fill: var(--request);
+}
+
+.bgd-badge-blue--warm,
+.bgd-badge-green--deploying {
+  fill: var(--state-half);
+}
+
+.bgd-badge-green--ready {
+  fill: var(--state-closed);
+}
+[data-blue="live"] .bgd-badge-blue--live,
+[data-blue="warm"] .bgd-badge-blue--warm,
+[data-blue="idle"] .bgd-badge-blue--idle,
+[data-green="idle"] .bgd-badge-green--idle,
+[data-green="deploying"] .bgd-badge-green--deploying,
+[data-green="ready"] .bgd-badge-green--ready,
+[data-green="live"] .bgd-badge-green--live {
+  opacity: 1;
+}
+
+/* The build that was just corrected, marked on the environment that took it. */
+[data-fix="on"] .bgd-env--green > .scene-box {
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+[data-fix="on"] .bgd-env--green .bgd-ver {
+  fill: var(--accent);
+}
+
+/* The one thing there is no second copy of. */
+.bgd-card {
+  opacity: 0;
+}
+[data-shape="name"] .bgd-card--name,
+[data-shape="both"] .bgd-card--both,
+[data-shape="nickname"] .bgd-card--nickname {
+  opacity: 1;
+}
+
+.bgd-card-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.bgd-col {
+  fill: var(--fg);
+  font-size: 30px;
+}
+
+/* Which version each column is there for, which only has an answer while both
+   of them exist. */
+.bgd-tag {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-shared="on"] .bgd-tag {
+  opacity: 1;
+}
+
+[data-shared="on"] .bgd-write-lane {
+  stroke: var(--accent);
+}
+
+/* The move being made on the schema, which is never more than one at a time. */
+.bgd-mig {
+  opacity: 0;
+}
+
+[data-migration="expand"] .bgd-mig,
+[data-migration="contract"] .bgd-mig {
+  opacity: 1;
+}
+
+.bgd-mig-bg {
+  fill: var(--surface-2);
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.bgd-mig-text {
+  fill: var(--accent);
+  font-size: 28px;
+}
+[data-migration="expand"] .bgd-mig-text--expand,
+[data-migration="contract"] .bgd-mig-text--contract {
+  opacity: 1;
+}
+
+/* What the failures are costing, as a share of all of the traffic. */
+.bgd-errors {
+  fill: var(--state-open);
+  font-family: var(--font-mono);
+  font-size: 30px;
+}
+
+.bgd-errors--0 {
+  fill: var(--fg-soft);
+}
+[data-rate="0"] .bgd-errors--0,
+[data-rate="1"] .bgd-errors--1,
+[data-rate="2"] .bgd-errors--2,
+[data-rate="3"] .bgd-errors--3,
+[data-rate="4"] .bgd-errors--4,
+[data-rate="5"] .bgd-errors--5,
+[data-rate="6"] .bgd-errors--6,
+[data-rate="7"] .bgd-errors--7,
+[data-rate="8"] .bgd-errors--8,
+[data-rate="9"] .bgd-errors--9,
+[data-rate="10"] .bgd-errors--10 {
+  opacity: 1;
+}
+
+/* The plate the rate is held up on when the scene wants it read. */
+.bgd-errors-halo {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  opacity: 0;
+}
+
+/* The scene pointing at something already on the stage, never at anything new. */
+[data-focus="weight"] .bgd-readout,
+[data-focus="split"] .bgd-readout {
+  fill: var(--accent);
+}
+
+[data-focus="weight"] .bgd-knob,
+[data-focus="split"] .bgd-knob {
+  stroke: var(--accent);
+}
+
+[data-focus="split"] .bgd-share {
+  --fill-color: var(--accent);
+}
+
+[data-focus="capped"] .bgd-errors-halo,
+[data-focus="clear"] .bgd-errors-halo {
+  opacity: 1;
+}
+
+[data-focus="clear"] .bgd-errors-halo {
+  stroke: var(--state-closed);
+}
+
+/* A synthetic request: hollow, so it is never counted as production traffic. */
+.bgd-smoke .scene-req-dot {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 5;
+  stroke-dasharray: 7 7;
+}
