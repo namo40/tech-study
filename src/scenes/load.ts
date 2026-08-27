@@ -6,6 +6,8 @@ import type { SceneModule } from './types';
  */
 export async function loadScene(id: string): Promise<SceneModule | null> {
   switch (id) {
+    case 'event-sourcing':
+      return (await import('./event-sourcing/scene')).default;
     case 'backpressure':
       return (await import('./backpressure/scene')).default;
     case 'fallback':

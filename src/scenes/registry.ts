@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as eventSourcingDuration,
+  stageMarkup as eventSourcingStage,
+} from './event-sourcing/stage';
+import {
   SCENE_DURATION as backpressureDuration,
   stageMarkup as backpressureStage,
 } from './backpressure/stage';
@@ -198,6 +202,10 @@ export interface SceneAsset {
 }
 
 const scenes: Record<string, SceneAsset> = {
+  'event-sourcing': {
+    markup: eventSourcingStage,
+    duration: eventSourcingDuration,
+  },
   backpressure: {
     markup: backpressureStage,
     duration: backpressureDuration,
