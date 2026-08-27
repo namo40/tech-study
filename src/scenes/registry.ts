@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as reverseProxyDuration,
+  stageMarkup as reverseProxyStage,
+} from './reverse-proxy/stage';
+import {
   SCENE_DURATION as cacheStampedeDuration,
   stageMarkup as cacheStampedeStage,
 } from './cache-stampede/stage';
@@ -178,6 +182,10 @@ export interface SceneAsset {
 }
 
 const scenes: Record<string, SceneAsset> = {
+  'reverse-proxy': {
+    markup: reverseProxyStage,
+    duration: reverseProxyDuration,
+  },
   'leader-election': {
     markup: leaderElectionStage,
     duration: leaderElectionDuration,

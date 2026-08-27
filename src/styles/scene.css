@@ -12240,3 +12240,204 @@
 [data-seam="12"] .le-seam--12 {
   opacity: 1;
 }
+
+/* ---------------------------------------------------------------- */
+/* Reverse Proxy stage                                               */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One seat, and everything the seat has been asked to do.
+ *
+ * The card is the routing table drawn as a table: two rects, one per number of
+ * rows it holds, so taking a third route on grows the card instead of leaving a
+ * gap where a row will one day be. Exactly one rect is revealed, exactly the
+ * rows that exist are revealed, and the row a path matched is the one wearing
+ * the highlight — three stacks, each hidden by a base rule and opened by the
+ * `data-*` the timeline wrote.
+ *
+ * The boundary work is drawn the same way. A chip is not dimmed before the seat
+ * takes that job on, it is simply not there, because the point of the last step
+ * is that the same seat gains duties rather than switching modes. The `https`
+ * and `http` labels, the forwarded-header card and the `401` on the door all
+ * follow that rule too.
+ *
+ * Health is told twice on purpose. Each instance says what is true of it, and
+ * the seat says what its last probe found, and the two are allowed to disagree
+ * for one probe interval. Both go through the shared `data-health-state`
+ * spelling, so neither can invent a colour of its own.
+ */
+
+/* The route card, and the rows on it. */
+.rvp-card {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+  opacity: 0;
+}
+
+[data-routes="2"] .rvp-card--2,
+[data-routes="3"] .rvp-card--3 {
+  opacity: 1;
+}
+
+.rvp-route {
+  fill: var(--fg-soft);
+  font-size: 26px;
+  opacity: 0;
+}
+
+[data-routes="2"] .rvp-route--app,
+[data-routes="2"] .rvp-route--api,
+[data-routes="3"] .rvp-route--app,
+[data-routes="3"] .rvp-route--api,
+[data-routes="3"] .rvp-route--reports {
+  opacity: 1;
+}
+
+/* The row the path matched. It is the whole routing decision, so it is the one
+   thing in the node that changes colour as well as brightness. */
+.rvp-hit {
+  fill: var(--accent);
+  opacity: 0;
+}
+
+[data-picked="app"] .rvp-hit--app,
+[data-picked="api"] .rvp-hit--api,
+[data-picked="reports"] .rvp-hit--reports {
+  opacity: 0.2;
+}
+
+[data-picked="app"] .rvp-route--app,
+[data-picked="api"] .rvp-route--api,
+[data-picked="reports"] .rvp-route--reports {
+  fill: var(--accent);
+}
+
+/* The boundary work: a job the seat has not taken on has no chip at all. */
+.rvp-chip {
+  opacity: 0;
+}
+
+[data-tls="on"] .rvp-chip--tls,
+[data-auth="on"] .rvp-chip--auth,
+[data-quota="on"] .rvp-chip--limit {
+  opacity: 1;
+}
+
+.rvp-chip-bg {
+  fill: var(--surface-2);
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.rvp-chip-text {
+  fill: var(--accent);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+/* The header the seat writes, because the caller a service sees is the seat. */
+.rvp-xff {
+  opacity: 0;
+}
+
+[data-xff="on"] .rvp-xff {
+  opacity: 1;
+}
+
+.rvp-xff-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.rvp-xff-text {
+  fill: var(--fg);
+  font-size: 24px;
+}
+
+/* Which stretch of the journey is encrypted, and the refusal on the door. */
+.rvp-hop {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-weight: 600;
+  opacity: 0;
+}
+
+[data-https="on"] .rvp-hop--https,
+[data-http="on"] .rvp-hop--http {
+  opacity: 1;
+}
+
+.rvp-reject {
+  fill: var(--state-open);
+  font-size: 28px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-refuse="on"] .rvp-reject {
+  opacity: 1;
+}
+
+/* What the seat's own probes say, which is one probe interval behind the truth. */
+.rvp-probe-name {
+  fill: var(--fg-soft);
+  font-size: 24px;
+}
+
+.rvp-probe .scene-health[data-health-state="down"] + .rvp-probe-name {
+  fill: var(--state-open);
+}
+
+/* An instance of App: what is true of it, and whether it is holding work. */
+.rvp-slot {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.rvp-inst[data-inst="serving"] .rvp-slot {
+  stroke: var(--request);
+  stroke-width: 4;
+}
+
+.rvp-inst[data-inst="down"] .rvp-slot {
+  stroke: var(--state-open);
+  stroke-dasharray: 12 9;
+}
+
+.rvp-inst-name {
+  fill: var(--fg-soft);
+  font-size: 26px;
+}
+
+.rvp-inst[data-inst="serving"] .rvp-inst-name {
+  fill: var(--request);
+}
+
+.rvp-inst[data-inst="down"] .rvp-inst-name {
+  fill: var(--state-open);
+}
+
+/* The badge that says no client ever reaches this box on its own. */
+.rvp-private-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.rvp-private-text {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+[data-private="pulse"] .rvp-private-bg {
+  stroke: var(--accent);
+  stroke-width: 4;
+}
+
+[data-private="pulse"] .rvp-private-text {
+  fill: var(--accent);
+}

@@ -6,6 +6,8 @@ import type { SceneModule } from './types';
  */
 export async function loadScene(id: string): Promise<SceneModule | null> {
   switch (id) {
+    case 'reverse-proxy':
+      return (await import('./reverse-proxy/scene')).default;
     case 'leader-election':
       return (await import('./leader-election/scene')).default;
     case 'cache-stampede':
