@@ -11,6 +11,10 @@ import {
   stageMarkup as isolationLevelStage,
 } from './isolation-level/stage';
 import {
+  SCENE_DURATION as leaderElectionDuration,
+  stageMarkup as leaderElectionStage,
+} from './leader-election/stage';
+import {
   SCENE_DURATION as correlationIdDuration,
   stageMarkup as correlationIdStage,
 } from './correlation-id/stage';
@@ -174,6 +178,10 @@ export interface SceneAsset {
 }
 
 const scenes: Record<string, SceneAsset> = {
+  'leader-election': {
+    markup: leaderElectionStage,
+    duration: leaderElectionDuration,
+  },
   'cache-stampede': {
     markup: cacheStampedeStage,
     duration: cacheStampedeDuration,

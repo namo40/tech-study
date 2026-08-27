@@ -4136,7 +4136,7 @@
 
 /* A value the primary has already replaced is not wrong yet, so it warns
    rather than clears. */
-[data-stale-mark="on"] .rl-value-replica .scene-chip-outline {
+[data-stale-seam="on"] .rl-value-replica .scene-chip-outline {
   stroke: var(--state-half);
 }
 
@@ -4176,7 +4176,7 @@
   --flash-color: var(--accent);
 }
 
-[data-stale-mark="on"] .rl-mark--stale,
+[data-stale-seam="on"] .rl-mark--stale,
 [data-replica="promoted"] .rl-mark--promote {
   opacity: 1;
 }
@@ -11755,9 +11755,9 @@
   opacity: 0;
 }
 
-[data-mark="dirty"] .il-colhl--dirty,
-[data-mark="nonrep"] .il-colhl--nonrep,
-[data-mark="phantom"] .il-colhl--phantom {
+[data-seam="dirty"] .il-colhl--dirty,
+[data-seam="nonrep"] .il-colhl--nonrep,
+[data-seam="phantom"] .il-colhl--phantom {
   opacity: 1;
 }
 
@@ -11894,18 +11894,18 @@
   font-size: 24px;
 }
 
-[data-dup="0"] .cst-dup {
+[data-dupes="0"] .cst-dup {
   opacity: 0;
 }
 
-[data-dup="1"] .cst-dup-text--1,
-[data-dup="2"] .cst-dup-text--2,
-[data-dup="3"] .cst-dup-text--3,
-[data-dup="4"] .cst-dup-text--4,
-[data-dup="5"] .cst-dup-text--5,
-[data-dup="6"] .cst-dup-text--6,
-[data-dup="7"] .cst-dup-text--7,
-[data-dup="8"] .cst-dup-text--8 {
+[data-dupes="1"] .cst-dup-text--1,
+[data-dupes="2"] .cst-dup-text--2,
+[data-dupes="3"] .cst-dup-text--3,
+[data-dupes="4"] .cst-dup-text--4,
+[data-dupes="5"] .cst-dup-text--5,
+[data-dupes="6"] .cst-dup-text--6,
+[data-dupes="7"] .cst-dup-text--7,
+[data-dupes="8"] .cst-dup-text--8 {
   opacity: 1;
 }
 
@@ -12028,5 +12028,215 @@
 [data-rps="20"] .cst-rps--20,
 [data-rps="30"] .cst-rps--30,
 [data-rps="40"] .cst-rps--40 {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------- */
+/* Leader Election stage                                             */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One record, three instances, one row of work.
+ *
+ * Everything the store says about the seat takes its colour from `--seat-color`
+ * on the store group, so the record card, the holder line and the countdown
+ * cannot disagree about whether the seat is held. Each instance takes its own
+ * `--role-color` from the one word it is entitled to say, so the box border,
+ * the badge outline and the word are the same statement drawn three ways.
+ *
+ * Every value read off this stage is a stack of text on one spot, hidden by
+ * `.scene-counter`, with exactly one variant revealed by the `data-*` the
+ * timeline wrote: who holds the lease, which epoch it was granted under, what
+ * each instance is, how many units of work have run, and how many of them ran
+ * twice. The work strip is the same idea in rectangles, one cell per unit, plus
+ * one boundary line per gap between cells with the epoch change revealing the
+ * one it happened at.
+ */
+
+/* The store, and what colour the seat is in. */
+.le-store {
+  --seat-color: var(--state-closed);
+}
+
+[data-holder="none"] .le-store {
+  --seat-color: var(--state-open);
+}
+
+.le-card {
+  fill: var(--surface-2);
+  stroke: var(--seat-color);
+  stroke-width: 2;
+}
+
+.le-key {
+  font-size: 26px;
+}
+
+.le-holder {
+  fill: var(--seat-color);
+  font-family: var(--font-mono);
+  font-size: 28px;
+}
+
+.le-epoch {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 28px;
+}
+
+[data-holder="none"] .le-holder--none,
+[data-holder="a"] .le-holder--a,
+[data-holder="b"] .le-holder--b {
+  opacity: 1;
+}
+
+[data-epoch="0"] .le-epoch--0,
+[data-epoch="1"] .le-epoch--1,
+[data-epoch="2"] .le-epoch--2 {
+  opacity: 1;
+}
+
+/* The countdown. It is on the stage from the first frame, empty, because an
+   empty seat still has a lease record and the reader has to see the shape. */
+.le-ttl {
+  --ring-width: 13;
+  --ring-color: var(--seat-color);
+
+  opacity: 1;
+}
+
+.le-ttl-track {
+  stroke: var(--border);
+}
+
+/* An instance, and the one word it is entitled to say about itself. */
+.le-inst {
+  --role-color: var(--fg-soft);
+}
+
+[data-a="leader"] .le-inst--a,
+[data-b="leader"] .le-inst--b,
+[data-c="leader"] .le-inst--c {
+  --role-color: var(--state-closed);
+}
+
+[data-a="down"] .le-inst--a,
+[data-b="down"] .le-inst--b,
+[data-c="down"] .le-inst--c {
+  --role-color: var(--state-open);
+
+  opacity: 0.6;
+}
+
+.le-inst-title {
+  font-size: 40px;
+}
+
+.le-badge-bg {
+  fill: var(--surface-2);
+  stroke: var(--role-color);
+  stroke-width: 3;
+}
+
+.le-role {
+  fill: var(--role-color);
+  font-size: 26px;
+}
+
+[data-a="leader"] .le-inst--a .scene-box,
+[data-b="leader"] .le-inst--b .scene-box,
+[data-c="leader"] .le-inst--c .scene-box {
+  stroke: var(--state-closed);
+}
+
+[data-a="leader"] .le-inst--a .le-role--leader,
+[data-a="follower"] .le-inst--a .le-role--follower,
+[data-a="down"] .le-inst--a .le-role--down,
+[data-b="leader"] .le-inst--b .le-role--leader,
+[data-b="follower"] .le-inst--b .le-role--follower,
+[data-b="down"] .le-inst--b .le-role--down,
+[data-c="leader"] .le-inst--c .le-role--leader,
+[data-c="follower"] .le-inst--c .le-role--follower,
+[data-c="down"] .le-inst--c .le-role--down {
+  opacity: 1;
+}
+
+/* The work strip: one row, one cell per unit that ran, and the line at the
+   cell the epoch changed after. */
+.le-runs,
+.le-dup {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 28px;
+}
+
+[data-pulse="on"] .le-dup {
+  fill: var(--state-closed);
+}
+
+.le-lane {
+  stroke-width: 2;
+}
+
+[data-seam]:not([data-seam="none"]) .le-lane {
+  stroke: var(--accent);
+}
+
+.le-slot {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.le-slot[data-slot="run"] {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+.le-seam {
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+  stroke-dasharray: 9 7;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+/* One number for the units of work that have run, one for the ones that ran
+   twice, and one line at the cell the seat changed hands after. */
+[data-runs="0"] .le-runs--0,
+[data-runs="1"] .le-runs--1,
+[data-runs="2"] .le-runs--2,
+[data-runs="3"] .le-runs--3,
+[data-runs="4"] .le-runs--4,
+[data-runs="5"] .le-runs--5,
+[data-runs="6"] .le-runs--6,
+[data-runs="7"] .le-runs--7,
+[data-runs="8"] .le-runs--8,
+[data-runs="9"] .le-runs--9,
+[data-runs="10"] .le-runs--10,
+[data-runs="11"] .le-runs--11,
+[data-runs="12"] .le-runs--12,
+[data-runs="13"] .le-runs--13 {
+  opacity: 1;
+}
+
+[data-dupes="0"] .le-dup--0,
+[data-dupes="1"] .le-dup--1,
+[data-dupes="2"] .le-dup--2 {
+  opacity: 1;
+}
+
+[data-seam="1"] .le-seam--1,
+[data-seam="2"] .le-seam--2,
+[data-seam="3"] .le-seam--3,
+[data-seam="4"] .le-seam--4,
+[data-seam="5"] .le-seam--5,
+[data-seam="6"] .le-seam--6,
+[data-seam="7"] .le-seam--7,
+[data-seam="8"] .le-seam--8,
+[data-seam="9"] .le-seam--9,
+[data-seam="10"] .le-seam--10,
+[data-seam="11"] .le-seam--11,
+[data-seam="12"] .le-seam--12 {
   opacity: 1;
 }
