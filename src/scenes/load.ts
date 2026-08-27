@@ -84,6 +84,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./bearer-token/scene')).default;
     case 'dead-letter-queue':
       return (await import('./dead-letter-queue/scene')).default;
+    case 'correlation-id':
+      return (await import('./correlation-id/scene')).default;
     default:
       return null;
   }

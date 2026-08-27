@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as correlationIdDuration,
+  stageMarkup as correlationIdStage,
+} from './correlation-id/stage';
+import {
   SCENE_DURATION as deadLetterQueueDuration,
   stageMarkup as deadLetterQueueStage,
 } from './dead-letter-queue/stage';
@@ -313,6 +317,10 @@ const scenes: Record<string, SceneAsset> = {
   'dead-letter-queue': {
     markup: deadLetterQueueStage,
     duration: deadLetterQueueDuration,
+  },
+  'correlation-id': {
+    markup: correlationIdStage,
+    duration: correlationIdDuration,
   },
 };
 
