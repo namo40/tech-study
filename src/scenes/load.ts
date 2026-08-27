@@ -6,6 +6,8 @@ import type { SceneModule } from './types';
  */
 export async function loadScene(id: string): Promise<SceneModule | null> {
   switch (id) {
+    case 'failover':
+      return (await import('./failover/scene')).default;
     case 'blue-green-deployment':
       return (await import('./blue-green-deployment/scene')).default;
     case 'reverse-proxy':

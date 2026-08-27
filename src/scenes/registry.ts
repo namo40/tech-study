@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as failoverDuration,
+  stageMarkup as failoverStage,
+} from './failover/stage';
+import {
   SCENE_DURATION as blueGreenDeploymentDuration,
   stageMarkup as blueGreenDeploymentStage,
 } from './blue-green-deployment/stage';
@@ -186,6 +190,10 @@ export interface SceneAsset {
 }
 
 const scenes: Record<string, SceneAsset> = {
+  failover: {
+    markup: failoverStage,
+    duration: failoverDuration,
+  },
   'blue-green-deployment': {
     markup: blueGreenDeploymentStage,
     duration: blueGreenDeploymentDuration,
