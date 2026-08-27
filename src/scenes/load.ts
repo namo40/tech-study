@@ -6,6 +6,8 @@ import type { SceneModule } from './types';
  */
 export async function loadScene(id: string): Promise<SceneModule | null> {
   switch (id) {
+    case 'fallback':
+      return (await import('./fallback/scene')).default;
     case 'failover':
       return (await import('./failover/scene')).default;
     case 'blue-green-deployment':

@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as fallbackDuration,
+  stageMarkup as fallbackStage,
+} from './fallback/stage';
+import {
   SCENE_DURATION as failoverDuration,
   stageMarkup as failoverStage,
 } from './failover/stage';
@@ -190,6 +194,10 @@ export interface SceneAsset {
 }
 
 const scenes: Record<string, SceneAsset> = {
+  fallback: {
+    markup: fallbackStage,
+    duration: fallbackDuration,
+  },
   failover: {
     markup: failoverStage,
     duration: failoverDuration,
