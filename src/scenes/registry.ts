@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as memoryPressureDuration,
+  stageMarkup as memoryPressureStage,
+} from './memory-pressure/stage';
+import {
   SCENE_DURATION as twoPhaseCommitDuration,
   stageMarkup as twoPhaseCommitStage,
 } from './two-phase-commit/stage';
@@ -210,6 +214,10 @@ export interface SceneAsset {
 }
 
 const scenes: Record<string, SceneAsset> = {
+  'memory-pressure': {
+    markup: memoryPressureStage,
+    duration: memoryPressureDuration,
+  },
   'two-phase-commit': {
     markup: twoPhaseCommitStage,
     duration: twoPhaseCommitDuration,
