@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as podDisruptionBudgetDuration,
+  stageMarkup as podDisruptionBudgetStage,
+} from './pod-disruption-budget/stage';
+import {
   SCENE_DURATION as memoryPressureDuration,
   stageMarkup as memoryPressureStage,
 } from './memory-pressure/stage';
@@ -214,6 +218,10 @@ export interface SceneAsset {
 }
 
 const scenes: Record<string, SceneAsset> = {
+  'pod-disruption-budget': {
+    markup: podDisruptionBudgetStage,
+    duration: podDisruptionBudgetDuration,
+  },
   'memory-pressure': {
     markup: memoryPressureStage,
     duration: memoryPressureDuration,

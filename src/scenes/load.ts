@@ -6,6 +6,8 @@ import type { SceneModule } from './types';
  */
 export async function loadScene(id: string): Promise<SceneModule | null> {
   switch (id) {
+    case 'pod-disruption-budget':
+      return (await import('./pod-disruption-budget/scene')).default;
     case 'memory-pressure':
       return (await import('./memory-pressure/scene')).default;
     case 'two-phase-commit':

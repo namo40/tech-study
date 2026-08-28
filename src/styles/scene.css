@@ -14971,3 +14971,297 @@
 [data-mp-container="oomkilled"] .mp-node > .scene-box {
   stroke: var(--state-open);
 }
+
+/* ---------------------------------------------------------------- */
+/* Pod Disruption Budget stage                                       */
+/* ---------------------------------------------------------------- */
+
+/*
+ * A fleet rather than an instance, so almost everything here is a word said by
+ * one of three boxes that are otherwise identical. Each word is one of a stack
+ * on a plate with the widget class hiding all of them, and the pod's own
+ * `data-pdb-pod` picks the one that shows — nothing interpolates, so scrubbing
+ * backwards is exact and neither theme has a colour to average.
+ *
+ * The colours carry the argument. Green is a pod that is serving and a budget
+ * with room to spare. Amber is the middle of the ritual — `preStop` and `term`
+ * are not failures, they are a pod finishing what it holds, and `ready 2/3` is
+ * amber for the same reason: nothing is wrong and there is nothing left to give.
+ * Violet is the platform doing something on the side rather than the app doing
+ * anything, which is what `starting` is. Red appears exactly once, on the
+ * `SIGKILL` mark, because that is the one thing on this stage that never
+ * happened.
+ *
+ * The two rings are the only quantities. Their arcs are swept rather than
+ * switched, and their colour is switched rather than blended.
+ */
+
+/* The three lanes carry an approved eviction downward and nothing else. The
+   rail below the pod row is drawn quiet for the whole scene: the Budget reads
+   the pods rather than being told by them, which is why `ready n/3` is a
+   continuous readout and no dot ever travels there. */
+.pdb-watch {
+  stroke-dasharray: 10 18;
+  opacity: 0.35;
+}
+
+[data-pdb-drain="idle"] .pdb-lane {
+  stroke-dasharray: 16 16;
+  opacity: 0.45;
+}
+
+/* --- the Drain ------------------------------------------------------ */
+
+/* The card is a plate with the same two words on it either way; only its
+   outline says whether the drain has asked for anything yet. */
+.pdb-chip-node-bg {
+  fill: var(--surface);
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+[data-pdb-drain="active"] .pdb-chip-node-bg {
+  stroke: var(--request);
+}
+
+.pdb-node {
+  fill: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 30px;
+}
+
+[data-pdb-drain="active"] .pdb-node--active {
+  fill: var(--request);
+}
+
+[data-pdb-drain="idle"] .pdb-node--idle,
+[data-pdb-drain="active"] .pdb-node--active {
+  opacity: 1;
+}
+
+.pdb-want {
+  fill: var(--fg-soft);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+/* What the budget is holding back. Nothing held is not a state worth colouring;
+   an eviction waiting on the budget is. */
+.pdb-held {
+  fill: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 34px;
+}
+
+[data-pdb-held="1"] .pdb-held--1,
+[data-pdb-held="2"] .pdb-held--2 {
+  fill: var(--state-half);
+}
+
+[data-pdb-held="0"] .pdb-held--0,
+[data-pdb-held="1"] .pdb-held--1,
+[data-pdb-held="2"] .pdb-held--2 {
+  opacity: 1;
+}
+
+/* --- the pods ------------------------------------------------------- */
+
+/* A pod on its way out is drawn as one, and a pod that is gone is drawn as an
+   empty slot rather than removed, because the slot is the thing the replacement
+   comes back into. */
+[data-pdb-pod="preStop"] .pdb-pod-box,
+[data-pdb-pod="term"] .pdb-pod-box {
+  stroke: var(--state-half);
+  stroke-dasharray: 14 10;
+}
+
+[data-pdb-pod="gone"] .pdb-pod-box {
+  stroke: var(--muted);
+  stroke-dasharray: 6 14;
+}
+
+[data-pdb-pod="starting"] .pdb-pod-box {
+  stroke: var(--cpu);
+  stroke-dasharray: 14 10;
+}
+
+[data-pdb-pod="gone"] > .scene-node-title {
+  fill: var(--muted);
+}
+
+.pdb-chip-badge-bg {
+  fill: var(--surface);
+  stroke: var(--state-closed);
+  stroke-width: 3;
+}
+
+[data-pdb-pod="preStop"] .pdb-chip-badge-bg,
+[data-pdb-pod="term"] .pdb-chip-badge-bg {
+  stroke: var(--state-half);
+}
+
+[data-pdb-pod="gone"] .pdb-chip-badge-bg {
+  stroke: var(--muted);
+}
+
+[data-pdb-pod="starting"] .pdb-chip-badge-bg {
+  stroke: var(--cpu);
+}
+
+.pdb-badge {
+  fill: var(--state-closed);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.pdb-badge--preStop,
+.pdb-badge--term {
+  fill: var(--state-half);
+}
+
+.pdb-badge--gone {
+  fill: var(--muted);
+}
+
+.pdb-badge--starting {
+  fill: var(--cpu);
+}
+
+[data-pdb-pod="ready"] .pdb-badge--ready,
+[data-pdb-pod="preStop"] .pdb-badge--preStop,
+[data-pdb-pod="term"] .pdb-badge--term,
+[data-pdb-pod="gone"] .pdb-badge--gone,
+[data-pdb-pod="starting"] .pdb-badge--starting {
+  opacity: 1;
+}
+
+/* What the pod is still holding. The number a leaving pod counts down is the
+   only reason the ritual takes any time at all. */
+.pdb-req {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 32px;
+}
+
+[data-pdb-pod="gone"] .pdb-req,
+[data-pdb-pod="starting"] .pdb-req {
+  fill: var(--muted);
+}
+
+[data-pdb-req="0"] .pdb-req--0,
+[data-pdb-req="1"] .pdb-req--1,
+[data-pdb-req="2"] .pdb-req--2,
+[data-pdb-req="3"] .pdb-req--3,
+[data-pdb-req="4"] .pdb-req--4,
+[data-pdb-req="5"] .pdb-req--5,
+[data-pdb-req="6"] .pdb-req--6,
+[data-pdb-req="7"] .pdb-req--7,
+[data-pdb-req="8"] .pdb-req--8,
+[data-pdb-req="9"] .pdb-req--9 {
+  opacity: 1;
+}
+
+/* The grace period, drawn as the one quantity a pod has: how much of its
+   deadline it has spent. Amber is the last three tenths of it. */
+.pdb-grace {
+  --ring-color: var(--request);
+  --ring-width: 9px;
+}
+
+[data-pdb-grace="warn"] .pdb-grace {
+  --ring-color: var(--state-half);
+}
+
+[data-pdb-grace="on"] .pdb-grace,
+[data-pdb-grace="warn"] .pdb-grace {
+  opacity: 1;
+}
+
+/* The ending this pod did not have. It is drawn once, in the one colour nothing
+   else on this stage is allowed to use. */
+.pdb-kill {
+  fill: var(--state-open);
+  font-size: 28px;
+  letter-spacing: 2px;
+}
+
+[data-pdb-kill="on"] .pdb-kill--on {
+  opacity: 1;
+}
+
+[data-pdb-kill="on"] .pdb-pod-box {
+  stroke: var(--state-open);
+}
+
+/* --- the Budget ----------------------------------------------------- */
+
+/* The box goes with its own lamp. It never does so in this scene, which is the
+   point: the rule is a rule because breaking it would be visible. */
+[data-pdb-slo="off"] .pdb-budget > .scene-box {
+  stroke: var(--state-open);
+}
+
+.pdb-chip-min-bg {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.pdb-min {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* The lamp is the verdict on one comparison and nothing else: it is lit while
+   at least `minAvailable` pods are ready, and it is written from that count
+   rather than from the story. */
+.pdb-chip-slo-bg {
+  fill: var(--surface);
+  stroke: var(--state-open);
+  stroke-width: 3;
+}
+
+[data-pdb-slo="on"] .pdb-chip-slo-bg {
+  stroke: var(--state-closed);
+}
+
+.pdb-slo {
+  fill: var(--state-open);
+  font-size: 30px;
+  letter-spacing: 2px;
+}
+
+.pdb-slo--on {
+  fill: var(--state-closed);
+}
+
+[data-pdb-slo="off"] .pdb-slo--off,
+[data-pdb-slo="on"] .pdb-slo--on {
+  opacity: 1;
+}
+
+/* The reading the rule is enforced from. Green is a fleet with a disruption to
+   spare; amber is one sitting exactly on the floor, which is not a fault and is
+   still the moment nothing more may be taken away. */
+.pdb-ready {
+  fill: var(--state-open);
+  font-family: var(--font-mono);
+  font-size: 38px;
+}
+
+.pdb-ready--2 {
+  fill: var(--state-half);
+}
+
+.pdb-ready--3 {
+  fill: var(--state-closed);
+}
+
+[data-pdb-ready="0"] .pdb-ready--0,
+[data-pdb-ready="1"] .pdb-ready--1,
+[data-pdb-ready="2"] .pdb-ready--2,
+[data-pdb-ready="3"] .pdb-ready--3 {
+  opacity: 1;
+}
