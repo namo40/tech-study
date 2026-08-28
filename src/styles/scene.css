@@ -15644,3 +15644,419 @@
 [data-dbi-settled="on"] .dbi-rows {
   fill: var(--state-closed);
 }
+/* ---------------------------------------------------------------- */
+/* Publish-Subscribe stage                                           */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One log, and three readers that never meet. Everything on this stage is drawn
+ * so that the same event can be in two places at once: the Topic's cells are
+ * never taken away by a delivery, and each subscription carries its own
+ * bookmark, its own number and its own badge. Nothing one subscription does
+ * changes anything another one can see, and no rule below reads two
+ * subscriptions at the same time.
+ *
+ * Every word here is a stack of text elements on one spot with the widget class
+ * hiding all of them, so nothing interpolates and scrubbing backwards is exact
+ * in both themes: `published n`, the three `offset n` readouts, the three
+ * badges, the `checkpoint n` card and the `queue` / `topic` plate. The eight
+ * cells, the retention band and the three bookmark rows are the declared
+ * texture, drawn from `data-*` alone.
+ *
+ * The colours carry the argument. A written cell is the colour of traffic,
+ * because an event is something that happened. A cell the window has dropped is
+ * muted and hollow, because it is not wrong, it is not there. A bookmark takes
+ * the colour of the state its own subscription is announcing, so the number in
+ * the box and the bar in the log can never say different things. Green is kept
+ * for the settled frame, where all three have arrived at the same position, and
+ * violet marks the two beginnings a new subscription is choosing between, which
+ * is the one thing on this stage the system chose rather than measured.
+ */
+
+/* A queue would only ever have used one of these, and nobody is on the third
+   until C exists, so both say so by not being drawn as a working lane. */
+[data-ps-mode="queue"] .ps-lane-b,
+[data-ps-badge-c="off"] .ps-lane-c {
+  stroke-dasharray: 16 16;
+  opacity: 0.45;
+}
+
+/* What a queue would have done: one copy, one reader, and it is gone. Drawn
+   hollow rather than faded so it is legible in both themes and still obviously
+   not something that happened. */
+.ps-ghost .scene-req-dot {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 5 4;
+}
+
+/* --- the Publisher ------------------------------------------------------ */
+
+/* The only number the Publisher has. It counts the cells the Topic wrote, and
+   it says nothing at all about who is reading them. */
+.ps-published {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 40px;
+}
+
+.ps-published--0 {
+  fill: var(--muted);
+}
+[data-ps-published="0"] .ps-published--0,
+[data-ps-published="1"] .ps-published--1,
+[data-ps-published="2"] .ps-published--2,
+[data-ps-published="3"] .ps-published--3,
+[data-ps-published="4"] .ps-published--4,
+[data-ps-published="5"] .ps-published--5,
+[data-ps-published="6"] .ps-published--6,
+[data-ps-published="7"] .ps-published--7,
+[data-ps-published="8"] .ps-published--8 {
+  opacity: 1;
+}
+
+/* --- the Topic ---------------------------------------------------------- */
+
+/* Which of the two shapes the middle box is behaving as. A queue hands the one
+   copy it has to whoever asked first; a topic keeps it and hands out as many as
+   there are subscriptions. */
+.ps-chip-mode .ps-chip-mode-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-ps-mode="topic"] .ps-chip-mode .ps-chip-mode-bg {
+  stroke: var(--accent);
+}
+
+.ps-mode {
+  fill: var(--muted);
+  font-size: 28px;
+  letter-spacing: 1px;
+}
+
+.ps-mode--topic {
+  fill: var(--accent);
+}
+[data-ps-mode="queue"] .ps-mode--queue,
+[data-ps-mode="topic"] .ps-mode--topic {
+  opacity: 1;
+}
+
+/* The window the log keeps, which is the fine print under everything else. */
+.ps-retention {
+  fill: var(--muted);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+[data-ps-mark="limit"] .ps-retention {
+  fill: var(--state-open);
+}
+
+/* The log itself: one cell per event, written left to right and never written
+   over. A cell says two things and no more, that it exists and that the window
+   still covers it. */
+.ps-cell {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+.ps-cell[data-ps-cell="live"] {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+.ps-cell[data-ps-cell="gone"] {
+  fill: none;
+  stroke: var(--muted);
+  stroke-dasharray: 10 8;
+  opacity: 0.5;
+}
+
+[data-ps-mark="limit"] .ps-cell[data-ps-cell="gone"] {
+  stroke: var(--state-open);
+  opacity: 0.85;
+}
+
+/* The two beginnings a new subscription is choosing between: the oldest thing
+   the log still has, and the position it would start at if it took only what
+   comes next. */
+[data-ps-choice="both"] .ps-cell--1,
+[data-ps-choice="both"] .ps-cell--8,
+[data-ps-choice="start"] .ps-cell--1 {
+  stroke: var(--cpu);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+/* The retention line, drawn as the run of log it has already moved past. There
+   is no variant for nothing expired, because a window that has not moved is not
+   a band of zero width. */
+.ps-band {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 12 10;
+  opacity: 0;
+}
+
+[data-ps-expired="1"] .ps-band--1,
+[data-ps-expired="2"] .ps-band--2,
+[data-ps-expired="3"] .ps-band--3,
+[data-ps-expired="4"] .ps-band--4,
+[data-ps-expired="5"] .ps-band--5,
+[data-ps-expired="6"] .ps-band--6,
+[data-ps-expired="7"] .ps-band--7,
+[data-ps-expired="8"] .ps-band--8 {
+  opacity: 1;
+}
+
+[data-ps-mark="limit"] .ps-band {
+  stroke: var(--state-open);
+}
+
+/* --- the bookmarks ------------------------------------------------------ */
+
+/* One row per subscription, each bar standing on the position its own
+   subscription is showing. Nine positions, one drawn, none interpolated. */
+.ps-mark {
+  fill: var(--accent);
+  opacity: 0;
+}
+
+[data-ps-offset-a="0"] .ps-mark-a--0,
+[data-ps-offset-a="1"] .ps-mark-a--1,
+[data-ps-offset-a="2"] .ps-mark-a--2,
+[data-ps-offset-a="3"] .ps-mark-a--3,
+[data-ps-offset-a="4"] .ps-mark-a--4,
+[data-ps-offset-a="5"] .ps-mark-a--5,
+[data-ps-offset-a="6"] .ps-mark-a--6,
+[data-ps-offset-a="7"] .ps-mark-a--7,
+[data-ps-offset-a="8"] .ps-mark-a--8,
+[data-ps-offset-b="0"] .ps-mark-b--0,
+[data-ps-offset-b="1"] .ps-mark-b--1,
+[data-ps-offset-b="2"] .ps-mark-b--2,
+[data-ps-offset-b="3"] .ps-mark-b--3,
+[data-ps-offset-b="4"] .ps-mark-b--4,
+[data-ps-offset-b="5"] .ps-mark-b--5,
+[data-ps-offset-b="6"] .ps-mark-b--6,
+[data-ps-offset-b="7"] .ps-mark-b--7,
+[data-ps-offset-b="8"] .ps-mark-b--8,
+[data-ps-offset-c="0"] .ps-mark-c--0,
+[data-ps-offset-c="1"] .ps-mark-c--1,
+[data-ps-offset-c="2"] .ps-mark-c--2,
+[data-ps-offset-c="3"] .ps-mark-c--3,
+[data-ps-offset-c="4"] .ps-mark-c--4,
+[data-ps-offset-c="5"] .ps-mark-c--5,
+[data-ps-offset-c="6"] .ps-mark-c--6,
+[data-ps-offset-c="7"] .ps-mark-c--7,
+[data-ps-offset-c="8"] .ps-mark-c--8 {
+  opacity: 1;
+}
+
+/* A bookmark takes the colour of the state its own subscription is announcing,
+   so the word in the box and the bar in the log cannot disagree. */
+[data-ps-badge-a="catching"] .ps-mark-a .ps-mark,
+[data-ps-badge-b="catching"] .ps-mark-b .ps-mark,
+[data-ps-badge-c="catching"] .ps-mark-c .ps-mark {
+  fill: var(--state-half);
+}
+
+[data-ps-badge-a="down"] .ps-mark-a .ps-mark,
+[data-ps-badge-b="down"] .ps-mark-b .ps-mark {
+  fill: var(--state-open);
+}
+
+/* The second step's whole point, held up for a moment: two bookmarks in one
+   log, at two different places, and neither of them the other's problem. */
+[data-ps-mark="gap"] .ps-mark-a .ps-mark,
+[data-ps-mark="gap"] .ps-mark-b .ps-mark {
+  stroke: var(--fg);
+  stroke-width: 4;
+}
+
+/* Whose row it is. */
+.ps-key {
+  fill: var(--muted);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+[data-ps-mark="gap"] .ps-key-a,
+[data-ps-mark="gap"] .ps-key-b {
+  fill: var(--fg);
+}
+
+/* There is no third row until there is a third subscription. */
+[data-ps-badge-c="off"] .ps-key-c-group,
+[data-ps-badge-c="off"] .ps-mark-c-group,
+[data-ps-badge-c="off"] .ps-sub-c-group {
+  opacity: 0;
+}
+
+/* --- the subscriptions -------------------------------------------------- */
+
+/* How far one subscription has read. It is the only thing a subscription owns,
+   and it is the only reason two of them can read at different speeds. */
+.ps-offset-a,
+.ps-offset-b,
+.ps-offset-c {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 38px;
+}
+
+.ps-offset-a--0,
+.ps-offset-b--0,
+.ps-offset-c--0 {
+  fill: var(--muted);
+}
+[data-ps-offset-a="0"] .ps-offset-a--0,
+[data-ps-offset-a="1"] .ps-offset-a--1,
+[data-ps-offset-a="2"] .ps-offset-a--2,
+[data-ps-offset-a="3"] .ps-offset-a--3,
+[data-ps-offset-a="4"] .ps-offset-a--4,
+[data-ps-offset-a="5"] .ps-offset-a--5,
+[data-ps-offset-a="6"] .ps-offset-a--6,
+[data-ps-offset-a="7"] .ps-offset-a--7,
+[data-ps-offset-a="8"] .ps-offset-a--8,
+[data-ps-offset-b="0"] .ps-offset-b--0,
+[data-ps-offset-b="1"] .ps-offset-b--1,
+[data-ps-offset-b="2"] .ps-offset-b--2,
+[data-ps-offset-b="3"] .ps-offset-b--3,
+[data-ps-offset-b="4"] .ps-offset-b--4,
+[data-ps-offset-b="5"] .ps-offset-b--5,
+[data-ps-offset-b="6"] .ps-offset-b--6,
+[data-ps-offset-b="7"] .ps-offset-b--7,
+[data-ps-offset-b="8"] .ps-offset-b--8,
+[data-ps-offset-c="0"] .ps-offset-c--0,
+[data-ps-offset-c="1"] .ps-offset-c--1,
+[data-ps-offset-c="2"] .ps-offset-c--2,
+[data-ps-offset-c="3"] .ps-offset-c--3,
+[data-ps-offset-c="4"] .ps-offset-c--4,
+[data-ps-offset-c="5"] .ps-offset-c--5,
+[data-ps-offset-c="6"] .ps-offset-c--6,
+[data-ps-offset-c="7"] .ps-offset-c--7,
+[data-ps-offset-c="8"] .ps-offset-c--8 {
+  opacity: 1;
+}
+
+/* What a subscription is saying about itself. Behind is not one of the words,
+   because being behind is not a fault: it is what an offset is for. */
+.ps-badge-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-ps-badge-a="live"] .ps-chip-badge-a .ps-badge-bg,
+[data-ps-badge-b="live"] .ps-chip-badge-b .ps-badge-bg,
+[data-ps-badge-c="live"] .ps-chip-badge-c .ps-badge-bg {
+  stroke: var(--state-closed);
+}
+
+[data-ps-badge-b="catching"] .ps-chip-badge-b .ps-badge-bg,
+[data-ps-badge-c="catching"] .ps-chip-badge-c .ps-badge-bg {
+  stroke: var(--state-half);
+}
+
+[data-ps-badge-b="down"] .ps-chip-badge-b .ps-badge-bg {
+  stroke: var(--state-open);
+}
+
+.ps-badge {
+  fill: var(--muted);
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+
+.ps-badge-a--live,
+.ps-badge-b--live,
+.ps-badge-c--live {
+  fill: var(--state-closed);
+}
+
+.ps-badge-a--catching,
+.ps-badge-b--catching,
+.ps-badge-c--catching {
+  fill: var(--state-half);
+}
+
+.ps-badge-a--down,
+.ps-badge-b--down,
+.ps-badge-c--down {
+  fill: var(--state-open);
+}
+
+[data-ps-badge-a="live"] .ps-badge-a--live,
+[data-ps-badge-a="down"] .ps-badge-a--down,
+[data-ps-badge-a="catching"] .ps-badge-a--catching,
+[data-ps-badge-b="live"] .ps-badge-b--live,
+[data-ps-badge-b="down"] .ps-badge-b--down,
+[data-ps-badge-b="catching"] .ps-badge-b--catching,
+[data-ps-badge-c="live"] .ps-badge-c--live,
+[data-ps-badge-c="down"] .ps-badge-c--down,
+[data-ps-badge-c="catching"] .ps-badge-c--catching {
+  opacity: 1;
+}
+
+/* The card is not there at all until a position has been written down, because
+   a checkpoint nobody has taken is not a checkpoint at zero. */
+.ps-check {
+  opacity: 0;
+}
+[data-ps-check="1"] .ps-check,
+[data-ps-check="2"] .ps-check,
+[data-ps-check="3"] .ps-check,
+[data-ps-check="4"] .ps-check,
+[data-ps-check="5"] .ps-check,
+[data-ps-check="6"] .ps-check,
+[data-ps-check="7"] .ps-check,
+[data-ps-check="8"] .ps-check {
+  opacity: 1;
+}
+
+.ps-check-bg {
+  fill: var(--surface);
+  stroke: var(--cpu);
+  stroke-width: 3;
+}
+
+.ps-check-text {
+  fill: var(--cpu);
+  font-size: 28px;
+}
+[data-ps-check="1"] .ps-check-text--1,
+[data-ps-check="2"] .ps-check-text--2,
+[data-ps-check="3"] .ps-check-text--3,
+[data-ps-check="4"] .ps-check-text--4,
+[data-ps-check="5"] .ps-check-text--5,
+[data-ps-check="6"] .ps-check-text--6,
+[data-ps-check="7"] .ps-check-text--7,
+[data-ps-check="8"] .ps-check-text--8 {
+  opacity: 1;
+}
+
+/* Everybody has arrived at the same position, and the log is what got them
+   there. */
+[data-ps-settled="on"] .ps-topic > .scene-box,
+[data-ps-settled="on"] .ps-sub > .scene-box {
+  stroke: var(--state-closed);
+}
+
+[data-ps-settled="on"] .ps-lane-a,
+[data-ps-settled="on"] .ps-lane-b,
+[data-ps-settled="on"] .ps-lane-c {
+  stroke: var(--state-closed);
+}
+
+[data-ps-settled="on"] .ps-offset-a,
+[data-ps-settled="on"] .ps-offset-b,
+[data-ps-settled="on"] .ps-offset-c {
+  fill: var(--state-closed);
+}

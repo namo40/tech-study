@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as publishSubscribeDuration,
+  stageMarkup as publishSubscribeStage,
+} from './publish-subscribe/stage';
+import {
   SCENE_DURATION as databaseIndexDuration,
   stageMarkup as databaseIndexStage,
 } from './database-index/stage';
@@ -222,6 +226,10 @@ export interface SceneAsset {
 }
 
 const scenes: Record<string, SceneAsset> = {
+  'publish-subscribe': {
+    markup: publishSubscribeStage,
+    duration: publishSubscribeDuration,
+  },
   'database-index': {
     markup: databaseIndexStage,
     duration: databaseIndexDuration,
