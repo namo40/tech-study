@@ -15265,3 +15265,382 @@
 [data-pdb-ready="3"] .pdb-ready--3 {
   opacity: 1;
 }
+
+/* ---------------------------------------------------------------- */
+/* Database Index stage                                              */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One question, asked against two shapes of the same data. The table is a heap
+ * of rows in the order they were written, drawn at nine different widths
+ * because that is what having no order looks like; the index is the same values
+ * sorted, every slot identical to every other. Everything the scene argues is
+ * in how many slots light up, and which ones.
+ *
+ * Colour has three jobs here and no more. Blue is a slot this query touched,
+ * green is the answer it came back with, red is the refusal, and purple is a
+ * write. A filled slot is one the query stopped on, an outlined one is a slot it
+ * read and let go of, and a dashed one is a slot it never read at all — which is
+ * the whole of the difference between the two ways to reach page five hundred.
+ *
+ * Every word on this stage is a stack of text elements on one spot with the
+ * widget class hiding all of them, so nothing interpolates and scrubbing
+ * backwards is exact in both themes. That includes the two readouts, which stack
+ * one digit at a time rather than one value at a time: `reads` walks to 5020 in
+ * the fourth step, and no stage can carry five thousand labels.
+ */
+
+/* The lanes. The pointer runs inside the store band, so it is drawn lighter
+   than the two that cross the gap above it. */
+.dbi-lane-pointer {
+  stroke-width: 4;
+}
+
+/* Nothing travels down to the Result. These say where the answer is read off,
+   which is not the same as saying something moves along them. */
+.dbi-quiet {
+  stroke-dasharray: 10 18;
+  opacity: 0.35;
+}
+
+/* --- the question ------------------------------------------------------- */
+
+.dbi-chip-card .dbi-chip-card-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.dbi-card {
+  fill: var(--fg-soft);
+  font-size: 28px;
+}
+
+[data-dbi-query="select"] .dbi-card--select,
+[data-dbi-query="insert"] .dbi-card--insert,
+[data-dbi-query="page"] .dbi-card--page {
+  opacity: 1;
+}
+
+
+/* The two numbers the whole scene is about. `reads` is how many stored things
+   this query has touched and `ms` is what touching them cost, and neither is
+   written down anywhere: both are read off the model's own count. */
+.dbi-query .dbi-readout-label {
+  fill: var(--muted);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.dbi-query .dbi-digit {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 30px;
+}
+
+[data-dbi-r0="x"] .dbi-r0--x,
+[data-dbi-r0="0"] .dbi-r0--0,
+[data-dbi-r0="1"] .dbi-r0--1,
+[data-dbi-r0="2"] .dbi-r0--2,
+[data-dbi-r0="3"] .dbi-r0--3,
+[data-dbi-r0="4"] .dbi-r0--4,
+[data-dbi-r0="5"] .dbi-r0--5,
+[data-dbi-r0="6"] .dbi-r0--6,
+[data-dbi-r0="7"] .dbi-r0--7,
+[data-dbi-r0="8"] .dbi-r0--8,
+[data-dbi-r0="9"] .dbi-r0--9 {
+  opacity: 1;
+}
+
+[data-dbi-r1="x"] .dbi-r1--x,
+[data-dbi-r1="0"] .dbi-r1--0,
+[data-dbi-r1="1"] .dbi-r1--1,
+[data-dbi-r1="2"] .dbi-r1--2,
+[data-dbi-r1="3"] .dbi-r1--3,
+[data-dbi-r1="4"] .dbi-r1--4,
+[data-dbi-r1="5"] .dbi-r1--5,
+[data-dbi-r1="6"] .dbi-r1--6,
+[data-dbi-r1="7"] .dbi-r1--7,
+[data-dbi-r1="8"] .dbi-r1--8,
+[data-dbi-r1="9"] .dbi-r1--9 {
+  opacity: 1;
+}
+
+[data-dbi-r2="x"] .dbi-r2--x,
+[data-dbi-r2="0"] .dbi-r2--0,
+[data-dbi-r2="1"] .dbi-r2--1,
+[data-dbi-r2="2"] .dbi-r2--2,
+[data-dbi-r2="3"] .dbi-r2--3,
+[data-dbi-r2="4"] .dbi-r2--4,
+[data-dbi-r2="5"] .dbi-r2--5,
+[data-dbi-r2="6"] .dbi-r2--6,
+[data-dbi-r2="7"] .dbi-r2--7,
+[data-dbi-r2="8"] .dbi-r2--8,
+[data-dbi-r2="9"] .dbi-r2--9 {
+  opacity: 1;
+}
+
+[data-dbi-r3="x"] .dbi-r3--x,
+[data-dbi-r3="0"] .dbi-r3--0,
+[data-dbi-r3="1"] .dbi-r3--1,
+[data-dbi-r3="2"] .dbi-r3--2,
+[data-dbi-r3="3"] .dbi-r3--3,
+[data-dbi-r3="4"] .dbi-r3--4,
+[data-dbi-r3="5"] .dbi-r3--5,
+[data-dbi-r3="6"] .dbi-r3--6,
+[data-dbi-r3="7"] .dbi-r3--7,
+[data-dbi-r3="8"] .dbi-r3--8,
+[data-dbi-r3="9"] .dbi-r3--9 {
+  opacity: 1;
+}
+
+[data-dbi-m0="x"] .dbi-m0--x,
+[data-dbi-m0="0"] .dbi-m0--0,
+[data-dbi-m0="1"] .dbi-m0--1,
+[data-dbi-m0="2"] .dbi-m0--2,
+[data-dbi-m0="3"] .dbi-m0--3,
+[data-dbi-m0="4"] .dbi-m0--4,
+[data-dbi-m0="5"] .dbi-m0--5,
+[data-dbi-m0="6"] .dbi-m0--6,
+[data-dbi-m0="7"] .dbi-m0--7,
+[data-dbi-m0="8"] .dbi-m0--8,
+[data-dbi-m0="9"] .dbi-m0--9 {
+  opacity: 1;
+}
+
+[data-dbi-m1="x"] .dbi-m1--x,
+[data-dbi-m1="0"] .dbi-m1--0,
+[data-dbi-m1="1"] .dbi-m1--1,
+[data-dbi-m1="2"] .dbi-m1--2,
+[data-dbi-m1="3"] .dbi-m1--3,
+[data-dbi-m1="4"] .dbi-m1--4,
+[data-dbi-m1="5"] .dbi-m1--5,
+[data-dbi-m1="6"] .dbi-m1--6,
+[data-dbi-m1="7"] .dbi-m1--7,
+[data-dbi-m1="8"] .dbi-m1--8,
+[data-dbi-m1="9"] .dbi-m1--9 {
+  opacity: 1;
+}
+
+[data-dbi-m2="x"] .dbi-m2--x,
+[data-dbi-m2="0"] .dbi-m2--0,
+[data-dbi-m2="1"] .dbi-m2--1,
+[data-dbi-m2="2"] .dbi-m2--2,
+[data-dbi-m2="3"] .dbi-m2--3,
+[data-dbi-m2="4"] .dbi-m2--4,
+[data-dbi-m2="5"] .dbi-m2--5,
+[data-dbi-m2="6"] .dbi-m2--6,
+[data-dbi-m2="7"] .dbi-m2--7,
+[data-dbi-m2="8"] .dbi-m2--8,
+[data-dbi-m2="9"] .dbi-m2--9 {
+  opacity: 1;
+}
+
+
+/* --- the two columns ---------------------------------------------------- */
+
+/*
+ * A slot says one thing: what this query did to it. `idle` is stored and
+ * untouched, `scan` and `step` are being read right now, `seen` and `skip` were
+ * read and passed over, `past` was never read at all, `hit` and `page` are the
+ * answer, `new` and `shift` were written, and `taken` is the slot that refused.
+ */
+.dbi-table .dbi-row,
+.dbi-index .dbi-key {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+/* The spare slot, which is not a row or a key yet. */
+.dbi-row[data-dbi-row="empty"],
+.dbi-key[data-dbi-key="empty"] {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 2;
+  stroke-dasharray: 6 10;
+}
+
+.dbi-row[data-dbi-row="scan"],
+.dbi-key[data-dbi-key="step"] {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+/* Read, and not the answer. The cost was paid all the same. */
+.dbi-row[data-dbi-row="seen"],
+.dbi-key[data-dbi-key="skip"] {
+  fill: none;
+  stroke: var(--request);
+}
+
+/* Never read. This is what keyset does with everything before its page. */
+.dbi-key[data-dbi-key="past"] {
+  fill: none;
+  stroke: var(--muted);
+  stroke-dasharray: 12 8;
+}
+
+.dbi-row[data-dbi-row="hit"],
+.dbi-row[data-dbi-row="page"],
+.dbi-key[data-dbi-key="hit"],
+.dbi-key[data-dbi-key="page"] {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+}
+
+.dbi-row[data-dbi-row="new"],
+.dbi-key[data-dbi-key="new"] {
+  fill: var(--cpu);
+  stroke: var(--cpu);
+}
+
+/* The slots a wedged key pushed down. They were not read; they were moved. */
+.dbi-key[data-dbi-key="shift"] {
+  fill: none;
+  stroke: var(--cpu);
+}
+
+/* The slot that was already occupied, which is the refusal itself. */
+.dbi-key[data-dbi-key="taken"] {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+/* A second index is this one, billed again. The dashes say the work is being
+   repeated somewhere else, and the readouts say what that costs. */
+[data-dbi-ghost="on"] .dbi-index .dbi-key {
+  stroke-dasharray: 10 6;
+}
+
+.dbi-sorted {
+  fill: var(--muted);
+  letter-spacing: 1px;
+}
+
+/* --- the rule, and which arithmetic is walking ------------------------- */
+
+.dbi-chip-unique .dbi-chip-unique-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-dbi-unique="on"] .dbi-chip-unique .dbi-chip-unique-bg {
+  stroke: var(--cpu);
+}
+
+.dbi-unique {
+  fill: var(--muted);
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+
+.dbi-unique--on {
+  fill: var(--cpu);
+}
+
+[data-dbi-unique="off"] .dbi-unique--off,
+[data-dbi-unique="on"] .dbi-unique--on {
+  opacity: 1;
+}
+
+
+/* One counts and the other navigates, so one is a warning and the other is not. */
+.dbi-phase {
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+
+.dbi-phase--offset {
+  fill: var(--state-half);
+}
+
+.dbi-phase--keyset {
+  fill: var(--state-closed);
+}
+
+[data-dbi-phase="offset"] .dbi-phase--offset,
+[data-dbi-phase="keyset"] .dbi-phase--keyset {
+  opacity: 1;
+}
+
+
+/* --- what came back ----------------------------------------------------- */
+
+/* A query that has not answered yet has no badge, because an empty badge is
+   not the same thing as no answer. */
+[data-dbi-badge="none"] .dbi-chip-badge {
+  opacity: 0;
+}
+
+.dbi-chip-badge .dbi-chip-badge-bg {
+  fill: var(--surface);
+  stroke: var(--state-closed);
+  stroke-width: 3;
+}
+
+[data-dbi-badge="duplicate"] .dbi-chip-badge .dbi-chip-badge-bg {
+  stroke: var(--state-open);
+}
+
+.dbi-badge {
+  fill: var(--state-closed);
+  font-size: 30px;
+}
+
+.dbi-badge--duplicate {
+  fill: var(--state-open);
+}
+
+[data-dbi-badge="found"] .dbi-badge--found,
+[data-dbi-badge="inserted"] .dbi-badge--inserted,
+[data-dbi-badge="duplicate"] .dbi-badge--duplicate,
+[data-dbi-badge="page"] .dbi-badge--page {
+  opacity: 1;
+}
+
+
+.dbi-rows {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 34px;
+}
+
+.dbi-rows--0 {
+  fill: var(--muted);
+}
+
+[data-dbi-rows="0"] .dbi-rows--0,
+[data-dbi-rows="1"] .dbi-rows--1,
+[data-dbi-rows="2"] .dbi-rows--2,
+[data-dbi-rows="3"] .dbi-rows--3,
+[data-dbi-rows="4"] .dbi-rows--4,
+[data-dbi-rows="5"] .dbi-rows--5,
+[data-dbi-rows="6"] .dbi-rows--6,
+[data-dbi-rows="7"] .dbi-rows--7,
+[data-dbi-rows="8"] .dbi-rows--8,
+[data-dbi-rows="9"] .dbi-rows--9,
+[data-dbi-rows="10"] .dbi-rows--10,
+[data-dbi-rows="11"] .dbi-rows--11,
+[data-dbi-rows="12"] .dbi-rows--12,
+[data-dbi-rows="13"] .dbi-rows--13,
+[data-dbi-rows="14"] .dbi-rows--14,
+[data-dbi-rows="15"] .dbi-rows--15,
+[data-dbi-rows="16"] .dbi-rows--16,
+[data-dbi-rows="17"] .dbi-rows--17,
+[data-dbi-rows="18"] .dbi-rows--18,
+[data-dbi-rows="19"] .dbi-rows--19,
+[data-dbi-rows="20"] .dbi-rows--20 {
+  opacity: 1;
+}
+
+
+/* The run is over and the last answer is the one that stands. */
+[data-dbi-settled="on"] .dbi-result > .scene-box {
+  stroke: var(--state-closed);
+}
+
+[data-dbi-settled="on"] .dbi-rows {
+  fill: var(--state-closed);
+}

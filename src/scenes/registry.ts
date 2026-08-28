@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as databaseIndexDuration,
+  stageMarkup as databaseIndexStage,
+} from './database-index/stage';
+import {
   SCENE_DURATION as podDisruptionBudgetDuration,
   stageMarkup as podDisruptionBudgetStage,
 } from './pod-disruption-budget/stage';
@@ -218,6 +222,10 @@ export interface SceneAsset {
 }
 
 const scenes: Record<string, SceneAsset> = {
+  'database-index': {
+    markup: databaseIndexStage,
+    duration: databaseIndexDuration,
+  },
   'pod-disruption-budget': {
     markup: podDisruptionBudgetStage,
     duration: podDisruptionBudgetDuration,
