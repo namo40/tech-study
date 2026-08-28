@@ -96,6 +96,7 @@ const SCENE_IDS = [
   'backpressure',
   'event-sourcing',
   'workflow-engine',
+  'two-phase-commit',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */

@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as twoPhaseCommitDuration,
+  stageMarkup as twoPhaseCommitStage,
+} from './two-phase-commit/stage';
+import {
   SCENE_DURATION as workflowEngineDuration,
   stageMarkup as workflowEngineStage,
 } from './workflow-engine/stage';
@@ -206,6 +210,10 @@ export interface SceneAsset {
 }
 
 const scenes: Record<string, SceneAsset> = {
+  'two-phase-commit': {
+    markup: twoPhaseCommitStage,
+    duration: twoPhaseCommitDuration,
+  },
   'workflow-engine': {
     markup: workflowEngineStage,
     duration: workflowEngineDuration,

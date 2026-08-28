@@ -6,6 +6,8 @@ import type { SceneModule } from './types';
  */
 export async function loadScene(id: string): Promise<SceneModule | null> {
   switch (id) {
+    case 'two-phase-commit':
+      return (await import('./two-phase-commit/scene')).default;
     case 'workflow-engine':
       return (await import('./workflow-engine/scene')).default;
     case 'event-sourcing':

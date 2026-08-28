@@ -14157,3 +14157,375 @@
 [data-we-settled="on"] .we-done {
   fill: var(--state-closed);
 }
+/* ---------------------------------------------------------------- */
+/* Two-Phase Commit stage                                            */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One decision, and two stores that have to reach it together. The whole stage
+ * is arranged around a single refusal: at no instant may one store be showing
+ * `committed` while the other shows `aborted`, because that half-state is the
+ * thing the protocol exists to rule out. The only place it appears at all is
+ * the first step, and there it is drawn as a ghost — dashed, dimmed, laid over
+ * badges that are really `idle` — so the diagram demonstrates the lie without
+ * ever telling it.
+ *
+ * Every readout on this stage is a stack of words on one spot with the widget
+ * class hiding all of them, so the state picks the one that shows and nothing
+ * interpolates between two colours. The two row cards are the exception,
+ * because a row card is a shape rather than a word: it is the change this
+ * transaction is making to that store, empty or held or written, and it is
+ * driven from the badge alone so the block and the word can never disagree.
+ *
+ * The colours carry the argument. Amber is the colour of something held: a
+ * store that is `prepared`, the `lock` it is holding, the App still `waiting`.
+ * Green is a thing that is finished and red a thing that is not, and both are
+ * only ever shown on both stores at once. Violet is the colour this site gives
+ * to something the system is keeping on the side rather than doing right now,
+ * and it appears exactly once here: on the phase plate while the coordinator is
+ * `down`, because that plate is the decision log, and the log is the one part
+ * of a coordinator that outlives the process.
+ */
+
+/* The two lanes carry nothing between transactions and nothing at all while
+   there is no coordinator to send anything down them. */
+[data-tpc-phase="idle"] .tpc-lane,
+[data-tpc-coord="down"] .tpc-lane {
+  stroke-dasharray: 16 16;
+  opacity: 0.45;
+}
+
+/* The line to the App is drawn quiet for the whole scene, because the request
+   arrived before the first frame and the answer is drawn as the App state. */
+.tpc-lane-app {
+  stroke-dasharray: 10 18;
+  opacity: 0.35;
+}
+
+/* --- the Coordinator ----------------------------------------------- */
+
+/* A coordinator that has died is not one that is failing: it is not there. */
+[data-tpc-coord="down"] .tpc-coordinator > .scene-box {
+  stroke: var(--state-open);
+}
+
+[data-tpc-coord="down"] .tpc-coord-title {
+  opacity: 0.35;
+}
+
+/* The phase plate is also the log. There is no plate at all between
+   transactions, because between them there is no phase to be in. */
+[data-tpc-phase="idle"] .tpc-chip-phase {
+  opacity: 0;
+}
+
+.tpc-chip-phase-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+[data-tpc-phase="prepare"] .tpc-chip-phase-bg {
+  stroke: var(--request);
+}
+
+[data-tpc-phase="commit"] .tpc-chip-phase-bg {
+  stroke: var(--state-closed);
+}
+
+[data-tpc-phase="abort"] .tpc-chip-phase-bg {
+  stroke: var(--state-open);
+}
+
+.tpc-phase {
+  fill: var(--muted);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.tpc-phase--prepare {
+  fill: var(--request);
+}
+
+.tpc-phase--commit {
+  fill: var(--state-closed);
+}
+
+.tpc-phase--abort {
+  fill: var(--state-open);
+}
+[data-tpc-phase="prepare"] .tpc-phase--prepare,
+[data-tpc-phase="commit"] .tpc-phase--commit,
+[data-tpc-phase="abort"] .tpc-phase--abort {
+  opacity: 1;
+}
+
+/* What is left of a coordinator that is gone: the word it wrote down. Violet
+   is the colour this site gives to something kept where the process cannot
+   reach it, and the whole of the fourth step is that this word survived. */
+[data-tpc-coord="down"] .tpc-chip-phase-bg {
+  stroke: var(--cpu);
+  stroke-dasharray: 14 10;
+}
+
+[data-tpc-coord="down"] .tpc-phase {
+  fill: var(--cpu);
+}
+
+/* How many promises are in, out of how many the decision needs. */
+.tpc-votes {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 40px;
+}
+
+.tpc-votes--0 {
+  fill: var(--muted);
+}
+
+.tpc-votes--2 {
+  fill: var(--state-closed);
+}
+[data-tpc-votes="0"] .tpc-votes--0,
+[data-tpc-votes="1"] .tpc-votes--1,
+[data-tpc-votes="2"] .tpc-votes--2 {
+  opacity: 1;
+}
+
+/* The plate that is there only while the process is not. */
+[data-tpc-coord="up"] .tpc-chip-down {
+  opacity: 0;
+}
+
+.tpc-chip-down-bg {
+  fill: var(--surface);
+  stroke: var(--state-open);
+  stroke-width: 3;
+}
+
+.tpc-down {
+  fill: var(--state-open);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+[data-tpc-coord="down"] .tpc-down--down {
+  opacity: 1;
+}
+
+/* --- the two stores ------------------------------------------------- */
+
+.tpc-chip-badge-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.tpc-store[data-tpc-badge="prepared"] .tpc-chip-badge-bg {
+  stroke: var(--state-half);
+}
+
+.tpc-store[data-tpc-badge="committed"] .tpc-chip-badge-bg {
+  stroke: var(--state-closed);
+}
+
+.tpc-store[data-tpc-badge="aborted"] .tpc-chip-badge-bg {
+  stroke: var(--state-open);
+}
+
+.tpc-badge {
+  fill: var(--muted);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.tpc-badge--prepared {
+  fill: var(--state-half);
+}
+
+.tpc-badge--committed {
+  fill: var(--state-closed);
+}
+
+.tpc-badge--aborted {
+  fill: var(--state-open);
+}
+
+/* Exactly one word on the plate, always. A ghost outranks the badge under it,
+   which is what makes the first step a demonstration rather than a state. */
+.tpc-store[data-tpc-ghost="off"][data-tpc-badge="idle"] .tpc-badge--idle,
+.tpc-store[data-tpc-ghost="off"][data-tpc-badge="prepared"] .tpc-badge--prepared,
+.tpc-store[data-tpc-ghost="off"][data-tpc-badge="committed"] .tpc-badge--committed,
+.tpc-store[data-tpc-ghost="off"][data-tpc-badge="aborted"] .tpc-badge--aborted,
+.tpc-store[data-tpc-ghost="committed"] .tpc-badge--committed,
+.tpc-store[data-tpc-ghost="aborted"] .tpc-badge--aborted {
+  opacity: 1;
+}
+
+/* A ghost is dashed and dimmed, because it is a world being described rather
+   than one the diagram is in. */
+.tpc-store[data-tpc-ghost="committed"] .tpc-chip-badge,
+.tpc-store[data-tpc-ghost="aborted"] .tpc-chip-badge {
+  opacity: 0.6;
+}
+
+.tpc-store[data-tpc-ghost="committed"] .tpc-chip-badge-bg {
+  stroke: var(--state-closed);
+  stroke-dasharray: 10 8;
+}
+
+.tpc-store[data-tpc-ghost="aborted"] .tpc-chip-badge-bg {
+  stroke: var(--state-open);
+  stroke-dasharray: 10 8;
+}
+
+/* The lock a promise costs. It burns exactly while the store is prepared, and
+   it is not drawn at all otherwise, because there is nothing to draw. */
+.tpc-store[data-tpc-lock="off"] .tpc-chip-lock {
+  opacity: 0;
+}
+
+.tpc-chip-lock-bg {
+  fill: var(--surface);
+  stroke: var(--state-half);
+  stroke-width: 3;
+}
+
+.tpc-lock {
+  fill: var(--state-half);
+  font-size: 28px;
+  letter-spacing: 1px;
+}
+.tpc-store[data-tpc-lock="on"] .tpc-lock--on {
+  opacity: 1;
+}
+
+/* The row card: the change this transaction is making to this store. It is
+   driven from the badge alone, so the block and the word cannot disagree.
+   Empty while nothing is staged, amber while it is staged and held under the
+   lock, green once it is committed, and struck out when it was thrown away. */
+.tpc-row {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.tpc-store[data-tpc-badge="prepared"] .tpc-row {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+}
+
+.tpc-store[data-tpc-badge="committed"] .tpc-row {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+}
+
+.tpc-store[data-tpc-badge="aborted"] .tpc-row {
+  fill: var(--surface-2);
+  stroke: var(--state-open);
+  stroke-dasharray: 12 8;
+}
+
+.tpc-store[data-tpc-ghost="committed"] .tpc-row {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+  opacity: 0.5;
+}
+
+.tpc-store[data-tpc-ghost="aborted"] .tpc-row {
+  stroke: var(--state-open);
+  stroke-dasharray: 12 8;
+  opacity: 0.5;
+}
+
+/* --- the App -------------------------------------------------------- */
+
+.tpc-chip-app-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+[data-tpc-app="waiting"] .tpc-chip-app-bg {
+  stroke: var(--state-half);
+}
+
+[data-tpc-app="ok"] .tpc-chip-app-bg {
+  stroke: var(--state-closed);
+}
+
+[data-tpc-app="fail"] .tpc-chip-app-bg {
+  stroke: var(--state-open);
+}
+
+.tpc-app {
+  fill: var(--muted);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+/* Before the scene says so, the App is already waiting: the request arrived
+   before the first frame. The word is the same one; only the colour changes,
+   because the App did not start waiting at 0.6, it started being looked at. */
+.tpc-app--idle {
+  fill: var(--muted);
+}
+
+.tpc-app--waiting {
+  fill: var(--state-half);
+}
+
+.tpc-app--ok {
+  fill: var(--state-closed);
+}
+
+.tpc-app--fail {
+  fill: var(--state-open);
+}
+[data-tpc-app="idle"] .tpc-app--idle,
+[data-tpc-app="waiting"] .tpc-app--waiting,
+[data-tpc-app="ok"] .tpc-app--ok,
+[data-tpc-app="fail"] .tpc-app--fail {
+  opacity: 1;
+}
+
+/* --- what is being held up ------------------------------------------ */
+
+/* The contradiction the first step demonstrates, and the answer to it: four
+   boxes ringed together, because acting as one is the whole proposition. */
+[data-tpc-mark="half"] .tpc-store .tpc-chip-badge-bg {
+  stroke-width: 7;
+}
+
+[data-tpc-mark="atomic"] .tpc-coordinator > .scene-box,
+[data-tpc-mark="atomic"] .tpc-store > .scene-box,
+[data-tpc-mark="atomic"] .tpc-app-box > .scene-box {
+  stroke: var(--request);
+}
+
+/* Every vote in, and nothing written anywhere. */
+[data-tpc-mark="promise"] .tpc-votes,
+[data-tpc-mark="promise"] .tpc-lock {
+  fill: var(--state-half);
+}
+
+[data-tpc-mark="promise"] .tpc-chip-badge-bg,
+[data-tpc-mark="contrast"] .tpc-chip-badge-bg {
+  stroke-width: 7;
+}
+
+/* The locks nobody can release. They are the only thing happening, so they are
+   the only thing the wait has to show. */
+[data-tpc-mark="indoubt"] .tpc-chip-lock-bg {
+  stroke: var(--state-open);
+  stroke-width: 7;
+}
+
+[data-tpc-mark="indoubt"] .tpc-lock {
+  fill: var(--state-open);
+}
+
+[data-tpc-settled="on"] .tpc-coordinator > .scene-box,
+[data-tpc-settled="on"] .tpc-store > .scene-box,
+[data-tpc-settled="on"] .tpc-app-box > .scene-box {
+  stroke: var(--state-closed);
+}
