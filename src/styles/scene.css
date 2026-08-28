@@ -13825,3 +13825,335 @@
 [data-es-settled="on"] .es-rows {
   fill: var(--state-closed);
 }
+/* ---------------------------------------------------------------- */
+/* Workflow Engine stage                                             */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One record, and three things arranged around it. The Schedule decides when
+ * an instance starts, the Engine decides what runs next, the Work box actually
+ * does it — and none of the three is where the progress lives. The history card
+ * is, which is why it is the only thing on this stage drawn in a colour of its
+ * own and the only thing the crash does not touch.
+ *
+ * Every readout, every lamp, the approval chip and all four cell words are
+ * stacks of text on one spot with the widget class hiding all of them, so the
+ * state picks the one that shows and nothing ever interpolates between two
+ * colours. The four step cells and the four history lines are the exception,
+ * because a cell plate and a line are shapes rather than words: they are drawn
+ * from `data-we-step` and `data-we-line` alone, which is what keeps the number
+ * of written lines and the number of finished steps the same fact.
+ *
+ * The colours carry the argument. A running step is the colour of traffic,
+ * because that is work in flight. A finished one is green, a failed one red,
+ * and a waiting one amber — not wrong, not finished. The history card and its
+ * lines are violet, the colour this site gives to something the system is
+ * holding on the side rather than doing right now, because that is exactly what
+ * a durable record is: it is not the work, it is what survives the work. When
+ * the engine goes dark the strip goes with it and the card does not, and that
+ * one frame is the whole scene.
+ */
+
+/* The two lanes. Neither is carrying anything until somebody puts something on
+   it, so each is drawn as a broken line while its end is quiet: the signal lane
+   while the schedule is still holding the next run, the execution lane while
+   there is no engine awake to dispatch down it. */
+[data-we-next="on"] .we-lane-signal,
+[data-we-engine="down"] .we-lane-work,
+[data-we-engine="idle"] .we-lane-work {
+  stroke-dasharray: 16 16;
+  opacity: 0.45;
+}
+
+/* --- the Schedule ------------------------------------------------- */
+
+/* The clock is the one thing on this stage that never changes, which is the
+   point of it: the schedule is a standing instruction, not an event. */
+.we-clock-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.we-clock-text {
+  fill: var(--fg-soft);
+  font-size: 34px;
+}
+
+.we-chip-due-bg,
+.we-chip-next-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-we-due="on"] .we-chip-due .we-chip-due-bg {
+  stroke: var(--state-half);
+}
+
+[data-we-next="on"] .we-chip-next .we-chip-next-bg {
+  stroke: var(--state-closed);
+}
+
+.we-due,
+.we-next {
+  fill: var(--muted);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.we-due--on {
+  fill: var(--state-half);
+}
+
+.we-next--on {
+  fill: var(--state-closed);
+}
+[data-we-due="off"] .we-due--off,
+[data-we-due="on"] .we-due--on,
+[data-we-next="off"] .we-next--off,
+[data-we-next="on"] .we-next--on {
+  opacity: 1;
+}
+
+/* --- the Engine ---------------------------------------------------- */
+
+/* An engine that has died is not an engine that is failing a request: it is
+   not there. An engine that is waiting is there and holding nothing, which is
+   drawn as a dashed edge rather than a dim one. */
+[data-we-engine="down"] .we-engine > .scene-box {
+  stroke: var(--state-open);
+}
+
+[data-we-engine="idle"] .we-engine > .scene-box {
+  stroke: var(--state-half);
+  stroke-dasharray: 18 12;
+}
+
+[data-we-engine="down"] .we-engine-label {
+  opacity: 0.35;
+}
+
+/* The step strip is the engine's working memory, so it dims with the engine:
+   all the way when the process is gone, part way when it is asleep. The history
+   card is deliberately not in this rule. */
+[data-we-engine="down"] .we-cell {
+  opacity: 0.25;
+}
+
+[data-we-engine="idle"] .we-cell {
+  opacity: 0.6;
+}
+
+.we-cell-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.we-cell-n {
+  fill: var(--muted);
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.we-word {
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+
+.we-cell[data-we-step="running"] .we-cell-bg {
+  stroke: var(--request);
+}
+
+.we-cell[data-we-step="done"] .we-cell-bg {
+  stroke: var(--state-closed);
+}
+
+.we-cell[data-we-step="failed"] .we-cell-bg {
+  stroke: var(--state-open);
+}
+
+.we-cell[data-we-step="waiting"] .we-cell-bg {
+  stroke: var(--state-half);
+  stroke-dasharray: 12 8;
+}
+
+.we-cell[data-we-step="running"] .we-cell-n {
+  fill: var(--request);
+}
+
+.we-cell[data-we-step="done"] .we-cell-n {
+  fill: var(--state-closed);
+}
+
+.we-cell[data-we-step="failed"] .we-cell-n {
+  fill: var(--state-open);
+}
+
+.we-cell[data-we-step="waiting"] .we-cell-n {
+  fill: var(--state-half);
+}
+
+.we-word--running {
+  fill: var(--request);
+}
+
+.we-word--done {
+  fill: var(--state-closed);
+}
+
+.we-word--failed {
+  fill: var(--state-open);
+}
+
+.we-word--waiting {
+  fill: var(--state-half);
+}
+.we-cell[data-we-step="running"] .we-word--running,
+.we-cell[data-we-step="done"] .we-word--done,
+.we-cell[data-we-step="failed"] .we-word--failed,
+.we-cell[data-we-step="waiting"] .we-word--waiting {
+  opacity: 1;
+}
+
+/* Where a restarted engine has got to in its own record. It exists only while
+   a replay is running, because at any other time there is nothing being read. */
+.we-caret {
+  fill: var(--state-half);
+  opacity: 0;
+}
+[data-we-cursor="1"] .we-caret--1,
+[data-we-cursor="2"] .we-caret--2,
+[data-we-cursor="3"] .we-caret--3,
+[data-we-cursor="4"] .we-caret--4 {
+  opacity: 1;
+}
+
+/* The record. One line per step the workflow finishes, written from the top
+   down and never written over, in the one colour on this stage that means
+   "kept somewhere the process cannot reach". */
+.we-history-label {
+  fill: var(--cpu);
+}
+
+.we-history-bg {
+  fill: var(--surface);
+  stroke: var(--cpu);
+  stroke-width: 3;
+}
+
+.we-line {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+.we-line[data-we-line="on"] {
+  fill: var(--cpu);
+  stroke: var(--cpu);
+}
+
+/* Held up for a moment when the scene has just proved something with it. */
+[data-we-mark="history"] .we-history-bg {
+  stroke: var(--state-half);
+  stroke-width: 6;
+}
+
+/* Which attempt the engine is on. There is no plate for it, because a first
+   attempt is not news and the readout is simply absent until there is news. */
+.we-attempt {
+  fill: var(--state-half);
+  font-size: 34px;
+}
+[data-we-attempt="2"] .we-attempt--2,
+[data-we-attempt="3"] .we-attempt--3 {
+  opacity: 1;
+}
+
+/* The one step nobody can hurry. Amber while it is asked for, green once it
+   has been given. */
+.we-chip-approve-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-we-approve="waiting"] .we-chip-approve .we-chip-approve-bg {
+  stroke: var(--state-half);
+}
+
+[data-we-approve="granted"] .we-chip-approve .we-chip-approve-bg {
+  stroke: var(--state-closed);
+}
+
+.we-approve {
+  fill: var(--muted);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.we-approve--waiting {
+  fill: var(--state-half);
+}
+
+.we-approve--granted {
+  fill: var(--state-closed);
+}
+[data-we-approve="off"] .we-approve--off,
+[data-we-approve="waiting"] .we-approve--waiting,
+[data-we-approve="granted"] .we-approve--granted {
+  opacity: 1;
+}
+
+/* --- the Work ------------------------------------------------------ */
+
+/* The plate a step's side effect runs on. It is busy or it is not, and the one
+   time it goes red is the time the engine is told so. */
+.we-plate {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-we-work="busy"] .we-plate {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+[data-we-work="failed"] .we-plate {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+/* The number the engine does not own: side effects that actually happened. */
+.we-done {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 44px;
+}
+
+.we-done--0 {
+  fill: var(--muted);
+}
+[data-we-done="0"] .we-done--0,
+[data-we-done="1"] .we-done--1,
+[data-we-done="2"] .we-done--2,
+[data-we-done="3"] .we-done--3,
+[data-we-done="4"] .we-done--4 {
+  opacity: 1;
+}
+
+[data-we-mark="work"] .we-done {
+  fill: var(--state-half);
+}
+
+[data-we-settled="on"] .we-schedule > .scene-box,
+[data-we-settled="on"] .we-engine > .scene-box,
+[data-we-settled="on"] .we-work > .scene-box {
+  stroke: var(--state-closed);
+}
+
+[data-we-settled="on"] .we-done {
+  fill: var(--state-closed);
+}

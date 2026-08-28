@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as workflowEngineDuration,
+  stageMarkup as workflowEngineStage,
+} from './workflow-engine/stage';
+import {
   SCENE_DURATION as eventSourcingDuration,
   stageMarkup as eventSourcingStage,
 } from './event-sourcing/stage';
@@ -202,6 +206,10 @@ export interface SceneAsset {
 }
 
 const scenes: Record<string, SceneAsset> = {
+  'workflow-engine': {
+    markup: workflowEngineStage,
+    duration: workflowEngineDuration,
+  },
   'event-sourcing': {
     markup: eventSourcingStage,
     duration: eventSourcingDuration,
