@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as featureFlagDuration,
+  stageMarkup as featureFlagStage,
+} from './feature-flag/stage';
+import {
   SCENE_DURATION as authorizationDuration,
   stageMarkup as authorizationStage,
 } from './authorization/stage';
@@ -497,6 +501,10 @@ const scenes: Record<string, SceneAsset> = {
   authorization: {
     markup: authorizationStage,
     duration: authorizationDuration,
+  },
+  'feature-flag': {
+    markup: featureFlagStage,
+    duration: featureFlagDuration,
   },
 };
 
