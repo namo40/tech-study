@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as authorizationDuration,
+  stageMarkup as authorizationStage,
+} from './authorization/stage';
+import {
   SCENE_DURATION as databaseMigrationDuration,
   stageMarkup as databaseMigrationStage,
 } from './database-migration/stage';
@@ -489,6 +493,10 @@ const scenes: Record<string, SceneAsset> = {
   'database-migration': {
     markup: databaseMigrationStage,
     duration: databaseMigrationDuration,
+  },
+  authorization: {
+    markup: authorizationStage,
+    duration: authorizationDuration,
   },
 };
 
