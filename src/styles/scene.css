@@ -17613,3 +17613,451 @@
 [data-sh-settled="on"] .sh-keys {
   fill: var(--fg);
 }
+
+/* ---------------------------------------------------------------- */
+/* Database Migration stage                                          */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One window, drawn four ways: the span in which old code and new schema are
+ * both true. Every rule below reads one of the four answers — a rename that
+ * takes the column away while a version that still names it is running, a
+ * column added beside the old one, the old rows catching up until reads can
+ * move, and the removal of what nothing reads any more.
+ *
+ * The colour argument is small, and it is about where a value is rather than
+ * whether anything is wrong. Blue is the old column: a value sitting in it, an
+ * answer that came from it. Green is the new column once it holds something: a
+ * row the backfill copied, an answer that came from it, and the settled frame.
+ * Purple is the newer version and what it does that the older one cannot — a
+ * write that lands in both columns. Amber is a question rather than a fact: the
+ * ghost's one-shot rename, and the step being held up. Red is the one read that
+ * had nowhere to look. Grey, hollow and dashed are absence: a column that is
+ * not there, and a row the new column has nothing in yet.
+ *
+ * The four states the reader has to keep apart never share a drawing. A
+ * backfilled cell is a solid green plate, a dual-written cell a solid purple
+ * one, a row the new column is still empty for a flat plate with no value
+ * colour at all, and a dropped column a faint dashed outline with nothing
+ * inside it. That holds in both themes because all four resolve to tokens.
+ *
+ * Every value the reader can read is a stack of text elements on one spot,
+ * hidden by a base rule and revealed one at a time by the current `data-*`, so
+ * nothing interpolates and scrubbing backwards is exact in both themes.
+ */
+
+/* --- the App ------------------------------------------------------------ */
+
+/*
+ * Two instances, each carrying the version it is running. Which versions are
+ * live is the premise of the whole scene: a rollout is a span, and for most of
+ * this one the two capsules disagree.
+ */
+.dm-app-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.dm-app-text {
+  fill: var(--fg-soft);
+  font-size: 38px;
+  letter-spacing: 1px;
+}
+
+[data-dm-app="v1"] .dm-app-text--v1,
+[data-dm-app="v2"] .dm-app-text--v2 {
+  opacity: 1;
+}
+
+/* The newer version is the one the schema is being changed for, so it is drawn
+   as the arrival rather than as the default. */
+.dm-app[data-dm-app="v2"] .dm-app-bg {
+  stroke: var(--cpu);
+  stroke-width: 5;
+}
+
+.dm-app[data-dm-app="v2"] .dm-app-text {
+  fill: var(--cpu);
+}
+
+/* What the newer version does with a write, said only while it is doing it. */
+.dm-dual-bg {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-width: 5;
+}
+
+.dm-dual-text {
+  fill: var(--cpu);
+  font-size: 30px;
+}
+
+[data-dm-dual="off"] .dm-dual {
+  opacity: 0;
+}
+
+[data-dm-dual="on"] .dm-dual-text {
+  opacity: 1;
+}
+
+/* --- the Schema --------------------------------------------------------- */
+
+/*
+ * Which of the three steps the schema is in. Nothing is drawn before the first
+ * one is taken, because a schema nobody has touched is not in a phase.
+ */
+.dm-phase-bg {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.dm-phase-text {
+  fill: var(--fg);
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+[data-dm-phase="none"] .dm-phase {
+  opacity: 0;
+}
+
+[data-dm-phase="expand"] .dm-phase-text--expand,
+[data-dm-phase="switch"] .dm-phase-text--switch,
+[data-dm-phase="contract"] .dm-phase-text--contract {
+  opacity: 1;
+}
+
+/* Adding is the safe step, moving the readers is the deliberate one, and
+   removing is the only one that cannot be walked back. */
+[data-dm-phase="expand"] .dm-phase-bg {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+[data-dm-phase="expand"] .dm-phase-text {
+  fill: var(--state-closed);
+}
+
+[data-dm-phase="switch"] .dm-phase-bg {
+  stroke: var(--cpu);
+  stroke-width: 5;
+}
+
+[data-dm-phase="switch"] .dm-phase-text {
+  fill: var(--cpu);
+}
+
+[data-dm-phase="contract"] .dm-phase-bg {
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+[data-dm-phase="contract"] .dm-phase-text {
+  fill: var(--state-half);
+}
+
+/* How many rows the new column holds. It is only drawn while there is a new
+   column to hold them. */
+.dm-rows {
+  fill: var(--fg-soft);
+  font-size: 34px;
+}
+
+[data-dm-newcol="on"][data-dm-rows="0"] .dm-rows--0,
+[data-dm-newcol="on"][data-dm-rows="1"] .dm-rows--1,
+[data-dm-newcol="on"][data-dm-rows="2"] .dm-rows--2,
+[data-dm-newcol="on"][data-dm-rows="3"] .dm-rows--3,
+[data-dm-newcol="on"][data-dm-rows="4"] .dm-rows--4,
+[data-dm-newcol="on"][data-dm-rows="5"] .dm-rows--5,
+[data-dm-newcol="on"][data-dm-rows="6"] .dm-rows--6 {
+  opacity: 1;
+}
+
+/* While the backfill is walking, the count is the thing to watch. */
+[data-dm-backfill="on"] .dm-rows {
+  fill: var(--state-closed);
+}
+
+/* The two column headers, each drawn only while its column exists. That is the
+   whole of the first step's failure: a name the running code still says, and
+   nothing on the stage answering to it. */
+.dm-head {
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+[data-dm-oldcol="on"] .dm-head--old {
+  fill: var(--request);
+  opacity: 1;
+}
+
+[data-dm-newcol="on"] .dm-head--new {
+  fill: var(--state-closed);
+  opacity: 1;
+}
+
+/* The ghost's column is not a column anyone agreed to, so it is named in the
+   colour of a question. */
+[data-dm-ghost="on"] .dm-head--new {
+  fill: var(--state-half);
+}
+
+/* Where the readers are pointed. The answer lane takes the colour of the column
+   the answer came out of, so the switch is visible on the way down as well as in
+   the strip. */
+[data-dm-reads="old"] .dm-lane--result {
+  stroke: var(--request);
+}
+
+[data-dm-reads="new"] .dm-lane--result {
+  stroke: var(--state-closed);
+}
+
+/* --- the rows ----------------------------------------------------------- */
+
+/*
+ * A cell says whether the value is here and how it got here. It carries no
+ * value of its own, because "which value" is not a question the migration asks
+ * of a row, and a second copy of it would be a second thing that could
+ * disagree with the first.
+ */
+.dm-cell {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+/* The old column: a value in it, or a column that is not there at all. `gone`
+   covers both ways that happens, because to a reader they are one absence. */
+.dm-cell[data-dm-cell-old="set"] {
+  fill: var(--request);
+  fill-opacity: 0.85;
+  stroke: var(--request);
+}
+
+.dm-cell[data-dm-cell-old="gone"] {
+  fill: none;
+  stroke: var(--muted);
+  stroke-dasharray: 8 10;
+  opacity: 0.4;
+}
+
+/* The new column. No column at all is nothing drawn; a column with nothing in
+   this row is a plate with no value colour; a value the app wrote to both
+   columns is purple, like the version that wrote it; a value the backfill
+   copied is green, like the column it is filling. */
+.dm-cell[data-dm-cell-new="absent"] {
+  opacity: 0;
+}
+
+.dm-cell[data-dm-cell-new="empty"] {
+  fill: var(--surface-2);
+  stroke: var(--border);
+}
+
+.dm-cell[data-dm-cell-new="dual"] {
+  fill: var(--cpu);
+  fill-opacity: 0.85;
+  stroke: var(--cpu);
+}
+
+.dm-cell[data-dm-cell-new="back"] {
+  fill: var(--state-closed);
+  fill-opacity: 0.85;
+  stroke: var(--state-closed);
+}
+
+/* What the one-shot rename does, which is neither of the last two: the value
+   was not copied and it was not written, it was carried off. */
+.dm-cell[data-dm-cell-new="moved"] {
+  fill: var(--state-half);
+  fill-opacity: 0.25;
+  stroke: var(--state-half);
+  stroke-dasharray: 10 8;
+}
+
+/* A cell being written to at this instant. It has to win over every state
+   above, because what it says is not what the cell holds but what is happening
+   to it — one cell for the old version, two for the new one. */
+.dm-cell[data-dm-hit="on"] {
+  stroke: var(--fg);
+  stroke-width: 7;
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+/* --- the Reads ---------------------------------------------------------- */
+
+/*
+ * The last six answers, oldest on the left. The strip is where the switch
+ * becomes visible: blue answers from the old column scroll off and green ones
+ * from the new column arrive, and nothing else the reader can see moved.
+ */
+.dm-slot {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.dm-slot[data-dm-slot="none"] {
+  opacity: 0.35;
+}
+
+.dm-slot[data-dm-slot="old"] {
+  fill: var(--request);
+  fill-opacity: 0.85;
+  stroke: var(--request);
+}
+
+.dm-slot[data-dm-slot="new"] {
+  fill: var(--state-closed);
+  fill-opacity: 0.85;
+  stroke: var(--state-closed);
+}
+
+/* An answer that came back empty is drawn as a hole in the run rather than as
+   another block, so colour is not the only thing telling it apart. */
+.dm-slot[data-dm-slot="err"] {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 7;
+  stroke-dasharray: 12 8;
+}
+
+/* How many reads have been answered. It never falls: the one that failed
+   simply does not add to it. */
+.dm-ok {
+  fill: var(--fg-soft);
+  font-size: 34px;
+}
+
+[data-dm-ok="0"] .dm-ok--0,
+[data-dm-ok="1"] .dm-ok--1,
+[data-dm-ok="2"] .dm-ok--2,
+[data-dm-ok="3"] .dm-ok--3,
+[data-dm-ok="4"] .dm-ok--4,
+[data-dm-ok="5"] .dm-ok--5,
+[data-dm-ok="6"] .dm-ok--6,
+[data-dm-ok="7"] .dm-ok--7,
+[data-dm-ok="8"] .dm-ok--8,
+[data-dm-ok="9"] .dm-ok--9,
+[data-dm-ok="10"] .dm-ok--10,
+[data-dm-ok="11"] .dm-ok--11 {
+  opacity: 1;
+}
+
+/* The one read with nowhere to look. */
+.dm-error {
+  fill: var(--state-open);
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+[data-dm-err="on"] .dm-error {
+  opacity: 1;
+}
+
+[data-dm-err="on"] .dm-lane--result {
+  stroke: var(--state-open);
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/* A write changes where a value is, so it is drawn in the colour of the thing
+   doing the changing. */
+.dm-write .scene-req-dot {
+  fill: var(--cpu);
+}
+
+/* A query asks and leaves; it is drawn hollow because it changes nothing. The
+   answer comes back down the other lane. */
+.dm-query .scene-req-dot {
+  fill: none;
+  stroke: var(--request);
+  stroke-width: 4;
+}
+
+/* --- the ghost ---------------------------------------------------------- */
+
+/* The one-shot rename is never applied. It is an answer being priced, so the
+   box it happens in is drawn as a question rather than as a schema in force. */
+[data-dm-ghost="on"] .dm-schema > .scene-box {
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 16 12;
+}
+
+[data-dm-ghost="on"] .dm-lane--query {
+  stroke: var(--state-half);
+  stroke-dasharray: 16 16;
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The window itself: two instances, two versions, and every rollout has one. */
+[data-dm-mark="overlap"] .dm-app-bg {
+  stroke: var(--state-half);
+  stroke-width: 7;
+}
+
+[data-dm-mark="overlap"] .dm-lane--write,
+[data-dm-mark="overlap"] .dm-lane--query {
+  stroke: var(--state-half);
+}
+
+/* Backward compatible means both versions can live with it, which is two
+   columns and a write that lands in both. */
+[data-dm-mark="compatible"] .dm-head--old,
+[data-dm-mark="compatible"] .dm-head--new {
+  fill: var(--fg);
+}
+
+[data-dm-mark="compatible"] .dm-dual-bg {
+  stroke: var(--fg);
+  stroke-width: 7;
+}
+
+/* Verified, not hoped. The check is that the two columns agree, so it is both
+   of them that are held up, not the count on its own. */
+[data-dm-mark="verify"] .dm-rows {
+  fill: var(--state-closed);
+}
+
+[data-dm-mark="verify"] .dm-cell-old,
+[data-dm-mark="verify"] .dm-cell-new {
+  stroke: var(--state-closed);
+  stroke-width: 6;
+}
+
+/* Each step is deployable on its own, which is a fact about the app. */
+[data-dm-mark="deployable"] .dm-appbox > .scene-box,
+[data-dm-mark="deployable"] .dm-phase-bg {
+  stroke: var(--accent);
+  stroke-width: 6;
+}
+
+/* Each step is reversible until the last one, which is a fact about the
+   schema, so it is the schema that is held up. */
+[data-dm-mark="reversible"] .dm-schema > .scene-box,
+[data-dm-mark="reversible"] .dm-phase-bg {
+  stroke: var(--fg-soft);
+  stroke-width: 6;
+  stroke-dasharray: 16 12;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* One column, two instances on the same version, and eleven answers: the
+   dangerous rename finished as four changes nobody had to watch. */
+[data-dm-settled="on"] .dm-appbox > .scene-box,
+[data-dm-settled="on"] .dm-schema > .scene-box,
+[data-dm-settled="on"] .dm-reads > .scene-box,
+[data-dm-settled="on"] .dm-lane {
+  stroke: var(--state-closed);
+}
+
+[data-dm-settled="on"] .dm-ok {
+  fill: var(--fg);
+}

@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as databaseMigrationDuration,
+  stageMarkup as databaseMigrationStage,
+} from './database-migration/stage';
+import {
   SCENE_DURATION as shardingDuration,
   stageMarkup as shardingStage,
 } from './sharding/stage';
@@ -481,6 +485,10 @@ const scenes: Record<string, SceneAsset> = {
   sharding: {
     markup: shardingStage,
     duration: shardingDuration,
+  },
+  'database-migration': {
+    markup: databaseMigrationStage,
+    duration: databaseMigrationDuration,
   },
 };
 

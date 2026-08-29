@@ -126,6 +126,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./oauth-2-0/scene')).default;
     case 'sharding':
       return (await import('./sharding/scene')).default;
+    case 'database-migration':
+      return (await import('./database-migration/scene')).default;
     default:
       return null;
   }
