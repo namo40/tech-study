@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as preparedStatementDuration,
+  stageMarkup as preparedStatementStage,
+} from './prepared-statement/stage';
+import {
   SCENE_DURATION as featureFlagDuration,
   stageMarkup as featureFlagStage,
 } from './feature-flag/stage';
@@ -505,6 +509,10 @@ const scenes: Record<string, SceneAsset> = {
   'feature-flag': {
     markup: featureFlagStage,
     duration: featureFlagDuration,
+  },
+  'prepared-statement': {
+    markup: preparedStatementStage,
+    duration: preparedStatementDuration,
   },
 };
 
