@@ -16428,3 +16428,355 @@
 [data-od-settled="on"] .od-balance {
   fill: var(--state-closed);
 }
+
+/* ---------------------------------------------------------------- */
+/* Poison Message stage                                              */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One message that fails every time, and the three things a system can do with
+ * it: hand it back (which is what at-least-once promises), set it aside for a
+ * while, or put it in a drawer. Every rule below reads one of those.
+ *
+ * The colour argument is small on purpose. Red is the poison message and
+ * nothing else — the cell it is standing in, the word that rides with it, the
+ * failures it caused, the wait it has forced on everybody behind it, and the
+ * lamp when it is finally isolated. Amber is a wait that is working as intended
+ * (the delay queue and its timer), blue is an ordinary message, and green is
+ * kept for acknowledgements and the settled frame. That way the reader can tell
+ * a message that is late from a message that is broken.
+ *
+ * Every number is a stack of text elements on one spot with `.scene-counter`
+ * hiding all of them, so nothing interpolates and scrubbing backwards is exact
+ * in both themes: `depth`, `age`, `attempt`, `ok`, `fail`, `dead` and the two
+ * `delay` values. `age` is a sampled reading rather than a ticking one, so it
+ * draws the five values the simulation is allowed to compute and no others.
+ * The six Queue cells, the two Retry cells and the two DLQ cells are the
+ * declared texture; each of them says only where a message is standing, and
+ * the word `bad` is written once, wherever that message currently is — on a
+ * cell while it waits, and on the dot while it travels.
+ */
+
+/* A path that exists but has not been taken yet. */
+[data-pm-dead="0"] .pm-lane-dead {
+  stroke-dasharray: 16 16;
+  opacity: 0.45;
+}
+
+/* --- the Queue ---------------------------------------------------------- */
+
+/*
+ * The row is the queue, head on the left. A cell says three things and no more:
+ * nothing is standing here, an ordinary message is, or the one that cannot be
+ * handled is. An empty cell is a thin muted outline with no fill at all, so it
+ * cannot be confused with either occupied state in either theme.
+ */
+.pm-cell-box,
+.pm-slot-box,
+.pm-drawer-box {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+.pm-cell[data-pm-cell="held"] .pm-cell-box {
+  fill: var(--request);
+  stroke: var(--request);
+  stroke-width: 3;
+}
+
+/* The poison message, wherever it is: hollow enough to read the word inside it,
+   outlined heavily enough that the head of the queue is obviously a wall. */
+.pm-cell[data-pm-cell="bad"] .pm-cell-box,
+.pm-drawer[data-pm-drawer="dead"] .pm-drawer-box {
+  fill: var(--state-open);
+  fill-opacity: 0.16;
+  stroke: var(--state-open);
+  stroke-width: 6;
+}
+
+/* An empty delay slot is drawn as a wait that is not being used. */
+.pm-slot-box,
+.pm-drawer-box {
+  stroke-dasharray: 10 8;
+}
+
+/* A message serving a delay is held rather than broken, so it takes the colour
+   the other stages give to a wait. */
+.pm-slot[data-pm-slot="wait"] .pm-slot-box {
+  fill: var(--state-half);
+  fill-opacity: 0.16;
+  stroke: var(--state-half);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+.pm-drawer[data-pm-drawer="dead"] .pm-drawer-box {
+  stroke-dasharray: none;
+}
+
+/* The word rides with the message and is written once on the whole stage. */
+.pm-bad {
+  fill: var(--state-open);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+.pm-cell[data-pm-cell="bad"] .pm-bad,
+.pm-slot[data-pm-slot="wait"] .pm-bad,
+.pm-drawer[data-pm-drawer="dead"] .pm-bad {
+  opacity: 1;
+}
+
+/* The same word on the dot, so the message keeps its name while it travels. */
+.pm-tag {
+  fill: var(--state-open);
+}
+
+/* How many are standing in the row, and how long the oldest of them has waited.
+   The wait is the only number here that is about the messages nobody is even
+   looking at, which is the whole cost of head-of-line blocking. */
+.pm-depth,
+.pm-age {
+  fill: var(--fg-soft);
+  font-size: 30px;
+}
+
+[data-pm-peak="on"] .pm-age {
+  fill: var(--state-open);
+}
+
+[data-pm-peak="on"] .pm-queue > .scene-box {
+  stroke: var(--state-open);
+}
+
+[data-pm-depth="0"] .pm-depth--0,
+[data-pm-depth="1"] .pm-depth--1,
+[data-pm-depth="2"] .pm-depth--2,
+[data-pm-depth="3"] .pm-depth--3,
+[data-pm-depth="4"] .pm-depth--4,
+[data-pm-depth="5"] .pm-depth--5,
+[data-pm-depth="6"] .pm-depth--6,
+[data-pm-age="0"] .pm-age--0,
+[data-pm-age="2"] .pm-age--2,
+[data-pm-age="4"] .pm-age--4,
+[data-pm-age="6"] .pm-age--6,
+[data-pm-age="8"] .pm-age--8 {
+  opacity: 1;
+}
+
+/* --- the Consumer ------------------------------------------------------- */
+
+/* One result at a time, marked with a shape as well as a colour. */
+.pm-tick {
+  opacity: 0;
+}
+
+[data-pm-tick="ok"] .pm-tick,
+[data-pm-tick="fail"] .pm-tick {
+  opacity: 1;
+}
+
+.pm-tick-bg {
+  fill: var(--state-closed);
+}
+
+[data-pm-tick="fail"] .pm-tick-bg {
+  fill: var(--state-open);
+}
+
+.pm-tick-glyph {
+  fill: none;
+  stroke: var(--bg);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+[data-pm-tick="ok"] .pm-tick-glyph--ok,
+[data-pm-tick="fail"] .pm-tick-glyph--fail {
+  opacity: 1;
+}
+
+/*
+ * `attempt` is the delivery count the message being retried carries, so it goes
+ * back to nothing once there is nothing being retried; `fail` is everything
+ * that ever came back and never goes down. That is the difference the fourth
+ * step turns on: one of them clears and the other one does not.
+ */
+.pm-attempt {
+  fill: var(--state-half);
+  font-size: 30px;
+}
+
+.pm-attempt--0 {
+  fill: var(--fg-soft);
+}
+
+.pm-attempt--8 {
+  fill: var(--state-open);
+}
+
+.pm-ok {
+  fill: var(--state-closed);
+  font-size: 30px;
+}
+
+.pm-ok--0 {
+  fill: var(--fg-soft);
+}
+
+.pm-fail {
+  fill: var(--state-open);
+  font-size: 30px;
+}
+
+.pm-fail--0 {
+  fill: var(--fg-soft);
+}
+
+/* The price of retrying something that can never work, held up for a moment. */
+[data-pm-mark="cost"] .pm-consumer > .scene-box {
+  stroke: var(--state-open);
+}
+
+/* The promise that keeps bringing it back: the lane it comes back along. */
+[data-pm-mark="promise"] .pm-lane-work {
+  stroke: var(--state-open);
+  stroke-dasharray: 18 12;
+}
+
+[data-pm-attempt="0"] .pm-attempt--0,
+[data-pm-attempt="1"] .pm-attempt--1,
+[data-pm-attempt="2"] .pm-attempt--2,
+[data-pm-attempt="3"] .pm-attempt--3,
+[data-pm-attempt="4"] .pm-attempt--4,
+[data-pm-attempt="5"] .pm-attempt--5,
+[data-pm-attempt="6"] .pm-attempt--6,
+[data-pm-attempt="7"] .pm-attempt--7,
+[data-pm-attempt="8"] .pm-attempt--8,
+[data-pm-fail="0"] .pm-fail--0,
+[data-pm-fail="1"] .pm-fail--1,
+[data-pm-fail="2"] .pm-fail--2,
+[data-pm-fail="3"] .pm-fail--3,
+[data-pm-fail="4"] .pm-fail--4,
+[data-pm-fail="5"] .pm-fail--5,
+[data-pm-fail="6"] .pm-fail--6,
+[data-pm-fail="7"] .pm-fail--7,
+[data-pm-fail="8"] .pm-fail--8 {
+  opacity: 1;
+}
+
+[data-pm-ok="0"] .pm-ok--0,
+[data-pm-ok="1"] .pm-ok--1,
+[data-pm-ok="2"] .pm-ok--2,
+[data-pm-ok="3"] .pm-ok--3,
+[data-pm-ok="4"] .pm-ok--4,
+[data-pm-ok="5"] .pm-ok--5,
+[data-pm-ok="6"] .pm-ok--6,
+[data-pm-ok="7"] .pm-ok--7,
+[data-pm-ok="8"] .pm-ok--8,
+[data-pm-ok="9"] .pm-ok--9,
+[data-pm-ok="10"] .pm-ok--10,
+[data-pm-ok="11"] .pm-ok--11,
+[data-pm-ok="12"] .pm-ok--12 {
+  opacity: 1;
+}
+
+/* --- the delay queue ---------------------------------------------------- */
+
+/* The timer is the one thing on this stage that is drawn rather than switched:
+   it sweeps, because a wait is a quantity and not a state. */
+.pm-ring {
+  --ring-color: var(--state-half);
+  --ring-width: 12;
+}
+
+/* The dial the wait is drawn on, kept to the box outline so the arc is what
+   gets read and the empty part of the ring is not a second reading. */
+.pm-ring-track {
+  stroke: var(--border);
+}
+
+[data-pm-delay="d5"] .pm-ring,
+[data-pm-delay="d15"] .pm-ring {
+  opacity: 1;
+}
+
+.pm-delay {
+  fill: var(--state-half);
+  font-size: 30px;
+}
+
+[data-pm-delay="d5"] .pm-delay--d5,
+[data-pm-delay="d15"] .pm-delay--d15 {
+  opacity: 1;
+}
+
+/* --- the dead-letter queue ---------------------------------------------- */
+
+/*
+ * Isolation, not disposal. The drawer holds the message and the lamp says
+ * somebody has to come and look at it, which is the difference between a
+ * dead-letter queue and a landfill.
+ */
+.pm-dead {
+  fill: var(--fg-soft);
+  font-size: 30px;
+}
+
+[data-pm-dead="1"] .pm-dead {
+  fill: var(--state-open);
+}
+
+[data-pm-dead="0"] .pm-dead--0,
+[data-pm-dead="1"] .pm-dead--1 {
+  opacity: 1;
+}
+
+.pm-lamp {
+  fill: var(--surface-2);
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+.pm-alert {
+  fill: var(--muted);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+[data-pm-alert="on"] .pm-lamp {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+[data-pm-alert="on"] .pm-alert {
+  fill: var(--state-open);
+}
+
+[data-pm-mark="isolated"] .pm-dlq > .scene-box,
+[data-pm-mark="isolated"] .pm-lane-dead {
+  stroke: var(--state-open);
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The line is flowing, the poison is in the drawer with an alert on it, and
+   nothing is waiting on anything. */
+[data-pm-settled="on"] .pm-queue > .scene-box,
+[data-pm-settled="on"] .pm-consumer > .scene-box,
+[data-pm-settled="on"] .pm-retry > .scene-box,
+[data-pm-settled="on"] .pm-lane-work,
+[data-pm-settled="on"] .pm-lane-side {
+  stroke: var(--state-closed);
+}
+
+[data-pm-settled="on"] .pm-depth,
+[data-pm-settled="on"] .pm-age {
+  fill: var(--state-closed);
+}

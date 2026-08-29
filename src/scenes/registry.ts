@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as poisonMessageDuration,
+  stageMarkup as poisonMessageStage,
+} from './poison-message/stage';
+import {
   SCENE_DURATION as orderingDuration,
   stageMarkup as orderingStage,
 } from './ordering/stage';
@@ -230,6 +234,10 @@ export interface SceneAsset {
 }
 
 const scenes: Record<string, SceneAsset> = {
+  'poison-message': {
+    markup: poisonMessageStage,
+    duration: poisonMessageDuration,
+  },
   ordering: {
     markup: orderingStage,
     duration: orderingDuration,

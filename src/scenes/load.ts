@@ -6,6 +6,8 @@ import type { SceneModule } from './types';
  */
 export async function loadScene(id: string): Promise<SceneModule | null> {
   switch (id) {
+    case 'poison-message':
+      return (await import('./poison-message/scene')).default;
     case 'ordering':
       return (await import('./ordering/scene')).default;
     case 'publish-subscribe':
