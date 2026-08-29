@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as oauth20Duration,
+  stageMarkup as oauth20Stage,
+} from './oauth-2-0/stage';
+import {
   SCENE_DURATION as poisonMessageDuration,
   stageMarkup as poisonMessageStage,
 } from './poison-message/stage';
@@ -465,6 +469,10 @@ const scenes: Record<string, SceneAsset> = {
   'isolation-level': {
     markup: isolationLevelStage,
     duration: isolationLevelDuration,
+  },
+  'oauth-2-0': {
+    markup: oauth20Stage,
+    duration: oauth20Duration,
   },
 };
 

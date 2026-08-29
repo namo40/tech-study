@@ -122,6 +122,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./cookie-authentication/scene')).default;
     case 'isolation-level':
       return (await import('./isolation-level/scene')).default;
+    case 'oauth-2-0':
+      return (await import('./oauth-2-0/scene')).default;
     default:
       return null;
   }
