@@ -104,6 +104,7 @@ const SCENE_IDS = [
   'ordering',
   'poison-message',
   'oauth-2-0',
+  'sharding',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */

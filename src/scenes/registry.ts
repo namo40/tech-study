@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as shardingDuration,
+  stageMarkup as shardingStage,
+} from './sharding/stage';
+import {
   SCENE_DURATION as oauth20Duration,
   stageMarkup as oauth20Stage,
 } from './oauth-2-0/stage';
@@ -473,6 +477,10 @@ const scenes: Record<string, SceneAsset> = {
   'oauth-2-0': {
     markup: oauth20Stage,
     duration: oauth20Duration,
+  },
+  sharding: {
+    markup: shardingStage,
+    duration: shardingDuration,
   },
 };
 

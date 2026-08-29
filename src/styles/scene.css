@@ -17206,3 +17206,410 @@
 [data-oa-settled="on"] .oa-lane-user {
   stroke: var(--state-closed);
 }
+
+/* ---------------------------------------------------------------- */
+/* Sharding stage                                                    */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One question, asked four ways: where does a key live, and what does it cost
+ * to change the answer. Every rule below reads one of the four answers — one
+ * box until it is full, a rule that makes the answer the same every time, the
+ * price of recomputing that answer for a third box, and the price of not
+ * having to.
+ *
+ * The colour argument is small. Blue is a key sitting where the rule says it
+ * sits, and a lookup that knows where to go. Amber is a cost being paid: a box
+ * carrying more than its share, a query that had to open every box, and the
+ * keys an answer would drag across the network. Red is the box that cannot
+ * take any more and the price of recomputing every answer at once. Green is a
+ * load that is even, a promise kept, and the settled frame. That is what lets
+ * the reader tell a shard that is merely busy from a shard that is over.
+ *
+ * Every value the reader can read is a stack of text elements on one spot,
+ * hidden by a base rule and revealed one at a time by the current `data-*`, so
+ * nothing interpolates and scrubbing backwards is exact in both themes. The
+ * load gauges are the same idea drawn as lengths: one fill per level, with the
+ * shard's own state showing one and an empty shard showing none.
+ */
+
+/* Lanes the diagram has before it has anything to send down them. */
+[data-sh-mode="single"] .sh-lane,
+[data-sh-s2="off"] .sh-lane--2 {
+  stroke-dasharray: 16 16;
+  opacity: 0.45;
+}
+
+/* --- the Router --------------------------------------------------------- */
+
+/*
+ * The rule is the whole of the routing: given a key, it is the only thing that
+ * decides which box the key belongs in, and it answers the same way for a
+ * write and for a read. One box needs no rule, so before there are two the
+ * plate is not drawn at all.
+ */
+[data-sh-rule="off"] .sh-rule {
+  opacity: 0;
+}
+
+.sh-rule-text {
+  fill: var(--fg);
+  font-size: 38px;
+  letter-spacing: 1px;
+}
+
+[data-sh-rule="mod2"] .sh-rule--mod2,
+[data-sh-rule="mod3"] .sh-rule--mod3,
+[data-sh-rule="ring"] .sh-rule--ring {
+  opacity: 1;
+}
+
+/* `mod 3` is never applied. It is an answer being priced, so its plate is
+   drawn as a question — dashed and unfilled — rather than as a rule in force. */
+[data-sh-rule="mod3"] .sh-rule-bg {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 12 8;
+}
+
+[data-sh-rule="mod3"] .sh-rule-text {
+  fill: var(--state-half);
+}
+
+/* The ring is the rule that survives a new box, which is why it is the one
+   the scene ends holding. */
+[data-sh-rule="ring"] .sh-rule-bg {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+/* How many keys the map holds. It is twelve from the moment the first step
+   finishes and never changes again: a rebalance moves keys, it does not make
+   or lose them. */
+.sh-keys {
+  fill: var(--fg-soft);
+  font-size: 36px;
+}
+
+[data-sh-keys="0"] .sh-keys--0,
+[data-sh-keys="1"] .sh-keys--1,
+[data-sh-keys="2"] .sh-keys--2,
+[data-sh-keys="3"] .sh-keys--3,
+[data-sh-keys="4"] .sh-keys--4,
+[data-sh-keys="5"] .sh-keys--5,
+[data-sh-keys="6"] .sh-keys--6,
+[data-sh-keys="7"] .sh-keys--7,
+[data-sh-keys="8"] .sh-keys--8,
+[data-sh-keys="9"] .sh-keys--9,
+[data-sh-keys="10"] .sh-keys--10,
+[data-sh-keys="11"] .sh-keys--11,
+[data-sh-keys="12"] .sh-keys--12 {
+  opacity: 1;
+}
+
+/* Held up while the scene says it: twelve keys, and one map that knows where
+   every one of them is. */
+[data-sh-mark="keys"] .sh-keys {
+  fill: var(--fg);
+}
+
+[data-sh-mark="keys"] .sh-router > .scene-box {
+  stroke: var(--fg-soft);
+}
+
+/* Choosing the key, and pricing the next box, are both decisions rather than
+   measurements, so they take the colour the other stages give to a choice. */
+[data-sh-mark="choose"] .sh-rule-bg,
+[data-sh-mark="next"] .sh-rule-bg {
+  stroke: var(--cpu);
+  stroke-width: 5;
+}
+
+[data-sh-mark="choose"] .sh-rule-text,
+[data-sh-mark="next"] .sh-rule-text {
+  fill: var(--cpu);
+}
+
+[data-sh-mark="next"] .sh-lane {
+  stroke: var(--cpu);
+}
+
+/* --- the one box -------------------------------------------------------- */
+
+/*
+ * The first step's diagram: every key in the same place, which works right up
+ * to the moment it does not. It is drawn on the band the shards use, because
+ * it is the same data — the only question is how many boxes it is spread over.
+ */
+[data-sh-mode="sharded"] .sh-ghost {
+  opacity: 0;
+}
+
+.sh-gcell {
+  fill: var(--request);
+  stroke: var(--request);
+  stroke-width: 3;
+}
+
+[data-sh-strain="full"] .sh-ghost-box {
+  stroke: var(--state-half);
+  stroke-width: 6;
+}
+
+[data-sh-strain="full"] .sh-gcell {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+}
+
+/* Full of data, full of writes, full of blast radius. Nothing has failed yet,
+   which is exactly why it is the last moment to do anything about it. */
+[data-sh-strain="over"] .sh-ghost-box {
+  fill: var(--state-open);
+  fill-opacity: 0.14;
+  stroke: var(--state-open);
+  stroke-width: 8;
+}
+
+[data-sh-strain="over"] .sh-gcell {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+/* --- the shards --------------------------------------------------------- */
+
+[data-sh-mode="single"] .sh-shard {
+  opacity: 0;
+}
+
+/* S2 is in the diagram before it is in the map. It is drawn dashed and quiet
+   until the third step gives it tokens, because a box nobody routes to is not
+   yet a shard. */
+[data-sh-s2="off"] .sh-shard--2 > .scene-box {
+  stroke-dasharray: 16 16;
+  stroke: var(--muted);
+}
+
+[data-sh-s2="off"] .sh-shard--2 .scene-node-title,
+[data-sh-s2="off"] .sh-shard--2 .sh-load-label {
+  fill: var(--muted);
+}
+
+[data-sh-s2="off"] .sh-shard--2 .sh-gauge-track {
+  stroke-dasharray: 10 8;
+}
+
+/*
+ * A key cell. Four things it can be, and the last two are never the first: a
+ * place a key left is not a place no key ever reached, and the difference
+ * between those two is the whole cost of a rebalance.
+ */
+.sh-cell {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-dasharray: 6 6;
+}
+
+.sh-cell[data-sh-cell="here"] {
+  fill: var(--request);
+  stroke: var(--request);
+  stroke-width: 3;
+  stroke-dasharray: none;
+}
+
+/* Marked by the `mod 3` ghost: this key's answer changed, so this key would
+   have to be carried to another box before anyone could read it again. */
+.sh-cell[data-sh-cell="move"] {
+  fill: var(--state-half);
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+/* A key that left. Filled where an empty cell is hollow and solid where an
+   empty cell is dashed, so an emptied row never reads as a row nothing ever
+   reached. */
+.sh-cell[data-sh-cell="gone"] {
+  fill: var(--muted);
+  fill-opacity: 0.35;
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+  stroke-dasharray: none;
+}
+
+/* The word the gauge under it reads. */
+.sh-load-label {
+  fill: var(--fg-soft);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* One fill per level, with the shard's own state showing one. An empty shard
+   shows none, because no length is the honest drawing of nothing. */
+.sh-gauge-fill {
+  opacity: 0;
+}
+
+.sh-gauge-fill--light {
+  fill: var(--request);
+}
+
+.sh-gauge-fill--even {
+  fill: var(--state-closed);
+}
+
+/* A box carrying more than its share. Nothing is wrong with it yet; it is
+   simply where the next problem will come from. */
+.sh-gauge-fill--heavy {
+  fill: var(--state-half);
+}
+
+[data-sh-load="light"] .sh-gauge-fill--light,
+[data-sh-load="even"] .sh-gauge-fill--even,
+[data-sh-load="heavy"] .sh-gauge-fill--heavy {
+  opacity: 1;
+}
+
+/* Held up while the scene says it: three boxes, three equal lengths, and the
+   split is the reason. */
+[data-sh-mark="balance"] .sh-shard > .scene-box {
+  stroke: var(--state-closed);
+}
+
+[data-sh-mark="balance"] .sh-load-label {
+  fill: var(--fg);
+}
+
+/* --- what it cost ------------------------------------------------------- */
+
+/* While a third shard is being priced, what a lookup costs is not the
+   question, so the plate stands back and lets `moved n` be read. */
+[data-sh-rule="mod3"] .sh-cost {
+  opacity: 0.45;
+}
+
+.sh-cost-text {
+  fill: var(--fg);
+  font-size: 38px;
+  letter-spacing: 1px;
+}
+
+[data-sh-cost="one"] .sh-cost--one,
+[data-sh-cost="fan"] .sh-cost--fan {
+  opacity: 1;
+}
+
+/* A query that ignored the key could not be routed, so it was asked of every
+   box there is and paid for all of them. */
+[data-sh-cost="fan"] .sh-cost-bg {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+[data-sh-cost="fan"] .sh-cost-text {
+  fill: var(--state-half);
+}
+
+/* Held up while the scene says it: same key, same shard, one box opened. */
+[data-sh-mark="promise"] .sh-cost-bg {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+[data-sh-mark="promise"] .sh-cost-text {
+  fill: var(--state-closed);
+}
+
+/* One mark per shard: the boxes the Router's last piece of work had to open.
+   Before there are shards there is nothing to mark, and a shard nobody routes
+   to cannot be one of them. */
+.sh-touch {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-dasharray: 6 6;
+}
+
+.sh-touch[data-sh-touch="on"] {
+  fill: var(--request);
+  stroke: var(--request);
+  stroke-width: 3;
+  stroke-dasharray: none;
+}
+
+[data-sh-cost="fan"] .sh-touch[data-sh-touch="on"] {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+}
+
+[data-sh-mode="single"] .sh-touch,
+[data-sh-s2="off"] .sh-touch--3 {
+  opacity: 0;
+}
+
+/* How many keys the last answer moved. The scene shows this readout twice: the
+   number `hash mod 3` would have cost, and the number the ring did cost. */
+.sh-moved {
+  fill: var(--fg-soft);
+  font-size: 36px;
+}
+
+[data-sh-moved="0"] .sh-moved--0,
+[data-sh-moved="1"] .sh-moved--1,
+[data-sh-moved="2"] .sh-moved--2,
+[data-sh-moved="3"] .sh-moved--3,
+[data-sh-moved="4"] .sh-moved--4,
+[data-sh-moved="5"] .sh-moved--5,
+[data-sh-moved="6"] .sh-moved--6,
+[data-sh-moved="7"] .sh-moved--7,
+[data-sh-moved="8"] .sh-moved--8 {
+  opacity: 1;
+}
+
+/* Eight of twelve is not a rebalance, it is a migration, and it is read in the
+   colour the stages give to something that has gone wrong. */
+[data-sh-rule="mod3"] .sh-moved {
+  fill: var(--state-open);
+}
+
+/* Four, against the eight the reader has just watched being counted. */
+[data-sh-mark="compare"] .sh-moved {
+  fill: var(--state-closed);
+}
+
+[data-sh-mark="compare"] .sh-queries > .scene-box {
+  stroke: var(--state-closed);
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/* A lookup asks and leaves; it is drawn hollow because it changes nothing. */
+.sh-query .scene-req-dot {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 6;
+}
+
+/* A key being handed to a new shard, which is the one thing in the scene that
+   costs bandwidth rather than a lookup. */
+.sh-mover .scene-req-dot {
+  fill: var(--state-half);
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* Twelve keys, three boxes, four each, and the ring still in force: the next
+   shard will cost exactly what this one did. */
+[data-sh-settled="on"] .sh-router > .scene-box,
+[data-sh-settled="on"] .sh-shard > .scene-box,
+[data-sh-settled="on"] .sh-queries > .scene-box,
+[data-sh-settled="on"] .sh-lane {
+  stroke: var(--state-closed);
+}
+
+[data-sh-settled="on"] .sh-keys {
+  fill: var(--fg);
+}

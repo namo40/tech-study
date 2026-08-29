@@ -1,0 +1,53 @@
+---
+title: "Consistent Hashing"
+summary: "consistent hashing은 노드와 키를 같은 링 위에 올려 두고, 키가 시계 방향으로 가장 가까운 노드에 속하게 합니다. 노드를 더하거나 빼면 그 이웃 구간만 다시 할당되므로, 확장이 대이동이 아니라 바뀐 만큼에 비례하는 이사가 됩니다."
+category: "데이터 분산과 일관성"
+scene: sharding
+sceneStep: 3
+related:
+  - label: Sharding
+    slug: sharding
+  - label: Shard Key
+    slug: shard-key
+  - label: Rebalancing
+    slug: rebalancing
+  - label: Hot Partition
+    slug: hot-partition
+  - label: Partitioning
+    slug: partitioning
+  - label: Cross-Shard Query
+    slug: cross-shard-query
+  - label: Load Balancer
+    slug: load-balancer
+  - label: Replication
+    slug: replication
+  - label: Replication Lag
+    slug: replication-lag
+  - label: Database Index
+    slug: database-index
+  - label: Ordering
+    slug: ordering
+  - label: Event Stream
+    slug: event-stream
+references:
+  - title: "Sharding pattern"
+    url: https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding
+  - title: "Data partitioning guidance"
+    url: https://learn.microsoft.com/en-us/azure/architecture/best-practices/data-partitioning
+  - title: "Partitioning and horizontal scaling in Azure Cosmos DB"
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview
+---
+
+장면의 세 번째 단계는 같은 질문에 대한 두 답을 나란히 놓고, 숫자가 논증이 됩니다. 열두 개의 키가 두 샤드에 앉아 있습니다. 셋째 샤드가 도착합니다. `hash mod n` 아래에서는 라우터가 새 개수로 모든 키를 다시 계산하고, 열둘 중 여덟이 전과 다른 답을 받습니다. 데이터의 3분의 2를 한 상자에서 읽어 내 다른 상자에 써 넣어야 누구든 다시 찾을 수 있습니다. 링에서는 넷이 이사하고 여덟은 있던 자리에 그대로 있습니다.
+
+`hash mod n`이 그렇게 행동하는 이유는 운이 나빠서가 아니라 산수 때문입니다. `hash % 2`와 `hash % 3`은 서로 무관한 함수입니다. 나누는 수를 바꾸면 거의 전부에 대해 대응이 다시 쓰이고, 우연히 답을 지키는 비율은 대략 `1/n`입니다. 여기서 짚어 둘 것은 이것이 해싱의 성질이 전혀 아니라는 점입니다. 이것은 노드 개수를 배치 함수 안에 넣어 둔 것의 성질입니다. 답에 "노드가 몇 개인가"가 들어가는 방식은 무엇이든, 그 수가 바뀌면 데이터 대부분을 옮기게 됩니다.
+
+링은 노드 개수를 함수 밖으로 빼냅니다. 키를 고정된 원 위의 한 점으로 해싱하고, 노드도 같은 원 위의 점들로 해싱한 다음, 키는 자기에서 시계 방향으로 처음 만나는 노드에 속한다고 말합니다. 이제 키의 답은 옆에 어떤 노드가 앉아 있느냐에 달려 있지, 노드가 몇 개인지에 달려 있지 않습니다. 노드를 더하면 원 어딘가에 자리를 잡고 자기와 앞 노드 사이의 호를 넘겨받습니다. 그 호 안의 키만 움직이고, 그것들은 전부 새로 온 노드로 갑니다. 이미 있던 두 노드 사이에서 키가 손을 바꾸는 일은 없습니다. 장면에서는 점 넷이 두 상자를 떠나 라우터를 거쳐 S2로 내려가는 동안, S0과 S1 사이에는 아무것도 오가지 않는 모습으로 나타납니다.
+
+깔끔한 그림이 가리고 있는 분포 문제가 순수한 링 배치에는 있습니다. 노드가 몇 개뿐이면 원 위의 무작위 점 몇 개는 크기가 제각각인 호를 만들어서, 노드 하나가 우연히 링의 3분의 1을 갖기도 합니다. 그리고 노드가 빠지면 그 호 전체가 나뉘어 흩어지지 않고 정확히 이웃 하나에게 떨어집니다. 가상 노드가 둘 다 해결합니다. 물리 노드 하나에 링 위의 점을 여럿 주면, 보통 백 개나 이백 개를 주면, 그 노드의 소유는 작은 호 여럿의 합이 됩니다. 편차는 예측 가능한 수준으로 떨어지고, 떠나는 노드의 부하는 이웃 하나를 두 배로 만드는 대신 나머지 전체에 퍼집니다. 장면이 S2에 토큰을 둘 준 이유가 바로 이것입니다. 토큰이 하나였다면 이웃 구간 하나를 통째로 가져갔을 텐데, 둘이면 기존 샤드 각각에서 한 조각씩 가져옵니다.
+
+가까운 사촌 하나를 알아 둘 만합니다. 데이터베이스에서는 그쪽이 더 나은 답인 경우가 많습니다. 노드로 바로 해싱하는 대신 크고 고정된 개수의 버킷으로 해싱하고, Redis Cluster의 해시 슬롯처럼 1024개나 16384개를 두고, 버킷에서 노드로 가는 작은 표를 유지합니다. 노드를 더한다는 것은 버킷 얼마를 옮긴다는 뜻이고, 링과 같은 한계 있는 이사이면서 두 가지가 더 좋습니다. 지도가 명시적이라 눈으로 보고 기록에 남기고 해시가 정한 곳이 아니라 의도한 대로 버킷을 옮길 수 있습니다. 그리고 관측된 부하를 기준으로 실제로 바쁜 버킷을 옮겨 재배치할 수 있습니다. 대가는 지도가 이제 상태라는 것이고, 모든 라우터가 그 상태에 합의해야 합니다.
+
+consistent hashing이 인기 키를 해결해 주지는 않습니다. 키가 어디로 가는지 말할 뿐 누가 얼마나 자주 찾는지는 말하지 않으므로, 인기 있는 키 하나는 여전히 노드 하나에 떨어져 거기 머뭅니다. 재배치를 공짜로 만들어 주지도 않습니다. 장면의 키 넷은 실제로 네트워크를 건너 복사되고, 그동안 라우터는 어떤 키가 두 곳에 있거나 어느 곳에도 없다는 사실을 알고 있어야 합니다. 실제 구현은 버킷마다 이전 상태를 두어 처리합니다. 복사가 검증될 때까지 읽기는 예전 소유자로 가고, 그다음에 지도가 바뀌고 옛 사본이 버려집니다.
+
+같은 발상은 조정자 없이 노드 무리가 소유권에 합의해야 하는 곳이면 어디에나 나타납니다. 어느 노드가 키를 들고 있는지 정하는 캐시 클러스터에서는 캐시 서버를 하나 더해도 전체가 아니라 일부만 무효가 됩니다. 세션 고정을 쓰는 로드 밸런서에서는 인스턴스를 하나 늘려도 기존 세션이 전부 흩어지지 않습니다. 메시지 브로커의 파티션 할당에서는 컨슈머가 그룹에 들어올 때 전체 재편성을 일으키는 대신 파티션 얼마를 넘겨받습니다. 문제의 모양은 언제나 같고, 답도 같습니다. 무엇이 어디에 속하는지 정하는 함수 밖에 노드 개수를 두는 것입니다.
