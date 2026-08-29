@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as orderingDuration,
+  stageMarkup as orderingStage,
+} from './ordering/stage';
+import {
   SCENE_DURATION as publishSubscribeDuration,
   stageMarkup as publishSubscribeStage,
 } from './publish-subscribe/stage';
@@ -226,6 +230,10 @@ export interface SceneAsset {
 }
 
 const scenes: Record<string, SceneAsset> = {
+  ordering: {
+    markup: orderingStage,
+    duration: orderingDuration,
+  },
   'publish-subscribe': {
     markup: publishSubscribeStage,
     duration: publishSubscribeDuration,

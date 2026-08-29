@@ -16060,3 +16060,371 @@
 [data-ps-settled="on"] .ps-offset-c {
   fill: var(--state-closed);
 }
+/* ---------------------------------------------------------------- */
+/* Ordering stage                                                    */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One question, asked in two pictures: ordered with respect to what. In the
+ * first step the two rows are bridged into one log and neither of them owns a
+ * key, so nothing on the stage can say which consumer should have taken which
+ * event — which is exactly why the result strip opens with a cross. From the
+ * moment routing exists, every rule below reads one partition at a time. There
+ * is no selector here that puts P0's state and P1's state into one condition
+ * except the two that are about the trade itself: the gauge next to an empty
+ * neighbour, and the settled frame.
+ *
+ * Every word here is a stack of text elements on one spot with the widget class
+ * hiding all of them, so nothing interpolates and scrubbing backwards is exact
+ * in both themes: the fourteen `balance n` variants, the two verdict words, and
+ * the three gauge fills. The Producer's event row, the two log rows, the bridge
+ * and its ghost cells, and the Consumers result strip are the declared texture,
+ * drawn from `data-*` alone and carrying no numbers at all — position is the
+ * sequence, and writing the sequence twice is what would let the two disagree.
+ *
+ * The colours carry the argument. The two keys are told apart by shape as well
+ * as hue, filled for `acct 7` and hollow for `acct 9`, so a reader who cannot
+ * separate blue from violet can still separate the lanes. Red is spent on two
+ * things and no others: an arrival that overtook its own key, and a partition
+ * whose backlog has run away. Green is kept for the settled frame, and violet
+ * marks the one step where the design is chosen rather than measured.
+ */
+
+/* A lane nobody is routing on yet, and a lane with nothing to carry. */
+[data-od-mode="single"] .od-lane-in-p0,
+[data-od-mode="single"] .od-lane-in-p1 {
+  stroke-dasharray: 16 16;
+  opacity: 0.45;
+}
+
+[data-od-idle="on"] .od-lane-out-p1 {
+  stroke-dasharray: 16 16;
+  opacity: 0.45;
+}
+
+/* --- the Producer ------------------------------------------------------- */
+
+/*
+ * One mark per event, in the order it was emitted. The Producer is the only
+ * place on the stage where the sequence is beyond argument, which is why it is
+ * drawn as a row and never as a number.
+ */
+.od-emit {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+.od-emit[data-od-emit="k7"] {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+.od-emit[data-od-emit="k9"] {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-width: 6;
+}
+
+/* --- the partitions ----------------------------------------------------- */
+
+/* Before there is a routing rule there are no keys to write and no backlog to
+   read, so neither is drawn; after it, the two rows are what the scene is. */
+[data-od-mode="single"] .od-keyed,
+[data-od-mode="single"] .od-row {
+  opacity: 0;
+}
+
+[data-od-mode="keyed"] .od-ghost {
+  opacity: 0;
+}
+
+/* The key a partition owns. It is the promise: everything under this name goes
+   in this row, and nothing else does. */
+.od-key {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.od-key-p0 {
+  fill: var(--request);
+}
+
+.od-key-p1 {
+  fill: var(--cpu);
+}
+
+/* Different keys, no promise between them — and none needed. */
+[data-od-mark="keys"] .od-key,
+[data-od-mark="design"] .od-key {
+  fill: var(--fg);
+}
+
+[data-od-mark="keys"] .od-part > .scene-box {
+  stroke: var(--fg-soft);
+}
+
+/* Scoping the promise to the smallest unit that needs it is a decision, not a
+   measurement, so it takes the colour the other stages give to a choice. */
+[data-od-mark="design"] .od-part > .scene-box,
+[data-od-mark="design"] .od-lane-in-p0,
+[data-od-mark="design"] .od-lane-in-p1 {
+  stroke: var(--cpu);
+}
+
+/* A log row: one cell per event, appended left to right and never rewritten.
+   A cell says two things and no more, that it was appended and that it has
+   been processed. */
+.od-cell {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+.od-cell-p0[data-od-cell="live"] {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+.od-cell-p1[data-od-cell="live"] {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-width: 6;
+}
+
+/* A processed cell is still in the log, and still belongs to its key. It is the
+   live look dimmed, never the empty outline: a stream is a history that grows,
+   not a queue that empties, and the row is where per-key order physically is. */
+.od-cell-p0[data-od-cell="done"] {
+  fill: var(--request);
+  stroke: var(--request);
+  opacity: 0.35;
+}
+
+.od-cell-p1[data-od-cell="done"] {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-width: 6;
+  opacity: 0.35;
+}
+
+/* The first step's log: two cells with a bridge between them, because no rule
+   sent either event to either side and either consumer may take either one. */
+.od-bridge {
+  stroke: var(--fg-soft);
+  stroke-width: 5;
+  stroke-dasharray: 14 10;
+  stroke-linecap: round;
+}
+
+.od-gcell {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.od-gcell[data-od-ghost="live"] {
+  stroke: var(--fg-soft);
+  stroke-width: 5;
+  stroke-dasharray: 10 8;
+}
+
+.od-gcell[data-od-ghost="done"] {
+  stroke: var(--fg-soft);
+  opacity: 0.5;
+}
+
+/* --- the gauge ---------------------------------------------------------- */
+
+/* What one popular key does to one partition. The gauge is P0's backlog and
+   nothing else, so it cannot say something the row above it does not. */
+.od-hot-label {
+  fill: var(--muted);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+[data-od-hot="warm"] .od-hot-label {
+  fill: var(--state-half);
+}
+
+[data-od-hot="hot"] .od-hot-label,
+[data-od-mark="cost"] .od-hot-label {
+  fill: var(--state-open);
+}
+
+.od-gauge-track {
+  --fill-color: var(--state-closed);
+}
+
+[data-od-mark="cost"] .od-gauge-track {
+  stroke: var(--state-open);
+}
+
+.od-gauge-fill {
+  fill: var(--state-closed);
+  opacity: 0;
+}
+
+.od-gauge-fill--warm {
+  fill: var(--state-half);
+}
+
+.od-gauge-fill--hot {
+  fill: var(--state-open);
+}
+
+[data-od-hot="calm"] .od-gauge-fill--calm,
+[data-od-hot="warm"] .od-gauge-fill--warm,
+[data-od-hot="hot"] .od-gauge-fill--hot {
+  opacity: 1;
+}
+
+/* A partition over its head, and the neighbour that cannot help it. Adding a
+   consumer to P1 does nothing for P0, because the promise pins the key. */
+[data-od-hot="hot"] .od-part-p0 > .scene-box,
+[data-od-mark="cost"] .od-part-p0 > .scene-box {
+  stroke: var(--state-open);
+}
+
+[data-od-idle="on"] .od-part-p1 > .scene-box,
+[data-od-mark="cost"] .od-part-p1 > .scene-box {
+  stroke-dasharray: 16 16;
+  opacity: 0.6;
+}
+
+/* A traveller is drawn as the key it carries, so the routing rule is visible
+   in the thing that moves and not only in the row it lands in. */
+.od-k9 .scene-req-dot {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-width: 5;
+}
+
+/* --- the Consumers ------------------------------------------------------ */
+
+/*
+ * The strip is the record of what was processed and in what order, which is a
+ * different list from the log above it. A slot takes the colour and the shape
+ * of the key it came from, and the one slot that arrived before something it
+ * should have followed is drawn as neither: it is the hole in the sequence.
+ */
+.od-slot {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+}
+
+.od-slot[data-od-slot="k7"] {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+.od-slot[data-od-slot="k9"] {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-width: 5;
+}
+
+.od-slot[data-od-slot="oops"] {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: 6 5;
+}
+
+/* The verdict on the order, which is not a verdict on the total. Nothing was
+   lost and nothing was duplicated; only the journey was wrong. */
+.od-verdict-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-od-verdict="ordered"] .od-chip-verdict .od-verdict-bg {
+  stroke: var(--state-closed);
+}
+
+[data-od-verdict="reordered"] .od-chip-verdict .od-verdict-bg {
+  stroke: var(--state-open);
+}
+
+.od-verdict {
+  font-size: 28px;
+  letter-spacing: 1px;
+}
+
+.od-verdict--ordered {
+  fill: var(--state-closed);
+}
+
+.od-verdict--reordered {
+  fill: var(--state-open);
+}
+
+[data-od-verdict="ordered"] .od-verdict--ordered,
+[data-od-verdict="reordered"] .od-verdict--reordered {
+  opacity: 1;
+}
+
+/* The account the ordered key stands for, read out of the processing order and
+   out of nothing else. It is the only number on the stage, and it is here
+   because a balance is the one thing a reader can check for themselves. */
+.od-balance {
+  fill: var(--fg-soft);
+  font-size: 32px;
+}
+
+.od-balance--m30 {
+  fill: var(--state-open);
+}
+
+[data-od-balance="0"] .od-balance--0,
+[data-od-balance="-30"] .od-balance--m30,
+[data-od-balance="70"] .od-balance--70,
+[data-od-balance="170"] .od-balance--170,
+[data-od-balance="140"] .od-balance--140,
+[data-od-balance="240"] .od-balance--240,
+[data-od-balance="210"] .od-balance--210,
+[data-od-balance="310"] .od-balance--310,
+[data-od-balance="280"] .od-balance--280,
+[data-od-balance="380"] .od-balance--380,
+[data-od-balance="350"] .od-balance--350,
+[data-od-balance="450"] .od-balance--450,
+[data-od-balance="420"] .od-balance--420,
+[data-od-balance="520"] .od-balance--520 {
+  opacity: 1;
+}
+
+/* What an event is worth, carried by the event itself so the balance below can
+   be checked against the things that made it. */
+.od-amount {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* Both partitions drained, every key still in its own order, and the account
+   where the amounts say it should be. */
+[data-od-settled="on"] .od-producer > .scene-box,
+[data-od-settled="on"] .od-part > .scene-box,
+[data-od-settled="on"] .od-consumers > .scene-box {
+  stroke: var(--state-closed);
+}
+
+[data-od-settled="on"] .od-lane-in-p0,
+[data-od-settled="on"] .od-lane-in-p1,
+[data-od-settled="on"] .od-lane-out-p0,
+[data-od-settled="on"] .od-lane-out-p1 {
+  stroke: var(--state-closed);
+}
+
+[data-od-settled="on"] .od-balance {
+  fill: var(--state-closed);
+}
