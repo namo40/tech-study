@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as throughputDuration,
+  stageMarkup as throughputStage,
+} from './throughput/stage';
+import {
   SCENE_DURATION as keyRotationDuration,
   stageMarkup as keyRotationStage,
 } from './key-rotation/stage';
@@ -545,6 +549,10 @@ const scenes: Record<string, SceneAsset> = {
   'key-rotation': {
     markup: keyRotationStage,
     duration: keyRotationDuration,
+  },
+  throughput: {
+    markup: throughputStage,
+    duration: throughputDuration,
   },
 };
 

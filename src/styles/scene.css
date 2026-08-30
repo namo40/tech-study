@@ -21240,3 +21240,422 @@
 [data-kr-settled="on"] .kr-keys > .scene-box {
   stroke: var(--state-closed);
 }
+
+/* ---------------------------------------------------------------- */
+/* Throughput stage                                                  */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Two axes, drawn as two different kinds of thing. Rates are gauges and
+ * numbers — how hard work arrives, how much of the Server is in use, how much
+ * finishes. Latency is a line of cells and the milliseconds written under it,
+ * because waiting is a queue before it is a duration.
+ *
+ * The colour argument is small and it is the same everywhere. Blue is work
+ * moving: an arrival rate under the ceiling, a busy slot, the first cells of a
+ * line. Green is work finished and a system with room: the completion lane,
+ * `out` past the old ceiling, `busy 80%`, and the settled frame. Amber is the
+ * ceiling itself — an arrival rate that has reached it, a `out` that has stopped
+ * climbing because of it, a line long enough to notice. Red is past it: the
+ * surge, a full line, a wait nobody would accept. Violet is the first step's
+ * two ghosts, a colour the running stage never uses on anything.
+ *
+ * Three pictures have to stay apart in both themes and none of them is told
+ * apart by colour alone. A slot the Server is not paying for is **not drawn**;
+ * one it is paying for and is not using is a **hollow square**; one it is using
+ * is a **filled** one. A queue cell is hollow or filled the same way, and the
+ * row is always drawn, so an empty line and a line nobody has built are never
+ * confused. And the ghosts are dashed as well as violet, so four slots at 400 ms
+ * cannot be read as the four the running Server has.
+ *
+ * Every value the reader can read is a stack of text on one spot with the widget
+ * class hiding all of them, so nothing interpolates and scrubbing backwards is
+ * exact. The gauge fill is the one exception, and it is a width rather than a
+ * colour, so there is nothing to average.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+/* Arrivals past the ceiling: the lane carries more than the far end can take,
+   and it is drawn heavier because that is exactly what the reader is meant to
+   notice before the queue has grown at all. */
+[data-tput-in="60"] .tput-lane-in {
+  stroke: var(--state-open);
+  stroke-width: 9;
+}
+
+/* The drain is wider than it was, which is the only thing in the fourth step
+   that raises the ceiling rather than lowering what is asked of it. */
+[data-tput-out="60"] .tput-lane-out {
+  stroke: var(--state-closed);
+  stroke-width: 9;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+.tput-req--in .scene-req-dot {
+  fill: var(--request);
+}
+
+/* Work that is finished is not work any more, so it stops being traffic. */
+.tput-req--out .scene-req-dot {
+  fill: var(--state-closed);
+}
+
+/* --- the Arrivals band -------------------------------------------------- */
+
+/*
+ * The gauge is every arrival rate the stage can draw and the ceiling line is
+ * what the Server can retire, so "the fill reaches the line" and "the queue
+ * starts" are one event. The fill changes colour rather than shape as it
+ * crosses, because the crossing is the argument and the width is only the
+ * evidence.
+ */
+.tput-gauge-track {
+  stroke-width: 3;
+}
+
+.tput-gauge-fill {
+  --fill-color: var(--request);
+}
+
+/* Arrivals standing exactly on the ceiling. Nothing is going wrong yet, and
+   nothing is going right either: whatever is already in the line stays in it. */
+[data-tput-cap="10"][data-tput-in="10"] .tput-gauge-fill,
+[data-tput-cap="40"][data-tput-in="40"] .tput-gauge-fill,
+[data-tput-cap="60"][data-tput-in="60"] .tput-gauge-fill {
+  --fill-color: var(--state-half);
+}
+
+/* Arrivals past it. The colour is a comparison rather than a level, which is
+   why it is written as the pairs the two numbers can be in. */
+[data-tput-cap="10"][data-tput-in="16"] .tput-gauge-fill,
+[data-tput-cap="10"][data-tput-in="32"] .tput-gauge-fill,
+[data-tput-cap="10"][data-tput-in="40"] .tput-gauge-fill,
+[data-tput-cap="10"][data-tput-in="48"] .tput-gauge-fill,
+[data-tput-cap="10"][data-tput-in="60"] .tput-gauge-fill,
+[data-tput-cap="40"][data-tput-in="48"] .tput-gauge-fill,
+[data-tput-cap="40"][data-tput-in="60"] .tput-gauge-fill {
+  --fill-color: var(--state-open);
+}
+
+/* The ceiling. One line per capacity the Server can have, stacked the way the
+   readouts are, so the line moves without anything being interpolated. */
+.tput-ceil {
+  stroke: var(--fg);
+  stroke-width: 6;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+[data-tput-cap="10"] .tput-ceil--10,
+[data-tput-cap="40"] .tput-ceil--40,
+[data-tput-cap="60"] .tput-ceil--60 {
+  opacity: 1;
+}
+
+/* The rate work is arriving at. */
+.tput-in {
+  fill: var(--fg-soft);
+  font-size: 36px;
+}
+
+/* The surge, and the load the widened Server was built for. */
+.tput-in--60 {
+  fill: var(--state-open);
+}
+
+.tput-in--48 {
+  fill: var(--state-closed);
+}
+
+[data-tput-in="10"] .tput-in--10,
+[data-tput-in="16"] .tput-in--16,
+[data-tput-in="32"] .tput-in--32,
+[data-tput-in="40"] .tput-in--40,
+[data-tput-in="48"] .tput-in--48,
+[data-tput-in="60"] .tput-in--60 {
+  opacity: 1;
+}
+
+[data-tput-mark="headroom"] .tput-arrivals > .scene-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+/* --- the Server band ---------------------------------------------------- */
+
+/*
+ * The slot row is the concurrency the Server is paying for, drawn rather than
+ * written, so widening it in the fourth step is a change to the picture and not
+ * only to a number. A slot outside the current configuration is not drawn at
+ * all: an absent square, a hollow one and a filled one are three different
+ * shapes, which is what keeps "the Server is narrower" apart from "the Server is
+ * idle" in either theme.
+ */
+.tput-slot {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+[data-tput-slots="1"] .tput-slot--2,
+[data-tput-slots="1"] .tput-slot--3,
+[data-tput-slots="1"] .tput-slot--4,
+[data-tput-slots="1"] .tput-slot--5,
+[data-tput-slots="1"] .tput-slot--6,
+[data-tput-slots="4"] .tput-slot--5,
+[data-tput-slots="4"] .tput-slot--6 {
+  opacity: 0;
+}
+
+[data-tput-active="1"] .tput-slot--1,
+[data-tput-active="2"] .tput-slot--1,
+[data-tput-active="2"] .tput-slot--2,
+[data-tput-active="3"] .tput-slot--1,
+[data-tput-active="3"] .tput-slot--2,
+[data-tput-active="3"] .tput-slot--3,
+[data-tput-active="4"] .tput-slot--1,
+[data-tput-active="4"] .tput-slot--2,
+[data-tput-active="4"] .tput-slot--3,
+[data-tput-active="4"] .tput-slot--4,
+[data-tput-active="5"] .tput-slot--1,
+[data-tput-active="5"] .tput-slot--2,
+[data-tput-active="5"] .tput-slot--3,
+[data-tput-active="5"] .tput-slot--4,
+[data-tput-active="5"] .tput-slot--5,
+[data-tput-active="6"] .tput-slot--1,
+[data-tput-active="6"] .tput-slot--2,
+[data-tput-active="6"] .tput-slot--3,
+[data-tput-active="6"] .tput-slot--4,
+[data-tput-active="6"] .tput-slot--5,
+[data-tput-active="6"] .tput-slot--6 {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+/* How much of the Server is in use. A quarter is a system with nothing to
+   worry about, 80% is the band the last step argues for, and 100% is not
+   efficiency — it is a queue that has already started. */
+.tput-busy {
+  fill: var(--fg-soft);
+  font-size: 36px;
+}
+
+.tput-busy--25 {
+  fill: var(--muted);
+}
+
+.tput-busy--80 {
+  fill: var(--state-closed);
+}
+
+.tput-busy--100 {
+  fill: var(--state-open);
+}
+
+[data-tput-busy="25"] .tput-busy--25,
+[data-tput-busy="40"] .tput-busy--40,
+[data-tput-busy="80"] .tput-busy--80,
+[data-tput-busy="100"] .tput-busy--100 {
+  opacity: 1;
+}
+
+/* The line itself. One cell per unit of work standing in it, filled from the
+   left, and the colour is the depth rather than the cell: a short line is
+   traffic, a longer one is a warning, a full one is where latency lives. */
+.tput-cell {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+[data-tput-queue="1"] .tput-cell--1,
+[data-tput-queue="2"] .tput-cell--1,
+[data-tput-queue="2"] .tput-cell--2 {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+[data-tput-queue="3"] .tput-cell--1,
+[data-tput-queue="3"] .tput-cell--2,
+[data-tput-queue="3"] .tput-cell--3,
+[data-tput-queue="4"] .tput-cell--1,
+[data-tput-queue="4"] .tput-cell--2,
+[data-tput-queue="4"] .tput-cell--3,
+[data-tput-queue="4"] .tput-cell--4 {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+}
+
+[data-tput-queue="5"] .tput-cell--1,
+[data-tput-queue="5"] .tput-cell--2,
+[data-tput-queue="5"] .tput-cell--3,
+[data-tput-queue="5"] .tput-cell--4,
+[data-tput-queue="5"] .tput-cell--5,
+[data-tput-queue="6"] .tput-cell--1,
+[data-tput-queue="6"] .tput-cell--2,
+[data-tput-queue="6"] .tput-cell--3,
+[data-tput-queue="6"] .tput-cell--4,
+[data-tput-queue="6"] .tput-cell--5,
+[data-tput-queue="6"] .tput-cell--6 {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+/* How many units are standing there, written beside the row it counts. */
+.tput-queue {
+  fill: var(--fg-soft);
+  font-size: 36px;
+}
+
+.tput-queue--0 {
+  fill: var(--muted);
+}
+
+.tput-queue--3,
+.tput-queue--4 {
+  fill: var(--state-half);
+}
+
+.tput-queue--5,
+.tput-queue--6 {
+  fill: var(--state-open);
+}
+
+[data-tput-queue="0"] .tput-queue--0,
+[data-tput-queue="1"] .tput-queue--1,
+[data-tput-queue="2"] .tput-queue--2,
+[data-tput-queue="3"] .tput-queue--3,
+[data-tput-queue="4"] .tput-queue--4,
+[data-tput-queue="5"] .tput-queue--5,
+[data-tput-queue="6"] .tput-queue--6 {
+  opacity: 1;
+}
+
+/* --- the Done band ------------------------------------------------------ */
+
+/* Throughput. It is amber while it is pinned at a ceiling it cannot pass and
+   green once the ceiling has moved, because the number is the same kind of
+   number in both cases and only its relationship to the bottleneck changed. */
+.tput-out {
+  fill: var(--fg-soft);
+  font-size: 36px;
+}
+
+.tput-out--40 {
+  fill: var(--state-half);
+}
+
+.tput-out--48,
+.tput-out--60 {
+  fill: var(--state-closed);
+}
+
+[data-tput-out="10"] .tput-out--10,
+[data-tput-out="16"] .tput-out--16,
+[data-tput-out="32"] .tput-out--32,
+[data-tput-out="40"] .tput-out--40,
+[data-tput-out="48"] .tput-out--48,
+[data-tput-out="60"] .tput-out--60 {
+  opacity: 1;
+}
+
+/* What the back of the line is waiting, in milliseconds. Nothing waiting is
+   written as a checked zero rather than left out, so the reader can see that
+   the number is being measured all the way through. */
+.tput-wait {
+  fill: var(--fg-soft);
+  font-size: 36px;
+}
+
+.tput-wait--0 {
+  fill: var(--muted);
+}
+
+.tput-wait--600,
+.tput-wait--800 {
+  fill: var(--state-half);
+}
+
+.tput-wait--900,
+.tput-wait--1200,
+.tput-wait--1500 {
+  fill: var(--state-open);
+}
+
+[data-tput-wait="0"] .tput-wait--0,
+[data-tput-wait="300"] .tput-wait--300,
+[data-tput-wait="400"] .tput-wait--400,
+[data-tput-wait="600"] .tput-wait--600,
+[data-tput-wait="800"] .tput-wait--800,
+[data-tput-wait="900"] .tput-wait--900,
+[data-tput-wait="1200"] .tput-wait--1200,
+[data-tput-wait="1500"] .tput-wait--1500 {
+  opacity: 1;
+}
+
+/* --- the world where throughput is not latency -------------------------- */
+
+/*
+ * The first step's argument: one worker at 100 ms and four at 400 ms finish the
+ * same ten jobs a second. Both configurations are drawn in a colour the running
+ * stage never uses on a slot, and dashed, so neither of them can be mistaken for
+ * the four slots the Server actually has once the ghost is gone.
+ */
+[data-tput-ghost="a"] .scene-node > .scene-box,
+[data-tput-ghost="b"] .scene-node > .scene-box {
+  stroke: var(--cpu);
+  stroke-width: 6;
+  stroke-dasharray: 18 12;
+}
+
+[data-tput-ghost="a"] .tput-slot,
+[data-tput-ghost="b"] .tput-slot {
+  stroke: var(--cpu);
+  stroke-width: 5;
+  stroke-dasharray: 12 8;
+}
+
+[data-tput-ghost="a"] .tput-slot--1,
+[data-tput-ghost="b"] .tput-slot--1,
+[data-tput-ghost="b"] .tput-slot--2,
+[data-tput-ghost="b"] .tput-slot--3,
+[data-tput-ghost="b"] .tput-slot--4 {
+  fill: var(--cpu);
+  fill-opacity: 0.18;
+  stroke: var(--cpu);
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The four things the captions stop on, each drawn on the band it is about and
+   each in the colour of the argument it is making. */
+[data-tput-mark="axes"] .scene-node > .scene-box {
+  stroke: var(--cpu);
+  stroke-width: 6;
+}
+
+[data-tput-mark="ceiling"] .tput-done > .scene-box {
+  stroke: var(--state-half);
+  stroke-width: 6;
+}
+
+[data-tput-mark="behind"] .scene-node > .scene-box {
+  stroke: var(--state-open);
+  stroke-width: 6;
+}
+
+[data-tput-mark="bottleneck"] .scene-node > .scene-box {
+  stroke: var(--state-half);
+  stroke-width: 6;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: a wider Server, the same load it could not carry before, an
+   empty line, and a fifth of the ceiling still unspent. */
+[data-tput-settled="on"] .tput-done > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 6;
+}
