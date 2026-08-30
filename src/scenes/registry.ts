@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as elasticityDuration,
+  stageMarkup as elasticityStage,
+} from './elasticity/stage';
+import {
   SCENE_DURATION as authenticationDuration,
   stageMarkup as authenticationStage,
 } from './authentication/stage';
@@ -521,6 +525,10 @@ const scenes: Record<string, SceneAsset> = {
   authentication: {
     markup: authenticationStage,
     duration: authenticationDuration,
+  },
+  elasticity: {
+    markup: elasticityStage,
+    duration: elasticityDuration,
   },
 };
 
