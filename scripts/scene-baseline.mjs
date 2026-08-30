@@ -115,6 +115,7 @@ const SCENE_IDS = [
   'key-rotation',
   'throughput',
   'domain-driven-design',
+  'repository',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */

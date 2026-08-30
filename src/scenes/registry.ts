@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as repositoryDuration,
+  stageMarkup as repositoryStage,
+} from './repository/stage';
+import {
   SCENE_DURATION as domainDrivenDesignDuration,
   stageMarkup as domainDrivenDesignStage,
 } from './domain-driven-design/stage';
@@ -561,6 +565,10 @@ const scenes: Record<string, SceneAsset> = {
   'domain-driven-design': {
     markup: domainDrivenDesignStage,
     duration: domainDrivenDesignDuration,
+  },
+  repository: {
+    markup: repositoryStage,
+    duration: repositoryDuration,
   },
 };
 

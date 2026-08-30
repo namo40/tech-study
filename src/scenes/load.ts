@@ -6,6 +6,8 @@ import type { SceneModule } from './types';
  */
 export async function loadScene(id: string): Promise<SceneModule | null> {
   switch (id) {
+    case 'repository':
+      return (await import('./repository/scene')).default;
     case 'domain-driven-design':
       return (await import('./domain-driven-design/scene')).default;
     case 'throughput':
