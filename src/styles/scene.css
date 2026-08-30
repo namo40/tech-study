@@ -19729,3 +19729,493 @@
 [data-pst-settled="on"] .pst-slot-box {
   stroke-width: 4;
 }
+
+/* ---------------------------------------------------------------- */
+/* Authentication stage                                              */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One question, asked four ways: not what a caller may do, but whether it is
+ * who it says it is. Every rule below reads one of the four answers — a door
+ * that asks for a name and therefore proves nothing, a secret that can be typed
+ * by the wrong hands, a machine proving itself with something it holds, and a
+ * connection where both ends showed a certificate before any traffic moved.
+ *
+ * The colour argument is small. Blue is a check in progress and the knowledge
+ * factor, because a password is something you say. Purple is possession — the
+ * api key, the certificate, and the mutual state the Verifier goes into — since
+ * both are things a caller holds rather than things it knows. Green is proof
+ * accepted and what follows from it: the `who` verdict, an identified arrival,
+ * `ok n`, the settled frame. Red is refusal and its opposite number: the `deny`
+ * lamp, `failed n` while it moves, and the stolen chip, which is red for the
+ * reader and indistinguishable to the door. Amber is whatever the scene is
+ * holding up for a moment. Grey, hollow and dashed are absence: the door with
+ * no check behind it, and a caller holding nothing up.
+ *
+ * The three states the reader must never confuse are drawn three ways rather
+ * than three colours. The ghost door is a dashed hollow box with a hollow
+ * dashed lamp and no method written anywhere; a door that is present and idle
+ * is a solid box with a solid grey lamp and a method on its plate; a refusal is
+ * a red rim on the verdict plate with a solid red lamp and the word beside it.
+ * That holds in both themes because all three resolve to tokens and differ in
+ * fill pattern as well as hue.
+ *
+ * Every value the reader can read is a stack of text elements on one spot,
+ * hidden by a base rule and revealed one at a time by the current `data-*`, so
+ * nothing interpolates and scrubbing backwards is exact in both themes.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+/*
+ * The lower lane is the only way to the API, so what is standing over it
+ * matters. With no check at the door it is wide open, which is the first step's
+ * whole argument; while a refusal is standing it is drawn as the path this call
+ * is not taking.
+ */
+[data-an-mode="ghost"] .an-lane--api {
+  stroke: var(--state-open);
+}
+
+[data-an-verdict="deny"] .an-lane--api {
+  stroke-dasharray: 16 16;
+  opacity: 0.5;
+}
+
+/* Once the proof is mutual the connection itself is the identity, so the lane
+   that carries it is drawn as the thing that was established. */
+[data-an-mutual="on"] .an-lane--api {
+  stroke: var(--cpu);
+}
+
+/* Nothing is on its way anywhere on the settled frame, so all three lanes go
+   quiet with everything else. */
+[data-an-settled="on"] .an-lane {
+  stroke: var(--border);
+}
+
+/* --- the Clients -------------------------------------------------------- */
+
+/*
+ * Two callers, each with a name it goes by and whatever it is putting on the
+ * counter. The name is always written; the evidence is written only while it is
+ * being presented, because a caller holding nothing up is a state of its own
+ * and not an empty label.
+ */
+.an-client-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.an-client-name {
+  fill: var(--fg);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+.an-ev {
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+/* Something you know is blue; something you hold is purple. The stolen chip is
+   red for the reader and identical to the password for the door — that gap is
+   the second step, so the colour says what the check cannot see. */
+.an-ev--password {
+  fill: var(--accent);
+}
+
+.an-ev--stolen {
+  fill: var(--state-open);
+}
+
+.an-ev--key,
+.an-ev--cert {
+  fill: var(--cpu);
+}
+
+.an-client[data-an-ev="password"] .an-ev--password,
+.an-client[data-an-ev="stolen"] .an-ev--stolen,
+.an-client[data-an-ev="key"] .an-ev--key,
+.an-client[data-an-ev="cert"] .an-ev--cert {
+  opacity: 1;
+}
+
+/* A caller in the middle of presenting something is the one being read. */
+.an-client:not([data-an-ev="none"]) .an-client-bg {
+  stroke: var(--fg-soft);
+  stroke-width: 5;
+}
+
+/* --- the Verifier ------------------------------------------------------- */
+
+/* A door with no check behind it is not a door, and the frame says so before
+   any of the plates inside it do. */
+[data-an-mode="ghost"] .an-verifier > .scene-box {
+  stroke: var(--muted);
+  stroke-dasharray: 18 12;
+}
+
+/* Once both ends prove themselves the frame carries the possession colour, so
+   the mutual step is legible from the outline alone. */
+[data-an-mutual="on"] .an-verifier > .scene-box {
+  stroke: var(--cpu);
+}
+
+/*
+ * The method in force. Present is a filled plate with the word on it; the ghost
+ * door has no method at all, which is drawn as a hollow dashed plate with
+ * nothing written in it rather than as a plate saying "none".
+ */
+.an-method-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.an-method-text {
+  font-size: 34px;
+  letter-spacing: 1px;
+}
+
+.an-method-text--password {
+  fill: var(--accent);
+}
+
+.an-method-text--key,
+.an-method-text--mtls {
+  fill: var(--cpu);
+}
+
+[data-an-method="password"] .an-method-text--password,
+[data-an-method="key"] .an-method-text--key,
+[data-an-method="mtls"] .an-method-text--mtls {
+  opacity: 1;
+}
+
+[data-an-method="none"] .an-method-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 12 10;
+}
+
+[data-an-method="mtls"] .an-method-bg {
+  stroke: var(--cpu);
+  stroke-width: 5;
+}
+
+/*
+ * The check itself. Off is a solid grey lamp, which is a door standing ready;
+ * on is a solid blue one, which is a door reading something. The ghost door has
+ * neither: a hollow dashed ring, because there is nothing there to light.
+ */
+.an-check {
+  fill: var(--muted);
+}
+
+[data-an-check="on"] .an-check {
+  fill: var(--accent);
+}
+
+[data-an-mode="ghost"] .an-check {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-dasharray: 7 7;
+}
+
+/*
+ * The Verifier's own certificate. It is absent rather than empty until the
+ * proof goes both ways, because until then the far end was taken on faith and
+ * there was nothing on this side of the counter at all.
+ */
+.an-own-bg {
+  fill: var(--surface-2);
+  stroke: var(--cpu);
+  stroke-width: 3;
+  opacity: 0;
+}
+
+.an-own-text {
+  fill: var(--cpu);
+  font-size: 34px;
+  letter-spacing: 1px;
+}
+
+[data-an-mutual="on"] .an-own-bg,
+[data-an-mutual="on"] .an-own-text {
+  opacity: 1;
+}
+
+/* The verdict. Nothing is written between calls, because a door with nothing in
+   it has not decided anything. */
+.an-verdict-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.an-verdict-lamp {
+  fill: var(--muted);
+}
+
+.an-word {
+  font-size: 34px;
+  letter-spacing: 1px;
+}
+
+.an-word--who {
+  fill: var(--state-closed);
+}
+
+.an-word--deny {
+  fill: var(--state-open);
+}
+
+[data-an-verdict="who"] .an-word--who,
+[data-an-verdict="deny"] .an-word--deny {
+  opacity: 1;
+}
+
+[data-an-verdict="who"] .an-verdict-bg {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+[data-an-verdict="who"] .an-verdict-lamp {
+  fill: var(--state-closed);
+}
+
+[data-an-verdict="deny"] .an-verdict-bg {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+[data-an-verdict="deny"] .an-verdict-lamp {
+  fill: var(--state-open);
+}
+
+/* How many calls the door refused. It goes red while it is moving, because a
+   refusal is the only thing that moves it. */
+.an-failed {
+  fill: var(--fg-soft);
+  font-size: 34px;
+}
+
+[data-an-failed="0"] .an-failed--0,
+[data-an-failed="1"] .an-failed--1,
+[data-an-failed="2"] .an-failed--2 {
+  opacity: 1;
+}
+
+[data-an-verdict="deny"] .an-failed {
+  fill: var(--state-open);
+}
+
+[data-an-settled="on"] .an-failed {
+  fill: var(--fg);
+}
+
+/* --- the API ------------------------------------------------------------ */
+
+/* How many calls the API answered. It counts every landing, including the one
+   nobody identified, because the API answered that call too — which is exactly
+   what makes the first step a defect rather than an outage. */
+.an-ok {
+  fill: var(--fg-soft);
+  font-size: 34px;
+}
+
+[data-an-ok="0"] .an-ok--0,
+[data-an-ok="1"] .an-ok--1,
+[data-an-ok="2"] .an-ok--2,
+[data-an-ok="3"] .an-ok--3,
+[data-an-ok="4"] .an-ok--4,
+[data-an-ok="5"] .an-ok--5,
+[data-an-ok="6"] .an-ok--6,
+[data-an-ok="7"] .an-ok--7,
+[data-an-ok="8"] .an-ok--8,
+[data-an-ok="9"] .an-ok--9 {
+  opacity: 1;
+}
+
+/*
+ * The identity a landed call brought with it. An empty plate is a call the API
+ * answered without knowing who made it: hollow and dashed, so it cannot be read
+ * as a tag that happens to be blank.
+ */
+.an-tag-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 14 10;
+}
+
+.an-tag-text {
+  fill: var(--state-closed);
+  font-size: 34px;
+  letter-spacing: 1px;
+}
+
+[data-an-tag="on"] .an-tag-bg {
+  fill: var(--surface-2);
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+[data-an-tag="on"] .an-tag-text {
+  opacity: 1;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/*
+ * A dot is drawn as what it is carrying, in the same two colours the capsules
+ * use: blue for something known, purple for something held. A claim with
+ * nothing behind it is hollow and dashed, because that is what the door has for
+ * it. The stolen dot is the same blue as the password with a red rim added,
+ * which is exactly the reader's view and not the door's. A key and a
+ * certificate ride with a plate beside them, because possession is a thing held
+ * rather than a thing said.
+ */
+.an-carry--none .scene-req-dot {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 5;
+  stroke-dasharray: 8 7;
+}
+
+.an-carry--password .scene-req-dot,
+.an-carry--stolen .scene-req-dot {
+  fill: var(--accent);
+}
+
+.an-carry--stolen .scene-req-dot {
+  stroke: var(--state-open);
+  stroke-width: 6;
+}
+
+.an-carry--key .scene-req-dot,
+.an-carry--cert .scene-req-dot {
+  fill: var(--cpu);
+}
+
+.an-held {
+  stroke: var(--cpu);
+  stroke-width: 5;
+}
+
+/* A key is a solid plate and a certificate a hollow one: the key is the secret
+   itself, and the certificate is the public half of one that stayed at home. */
+.an-held--key {
+  fill: var(--cpu);
+}
+
+.an-held--cert {
+  fill: none;
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The door that only asks for a name, and the way in it leaves standing open. */
+[data-an-mark="ghost"] .an-check {
+  stroke: var(--state-half);
+}
+
+[data-an-mark="ghost"] .an-verifier > .scene-box {
+  stroke: var(--state-half);
+}
+
+/* Something you know, something you have, something you are: the three factors
+   are the two callers and what either of them can put on the counter. */
+[data-an-mark="factors"] .an-client-bg {
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+[data-an-mark="factors"] .an-method-bg {
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+/* The verifier sees evidence, not intent, so what is held up is the pair of
+   things it actually reads: the method it checks by, and the check itself. */
+[data-an-mark="evidence"] .an-method-bg {
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+[data-an-mark="evidence"] .an-method-text {
+  fill: var(--state-half);
+}
+
+[data-an-mark="evidence"] .an-check {
+  fill: var(--state-half);
+}
+
+/* Hashing at rest, short sessions, a second factor: a password never travels
+   alone, and the plate that names the method is where that discipline lives. */
+[data-an-mark="defense"] .an-method-bg {
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+[data-an-mark="defense"] .an-method-text--password {
+  fill: var(--state-half);
+}
+
+/* A machine has no fingers, so the caller that cannot type is what is held up. */
+[data-an-mark="nopass"] .an-client--service .an-client-bg {
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+[data-an-mark="nopass"] .an-client--service .an-client-name {
+  fill: var(--state-half);
+}
+
+/* Possession is the evidence, which is why a leaked key is an identity leak:
+   the machine, and the one word that is standing in for it. */
+[data-an-mark="possession"] .an-client--service .an-client-bg {
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 14 10;
+}
+
+[data-an-mark="possession"] .an-method-text--key {
+  fill: var(--state-half);
+}
+
+/* No secret crosses the wire: the lane, and the two certificates either end of
+   it, are what the last emphasis is about. */
+[data-an-mark="wire"] .an-lane--api {
+  stroke: var(--state-half);
+}
+
+[data-an-mark="wire"] .an-own-bg {
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+[data-an-mark="wire"] .an-ev--cert {
+  fill: var(--state-half);
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* Both ends proved themselves, nothing is waiting at the door, and the two
+   numbers are the whole of what happened. */
+[data-an-settled="on"] .an-verifier > .scene-box {
+  stroke: var(--cpu);
+}
+
+[data-an-settled="on"] .an-api > .scene-box {
+  stroke: var(--state-closed);
+}
+
+[data-an-settled="on"] .an-ok {
+  fill: var(--fg);
+}

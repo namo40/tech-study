@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as authenticationDuration,
+  stageMarkup as authenticationStage,
+} from './authentication/stage';
+import {
   SCENE_DURATION as preparedStatementDuration,
   stageMarkup as preparedStatementStage,
 } from './prepared-statement/stage';
@@ -513,6 +517,10 @@ const scenes: Record<string, SceneAsset> = {
   'prepared-statement': {
     markup: preparedStatementStage,
     duration: preparedStatementDuration,
+  },
+  authentication: {
+    markup: authenticationStage,
+    duration: authenticationDuration,
   },
 };
 
