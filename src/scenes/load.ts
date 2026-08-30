@@ -6,6 +6,8 @@ import type { SceneModule } from './types';
  */
 export async function loadScene(id: string): Promise<SceneModule | null> {
   switch (id) {
+    case 'key-rotation':
+      return (await import('./key-rotation/scene')).default;
     case 'pagination':
       return (await import('./pagination/scene')).default;
     case 'elasticity':

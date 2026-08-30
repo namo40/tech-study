@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as keyRotationDuration,
+  stageMarkup as keyRotationStage,
+} from './key-rotation/stage';
+import {
   SCENE_DURATION as paginationDuration,
   stageMarkup as paginationStage,
 } from './pagination/stage';
@@ -537,6 +541,10 @@ const scenes: Record<string, SceneAsset> = {
   pagination: {
     markup: paginationStage,
     duration: paginationDuration,
+  },
+  'key-rotation': {
+    markup: keyRotationStage,
+    duration: keyRotationDuration,
   },
 };
 
