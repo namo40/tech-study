@@ -20621,3 +20621,307 @@
 [data-el-settled="on"] .scene-node > .scene-box {
   stroke: var(--state-closed);
 }
+/* ---------------------------------------------------------------- */
+/* Pagination stage                                                  */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One list, handed out a slice at a time, and the whole argument is in which
+ * slots of the strip light up and which colour they light.
+ *
+ * The strip is the table in key order: a hundred rows and two spare slots. Grey
+ * is a row nobody has touched, blue is a row a request walked over and threw
+ * away, soft green is a row the reader already has, full green is the page that
+ * just came back, red is a row in that page the reader had already been handed,
+ * and purple is a row that was written while the reader was reading. Those six
+ * pictures are the scene: an offset page arrives with a long blue run in front
+ * of it, a cursor page arrives with none, and after a write the green band and
+ * the full-green band overlap by one slot.
+ *
+ * Every word on this stage is a stack of text elements on one spot with the
+ * widget class hiding all of them, so nothing interpolates and scrubbing
+ * backwards is exact in both themes. So is the received band and so is the
+ * returned page: each is a set of groups on one spot with one revealed.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+/* Both lanes run downward: a request, and then the page it produced. The lower
+   one is dashed because what comes back is an answer rather than a question. */
+.pg-lane--give {
+  stroke-dasharray: 14 12;
+  opacity: 0.7;
+}
+
+.pg-carry--ask .scene-req-dot {
+  fill: var(--request);
+}
+
+.pg-carry--give .scene-req-dot {
+  fill: var(--state-closed);
+}
+
+/* --- the Client --------------------------------------------------------- */
+
+.pg-chip-mode .pg-chip-mode-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-pg-mode="none"] .pg-chip-mode {
+  opacity: 0;
+}
+
+.pg-mode {
+  fill: var(--fg-soft);
+  font-size: 30px;
+}
+
+[data-pg-mode="page-1"] .pg-mode--page-1,
+[data-pg-mode="page-2"] .pg-mode--page-2,
+[data-pg-mode="page-3"] .pg-mode--page-3,
+[data-pg-mode="page-4"] .pg-mode--page-4,
+[data-pg-mode="page-5"] .pg-mode--page-5,
+[data-pg-mode="after-20"] .pg-mode--after-20,
+[data-pg-mode="after-40"] .pg-mode--after-40,
+[data-pg-mode="after-60"] .pg-mode--after-60 {
+  opacity: 1;
+}
+
+/* Naming a place by the row you saw is a different kind of address from naming
+   it by a count, so it is not drawn in the same colour. */
+[data-pg-mode^="after-"] .pg-chip-mode .pg-chip-mode-bg {
+  stroke: var(--state-closed);
+}
+
+[data-pg-mode^="after-"] .pg-mode {
+  fill: var(--state-closed);
+}
+
+/* The received band: one group per number of pages in hand, plus the one that
+   says a single response handed over the whole table. */
+.pg-held {
+  opacity: 0;
+}
+
+[data-pg-held="0"] .pg-held--0,
+[data-pg-held="1"] .pg-held--1,
+[data-pg-held="2"] .pg-held--2,
+[data-pg-held="3"] .pg-held--3,
+[data-pg-held="4"] .pg-held--4,
+[data-pg-held="5"] .pg-held--5,
+[data-pg-held="6"] .pg-held--6,
+[data-pg-held="all"] .pg-held--all {
+  opacity: 1;
+}
+
+.pg-held-block {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+  stroke-width: 2;
+}
+
+/* Everything at once, which is not a page and does not fit anywhere. */
+.pg-held-dump {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+  stroke-width: 3;
+}
+
+/* --- the Table ---------------------------------------------------------- */
+
+.pg-table .scene-node-label {
+  fill: var(--fg-soft);
+}
+
+.pg-scanned,
+.pg-rows {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 30px;
+}
+
+.pg-scanned--0 {
+  fill: var(--muted);
+}
+
+/* A walk that has touched the whole table has stopped being a page. */
+.pg-scanned--80,
+.pg-scanned--100 {
+  fill: var(--state-half);
+}
+
+[data-pg-scanned="0"] .pg-scanned--0,
+[data-pg-scanned="20"] .pg-scanned--20,
+[data-pg-scanned="40"] .pg-scanned--40,
+[data-pg-scanned="60"] .pg-scanned--60,
+[data-pg-scanned="80"] .pg-scanned--80,
+[data-pg-scanned="100"] .pg-scanned--100 {
+  opacity: 1;
+}
+
+[data-pg-rows="100"] .pg-rows--100,
+[data-pg-rows="101"] .pg-rows--101,
+[data-pg-rows="102"] .pg-rows--102 {
+  opacity: 1;
+}
+
+/*
+ * One slot says one thing: what has happened to the row standing in it. `idle`
+ * is stored and untouched, `scan` was counted and discarded, `read` is a row the
+ * reader already has, `page` is the page that just came back, `dup` is a row in
+ * that page the reader had already been handed, `new` was just written, and
+ * `empty` is a slot with no row in it at all.
+ */
+.pg-table .pg-row {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+/* A slot with nothing in it yet. */
+.pg-row[data-pg-row="empty"] {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 4 6;
+}
+
+/* Counted, and thrown away. This run is what deep offset pages are made of. */
+.pg-row[data-pg-row="scan"] {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+/* Already handed over, in an earlier page of this run. */
+.pg-row[data-pg-row="read"] {
+  fill: var(--state-closed);
+  fill-opacity: 0.4;
+  stroke: var(--state-closed);
+  stroke-opacity: 0.55;
+}
+
+.pg-row[data-pg-row="page"] {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+}
+
+/* Handed over twice, which is the whole of the drift. */
+.pg-row[data-pg-row="dup"] {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+  stroke-width: 3;
+}
+
+.pg-row[data-pg-row="new"] {
+  fill: var(--cpu);
+  stroke: var(--cpu);
+  stroke-width: 3;
+}
+
+.pg-new {
+  fill: var(--cpu);
+  font-size: 26px;
+}
+
+[data-pg-new="on"] .pg-new--on {
+  opacity: 1;
+}
+
+/* --- the Result --------------------------------------------------------- */
+
+.pg-out {
+  opacity: 0;
+}
+
+[data-pg-out="page"] .pg-out--page,
+[data-pg-out="dup"] .pg-out--dup,
+[data-pg-out="burst"] .pg-out--burst {
+  opacity: 1;
+}
+
+.pg-out-cell {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+  stroke-width: 2;
+}
+
+.pg-out-cell--again {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+.pg-out-dump {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+  stroke-width: 4;
+}
+
+/* The two verdicts, each drawn whether it is lit or not, because a dark lamp is
+   a checked answer rather than a missing one. */
+.pg-lamp-dot {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+.pg-lamp-word {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  fill: var(--muted);
+}
+
+[data-pg-dup="off"] .pg-lamp-dup--off,
+[data-pg-dup="on"] .pg-lamp-dup--on,
+[data-pg-gap="off"] .pg-lamp-gap--off,
+[data-pg-gap="on"] .pg-lamp-gap--on {
+  opacity: 1;
+}
+
+.pg-lamp-dup--on,
+.pg-lamp-gap--on {
+  fill: var(--state-open);
+}
+
+[data-pg-dup="on"] .pg-lamp-dot--dup,
+[data-pg-gap="on"] .pg-lamp-dot--gap {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The four things the captions stop on, each drawn on the band it is about. */
+[data-pg-mark="position"] .pg-client > .scene-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-pg-mark="jump"] .pg-client > .scene-box {
+  stroke: var(--state-half);
+  stroke-width: 6;
+}
+
+[data-pg-mark="token"] .pg-client > .scene-box {
+  stroke: var(--cpu);
+  stroke-width: 6;
+}
+
+[data-pg-mark="cap"] .pg-table > .scene-box {
+  stroke: var(--state-half);
+  stroke-width: 6;
+}
+
+[data-pg-mark="unique"] .pg-table > .scene-box {
+  stroke: var(--cpu);
+  stroke-width: 6;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over and the last page is the one that stands: it came back whole,
+   it repeated nothing and it skipped nothing. */
+[data-pg-settled="on"] .pg-result > .scene-box {
+  stroke: var(--state-closed);
+}

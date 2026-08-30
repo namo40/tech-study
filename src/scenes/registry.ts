@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as paginationDuration,
+  stageMarkup as paginationStage,
+} from './pagination/stage';
+import {
   SCENE_DURATION as elasticityDuration,
   stageMarkup as elasticityStage,
 } from './elasticity/stage';
@@ -529,6 +533,10 @@ const scenes: Record<string, SceneAsset> = {
   elasticity: {
     markup: elasticityStage,
     duration: elasticityDuration,
+  },
+  pagination: {
+    markup: paginationStage,
+    duration: paginationDuration,
   },
 };
 
