@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as backgroundServiceDuration,
+  stageMarkup as backgroundServiceStage,
+} from './background-service/stage';
+import {
   SCENE_DURATION as workloadIdentityDuration,
   stageMarkup as workloadIdentityStage,
 } from './workload-identity/stage';
@@ -577,6 +581,10 @@ const scenes: Record<string, SceneAsset> = {
   'workload-identity': {
     markup: workloadIdentityStage,
     duration: workloadIdentityDuration,
+  },
+  'background-service': {
+    markup: backgroundServiceStage,
+    duration: backgroundServiceDuration,
   },
 };
 

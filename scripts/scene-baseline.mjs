@@ -117,6 +117,7 @@ const SCENE_IDS = [
   'domain-driven-design',
   'repository',
   'workload-identity',
+  'background-service',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */
