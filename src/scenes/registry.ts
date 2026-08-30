@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as domainDrivenDesignDuration,
+  stageMarkup as domainDrivenDesignStage,
+} from './domain-driven-design/stage';
+import {
   SCENE_DURATION as throughputDuration,
   stageMarkup as throughputStage,
 } from './throughput/stage';
@@ -553,6 +557,10 @@ const scenes: Record<string, SceneAsset> = {
   throughput: {
     markup: throughputStage,
     duration: throughputDuration,
+  },
+  'domain-driven-design': {
+    markup: domainDrivenDesignStage,
+    duration: domainDrivenDesignDuration,
   },
 };
 

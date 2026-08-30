@@ -13,6 +13,8 @@ related:
     slug: snapshot
   - label: Domain-Driven Design
     slug: domain-driven-design
+  - label: Aggregate Root
+    slug: aggregate-root
   - label: CQRS
     slug: command-query-responsibility-segregation
   - label: Saga

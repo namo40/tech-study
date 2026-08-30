@@ -21659,3 +21659,411 @@
   stroke: var(--state-closed);
   stroke-width: 6;
 }
+
+/* ---------------------------------------------------------------- */
+/* Domain-Driven Design stage                                        */
+/* ---------------------------------------------------------------- */
+
+/*
+ * A border is a claim about meaning, so the argument on this stage is made with
+ * size and shape before it is made with colour.
+ *
+ * The shared model of the first step is the same `Order` card the rest of the
+ * scene uses, drawn at five sizes: a lean plate with one word on it, and four
+ * larger ones carrying one, two, three and four field rows. Growth is the whole
+ * signal — the card gets wider and taller and picks up rows — and only the last
+ * of the five is drawn in the colour of a warning, because by then every change
+ * to it is a negotiation with everybody.
+ *
+ * A context card is either a hollow dashed plate with nothing written on it,
+ * which is a context that has not said what it means by the word it inherited,
+ * or a filled plate carrying three words, which is a model. Neither can be
+ * mistaken for the other in either theme, and the two contexts are drawn
+ * identically on purpose: same word, two models, both small and both right.
+ *
+ * The lamp at the door is three glyphs on one spot rather than three fills of
+ * one circle — a hollow dashed ring while nothing is being asked, a disc with a
+ * check when the invariant held, a disc with a cross when somebody tried to go
+ * around the door — so the answer is legible without colour, and the refusal is
+ * legible next to the `deny` plate that lights under it.
+ *
+ * The colour argument is small and it is the same everywhere. Blue is language
+ * and the models it defines: a word travelling into a context, a context that
+ * has said what it means, a write on its way to the door. Green is a change the
+ * root took, the `ok` count, and the settled frame. Amber is a shared model
+ * growing and the two marks about where a border goes. Red is that model at its
+ * worst, and a writer refused. Violet is the one thing that ever crosses a
+ * border, the `event`, in a colour no model on this stage is ever drawn in,
+ * because a translation is not a shared class.
+ *
+ * Every value the reader can read is a stack of text elements on one spot with
+ * the widget class hiding all of them, so nothing interpolates and scrubbing
+ * backwards is exact.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+/* The two upper lanes carry a word rather than a call, so they are dashed; the
+   lower one carries a write, which is heavier and solid. */
+.ddd-lane--sales,
+.ddd-lane--ship {
+  stroke-dasharray: 16 12;
+}
+
+.ddd-lane--write {
+  stroke-width: 6;
+}
+
+/* While there is one model there is no language to send anywhere, and before
+   the third step nobody has knocked on the door. */
+[data-ddd-mode="shared"] .ddd-lane--sales,
+[data-ddd-mode="shared"] .ddd-lane--ship {
+  opacity: 0.35;
+}
+
+[data-ddd-root="off"] .ddd-lane--write {
+  opacity: 0.45;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+.ddd-req--lang .scene-req-dot,
+.ddd-req--write .scene-req-dot {
+  fill: var(--request);
+}
+
+/* A translation, in the one colour no model on this stage is drawn in. */
+.ddd-req--event .scene-req-dot {
+  fill: var(--cpu);
+}
+
+/* A write that means to go around the guard. It travels the same column as an
+   honest one, because it is the same road with the door skipped, so it is told
+   apart by being hollow and dashed rather than by where it is. */
+.ddd-req--bypass .scene-req-dot {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: 6 6;
+}
+
+/* --- the Domain band ---------------------------------------------------- */
+
+/* The card the word sits on, at whichever size the shared model has reached. */
+.ddd-plate {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+  opacity: 0;
+}
+
+[data-ddd-ghost="off"] .ddd-plate--lean,
+[data-ddd-ghost="on"][data-ddd-fields="1"] .ddd-plate--1,
+[data-ddd-ghost="on"][data-ddd-fields="2"] .ddd-plate--2,
+[data-ddd-ghost="on"][data-ddd-fields="3"] .ddd-plate--3,
+[data-ddd-ghost="on"][data-ddd-fields="4"] .ddd-plate--4 {
+  opacity: 1;
+}
+
+/* Growing is the signal; the colour only joins in at the size where the model
+   has stopped belonging to anybody. */
+[data-ddd-ghost="on"] .ddd-plate--1,
+[data-ddd-ghost="on"] .ddd-plate--2,
+[data-ddd-ghost="on"] .ddd-plate--3 {
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 16 10;
+}
+
+[data-ddd-ghost="on"] .ddd-plate--4 {
+  fill: var(--state-open);
+  fill-opacity: 0.14;
+  stroke: var(--state-open);
+  stroke-width: 6;
+  stroke-dasharray: 16 10;
+}
+
+.ddd-word {
+  fill: var(--fg);
+  font-size: 36px;
+  font-weight: 700;
+}
+
+[data-ddd-ghost="on"][data-ddd-fields="4"] .ddd-word {
+  fill: var(--state-open);
+}
+
+/* One row per field somebody else needed. They only ever appear on a ghost. */
+.ddd-bar {
+  fill: var(--state-half);
+  opacity: 0;
+}
+
+[data-ddd-fields="1"] .ddd-bar--1,
+[data-ddd-fields="2"] .ddd-bar--1,
+[data-ddd-fields="2"] .ddd-bar--2,
+[data-ddd-fields="3"] .ddd-bar--1,
+[data-ddd-fields="3"] .ddd-bar--2,
+[data-ddd-fields="3"] .ddd-bar--3,
+[data-ddd-fields="4"] .ddd-bar--1,
+[data-ddd-fields="4"] .ddd-bar--2,
+[data-ddd-fields="4"] .ddd-bar--3,
+[data-ddd-fields="4"] .ddd-bar--4 {
+  opacity: 1;
+}
+
+[data-ddd-fields="4"] .ddd-bar {
+  fill: var(--state-open);
+}
+
+/* The published event: the one thing on this stage that crosses a border. */
+.ddd-event {
+  opacity: 0;
+}
+
+[data-ddd-event="on"] .ddd-event {
+  opacity: 1;
+}
+
+.ddd-event-bg {
+  fill: var(--surface);
+  stroke: var(--cpu);
+  stroke-width: 4;
+}
+
+.ddd-event-text {
+  fill: var(--cpu);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+/* --- the two contexts --------------------------------------------------- */
+
+/*
+ * A plate nobody has defined a meaning on: hollow, thin and dashed, with not a
+ * word written on it. It cannot be confused with a model, because a model is
+ * filled and carries three.
+ */
+.ddd-context .ddd-card {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 12 10;
+}
+
+.ddd-card-word {
+  fill: var(--fg);
+  font-size: 34px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.ddd-card-field {
+  fill: var(--fg-soft);
+  font-size: 30px;
+  font-weight: 600;
+  opacity: 0;
+}
+
+[data-ddd-sales="own"] .ddd-context--sales .ddd-card,
+[data-ddd-ship="own"] .ddd-context--ship .ddd-card {
+  fill: var(--request);
+  fill-opacity: 0.12;
+  stroke: var(--request);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+[data-ddd-sales="own"] .ddd-context--sales .ddd-card-word,
+[data-ddd-sales="own"] .ddd-context--sales .ddd-card-field,
+[data-ddd-ship="own"] .ddd-context--ship .ddd-card-word,
+[data-ddd-ship="own"] .ddd-context--ship .ddd-card-field {
+  opacity: 1;
+}
+
+/* The one number each model keeps, each in its own units. */
+.ddd-total,
+.ddd-items {
+  font-size: 30px;
+  fill: var(--state-closed);
+}
+
+.ddd-total--0,
+.ddd-items--0 {
+  fill: var(--muted);
+}
+
+[data-ddd-sales="own"][data-ddd-total="0"] .ddd-total--0,
+[data-ddd-sales="own"][data-ddd-total="3"] .ddd-total--3,
+[data-ddd-sales="own"][data-ddd-total="5"] .ddd-total--5,
+[data-ddd-ship="own"][data-ddd-items="0"] .ddd-items--0,
+[data-ddd-ship="own"][data-ddd-items="1"] .ddd-items--1,
+[data-ddd-ship="own"][data-ddd-items="2"] .ddd-items--2 {
+  opacity: 1;
+}
+
+/* --- the Root ----------------------------------------------------------- */
+
+/* Three glyphs on one spot, so the guard's answer is a shape before it is a
+   colour: a ring while nothing is being asked, a check, a cross. */
+.ddd-lamp {
+  opacity: 0;
+}
+
+[data-ddd-lamp="idle"] .ddd-lamp--idle,
+[data-ddd-lamp="ok"] .ddd-lamp--ok,
+[data-ddd-lamp="deny"] .ddd-lamp--deny {
+  opacity: 1;
+}
+
+.ddd-lamp-ring {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-dasharray: 10 8;
+}
+
+[data-ddd-root="on"] .ddd-lamp-ring {
+  stroke: var(--fg-soft);
+}
+
+.ddd-lamp-disc {
+  stroke: none;
+}
+
+.ddd-lamp-disc--ok {
+  fill: var(--state-closed);
+}
+
+.ddd-lamp-disc--deny {
+  fill: var(--state-open);
+}
+
+.ddd-lamp-glyph {
+  fill: none;
+  stroke: var(--bg);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The one rule this door owns. It is named from the first frame, because the
+   guard is not something the third step installs; it is what the third step
+   looks at. */
+.ddd-invariant {
+  fill: var(--fg-soft);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+[data-ddd-root="on"] .ddd-invariant {
+  fill: var(--fg);
+}
+
+/* What the door has let through. It never goes backwards, and a count of
+   nothing is drawn as a checked zero rather than left out. */
+.ddd-ok {
+  font-size: 32px;
+  fill: var(--state-closed);
+}
+
+.ddd-ok--0 {
+  fill: var(--muted);
+}
+
+[data-ddd-ok="0"] .ddd-ok--0,
+[data-ddd-ok="1"] .ddd-ok--1,
+[data-ddd-ok="2"] .ddd-ok--2 {
+  opacity: 1;
+}
+
+/* What it answers a writer who tried to go around it. On its own plate, so it
+   is legible whatever the box under it is doing. */
+.ddd-deny {
+  opacity: 0;
+}
+
+[data-ddd-deny="on"] .ddd-deny {
+  opacity: 1;
+}
+
+.ddd-deny-bg {
+  fill: var(--surface);
+  stroke: var(--state-open);
+  stroke-width: 4;
+}
+
+.ddd-deny-text {
+  fill: var(--state-open);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+/* --- the world before the borders --------------------------------------- */
+
+/* While there is one model there are no borders to draw, so the two context
+   frames are the faint outlines of something nobody has committed to yet. */
+[data-ddd-mode="shared"] .ddd-band > .scene-box {
+  stroke: var(--muted);
+  stroke-dasharray: 12 14;
+}
+
+/* Once the borders are drawn the Domain band stops being a model and becomes a
+   map of them, which is what the dashes on it mean. */
+[data-ddd-mode="bordered"] .ddd-domain > .scene-box {
+  stroke-dasharray: 18 12;
+}
+
+[data-ddd-frames="on"] .ddd-band > .scene-box {
+  stroke: var(--request);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: two contexts each clear in its own language, one door that
+   answered every change, and one translation between them. */
+[data-ddd-settled="on"] .ddd-band > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 6;
+}
+
+[data-ddd-settled="on"] .ddd-root > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The seven things the captions stop on, each drawn on the band it is about. */
+[data-ddd-mark="border"] .ddd-domain > .scene-box {
+  stroke: var(--state-half);
+  stroke-width: 6;
+}
+
+[data-ddd-mark="map"] .ddd-domain > .scene-box {
+  stroke: var(--cpu);
+  stroke-width: 6;
+}
+
+[data-ddd-mark="sales"] .ddd-band--sales > .scene-box,
+[data-ddd-mark="ship"] .ddd-band--ship > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 6;
+}
+
+[data-ddd-mark="promise"] .ddd-band > .scene-box {
+  stroke: var(--state-half);
+  stroke-width: 6;
+}
+
+[data-ddd-mark="no-share"] .ddd-band > .scene-box {
+  stroke: var(--cpu);
+  stroke-width: 6;
+}
+
+[data-ddd-mark="id-only"] .ddd-root > .scene-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
