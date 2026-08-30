@@ -22567,3 +22567,515 @@ rect.repo-verdict--none {
   stroke: var(--cpu);
   stroke-width: 6;
 }
+
+/* ---------------------------------------------------------------- */
+/* Workload Identity stage                                           */
+/* ---------------------------------------------------------------- */
+
+/*
+ * A credential nobody stored, and the whole argument is in what is sitting in
+ * each pod's one slot and what the cloud does with it.
+ *
+ * The colour argument is small. Purple is the world where the credential is a
+ * string somebody wrote down: the ghost frame, the `secret` chip and the copies
+ * fanning out of it, and nothing the running system ever holds is drawn in it.
+ * Green is a credential the platform issued and a resource its owner opened —
+ * a mounted `token`, the life left in one, an audience that reads "me", a
+ * granted card, and the settled frame. Red is a refusal: `deny`, the audience
+ * that named somebody else, and the workload reaching past its role. Amber is a
+ * token that is genuine and simply not addressed here, and the moment the scene
+ * points at how short a life is. Blue is an ordinary journey and the four
+ * places the captions stop.
+ *
+ * The three things a pod's slot can hold are three different pictures rather
+ * than three fills: a hollow dashed outline with no word at all is a pod with
+ * no credential, a purple dashed plate carrying `secret` is one with a string
+ * baked into it, and a filled plate carrying `token` — with a lifetime bar
+ * beside it that nothing else on the stage has — is one the platform vouched
+ * for. None of the three is told from the others by colour alone, and the same
+ * holds for the audience check: nothing, a dashed ring, a tick and a cross are
+ * four shapes before they are four colours.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a
+ * base rule hiding all of them, so nothing interpolates and scrubbing backwards
+ * is exact. The one exception is the lifetime bar, which is a width: a token's
+ * remaining life is the only continuous quantity in the scene, and a length is
+ * the honest way to draw it.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+/* The access lane runs down the middle of the stage while the Cloud sits to the
+   right of it, so a short elbow along the Cloud's own bottom edge says which
+   box the grant came out of. Nothing travels the elbow; it is the join. */
+.wi-lane--elbow {
+  stroke-dasharray: 12 10;
+  opacity: 0.7;
+}
+
+/* Only a grant comes down here. A refusal never leaves the Cloud, so the lane
+   is drawn lighter than the two above it: it carries permission, not traffic. */
+.wi-lane--access {
+  opacity: 0.8;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/* A pod telling the platform it exists. It is the smallest event in the scene
+   and the only one nobody had to arrange. */
+.wi-req--birth .scene-req-dot {
+  fill: var(--fg-soft);
+}
+
+/* The token the platform mounts, and the one it sends to replace it. The second
+   is hollow because a replacement is the same thing arriving again. */
+.wi-req--mount .scene-req-dot {
+  fill: var(--state-closed);
+}
+
+.wi-req--renew .scene-req-dot {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+.wi-req--present .scene-req-dot {
+  fill: var(--request);
+}
+
+/* A token minted for another consumer: hollow, dashed, and the colour of
+   something that is real but not addressed here. It is the only traveller the
+   Cloud ever turns away. */
+.wi-req--foreign .scene-req-dot {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 6 6;
+}
+
+.wi-req--access .scene-req-dot {
+  fill: var(--state-closed);
+}
+
+/* Every traveller carries the name of the workload it belongs to, because the
+   lanes are named after where they go rather than after who sends on them. */
+.wi-tag {
+  fill: var(--fg-soft);
+}
+
+.wi-req--foreign .wi-tag {
+  fill: var(--state-half);
+}
+
+/* --- the Pods ----------------------------------------------------------- */
+
+/* A capsule is always drawn, because a workload does not appear and disappear
+   here. What changes is the one thing in its slot. */
+.wi-pod-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.wi-pod-name {
+  fill: var(--fg);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* The empty slot: hollow, thin and dashed, so it reads as room for a credential
+   rather than as a credential of any kind. */
+.wi-cred-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.wi-cred-text {
+  font-size: 26px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.wi-pod[data-wi-cred="secret"] .wi-cred-bg {
+  fill: var(--cpu);
+  fill-opacity: 0.16;
+  stroke: var(--cpu);
+  stroke-width: 5;
+  stroke-dasharray: 14 8;
+}
+
+.wi-pod[data-wi-cred="secret"] .wi-cred-text--secret {
+  fill: var(--cpu);
+  opacity: 1;
+}
+
+.wi-pod[data-wi-cred="token"] .wi-cred-bg {
+  fill: var(--state-closed);
+  fill-opacity: 0.18;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+.wi-pod[data-wi-cred="token"] .wi-cred-text--token {
+  fill: var(--fg);
+  opacity: 1;
+}
+
+/* A token held up to the cloud. The rim says which one is being held up, and
+   the dashed amber rim says the pod is holding out a token that names somebody
+   else — which is the whole of what the third step refuses. */
+.wi-pod[data-wi-raise="own"] .wi-cred-bg {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+.wi-pod[data-wi-raise="foreign"] .wi-cred-bg {
+  stroke: var(--state-half);
+  stroke-width: 6;
+  stroke-dasharray: 12 8;
+}
+
+/* The copies a stored secret leaves behind: config, then logs, then whatever
+   registry remembered it. Each one is fainter than the last, because a copy of
+   a copy is where the trail stops being followed. */
+.wi-copy {
+  fill: var(--cpu);
+  fill-opacity: 0.12;
+  stroke: var(--cpu);
+  stroke-width: 3;
+  stroke-dasharray: 8 7;
+  opacity: 0;
+}
+
+.wi-copy--1 {
+  stroke-opacity: 0.95;
+}
+
+.wi-copy--2 {
+  stroke-opacity: 0.7;
+}
+
+.wi-copy--3 {
+  stroke-opacity: 0.45;
+}
+
+.wi-pod[data-wi-spread="on"] .wi-copy {
+  opacity: 1;
+}
+
+/* What is left of the token's life. It appears with the token and goes with it,
+   and it never empties, because the platform replaces the token first. */
+.wi-life {
+  opacity: 0;
+}
+
+.wi-pod[data-wi-cred="token"] .wi-life {
+  opacity: 1;
+}
+
+.wi-life-track {
+  stroke: var(--border);
+}
+
+.wi-life-fill {
+  --fill-color: var(--state-closed);
+}
+
+[data-wi-mark="life"] .wi-life-track {
+  stroke: var(--state-half);
+  stroke-width: 4;
+}
+
+/* --- the Platform ------------------------------------------------------- */
+
+/* Two plates: the name the cloud will decide to trust, and the mint that issues
+   at birth and re-issues before expiry. */
+.wi-plate-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.wi-plate-text {
+  fill: var(--fg-soft);
+  font-size: 36px;
+  font-weight: 700;
+}
+
+/* The issuer lights when the cloud decides about it, and stays lit: a token
+   minted for somebody else still came from here, which is exactly why the
+   audience is the other name that has to be read. */
+[data-wi-issuer="trusted"] .wi-plate-bg--issuer {
+  fill: var(--state-closed);
+  fill-opacity: 0.16;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+[data-wi-issuer="trusted"] .wi-plate-text--issuer {
+  fill: var(--fg);
+}
+
+[data-wi-mint="issue"] .wi-plate-bg--mint {
+  fill: var(--request);
+  fill-opacity: 0.18;
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+[data-wi-mint="issue"] .wi-plate-text--mint {
+  fill: var(--fg);
+}
+
+/* --- the Cloud ---------------------------------------------------------- */
+
+.wi-aud-text {
+  fill: var(--fg);
+  font-size: 36px;
+  font-weight: 700;
+}
+
+/* The four things the audience check can be are four shapes: nothing at all, a
+   dashed ring while the cloud is reading, a tick, a cross. */
+.wi-glyph {
+  opacity: 0;
+}
+
+.wi-glyph-ring {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 5;
+  stroke-dasharray: 9 8;
+}
+
+.wi-glyph-mark {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.wi-aud-glyph--ok .wi-glyph-mark {
+  stroke: var(--state-closed);
+}
+
+.wi-aud-glyph--bad .wi-glyph-mark {
+  stroke: var(--state-open);
+}
+
+[data-wi-aud="check"] .wi-aud-glyph--check,
+[data-wi-aud="ok"] .wi-aud-glyph--ok,
+[data-wi-aud="bad"] .wi-aud-glyph--bad {
+  opacity: 1;
+}
+
+[data-wi-aud="bad"] .wi-aud-text {
+  fill: var(--state-open);
+}
+
+/* A refusal is a change of state inside the Cloud rather than something it
+   posts back, so it is written on its own outlined plate and nothing travels. */
+.wi-deny {
+  opacity: 0;
+}
+
+[data-wi-deny="on"] .wi-deny {
+  opacity: 1;
+}
+
+.wi-deny-bg {
+  fill: var(--surface);
+  stroke: var(--state-open);
+  stroke-width: 4;
+}
+
+.wi-deny-text {
+  fill: var(--state-open);
+  font-size: 36px;
+  font-weight: 700;
+}
+
+/* The count of everything that passed. It never goes backwards, and a count of
+   nothing is drawn as a checked zero rather than left out. */
+.wi-ok {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  fill: var(--state-closed);
+}
+
+.wi-ok--0 {
+  fill: var(--muted);
+}
+
+[data-wi-ok="0"] .wi-ok--0,
+[data-wi-ok="1"] .wi-ok--1,
+[data-wi-ok="2"] .wi-ok--2,
+[data-wi-ok="3"] .wi-ok--3 {
+  opacity: 1;
+}
+
+/* --- the Resources ------------------------------------------------------ */
+
+/* A card nobody has reached is hollow and dashed with a grey name; a card its
+   owner has opened is filled, named in full weight, and carries a tick. */
+.wi-card-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.wi-card-name {
+  fill: var(--fg-soft);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+.wi-card-glyph .wi-glyph-mark {
+  stroke: var(--state-closed);
+}
+
+.wi-card[data-wi-access="granted"] .wi-card-bg {
+  fill: var(--state-closed);
+  fill-opacity: 0.14;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+.wi-card[data-wi-access="granted"] .wi-card-name {
+  fill: var(--fg);
+}
+
+.wi-card[data-wi-access="granted"] .wi-card-glyph {
+  opacity: 1;
+}
+
+/* The role map, drawn on the resources it is a map of. One badge per card and
+   one workload per badge: there is no shared account anywhere on this stage. */
+.wi-role {
+  opacity: 0;
+}
+
+[data-wi-roles="on"] .wi-role {
+  opacity: 1;
+}
+
+.wi-role-bg {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.wi-role-text {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* --- the world of stored secrets ---------------------------------------- */
+
+/*
+ * The first step's argument: the credential is a string, and the string is
+ * already everywhere. It is drawn in a colour nothing the running system holds
+ * ever uses, and dashed, so no part of it can be mistaken for a credential the
+ * platform issued.
+ */
+[data-wi-ghost="on"] .wi-pods > .scene-box {
+  stroke: var(--cpu);
+  stroke-width: 6;
+  stroke-dasharray: 18 12;
+}
+
+/* The peak of it: the copies are loose and somebody owns rotating them forever,
+   which is a refusal waiting to happen rather than a refusal. */
+[data-wi-alarm="on"] .wi-pods > .scene-box {
+  stroke: var(--state-open);
+}
+
+[data-wi-alarm="on"] .wi-cred-bg {
+  stroke: var(--state-open);
+}
+
+[data-wi-alarm="on"] .wi-cred-text--secret {
+  fill: var(--state-open);
+}
+
+[data-wi-alarm="on"] .wi-copy {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+/* --- reaching past a role ----------------------------------------------- */
+
+/* Both crossings are written out, because which one a run produces is the role
+   map's business rather than the stylesheet's. The pod that reached is outlined
+   in the colour of the refusal, and so is the badge that says whose it is. */
+[data-wi-cross="a-db"] .wi-pod--a .wi-pod-bg,
+[data-wi-cross="b-storage"] .wi-pod--b .wi-pod-bg {
+  stroke: var(--state-open);
+  stroke-width: 6;
+  stroke-dasharray: 14 10;
+}
+
+[data-wi-cross="a-db"] .wi-role--db .wi-role-bg,
+[data-wi-cross="b-storage"] .wi-role--storage .wi-role-bg {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+[data-wi-cross="a-db"] .wi-role--db .wi-role-text,
+[data-wi-cross="b-storage"] .wi-role--storage .wi-role-text {
+  fill: var(--state-open);
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The six things the captions stop on, each drawn on the band it is about. */
+[data-wi-mark="clean"] .wi-pods > .scene-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-wi-mark="life"] .wi-pods > .scene-box {
+  stroke: var(--state-half);
+  stroke-width: 6;
+}
+
+[data-wi-mark="issued"] .wi-platform > .scene-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-wi-mark="nohands"] .wi-platform > .scene-box {
+  stroke: var(--state-half);
+  stroke-width: 6;
+}
+
+[data-wi-mark="federation"] .wi-cloud > .scene-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-wi-mark="share"] .wi-resources > .scene-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-wi-mark="share"] .wi-card--storage .wi-card-bg,
+[data-wi-mark="share"] .wi-card--db .wi-card-bg {
+  stroke-width: 6;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: two workloads, two tokens neither of them stored, and one
+   resource each. */
+[data-wi-settled="on"] .wi-pods > .scene-box,
+[data-wi-settled="on"] .wi-resources > .scene-box {
+  stroke: var(--state-closed);
+}

@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as workloadIdentityDuration,
+  stageMarkup as workloadIdentityStage,
+} from './workload-identity/stage';
+import {
   SCENE_DURATION as repositoryDuration,
   stageMarkup as repositoryStage,
 } from './repository/stage';
@@ -569,6 +573,10 @@ const scenes: Record<string, SceneAsset> = {
   repository: {
     markup: repositoryStage,
     duration: repositoryDuration,
+  },
+  'workload-identity': {
+    markup: workloadIdentityStage,
+    duration: workloadIdentityDuration,
   },
 };
 
