@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as capTheoremDuration,
+  stageMarkup as capTheoremStage,
+} from './cap-theorem/stage';
+import {
   SCENE_DURATION as sidecarDuration,
   stageMarkup as sidecarStage,
 } from './sidecar/stage';
@@ -649,6 +653,10 @@ const scenes: Record<string, SceneAsset> = {
   sidecar: {
     markup: sidecarStage,
     duration: sidecarDuration,
+  },
+  'cap-theorem': {
+    markup: capTheoremStage,
+    duration: capTheoremDuration,
   },
 };
 
