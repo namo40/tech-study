@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as hexagonalArchitectureDuration,
+  stageMarkup as hexagonalArchitectureStage,
+} from './hexagonal-architecture/stage';
+import {
   SCENE_DURATION as crossShardQueryDuration,
   stageMarkup as crossShardQueryStage,
 } from './cross-shard-query/stage';
@@ -633,6 +637,10 @@ const scenes: Record<string, SceneAsset> = {
   'cross-shard-query': {
     markup: crossShardQueryStage,
     duration: crossShardQueryDuration,
+  },
+  'hexagonal-architecture': {
+    markup: hexagonalArchitectureStage,
+    duration: hexagonalArchitectureDuration,
   },
 };
 
