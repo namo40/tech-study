@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as partitioningDuration,
+  stageMarkup as partitioningStage,
+} from './partitioning/stage';
+import {
   SCENE_DURATION as secretInjectionDuration,
   stageMarkup as secretInjectionStage,
 } from './secret-injection/stage';
@@ -609,6 +613,10 @@ const scenes: Record<string, SceneAsset> = {
   'secret-injection': {
     markup: secretInjectionStage,
     duration: secretInjectionDuration,
+  },
+  partitioning: {
+    markup: partitioningStage,
+    duration: partitioningDuration,
   },
 };
 

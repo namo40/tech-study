@@ -25233,3 +25233,553 @@ rect.repo-verdict--none {
 [data-sj-settled="on"] .sj-pod--b .sj-slot-bg {
   stroke-width: 7;
 }
+
+/* ---------------------------------------------------------------- */
+/* Partitioning stage                                                */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One table, the axis it could be cut along, and the two parts the cut leaves.
+ *
+ * The colour argument is small. Purple is the world where everything is one
+ * thing: the blob that grows over the grid until it covers it. Nothing after
+ * the lift is drawn in it. Blue is the hot path — the sweep every query makes
+ * while there is only one table, the two narrow columns the third step keeps
+ * near, and the travellers. Amber is what is big and rarely read: the wide cold
+ * columns, and the `date` badge, which works today and hurts tomorrow. Green is
+ * a cut that holds and a key that spreads: the chosen axis, the `user` badge,
+ * the settled frame. Red is the saturation peak and the `hot` verdict.
+ *
+ * The two holdings a part can draw are two pictures rather than two fills. Row
+ * bands are three full-width bars, identical on both cards, because the whole
+ * claim of the horizontal cut is that the schema does not change. The column
+ * split is two narrow blue bars on one card and three fat dashed amber ones on
+ * the other, which is a different picture at a glance and stays different at
+ * any size — the horizontal cut runs across both cards, the vertical one makes
+ * the cards hold different shapes.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a
+ * base rule hiding all of them, so nothing interpolates and scrubbing backwards
+ * is exact. The scene has no continuous quantity at all.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+/* Both lanes are dashed while there is one table, because there is nothing at
+   the other end of either of them yet. */
+.pt-lane--cut,
+.pt-lane--place {
+  stroke-dasharray: 12 10;
+  opacity: 0.4;
+}
+
+[data-pt-mode="split"] .pt-lane--cut,
+[data-pt-mode="split"] .pt-lane--place {
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/* A row band being placed, and a new write landing on whatever the key says. */
+.pt-req--band .scene-req-dot {
+  fill: var(--state-closed);
+}
+
+.pt-req--write .scene-req-dot {
+  fill: var(--request);
+}
+
+/* A read is hollow, because it takes a copy and leaves the rows where they
+   are. It is also the only traveller that comes back. */
+.pt-req--read .scene-req-dot {
+  fill: none;
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+/* Only the lower lane carries a name, because only there has the key read the
+   row and said where it goes. */
+.pt-tag {
+  fill: var(--fg-soft);
+}
+
+/* --- the bands ---------------------------------------------------------- */
+
+/* The three band titles sit at their left edges, so the lane's keep-out column
+   down the middle of the stage stays clear of every word. */
+.pt-title {
+  font-size: 40px;
+}
+
+/* --- the Data band ------------------------------------------------------ */
+
+/* The table drawn as what it is made of. The grid is declared texture: no word
+   sits on it, and it is the same grid in every step. */
+.pt-cell {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+/* Every query reads all of it, which is the first step's whole complaint. */
+[data-pt-scan="sweep"] .pt-cell {
+  stroke: var(--request);
+  stroke-width: 3;
+  stroke-dasharray: 7 5;
+}
+
+/* The third step's vertical cut, drawn on the data it is a fact about: two
+   narrow columns every request wants, three wide ones almost nothing does. */
+[data-pt-split="on"] .pt-cell--c1,
+[data-pt-split="on"] .pt-cell--c2 {
+  fill: var(--request);
+  fill-opacity: 0.28;
+  stroke: var(--request);
+  stroke-width: 4;
+}
+
+[data-pt-split="on"] .pt-cell--c3,
+[data-pt-split="on"] .pt-cell--c4,
+[data-pt-split="on"] .pt-cell--c5 {
+  fill: var(--state-half);
+  fill-opacity: 0.1;
+  stroke: var(--state-half);
+  stroke-width: 3;
+  stroke-dasharray: 10 7;
+}
+
+/* What each cut would take, hung on the data rather than on the plan. Both
+   sets are drawn from the first frame and both start hidden. */
+.pt-rowlines,
+.pt-collines {
+  opacity: 0;
+}
+
+[data-pt-axis="rows"] .pt-rowlines,
+[data-pt-cuts="on"] .pt-rowlines,
+[data-pt-axis="columns"] .pt-collines,
+[data-pt-cuts="on"] .pt-collines {
+  opacity: 1;
+}
+
+.pt-rowline,
+.pt-colline {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+}
+
+/* While both are up, neither has been chosen, so both are drawn as a proposal
+   rather than as a decision. */
+[data-pt-cuts="on"] .pt-rowline,
+[data-pt-cuts="on"] .pt-colline {
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+  stroke-dasharray: 14 9;
+}
+
+/* The blob: one shape per tick, growing out of the corner the table started
+   in. Only one is ever visible, so nothing is interpolated. */
+.pt-blob {
+  fill: var(--cpu);
+  fill-opacity: 0.3;
+  stroke: var(--cpu);
+  stroke-width: 5;
+  stroke-dasharray: 16 10;
+  opacity: 0;
+}
+
+[data-pt-ghost="1"] .pt-blob--1,
+[data-pt-ghost="2"] .pt-blob--2,
+[data-pt-ghost="3"] .pt-blob--3,
+[data-pt-ghost="4"] .pt-blob--4,
+[data-pt-ghost="peak"] .pt-blob--peak {
+  opacity: 1;
+}
+
+/* Saturation: the growth has reached the edges and the locks, the backups and
+   the sweeps are one body. Nothing is broken, which is why it is a warning
+   rather than a refusal. */
+[data-pt-ghost="peak"] .pt-blob--peak {
+  fill: var(--state-open);
+  fill-opacity: 0.34;
+  stroke: var(--state-open);
+  stroke-dasharray: none;
+  stroke-width: 7;
+}
+
+[data-pt-ghost="peak"] .pt-data > .scene-box {
+  stroke: var(--state-open);
+  stroke-width: 6;
+}
+
+/* --- the Split band ----------------------------------------------------- */
+
+/* Nothing is stored here, so the whole band is hollow until there is somewhere
+   to split to. */
+.pt-split > .scene-box,
+.pt-axis-bg,
+.pt-key-bg {
+  fill: none;
+}
+
+.pt-axis-bg,
+.pt-key-bg {
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 14 10;
+}
+
+[data-pt-mode="split"] .pt-axis-bg,
+[data-pt-mode="split"] .pt-key-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-dasharray: none;
+}
+
+/* An axis that has been chosen is a card with a word on it and a green edge.
+   Before that it is an empty plate, which is its own picture: the decision has
+   been named and not yet made. */
+[data-pt-axis="rows"] .pt-axis-bg,
+[data-pt-axis="columns"] .pt-axis-bg {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+.pt-axis-word {
+  fill: var(--state-closed);
+  font-size: 46px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-pt-axis="rows"] .pt-axis-word--rows,
+[data-pt-axis="columns"] .pt-axis-word--columns {
+  opacity: 1;
+}
+
+/* The cut drawn as a shape, so the two words are never told apart by reading
+   alone. Only the glyph of the chosen axis is ever on screen. */
+.pt-glyph {
+  opacity: 0;
+}
+
+[data-pt-axis="rows"] .pt-glyph--rows,
+[data-pt-axis="columns"] .pt-glyph--columns {
+  opacity: 1;
+}
+
+.pt-glyph-bar {
+  fill: var(--fg-soft);
+  fill-opacity: 0.45;
+  stroke: var(--fg-soft);
+  stroke-width: 2;
+}
+
+/* The vertical cut leaves two different kinds of column, and the glyph says so
+   before the parts do: narrow and hot on one side, wide and cold on the other. */
+.pt-glyph-col {
+  stroke-width: 3;
+}
+
+.pt-glyph-col--1,
+.pt-glyph-col--2 {
+  fill: var(--request);
+  fill-opacity: 0.3;
+  stroke: var(--request);
+}
+
+.pt-glyph-col--3,
+.pt-glyph-col--4,
+.pt-glyph-col--5 {
+  fill: var(--state-half);
+  fill-opacity: 0.12;
+  stroke: var(--state-half);
+  stroke-dasharray: 9 7;
+}
+
+.pt-glyph-cut {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-dasharray: 12 9;
+}
+
+.pt-key-name {
+  fill: var(--fg);
+  font-size: 40px;
+}
+
+/* The badge is where the fourth step happens. An unnamed key is a hollow
+   plate; `date` is amber and dashed, because it works and it is not free;
+   `user` is green and solid, because it is the one that keeps working. */
+.pt-badge-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 12 9;
+}
+
+[data-pt-key="date"] .pt-badge-bg {
+  fill: var(--state-half);
+  fill-opacity: 0.16;
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+[data-pt-key="user"] .pt-badge-bg {
+  fill: var(--state-closed);
+  fill-opacity: 0.16;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+.pt-key-word {
+  font-size: 36px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.pt-key-word--date {
+  fill: var(--state-half);
+}
+
+.pt-key-word--user {
+  fill: var(--state-closed);
+}
+
+[data-pt-key="date"] .pt-key-word--date,
+[data-pt-key="user"] .pt-key-word--user {
+  opacity: 1;
+}
+
+/* --- the Parts band ----------------------------------------------------- */
+
+/* Both cards are always drawn, because the argument is about what lands where
+   rather than about how many parts exist. A part holding nothing is hollow. */
+.pt-part-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+[data-pt-parts="empty"] .pt-part-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-dasharray: 12 10;
+}
+
+.pt-part-name {
+  fill: var(--fg);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+/* What a part is holding, drawn as whichever cut is in force. Exactly one of
+   the two is ever visible, and while there is one table neither is. */
+.pt-fill {
+  opacity: 0;
+}
+
+[data-pt-parts="bands"] .pt-fill--bands,
+[data-pt-parts="cols"] .pt-fill--cols {
+  opacity: 1;
+}
+
+/* The horizontal cut: the same three bars on both cards, because the schema is
+   what does not change when the rows are split. */
+.pt-band {
+  fill: var(--state-closed);
+  fill-opacity: 0.35;
+  stroke: var(--state-closed);
+  stroke-width: 2;
+}
+
+/* The vertical cut: two narrow hot columns on one card, three wide cold ones
+   on the other, so the two parts stop being interchangeable. */
+.pt-col {
+  stroke-width: 3;
+}
+
+.pt-col--narrow {
+  fill: var(--request);
+  fill-opacity: 0.35;
+  stroke: var(--request);
+}
+
+.pt-col--wide {
+  fill: var(--state-half);
+  fill-opacity: 0.12;
+  stroke: var(--state-half);
+  stroke-dasharray: 9 7;
+}
+
+/* The count of everything a part has taken. One text per value, and the state
+   picks one, so the number never interpolates. */
+.pt-load {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 28px;
+  opacity: 0;
+}
+
+.pt-part[data-pt-load="0"] .pt-load--0,
+.pt-part[data-pt-load="1"] .pt-load--1,
+.pt-part[data-pt-load="2"] .pt-load--2,
+.pt-part[data-pt-load="3"] .pt-load--3,
+.pt-part[data-pt-load="4"] .pt-load--4,
+.pt-part[data-pt-load="5"] .pt-load--5,
+.pt-part[data-pt-load="6"] .pt-load--6,
+.pt-part[data-pt-load="7"] .pt-load--7,
+.pt-part[data-pt-load="8"] .pt-load--8 {
+  opacity: 1;
+}
+
+/* Something just landed here. A write and a read leave different marks,
+   because one changed what the part holds and the other did not. */
+.pt-part[data-pt-touch="write"] .pt-part-bg {
+  stroke: var(--request);
+  stroke-width: 7;
+}
+
+.pt-part[data-pt-touch="read"] .pt-part-bg {
+  stroke: var(--request);
+  stroke-width: 5;
+  stroke-dasharray: 16 8;
+}
+
+/* The part the imbalance rule is pointing at. It is drawn as a different card,
+   not as a redder one: a thick solid red edge and a red name against a thin
+   grey edge and a plain name. */
+.pt-part[data-pt-hot="on"] .pt-part-bg {
+  fill: var(--state-open);
+  fill-opacity: 0.14;
+  stroke: var(--state-open);
+  stroke-width: 7;
+  stroke-dasharray: none;
+}
+
+.pt-part[data-pt-hot="on"] .pt-part-name,
+.pt-part[data-pt-hot="on"] .pt-load {
+  fill: var(--state-open);
+}
+
+/* The lamp. It is a word on a plate from the first frame, so the reader knows
+   where the verdict will appear before there is one, and the difference
+   between no verdict and a verdict is a hollow grey plate against a filled red
+   one with a red word on it. */
+.pt-hot-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.pt-hot-text {
+  fill: var(--muted);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+[data-pt-alarm="on"] .pt-hot-bg {
+  fill: var(--state-open);
+  fill-opacity: 0.2;
+  stroke: var(--state-open);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+[data-pt-alarm="on"] .pt-hot-text {
+  fill: var(--state-open);
+}
+
+/* The bracket that says the two halves of one row still belong together. It
+   only exists while the third step is holding that up. */
+.pt-rejoin {
+  opacity: 0;
+}
+
+[data-pt-mark="rejoin"] .pt-rejoin {
+  opacity: 1;
+}
+
+.pt-rejoin-span {
+  stroke: var(--state-closed);
+  stroke-width: 4;
+  stroke-dasharray: 10 7;
+}
+
+.pt-rejoin-tick {
+  stroke: var(--state-closed);
+  stroke-width: 4;
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* There are two axes and only two, and neither has been picked yet. */
+[data-pt-mark="axes"] .pt-data > .scene-box {
+  stroke: var(--fg-soft);
+  stroke-width: 6;
+  stroke-dasharray: 18 12;
+}
+
+/* Rows or columns: the question is on the card, which is still empty. */
+[data-pt-mark="choose"] .pt-axis-bg {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+/* Half each. The two readouts are what the claim is about. */
+[data-pt-mark="half"] .pt-load {
+  fill: var(--request);
+}
+
+/* Same schema, different rows: the two cards are holding the same picture. */
+[data-pt-mark="schema"] .pt-band {
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+/* What the horizontal cut buys: a part now covers half the world, so the row
+   outlines on the data are what is being pointed at. */
+[data-pt-mark="capacity"] .pt-rowline {
+  stroke: var(--request);
+  stroke-width: 7;
+}
+
+/* The wide columns are the ones almost nothing reads, which is the only reason
+   splitting them off is worth a join. */
+[data-pt-mark="rare"] .pt-col--wide,
+[data-pt-mark="rare"] .pt-cell--c3,
+[data-pt-mark="rare"] .pt-cell--c4,
+[data-pt-mark="rare"] .pt-cell--c5 {
+  stroke: var(--state-half);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+/* A perfectly cut shape collapsing back into one hot thing, which is the whole
+   fourth step: the cards and the lamp, held up together. */
+[data-pt-mark="blob"] .pt-parts > .scene-box {
+  stroke: var(--state-open);
+  stroke-width: 6;
+  stroke-dasharray: 18 12;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: an axis that was chosen on purpose, a key that spreads, and
+   a lamp that is out because the counts say so. */
+[data-pt-settled="on"] .pt-split > .scene-box,
+[data-pt-settled="on"] .pt-parts > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+/* Both cards are thickened, because the point of the last frame is that the
+   shape survived the key being wrong and then being fixed. */
+[data-pt-settled="on"] .pt-part--p1 .pt-part-bg,
+[data-pt-settled="on"] .pt-part--p2 .pt-part-bg {
+  stroke-width: 5;
+}
