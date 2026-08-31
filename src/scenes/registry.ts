@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as resourceBasedAuthorizationDuration,
+  stageMarkup as resourceBasedAuthorizationStage,
+} from './resource-based-authorization/stage';
+import {
   SCENE_DURATION as sqlInjectionDuration,
   stageMarkup as sqlInjectionStage,
 } from './sql-injection/stage';
@@ -593,6 +597,10 @@ const scenes: Record<string, SceneAsset> = {
   'sql-injection': {
     markup: sqlInjectionStage,
     duration: sqlInjectionDuration,
+  },
+  'resource-based-authorization': {
+    markup: resourceBasedAuthorizationStage,
+    duration: resourceBasedAuthorizationDuration,
   },
 };
 

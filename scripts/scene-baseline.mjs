@@ -119,6 +119,7 @@ const SCENE_IDS = [
   'workload-identity',
   'background-service',
   'sql-injection',
+  'resource-based-authorization',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */
