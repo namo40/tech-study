@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as rebalancingDuration,
+  stageMarkup as rebalancingStage,
+} from './rebalancing/stage';
+import {
   SCENE_DURATION as partitioningDuration,
   stageMarkup as partitioningStage,
 } from './partitioning/stage';
@@ -617,6 +621,10 @@ const scenes: Record<string, SceneAsset> = {
   partitioning: {
     markup: partitioningStage,
     duration: partitioningDuration,
+  },
+  rebalancing: {
+    markup: rebalancingStage,
+    duration: rebalancingDuration,
   },
 };
 

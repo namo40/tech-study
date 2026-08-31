@@ -25783,3 +25783,574 @@ rect.repo-verdict--none {
 [data-pt-settled="on"] .pt-part--p2 .pt-part-bg {
   stroke-width: 5;
 }
+
+/* ---------------------------------------------------------------- */
+/* Rebalancing stage                                                 */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Six partitions, the three nodes they sit on, and the map that says which is
+ * which.
+ *
+ * The colour argument is small. Purple is the world nobody can add capacity to:
+ * the ghost that rings the Clients box while requests pile up, and later the
+ * replica filling behind a shard too heavy to move in one go. Both are things
+ * that exist only until they are resolved. Red is over the bar: a node carrying
+ * more than its `load` can draw, and the saturation peak. Amber is motion that
+ * has not finished — the proposal, a partition on its way somewhere, the node
+ * it is leaving and the node it is going to, and the `moving` lamp. Blue is
+ * live traffic and whatever the scene is pointing at: the travellers, a node
+ * that has just answered, the one instant ownership flips. Green is a fact that
+ * has settled: a map row just rewritten, the load a node ends on, the closing
+ * frame.
+ *
+ * A tile is drawn once per position it can ever occupy and the state reveals
+ * one, so a partition is never between two nodes and the map can never disagree
+ * with the picture. The three beats of a heavy move are three different
+ * pictures rather than three shades of one: a fine purple dash while the
+ * replica fills, a heavy purple dash while the missed changes replay, and a
+ * solid blue plate for the single instant ownership changes hands.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a
+ * base rule hiding all of them, so nothing interpolates and scrubbing backwards
+ * is exact. The scene has no continuous quantity at all: a load is one of eight
+ * steps, an owner is one of three names, a count is a count.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+/* Both lanes are dashed while there is nowhere to move to, because there is
+   nothing at the other end of either of them worth saying yet. */
+.rb-lane--ask,
+.rb-lane--tell {
+  stroke-dasharray: 12 10;
+  opacity: 0.4;
+}
+
+[data-rb-mode="rebalance"] .rb-lane--ask,
+[data-rb-mode="rebalance"] .rb-lane--tell {
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/* A request going where the map says, and one going where an old copy of the
+   map said. The stale one is hollow, because it is carrying a question the
+   node it reaches cannot answer. */
+.rb-req--ask .scene-req-dot {
+  fill: var(--request);
+}
+
+.rb-req--stale .scene-req-dot {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+/* An ownership update on its way to the map, which is the only thing in the
+   scene that is already a fact when it sets off. */
+.rb-req--tell .scene-req-dot {
+  fill: var(--state-closed);
+}
+
+.rb-tag {
+  fill: var(--fg-soft);
+}
+
+/* --- the bands ---------------------------------------------------------- */
+
+/* The three band titles sit at their left edges, so the lane keep-out column
+   down the middle of the stage stays clear of every word. */
+.rb-title {
+  font-size: 40px;
+}
+
+/* --- the Clients band --------------------------------------------------- */
+
+/* One capsule per request the world is holding rather than answering. All five
+   are drawn from the first frame and the queue depth reveals a prefix of them,
+   so the row grows without anything being created. */
+.rb-cap {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+  opacity: 0;
+}
+
+[data-rb-queue="1"] .rb-cap--1,
+[data-rb-queue="2"] .rb-cap--1,
+[data-rb-queue="2"] .rb-cap--2,
+[data-rb-queue="3"] .rb-cap--1,
+[data-rb-queue="3"] .rb-cap--2,
+[data-rb-queue="3"] .rb-cap--3,
+[data-rb-queue="4"] .rb-cap--1,
+[data-rb-queue="4"] .rb-cap--2,
+[data-rb-queue="4"] .rb-cap--3,
+[data-rb-queue="4"] .rb-cap--4,
+[data-rb-queue="5"] .rb-cap--1,
+[data-rb-queue="5"] .rb-cap--2,
+[data-rb-queue="5"] .rb-cap--3,
+[data-rb-queue="5"] .rb-cap--4,
+[data-rb-queue="5"] .rb-cap--5 {
+  opacity: 1;
+}
+
+/* Waiting is purple, because it belongs to the world that has not been fixed
+   yet; over the bar it is red, because that world has stopped coping. */
+[data-rb-ghost="on"] .rb-cap {
+  fill: var(--cpu);
+  fill-opacity: 0.28;
+  stroke: var(--cpu);
+  stroke-dasharray: 12 8;
+}
+
+[data-rb-warn="peak"] .rb-cap {
+  fill: var(--state-open);
+  fill-opacity: 0.32;
+  stroke: var(--state-open);
+  stroke-dasharray: none;
+  stroke-width: 5;
+}
+
+/* The saturation warning is a ring and a row rather than a word, because the
+   fixed labels have no word for it. */
+[data-rb-ghost="on"] .rb-clients > .scene-box {
+  stroke: var(--cpu);
+  stroke-width: 5;
+  stroke-dasharray: 18 12;
+}
+
+[data-rb-warn="peak"] .rb-clients > .scene-box {
+  stroke: var(--state-open);
+  stroke-width: 7;
+  stroke-dasharray: none;
+}
+
+/* The count of everything answered. One text per value, and the state picks
+   one, so the number never interpolates. */
+.rb-ok {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 28px;
+}
+
+[data-rb-ok="0"] .rb-ok--0,
+[data-rb-ok="1"] .rb-ok--1,
+[data-rb-ok="2"] .rb-ok--2,
+[data-rb-ok="3"] .rb-ok--3,
+[data-rb-ok="4"] .rb-ok--4,
+[data-rb-ok="5"] .rb-ok--5,
+[data-rb-ok="6"] .rb-ok--6,
+[data-rb-ok="7"] .rb-ok--7,
+[data-rb-ok="8"] .rb-ok--8 {
+  opacity: 1;
+}
+
+/* --- the Nodes band ----------------------------------------------------- */
+
+/* A node that has not joined is not drawn at all, which is the first step's
+   whole complaint: the machine exists and the picture has no room for it,
+   because no data has been given to it. */
+.rb-node[data-rb-node="absent"] {
+  opacity: 0;
+}
+
+.rb-node-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+/* Joined and holding nothing: a hollow dashed frame, which is a different
+   picture from a node with partitions in it rather than a paler one. */
+.rb-node[data-rb-node="empty"] .rb-node-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-dasharray: 14 10;
+}
+
+/* Carrying more than the bar can draw. */
+.rb-node[data-rb-node="hot"] .rb-node-bg {
+  fill: var(--state-open);
+  fill-opacity: 0.14;
+  stroke: var(--state-open);
+  stroke-width: 7;
+}
+
+/* What just happened here. Answering is a solid blue edge; sending the caller
+   onward is a dashed amber one, because the node did not have the answer. */
+.rb-node[data-rb-hit="serve"] .rb-node-bg {
+  stroke: var(--request);
+  stroke-width: 7;
+  stroke-dasharray: none;
+}
+
+.rb-node[data-rb-hit="redirect"] .rb-node-bg {
+  stroke: var(--state-half);
+  stroke-width: 7;
+  stroke-dasharray: 16 9;
+}
+
+/* The node's part in the move in flight, drawn as its own ring so that a node
+   can be answering and losing a partition in the same frame. The node it is
+   going to is a closed ring and the node it is leaving is an open one. */
+.rb-node-ring {
+  fill: none;
+  opacity: 0;
+  stroke-width: 5;
+}
+
+.rb-node[data-rb-role="source"] .rb-node-ring {
+  opacity: 1;
+  stroke: var(--state-half);
+  stroke-dasharray: 10 14;
+}
+
+.rb-node[data-rb-role="target"] .rb-node-ring {
+  opacity: 1;
+  stroke: var(--state-half);
+  stroke-dasharray: none;
+}
+
+.rb-node-name {
+  fill: var(--fg);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.rb-node[data-rb-node="hot"] .rb-node-name {
+  fill: var(--state-open);
+}
+
+.rb-node[data-rb-node="empty"] .rb-node-name {
+  fill: var(--muted);
+}
+
+/* The word the bar is read under, and the bar. One fill per step, stacked on
+   one origin, so a load is a value rather than a width being tweened. */
+.rb-load-name {
+  fill: var(--fg-soft);
+  font-size: 24px;
+}
+
+.rb-load-track {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.rb-load-fill {
+  fill: var(--state-closed);
+  fill-opacity: 0.5;
+  stroke: var(--state-closed);
+  stroke-width: 2;
+  opacity: 0;
+}
+
+.rb-node[data-rb-load="1"] .rb-load-fill--1,
+.rb-node[data-rb-load="2"] .rb-load-fill--2,
+.rb-node[data-rb-load="3"] .rb-load-fill--3,
+.rb-node[data-rb-load="4"] .rb-load-fill--4,
+.rb-node[data-rb-load="5"] .rb-load-fill--5,
+.rb-node[data-rb-load="6"] .rb-load-fill--6,
+.rb-node[data-rb-load="7"] .rb-load-fill--7,
+.rb-node[data-rb-load="8"] .rb-load-fill--8 {
+  opacity: 1;
+}
+
+/* A bar on a node that is over is red, so full and too full are two pictures
+   rather than one picture at two lengths. */
+.rb-node[data-rb-node="hot"] .rb-load-fill {
+  fill: var(--state-open);
+  fill-opacity: 0.55;
+  stroke: var(--state-open);
+}
+
+[data-rb-warn="peak"] .rb-node[data-rb-node="hot"] .rb-load-track {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+/* --- the partition tiles ------------------------------------------------ */
+
+/* Each partition is drawn once per place it can sit and the state reveals one,
+   so a move is a change of which copy is showing and no tile ever slides
+   between two nodes. */
+.rb-tile-at {
+  opacity: 0;
+}
+
+.rb-tile[data-rb-pos="n1-0"] .rb-tile-at--n1-0,
+.rb-tile[data-rb-pos="n1-1"] .rb-tile-at--n1-1,
+.rb-tile[data-rb-pos="n1-2"] .rb-tile-at--n1-2,
+.rb-tile[data-rb-pos="n2-0"] .rb-tile-at--n2-0,
+.rb-tile[data-rb-pos="n2-1"] .rb-tile-at--n2-1,
+.rb-tile[data-rb-pos="n2-2"] .rb-tile-at--n2-2,
+.rb-tile[data-rb-pos="n3-0"] .rb-tile-at--n3-0,
+.rb-tile[data-rb-pos="n3-1"] .rb-tile-at--n3-1 {
+  opacity: 1;
+}
+
+.rb-tile-bg {
+  fill: var(--state-closed);
+  fill-opacity: 0.18;
+  stroke: var(--state-closed);
+  stroke-width: 3;
+}
+
+.rb-tile-name {
+  fill: var(--fg);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* --- the proposal ------------------------------------------------------- */
+
+/* Reshuffling everything: all six marked, because that is what the naive
+   scheme costs. Nothing moves while this is up. */
+[data-rb-plan="naive"] .rb-tile-bg {
+  fill: var(--state-half);
+  fill-opacity: 0.22;
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 14 9;
+}
+
+/* Struck out: the same six, now drawn as a proposal that was refused. */
+[data-rb-plan="rejected"] .rb-tile-bg {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-dasharray: 6 10;
+}
+
+[data-rb-plan="rejected"] .rb-tile-name {
+  fill: var(--muted);
+}
+
+/* The plan that replaces it: two tiles named and four left alone. */
+[data-rb-plan="minimal"] .rb-tile--p3 .rb-tile-bg,
+[data-rb-plan="minimal"] .rb-tile--p6 .rb-tile-bg {
+  fill: var(--state-half);
+  fill-opacity: 0.24;
+  stroke: var(--state-half);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+/* --- a partition on the move -------------------------------------------- */
+
+/* After the proposal, because a tile that is actually moving outranks any mark
+   the plan left on it. A plain move is amber and dashed: still where it was,
+   already spoken for. */
+.rb-tile[data-rb-phase="moving"] .rb-tile-bg {
+  fill: var(--state-half);
+  fill-opacity: 0.16;
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 14 9;
+}
+
+/* The three beats of a shard too heavy to move in one go. The replica filling
+   is a fine purple dash on an almost empty plate; the missed changes replaying
+   are a heavy purple dash on a full one; the handover is one solid blue
+   instant. Three pictures, not three shades. */
+.rb-tile[data-rb-phase="copy"] .rb-tile-bg {
+  fill: var(--cpu);
+  fill-opacity: 0.12;
+  stroke: var(--cpu);
+  stroke-width: 4;
+  stroke-dasharray: 6 8;
+}
+
+.rb-tile[data-rb-phase="catchup"] .rb-tile-bg {
+  fill: var(--cpu);
+  fill-opacity: 0.34;
+  stroke: var(--cpu);
+  stroke-width: 7;
+  stroke-dasharray: 22 6;
+}
+
+.rb-tile[data-rb-phase="switch"] .rb-tile-bg {
+  fill: var(--request);
+  fill-opacity: 0.36;
+  stroke: var(--request);
+  stroke-width: 8;
+  stroke-dasharray: none;
+}
+
+.rb-tile[data-rb-phase="moving"] .rb-tile-name {
+  fill: var(--state-half);
+}
+
+.rb-tile[data-rb-phase="copy"] .rb-tile-name,
+.rb-tile[data-rb-phase="catchup"] .rb-tile-name {
+  fill: var(--cpu);
+}
+
+.rb-tile[data-rb-phase="switch"] .rb-tile-name {
+  fill: var(--request);
+}
+
+/* --- the Map band ------------------------------------------------------- */
+
+/* One row per partition, always drawn, because the argument is about what the
+   map says rather than about how many rows it has. */
+.rb-row-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.rb-row-name {
+  fill: var(--fg);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+/* The three names a row can answer with, stacked on one spot. */
+.rb-own {
+  fill: var(--fg-soft);
+  font-size: 30px;
+  opacity: 0;
+}
+
+.rb-row[data-rb-own="n1"] .rb-own--n1,
+.rb-row[data-rb-own="n2"] .rb-own--n2,
+.rb-row[data-rb-own="n3"] .rb-own--n3 {
+  opacity: 1;
+}
+
+/* A row whose partition is on the move still says who owns it right now, which
+   is the whole third step: the answer does not become unknown while the data
+   is being copied. */
+.rb-row[data-rb-row="moving"] .rb-row-bg {
+  fill: var(--state-half);
+  fill-opacity: 0.16;
+  stroke: var(--state-half);
+  stroke-width: 4;
+  stroke-dasharray: 12 8;
+}
+
+/* A row that has just been rewritten. */
+.rb-row[data-rb-row="fresh"] .rb-row-bg {
+  fill: var(--state-closed);
+  fill-opacity: 0.22;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+.rb-row[data-rb-row="fresh"] .rb-own,
+.rb-row[data-rb-row="fresh"] .rb-row-name {
+  fill: var(--state-closed);
+}
+
+.rb-row[data-rb-row="moving"] .rb-row-name {
+  fill: var(--state-half);
+}
+
+/* The lamp. It is a word on a plate from the first frame, so the reader knows
+   where the answer will appear before there is one, and the difference between
+   nothing moving and something moving is a hollow grey plate against a filled
+   amber one with an amber word on it. */
+.rb-lamp-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.rb-lamp-text {
+  fill: var(--muted);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+[data-rb-moving="on"] .rb-lamp-bg {
+  fill: var(--state-half);
+  fill-opacity: 0.2;
+  stroke: var(--state-half);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+[data-rb-moving="on"] .rb-lamp-text {
+  fill: var(--state-half);
+}
+
+/* The count of finished moves, which is the price the scheme was chosen on. */
+.rb-moved {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 28px;
+}
+
+[data-rb-moved="0"] .rb-moved--0,
+[data-rb-moved="1"] .rb-moved--1,
+[data-rb-moved="2"] .rb-moved--2,
+[data-rb-moved="3"] .rb-moved--3,
+[data-rb-moved="4"] .rb-moved--4,
+[data-rb-moved="5"] .rb-moved--5,
+[data-rb-moved="6"] .rb-moved--6 {
+  opacity: 1;
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* A node with nothing on it takes no load, whatever it cost to add. */
+[data-rb-mark="idle"] .rb-node--n3 .rb-node-bg {
+  stroke: var(--request);
+  stroke-width: 7;
+  stroke-dasharray: 18 12;
+}
+
+/* Capacity is where the partitions sit, so the tiles and the bars are what is
+   being pointed at. */
+[data-rb-mark="data"] .rb-tile-bg,
+[data-rb-mark="data"] .rb-load-track {
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+/* Four partitions were not touched, which is the entire saving. */
+[data-rb-mark="untouched"] .rb-tile--p1 .rb-tile-bg,
+[data-rb-mark="untouched"] .rb-tile--p2 .rb-tile-bg,
+[data-rb-mark="untouched"] .rb-tile--p4 .rb-tile-bg,
+[data-rb-mark="untouched"] .rb-tile--p5 .rb-tile-bg {
+  stroke: var(--state-closed);
+  stroke-width: 7;
+  stroke-dasharray: none;
+}
+
+/* The map is the truth, and the node is only a shelf. */
+[data-rb-mark="truth"] .rb-map > .scene-box {
+  stroke: var(--request);
+  stroke-width: 7;
+  stroke-dasharray: 18 12;
+}
+
+[data-rb-mark="shelf"] .rb-nodes > .scene-box {
+  stroke: var(--fg-soft);
+  stroke-width: 6;
+  stroke-dasharray: 18 12;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: three nodes carrying the same share, a map that agrees with
+   every tile, and a lamp that is out because nothing is moving. */
+[data-rb-settled="on"] .rb-nodes > .scene-box,
+[data-rb-settled="on"] .rb-map > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+[data-rb-settled="on"] .rb-node-bg {
+  stroke-width: 5;
+}
+
+[data-rb-settled="on"] .rb-load-fill {
+  fill-opacity: 0.72;
+}
