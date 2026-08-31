@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as sqlInjectionDuration,
+  stageMarkup as sqlInjectionStage,
+} from './sql-injection/stage';
+import {
   SCENE_DURATION as backgroundServiceDuration,
   stageMarkup as backgroundServiceStage,
 } from './background-service/stage';
@@ -585,6 +589,10 @@ const scenes: Record<string, SceneAsset> = {
   'background-service': {
     markup: backgroundServiceStage,
     duration: backgroundServiceDuration,
+  },
+  'sql-injection': {
+    markup: sqlInjectionStage,
+    duration: sqlInjectionDuration,
   },
 };
 

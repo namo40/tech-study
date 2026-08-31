@@ -23616,3 +23616,484 @@ rect.repo-verdict--none {
 [data-bs-settled="on"] .bs-jobs > .scene-box {
   stroke: var(--state-closed);
 }
+
+/* ---------------------------------------------------------------- */
+/* SQL Injection stage                                               */
+/* ---------------------------------------------------------------- */
+
+/*
+ * User input executed as code, and the three things that stop it mattering.
+ *
+ * The colour argument is small, and it is never the only signal. Red is the
+ * attack and everything it touches: the jagged chip, the code track once an
+ * input has been welded into it, the alarm that says an answer carried the whole
+ * table, the refusal at the door and the refusal at the account. Blue is
+ * ordinary traffic — a round value, a filled data slot, an answer of one row.
+ * Amber is the value that is well formed and still means harm, which is exactly
+ * the case validation cannot see. Green is a check that let something honest
+ * through, and the settled frame at the end.
+ *
+ * Every shape is told apart by outline before it is told apart by colour. An
+ * ordinary value is a rounded plate, a malformed one is a ribbon of teeth, and a
+ * well formed hostile one is a rounded plate with a jagged vein drawn inside it.
+ * The code track carries the same argument: `fixed` is a plain rounded bar and
+ * `morphed` is the same bar grown a set of teeth to the right, drawn on one spot
+ * so the change reads as a change of shape rather than of shade.
+ *
+ * The data slot is absent rather than empty while the query is one glued
+ * sentence, because that is the truth of concatenation: there is no second
+ * channel to put a value on. It appears the moment the two channels do.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a base
+ * rule hiding all of them, so nothing is interpolated and scrubbing backwards is
+ * exact. There is no continuous quantity on this stage at all.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+.sqli-lane {
+  stroke-linecap: round;
+}
+
+.sqli-lane--input {
+  opacity: 0.9;
+}
+
+.sqli-lane--exec {
+  opacity: 0.85;
+}
+
+/* While the replay is up, the way in is the way the attack came. */
+[data-sqli-ghost="on"] .sqli-lane--input {
+  stroke: var(--state-open);
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/* An ordinary value and an execution are the same plain dot, because on the
+   lane they are the same ordinary event. A well formed hostile value is a ring
+   rather than a disc, and a command outside the role is a dashed ring: both are
+   shapes before they are colours. */
+.sqli-req--normal .scene-req-dot,
+.sqli-req--exec .scene-req-dot {
+  fill: var(--request);
+}
+
+.sqli-req--bypass .scene-req-dot {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+.sqli-req--danger .scene-req-dot {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: 6 6;
+}
+
+/* A malformed value keeps its silhouette all the way down the lane. */
+.sqli-req--spiky .scene-req-dot {
+  fill: none;
+}
+
+.sqli-spike {
+  fill: var(--state-open);
+  fill-opacity: 0.9;
+  stroke: var(--state-open);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+/* --- the App ------------------------------------------------------------ */
+
+.sqli-field {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.sqli-input-text {
+  fill: var(--fg-soft);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+/* Three shapes on one spot, none of them showing until something is typed. */
+.sqli-chip {
+  opacity: 0;
+}
+
+.sqli-chip--normal {
+  fill: var(--request);
+  fill-opacity: 0.28;
+  stroke: var(--request);
+  stroke-width: 4;
+}
+
+.sqli-chip--spiky {
+  fill: var(--state-open);
+  fill-opacity: 0.3;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+
+.sqli-chip-plate {
+  fill: var(--state-half);
+  fill-opacity: 0.22;
+  stroke: var(--state-half);
+  stroke-width: 4;
+}
+
+.sqli-chip-vein {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-sqli-chip="normal"] .sqli-chip--normal,
+[data-sqli-chip="spiky"] .sqli-chip--spiky,
+[data-sqli-chip="bypass"] .sqli-chip--bypass {
+  opacity: 1;
+}
+
+/* --- the query bar ------------------------------------------------------ */
+
+/* The sentence the developer wrote, and the sentence the caller finished. */
+.sqli-code {
+  opacity: 0;
+}
+
+.sqli-code--fixed {
+  fill: var(--surface-2);
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+}
+
+.sqli-code--morphed {
+  fill: var(--state-open);
+  fill-opacity: 0.18;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-linejoin: round;
+}
+
+[data-sqli-code="fixed"] .sqli-code--fixed,
+[data-sqli-code="morphed"] .sqli-code--morphed {
+  opacity: 1;
+}
+
+.sqli-code-text {
+  fill: var(--fg);
+  font-size: 36px;
+  font-weight: 700;
+}
+
+[data-sqli-code="morphed"] .sqli-code-text {
+  fill: var(--state-open);
+}
+
+/* The second channel. It is not drawn at all while there is only one. */
+.sqli-slot {
+  opacity: 0;
+}
+
+.sqli-slot--empty {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-dasharray: 12 10;
+}
+
+.sqli-slot--filled {
+  fill: var(--request);
+  fill-opacity: 0.14;
+  stroke: var(--request);
+  stroke-width: 4;
+}
+
+[data-sqli-data="empty"] .sqli-slot--empty,
+[data-sqli-data="filled"] .sqli-slot--filled {
+  opacity: 1;
+}
+
+.sqli-data-text {
+  font-size: 34px;
+}
+
+.sqli-data-text--empty {
+  fill: var(--muted);
+}
+
+.sqli-data-text--filled {
+  fill: var(--fg);
+}
+
+[data-sqli-data="empty"] .sqli-data-text--empty,
+[data-sqli-data="filled"] .sqli-data-text--filled {
+  opacity: 1;
+}
+
+/* What is sitting in the slot, in the same three shapes the chip uses. A value
+   that emptied the table in the first step looks exactly the same here, and
+   does nothing, which is the whole of the second step. */
+.sqli-held {
+  opacity: 0;
+}
+
+.sqli-held--normal {
+  fill: var(--request);
+  fill-opacity: 0.5;
+  stroke: var(--request);
+  stroke-width: 3;
+}
+
+.sqli-held--spiky {
+  fill: var(--state-open);
+  fill-opacity: 0.35;
+  stroke: var(--state-open);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.sqli-held-plate {
+  fill: var(--state-half);
+  fill-opacity: 0.3;
+  stroke: var(--state-half);
+  stroke-width: 3;
+}
+
+.sqli-held-vein {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-sqli-held="normal"] .sqli-held--normal,
+[data-sqli-held="spiky"] .sqli-held--spiky,
+[data-sqli-held="bypass"] .sqli-held--bypass {
+  opacity: 1;
+}
+
+/* --- the filter at the door --------------------------------------------- */
+
+.sqli-check {
+  opacity: 0;
+}
+
+[data-sqli-check="on"] .sqli-check {
+  opacity: 1;
+}
+
+.sqli-card {
+  fill: var(--surface-2);
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+}
+
+.sqli-check-text {
+  fill: var(--fg-soft);
+  font-size: 36px;
+  font-weight: 700;
+}
+
+[data-sqli-verdict="pass"] .sqli-card {
+  stroke: var(--state-closed);
+  stroke-width: 6;
+}
+
+[data-sqli-verdict="pass"] .sqli-check-text {
+  fill: var(--state-closed);
+}
+
+[data-sqli-verdict="reject"] .sqli-card {
+  stroke: var(--state-open);
+  stroke-width: 6;
+  stroke-dasharray: 16 10;
+}
+
+[data-sqli-verdict="reject"] .sqli-check-text {
+  fill: var(--state-open);
+}
+
+/* The lamp is only up while the card is saying no. */
+.sqli-reject {
+  opacity: 0;
+}
+
+[data-sqli-verdict="reject"] .sqli-reject {
+  opacity: 1;
+}
+
+.sqli-reject-lamp {
+  fill: var(--state-open);
+}
+
+.sqli-reject-ring {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-dasharray: 8 7;
+}
+
+.sqli-reject-text {
+  fill: var(--state-open);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+/* --- the DB ------------------------------------------------------------- */
+
+/* How many rows the last answer carried. Zero is an ordinary answer that matched
+   nobody, which is what the second step turns an attack into, so it is written
+   in the plain colour rather than greyed out; one row is a real customer, and
+   the whole table is the breach and the only red rung on the readout. */
+.sqli-rows {
+  font-family: var(--font-mono);
+  font-size: 34px;
+  fill: var(--fg-soft);
+}
+
+.sqli-rows--1 {
+  fill: var(--state-closed);
+}
+
+.sqli-rows--8 {
+  fill: var(--state-open);
+}
+
+[data-sqli-rows="0"] .sqli-rows--0,
+[data-sqli-rows="1"] .sqli-rows--1,
+[data-sqli-rows="2"] .sqli-rows--2,
+[data-sqli-rows="3"] .sqli-rows--3,
+[data-sqli-rows="4"] .sqli-rows--4,
+[data-sqli-rows="5"] .sqli-rows--5,
+[data-sqli-rows="6"] .sqli-rows--6,
+[data-sqli-rows="7"] .sqli-rows--7,
+[data-sqli-rows="8"] .sqli-rows--8 {
+  opacity: 1;
+}
+
+/* The alarm, which is up only while an answer is carrying everything. */
+.sqli-all {
+  opacity: 0;
+}
+
+[data-sqli-all="on"] .sqli-all {
+  opacity: 1;
+}
+
+.sqli-all-lamp {
+  fill: var(--state-open);
+}
+
+.sqli-all-text {
+  fill: var(--state-open);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+/* What the app's account may do, and what happens to a command outside it. */
+.sqli-role {
+  opacity: 0;
+}
+
+[data-sqli-role="on"] .sqli-role {
+  opacity: 1;
+}
+
+.sqli-role-bg {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.sqli-role-text {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.sqli-deny {
+  opacity: 0;
+}
+
+[data-sqli-deny="on"] .sqli-deny {
+  opacity: 1;
+}
+
+.sqli-deny-lamp {
+  fill: var(--state-open);
+}
+
+.sqli-deny-text {
+  fill: var(--state-open);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+/* A refusal is drawn on the thing that refused, not only on the lamp. */
+[data-sqli-deny="on"] .sqli-role-bg {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+[data-sqli-deny="on"] .sqli-role-text {
+  fill: var(--state-open);
+}
+
+/* --- the replay --------------------------------------------------------- */
+
+/* The first step is a hypothetical, so the two bands it is about wear a warning
+   frame while it is up. Nothing on this stage is ever the real world in red. */
+[data-sqli-ghost="on"] .sqli-app > .scene-box,
+[data-sqli-ghost="on"] .sqli-query > .scene-box {
+  stroke: var(--state-open);
+  stroke-width: 6;
+  stroke-dasharray: 18 12;
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The four things the captions stop on, each drawn on the band it is about. */
+[data-sqli-mark="channels"] .sqli-code--fixed,
+[data-sqli-mark="channels"] .sqli-slot--empty,
+[data-sqli-mark="channels"] .sqli-slot--filled {
+  stroke: var(--request);
+  stroke-width: 7;
+}
+
+[data-sqli-mark="shape"] .sqli-code--fixed {
+  stroke: var(--state-closed);
+  stroke-width: 7;
+}
+
+[data-sqli-mark="second"] .sqli-card {
+  stroke: var(--state-half);
+  stroke-width: 7;
+}
+
+[data-sqli-mark="blast"] .sqli-role-bg {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-sqli-mark="blast"] .sqli-db > .scene-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: one channel for the sentence and one for the value, a filter
+   at the door, an account that cannot reach past its own tables. */
+[data-sqli-settled="on"] .sqli-query > .scene-box,
+[data-sqli-settled="on"] .sqli-db > .scene-box {
+  stroke: var(--state-closed);
+}
