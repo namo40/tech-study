@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as secretInjectionDuration,
+  stageMarkup as secretInjectionStage,
+} from './secret-injection/stage';
+import {
   SCENE_DURATION as resourceBasedAuthorizationDuration,
   stageMarkup as resourceBasedAuthorizationStage,
 } from './resource-based-authorization/stage';
@@ -601,6 +605,10 @@ const scenes: Record<string, SceneAsset> = {
   'resource-based-authorization': {
     markup: resourceBasedAuthorizationStage,
     duration: resourceBasedAuthorizationDuration,
+  },
+  'secret-injection': {
+    markup: secretInjectionStage,
+    duration: secretInjectionDuration,
   },
 };
 

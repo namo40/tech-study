@@ -6,6 +6,8 @@ import type { SceneModule } from './types';
  */
 export async function loadScene(id: string): Promise<SceneModule | null> {
   switch (id) {
+    case 'secret-injection':
+      return (await import('./secret-injection/scene')).default;
     case 'resource-based-authorization':
       return (await import('./resource-based-authorization/scene')).default;
     case 'sql-injection':
