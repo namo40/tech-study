@@ -26354,3 +26354,623 @@ rect.repo-verdict--none {
 [data-rb-settled="on"] .rb-load-fill {
   fill-opacity: 0.72;
 }
+
+/* ---------------------------------------------------------------- */
+/* Cross-shard Query stage                                           */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One question, three shards, and the whole difference between a question that
+ * carries the partition key and one that does not.
+ *
+ * The colour argument is small. Purple is the world where no question carries a
+ * key: the ring on the App box, the chip, and the fan while every ask goes to
+ * everybody. Amber is a question with no key and the waiting it causes — the
+ * hollow dashed chip, the `scatter` plate, the `gather` bar while it is short of
+ * an answer, and the shard everyone is waiting on. Red is the price gone wrong:
+ * the meter at the ghost's peak, the shard that never answered, and the
+ * `partial` verdict. Blue is a question that names its shard and the traffic
+ * that carries it: the key plate once the router has read one, a shard working,
+ * and whatever the scene is pointing at. Green is a fact that has settled: a
+ * shard that answered, a whole gather, the summary, and the closing frame.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a base
+ * rule hiding all of them, so nothing interpolates and scrubbing backwards is
+ * exact: the `ms n` readout, the shard a key names, the `gather` bar's fill, and
+ * each card's latency bar. The scene has no continuous quantity at all.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+/* Both lanes are dashed while nothing carries a key, because in that world the
+   router is not routing: it is copying every question to everybody. */
+.csq-lane--ask,
+.csq-lane--send {
+  stroke-dasharray: 12 10;
+  opacity: 0.4;
+}
+
+[data-csq-mode="keyed"] .csq-lane--ask,
+[data-csq-mode="keyed"] .csq-lane--send {
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/* A question with no key is hollow, because nothing in it says where to go. */
+.csq-req--ask .scene-req-dot {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+/* A question carrying the key, and the one leg of the fan the router sent. */
+.csq-req--keyed .scene-req-dot,
+.csq-req--send .scene-req-dot {
+  fill: var(--request);
+}
+
+/* A read of the summary, or a write keeping it current. */
+.csq-req--view .scene-req-dot {
+  fill: var(--state-closed);
+}
+
+.csq-tag {
+  fill: var(--fg-soft);
+}
+
+/* --- the bands ---------------------------------------------------------- */
+
+/* The three band titles sit at their left edges, so the lane keep-out column
+   down the middle of the stage stays clear of every word. */
+.csq-title {
+  font-size: 40px;
+}
+
+/* --- the App band ------------------------------------------------------- */
+
+/* The world where no question carries a key is a ring rather than a word,
+   because the fixed labels have no word for it. */
+[data-csq-ghost="on"] .csq-app > .scene-box {
+  stroke: var(--cpu);
+  stroke-width: 5;
+  stroke-dasharray: 18 12;
+}
+
+[data-csq-settled="on"] .csq-app > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+/* The question being asked. The two chips are two pictures rather than one
+   picture in two colours: a filled plate with a key badge and the word on it,
+   against a hollow dashed plate with an empty slot where the key is not. */
+.csq-chip {
+  opacity: 0;
+}
+
+[data-csq-ask="keyed"] .csq-chip,
+[data-csq-ask="keyless"] .csq-chip {
+  opacity: 1;
+}
+
+.csq-chip-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+[data-csq-ask="keyed"] .csq-chip-bg {
+  fill: var(--request);
+  fill-opacity: 0.18;
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+[data-csq-ask="keyless"] .csq-chip-bg {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 14 10;
+}
+
+[data-csq-ghost="on"] .csq-chip-bg {
+  fill: var(--cpu);
+  fill-opacity: 0.16;
+  stroke: var(--cpu);
+}
+
+/* The badge is where the key sits. An empty slot is a hollow dashed square, so
+   a question with no key is missing something the reader can see. */
+.csq-chip-badge {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-dasharray: 8 7;
+}
+
+[data-csq-ask="keyed"] .csq-chip-badge {
+  fill: var(--request);
+  stroke: var(--request);
+  stroke-dasharray: none;
+}
+
+[data-csq-ghost="on"] .csq-chip-badge {
+  stroke: var(--cpu);
+}
+
+.csq-chip-key {
+  fill: var(--request);
+  font-size: 32px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-csq-ask="keyed"] .csq-chip-key {
+  opacity: 1;
+}
+
+/* The meter. One text per value, and the state picks one, so the number never
+   interpolates. It is red only at the peak of the world with no keys, and again
+   when what came back was marked incomplete. */
+.csq-ms {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 28px;
+}
+
+[data-csq-ms="0"] .csq-ms--0,
+[data-csq-ms="12"] .csq-ms--12,
+[data-csq-ms="30"] .csq-ms--30,
+[data-csq-ms="90"] .csq-ms--90,
+[data-csq-ms="120"] .csq-ms--120,
+[data-csq-ms="135"] .csq-ms--135,
+[data-csq-ms="180"] .csq-ms--180 {
+  opacity: 1;
+}
+
+[data-csq-ghost="on"] .csq-ms {
+  fill: var(--state-half);
+}
+
+[data-csq-ghost="on"][data-csq-ms="180"] .csq-ms,
+[data-csq-partial="on"] .csq-ms {
+  fill: var(--state-open);
+}
+
+[data-csq-settled="on"] .csq-ms {
+  fill: var(--state-closed);
+}
+
+/* --- the Router band ---------------------------------------------------- */
+
+/* What the router read. A plate with nothing on it is hollow and dashed; one
+   that has resolved a question is filled and names where the question went. */
+.csq-key-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+[data-csq-read="s1"] .csq-key-bg,
+[data-csq-read="s2"] .csq-key-bg,
+[data-csq-read="s3"] .csq-key-bg {
+  fill: var(--request);
+  fill-opacity: 0.18;
+  stroke: var(--request);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+[data-csq-read="view"] .csq-key-bg {
+  fill: var(--state-closed);
+  fill-opacity: 0.18;
+  stroke: var(--state-closed);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+.csq-key-word {
+  fill: var(--muted);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+[data-csq-read="s1"] .csq-key-word,
+[data-csq-read="s2"] .csq-key-word,
+[data-csq-read="s3"] .csq-key-word {
+  fill: var(--request);
+}
+
+/* A summary read has no key in it, so the word is not there to be read. */
+[data-csq-read="view"] .csq-key-word {
+  opacity: 0;
+}
+
+.csq-target {
+  fill: var(--request);
+  font-size: 32px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-csq-read="s1"] .csq-target--s1,
+[data-csq-read="s2"] .csq-target--s2,
+[data-csq-read="s3"] .csq-target--s3,
+[data-csq-read="view"] .csq-target--view {
+  opacity: 1;
+}
+
+[data-csq-read="view"] .csq-target--view {
+  fill: var(--state-closed);
+}
+
+/* The fan. Dark and hollow while there is nothing to send to everybody, amber
+   while there is, purple in the world where there is nothing else. */
+.csq-fan-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.csq-fan-word {
+  fill: var(--muted);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.csq-ray {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+  opacity: 0.35;
+}
+
+[data-csq-scatter="on"] .csq-fan-bg {
+  fill: var(--state-half);
+  fill-opacity: 0.18;
+  stroke: var(--state-half);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+[data-csq-scatter="on"] .csq-fan-word {
+  fill: var(--state-half);
+}
+
+[data-csq-scatter="on"] .csq-ray {
+  stroke: var(--state-half);
+  stroke-width: 6;
+  opacity: 1;
+}
+
+[data-csq-ghost="on"] .csq-fan-bg {
+  fill: var(--cpu);
+  fill-opacity: 0.18;
+  stroke: var(--cpu);
+}
+
+[data-csq-ghost="on"] .csq-fan-word {
+  fill: var(--cpu);
+}
+
+[data-csq-ghost="on"] .csq-ray {
+  stroke: var(--cpu);
+}
+
+/* The bar the answer waits on. Its track says what kind of wait it is and its
+   fill says how many of the three are in, so a gather that is short of one and
+   a gather that gave up short of one are two pictures. */
+.csq-gather-word {
+  fill: var(--muted);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+[data-csq-gather="wait"] .csq-gather-word,
+[data-csq-gather="done"] .csq-gather-word,
+[data-csq-gather="partial"] .csq-gather-word {
+  fill: var(--fg-soft);
+}
+
+.csq-gather-track {
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+[data-csq-gather="wait"] .csq-gather-track {
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 14 10;
+}
+
+[data-csq-gather="done"] .csq-gather-track {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+[data-csq-gather="partial"] .csq-gather-track {
+  stroke: var(--state-open);
+  stroke-width: 6;
+}
+
+.csq-gather-fill {
+  fill: var(--state-half);
+  fill-opacity: 0.45;
+  stroke: var(--state-half);
+  stroke-width: 2;
+  opacity: 0;
+}
+
+[data-csq-got="1"] .csq-gather-fill--1,
+[data-csq-got="2"] .csq-gather-fill--2,
+[data-csq-got="3"] .csq-gather-fill--3 {
+  opacity: 1;
+}
+
+[data-csq-gather="done"] .csq-gather-fill {
+  fill: var(--state-closed);
+  fill-opacity: 0.55;
+  stroke: var(--state-closed);
+}
+
+[data-csq-gather="partial"] .csq-gather-fill {
+  fill: var(--state-open);
+  fill-opacity: 0.5;
+  stroke: var(--state-open);
+}
+
+/* The verdict. A word on a plate from the first frame, so the reader knows
+   where the answer will appear before there is one. */
+.csq-partial-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.csq-partial-text {
+  fill: var(--muted);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+[data-csq-partial="on"] .csq-partial-bg {
+  fill: var(--state-open);
+  fill-opacity: 0.2;
+  stroke: var(--state-open);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+[data-csq-partial="on"] .csq-partial-text {
+  fill: var(--state-open);
+}
+
+/* --- the Shards band ---------------------------------------------------- */
+
+/* The summary is not there until the fourth step builds it, and it is drawn as
+   a copy — a dashed green card — rather than as a fourth shard. */
+.csq-card--view {
+  opacity: 0;
+}
+
+[data-csq-view="present"] .csq-card--view,
+[data-csq-view="fresh"] .csq-card--view {
+  opacity: 1;
+}
+
+.csq-card-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.csq-card--view .csq-card-bg {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+  stroke-dasharray: 12 8;
+}
+
+[data-csq-view="fresh"] .csq-card--view .csq-card-bg {
+  fill: var(--state-closed);
+  fill-opacity: 0.22;
+  stroke-width: 7;
+  stroke-dasharray: none;
+}
+
+/* What a card is doing. Working is a blue edge; the one everybody is waiting on
+   is a heavy dashed amber one, and one that never answered is red and filled,
+   so the last two are different pictures rather than two shades of late. */
+.csq-card[data-csq-card="busy"] .csq-card-bg {
+  fill: var(--request);
+  fill-opacity: 0.12;
+  stroke: var(--request);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+.csq-card[data-csq-card="answer"] .csq-card-bg {
+  fill: var(--state-closed);
+  fill-opacity: 0.16;
+  stroke: var(--state-closed);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+.csq-card[data-csq-card="slow"] .csq-card-bg {
+  fill: var(--state-half);
+  fill-opacity: 0.14;
+  stroke: var(--state-half);
+  stroke-width: 7;
+  stroke-dasharray: 14 9;
+}
+
+.csq-card[data-csq-card="timeout"] .csq-card-bg {
+  fill: var(--state-open);
+  fill-opacity: 0.18;
+  stroke: var(--state-open);
+  stroke-width: 7;
+  stroke-dasharray: none;
+}
+
+.csq-card-name {
+  fill: var(--fg);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.csq-card--view .csq-card-name {
+  fill: var(--state-closed);
+}
+
+.csq-card[data-csq-card="slow"] .csq-card-name {
+  fill: var(--state-half);
+}
+
+.csq-card[data-csq-card="timeout"] .csq-card-name {
+  fill: var(--state-open);
+}
+
+/* What a shard costs to answer. One fill per latency, stacked on one origin, so
+   a cost is a value the state names rather than a width being tweened — and the
+   opening frame already says which shard is the slow one. */
+.csq-lat-track {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.csq-lat-fill {
+  fill: var(--fg-soft);
+  fill-opacity: 0.35;
+  stroke: var(--fg-soft);
+  stroke-width: 2;
+  opacity: 0;
+}
+
+.csq-card[data-csq-lat="12"] .csq-lat-fill--12,
+.csq-card[data-csq-lat="30"] .csq-lat-fill--30,
+.csq-card[data-csq-lat="75"] .csq-lat-fill--75,
+.csq-card[data-csq-lat="90"] .csq-lat-fill--90,
+.csq-card[data-csq-lat="120"] .csq-lat-fill--120,
+.csq-card[data-csq-lat="135"] .csq-lat-fill--135,
+.csq-card[data-csq-lat="180"] .csq-lat-fill--180 {
+  opacity: 1;
+}
+
+.csq-card--view .csq-lat-fill {
+  fill: var(--state-closed);
+  fill-opacity: 0.4;
+  stroke: var(--state-closed);
+}
+
+.csq-card[data-csq-card="busy"] .csq-lat-fill {
+  fill: var(--request);
+  fill-opacity: 0.5;
+  stroke: var(--request);
+}
+
+.csq-card[data-csq-card="answer"] .csq-lat-fill {
+  fill: var(--state-closed);
+  fill-opacity: 0.55;
+  stroke: var(--state-closed);
+}
+
+.csq-card[data-csq-card="slow"] .csq-lat-fill {
+  fill: var(--state-half);
+  fill-opacity: 0.55;
+  stroke: var(--state-half);
+}
+
+.csq-card[data-csq-card="timeout"] .csq-lat-fill {
+  fill: var(--state-open);
+  fill-opacity: 0.6;
+  stroke: var(--state-open);
+}
+
+/* In the world with no keys every shard is working on every question, which is
+   a different thing from a shard working on one. */
+[data-csq-ghost="on"] .csq-card[data-csq-card="busy"] .csq-card-bg {
+  fill: var(--cpu);
+  fill-opacity: 0.16;
+  stroke: var(--cpu);
+}
+
+[data-csq-ghost="on"] .csq-card[data-csq-card="busy"] .csq-lat-fill {
+  fill: var(--cpu);
+  fill-opacity: 0.5;
+  stroke: var(--cpu);
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* Whether the question carries the key is the one thing the router reads. */
+[data-csq-mark="carried"] .csq-key-bg {
+  stroke: var(--request);
+  stroke-width: 7;
+  stroke-dasharray: 18 12;
+}
+
+/* The price sheet: the meter, and what each shard costs to answer. */
+[data-csq-mark="sheet"] .csq-lat-track {
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+[data-csq-mark="sheet"] .csq-ms {
+  fill: var(--request);
+}
+
+/* The fleet can be any size; a keyed answer costs one conversation. */
+[data-csq-mark="fleet"] .csq-shards > .scene-box {
+  stroke: var(--request);
+  stroke-width: 7;
+  stroke-dasharray: 18 12;
+}
+
+[data-csq-mark="single"] .csq-key-bg,
+[data-csq-mark="single"] .csq-lane--send {
+  stroke: var(--request);
+  stroke-width: 7;
+}
+
+/* The width of the fan is how much tail latency the answer is exposed to, and
+   the slow shard is the whole of that exposure. */
+[data-csq-mark="fan"] .csq-fan-bg,
+[data-csq-mark="fan"] .csq-card--s3 .csq-card-bg {
+  stroke: var(--request);
+  stroke-width: 7;
+  stroke-dasharray: 18 12;
+}
+
+/* The question did not change; the shape of the data did. */
+[data-csq-mark="shape"] .csq-card--view .csq-card-bg,
+[data-csq-mark="shape"] .csq-shards > .scene-box {
+  stroke: var(--request);
+  stroke-width: 7;
+  stroke-dasharray: 18 12;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: the question the dashboard asks every second lands on one
+   card, and the meter reads what one card costs. */
+[data-csq-settled="on"] .csq-shards > .scene-box,
+[data-csq-settled="on"] .csq-router > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+[data-csq-settled="on"] .csq-card--view .csq-card-bg {
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+[data-csq-settled="on"] .csq-lat-fill {
+  fill-opacity: 0.6;
+}

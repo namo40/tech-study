@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as crossShardQueryDuration,
+  stageMarkup as crossShardQueryStage,
+} from './cross-shard-query/stage';
+import {
   SCENE_DURATION as rebalancingDuration,
   stageMarkup as rebalancingStage,
 } from './rebalancing/stage';
@@ -625,6 +629,10 @@ const scenes: Record<string, SceneAsset> = {
   rebalancing: {
     markup: rebalancingStage,
     duration: rebalancingDuration,
+  },
+  'cross-shard-query': {
+    markup: crossShardQueryStage,
+    duration: crossShardQueryDuration,
   },
 };
 

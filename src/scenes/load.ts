@@ -6,6 +6,8 @@ import type { SceneModule } from './types';
  */
 export async function loadScene(id: string): Promise<SceneModule | null> {
   switch (id) {
+    case 'cross-shard-query':
+      return (await import('./cross-shard-query/scene')).default;
     case 'rebalancing':
       return (await import('./rebalancing/scene')).default;
     case 'partitioning':
