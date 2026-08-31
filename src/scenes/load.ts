@@ -6,6 +6,8 @@ import type { SceneModule } from './types';
  */
 export async function loadScene(id: string): Promise<SceneModule | null> {
   switch (id) {
+    case 'sidecar':
+      return (await import('./sidecar/scene')).default;
     case 'hexagonal-architecture':
       return (await import('./hexagonal-architecture/scene')).default;
     case 'cross-shard-query':

@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as sidecarDuration,
+  stageMarkup as sidecarStage,
+} from './sidecar/stage';
+import {
   SCENE_DURATION as hexagonalArchitectureDuration,
   stageMarkup as hexagonalArchitectureStage,
 } from './hexagonal-architecture/stage';
@@ -641,6 +645,10 @@ const scenes: Record<string, SceneAsset> = {
   'hexagonal-architecture': {
     markup: hexagonalArchitectureStage,
     duration: hexagonalArchitectureDuration,
+  },
+  sidecar: {
+    markup: sidecarStage,
+    duration: sidecarDuration,
   },
 };
 
