@@ -31077,3 +31077,558 @@ rect.repo-verdict--none {
   stroke: var(--state-closed);
   stroke-width: 5;
 }
+
+/* ---------------------------------------------------------------- */
+/* Sliding Window stage                                              */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One arrival pattern, four ways of deciding what may pass.
+ *
+ * The colour argument is small. Green is what got through and what came out:
+ * an admitted chip, a tick standing above the track, the `ok n` readout, a
+ * departure on the output band, the bucket's level and the closing frame. Red
+ * is what did not: a dropped chip, a tick hanging below the track, the `drop n`
+ * readout, and the rim of a bucket something went over. Amber is the geometry
+ * failing — the gauge past the limit, and the bracket that measures twice the
+ * limit across one seam. Purple is memory and the estimate made of it: the
+ * ledger, the two segment counters, the weight wedge, and the previous segment
+ * hatched beside the live one. Blue is what travels and the window in force.
+ * Muted grey is an arrival nothing has happened to yet, a wall the clock resets
+ * on, and a slot on the output band where a departure could land.
+ *
+ * Nothing is told apart by colour alone. An arrival that has not happened is a
+ * **short stub straddling the track**; one that was admitted is a **tall tick
+ * standing above it with a round cap**; one that was dropped is a **dashed tick
+ * hanging below it with a bar across its foot**. The clock-aligned window is
+ * **dashed walls with the live partition filled**; the sliding window is **one
+ * solid band whose right edge is `now`**; the approximation is **the same walls
+ * with the previous segment hatched beside the filled current one**; the last
+ * step draws **a flat rule and no window at all**. The gauge is a **dashed
+ * hollow bar under the limit**, a **solid bar at it**, a **solid bar with a
+ * hatched overhang past it**, and a **solid bar with a long overhang inside a
+ * ring at twice it**. A chip is a **dashed hollow plate**, a **filled plate
+ * with a check**, or a **dashed plate with a cross**. A departure slot is a
+ * **short notch on the band's rule** and a departure is a **full-height tick**.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a
+ * base rule hiding all of them and the current `data-*` revealing exactly one:
+ * the `ok n` and `drop n` readouts, each chip's three plates, each arrival
+ * tick's three shapes, the four window drawings and the partitions inside two
+ * of them, the four gauge states, the four memory panels, the four bucket
+ * levels, the two rims, the two beads, and each output notch's two shapes. The
+ * only continuous quantities on the stage are the `now` mark walking the track
+ * and the sliding band's edge following it.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+.sw-lane--in,
+.sw-lane--pass {
+  opacity: 0.7;
+}
+
+.sw-req--in .scene-req-dot {
+  fill: var(--request);
+}
+
+/* A request that was admitted, on its way to whatever is downstream. It has
+   already been judged, so it carries no marker and travels as a plain dot. */
+.sw-req--pass .scene-req-dot {
+  fill: var(--state-closed);
+}
+
+/* --- the bands ---------------------------------------------------------- */
+
+.sw-title {
+  font-size: 40px;
+}
+
+.sw-hatch-line {
+  stroke: var(--cpu);
+  opacity: 0.5;
+}
+
+/* --- the Requests band -------------------------------------------------- */
+
+.sw-ok {
+  fill: var(--state-closed);
+  font-family: var(--font-mono);
+  font-size: 30px;
+}
+
+.sw-drop {
+  fill: var(--state-open);
+  font-family: var(--font-mono);
+  font-size: 30px;
+}
+
+[data-sw-ok="0"] .sw-ok--0,
+[data-sw-ok="1"] .sw-ok--1,
+[data-sw-ok="2"] .sw-ok--2,
+[data-sw-ok="3"] .sw-ok--3,
+[data-sw-ok="4"] .sw-ok--4,
+[data-sw-ok="5"] .sw-ok--5,
+[data-sw-ok="6"] .sw-ok--6,
+[data-sw-ok="7"] .sw-ok--7,
+[data-sw-ok="8"] .sw-ok--8,
+[data-sw-ok="9"] .sw-ok--9,
+[data-sw-ok="10"] .sw-ok--10,
+[data-sw-drop="0"] .sw-drop--0,
+[data-sw-drop="1"] .sw-drop--1,
+[data-sw-drop="2"] .sw-drop--2,
+[data-sw-drop="3"] .sw-drop--3,
+[data-sw-drop="4"] .sw-drop--4 {
+  opacity: 1;
+}
+
+/* Nothing has happened yet, so neither number is news. */
+[data-sw-ok="0"] .sw-ok,
+[data-sw-drop="0"] .sw-drop {
+  fill: var(--fg-soft);
+}
+
+/* One request, in arrival order. Three plates on one spot, one revealed. */
+.sw-chip-bg,
+.sw-chip-glyph {
+  opacity: 0;
+}
+
+.sw-chip-bg--off {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 8 7;
+}
+
+.sw-chip-bg--ok {
+  fill: var(--state-closed);
+  fill-opacity: 0.24;
+  stroke: var(--state-closed);
+  stroke-width: 3;
+}
+
+.sw-chip-bg--drop {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 3;
+  stroke-dasharray: 9 6;
+}
+
+.sw-chip-glyph {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sw-chip-glyph--ok {
+  stroke: var(--state-closed);
+}
+
+.sw-chip-glyph--drop {
+  stroke: var(--state-open);
+}
+
+[data-sw-chip="off"] .sw-chip-bg--off,
+[data-sw-chip="ok"] .sw-chip-bg--ok,
+[data-sw-chip="ok"] .sw-chip-glyph--ok,
+[data-sw-chip="drop"] .sw-chip-bg--drop,
+[data-sw-chip="drop"] .sw-chip-glyph--drop {
+  opacity: 1;
+}
+
+/* --- the limit and what the last window really held ---------------------- */
+
+.sw-limit-word {
+  fill: var(--fg);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.sw-gauge-bar,
+.sw-gauge-over,
+.sw-gauge-double {
+  opacity: 0;
+}
+
+/* Room to spare: a hollow bar with a dashed edge. */
+.sw-gauge-bar--under {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+  stroke-dasharray: 9 7;
+}
+
+/* Exactly at the limit: the same bar, filled. */
+.sw-gauge-bar--at,
+.sw-gauge-full {
+  fill: var(--request);
+  fill-opacity: 0.34;
+  stroke: var(--request);
+  stroke-width: 3;
+}
+
+/* Past it: what did not fit, hatched, sticking out beyond the bar's end. */
+.sw-gauge-spill {
+  fill: url(#sw-hatch);
+  stroke: var(--state-half);
+  stroke-width: 3;
+}
+
+/* Twice it: the overhang is longer and the whole thing is ringed. */
+.sw-gauge-ring {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-dasharray: 12 9;
+}
+
+[data-sw-gauge="under"] .sw-gauge-bar--under,
+[data-sw-gauge="at"] .sw-gauge-bar--at,
+[data-sw-gauge="over"] .sw-gauge-over,
+[data-sw-gauge="double"] .sw-gauge-double {
+  opacity: 1;
+}
+
+/* --- the time track ------------------------------------------------------ */
+
+.sw-axis {
+  stroke: var(--border);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+/* Four drawings of the window on one spot; the mode reveals exactly one. */
+.sw-win {
+  opacity: 0;
+}
+
+[data-sw-mode="fixed"] .sw-win--fixed,
+[data-sw-mode="slide"] .sw-win--slide,
+[data-sw-mode="approx"] .sw-win--approx,
+[data-sw-mode="bucket"] .sw-win--bucket {
+  opacity: 1;
+}
+
+/* The walls the clock resets on. Dashed, because nothing about the traffic
+   put them there. */
+.sw-wall {
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-dasharray: 12 10;
+}
+
+.sw-seg {
+  opacity: 0;
+}
+
+.sw-seg--live,
+.sw-seg--curr {
+  fill: var(--request);
+  fill-opacity: 0.22;
+  stroke: var(--request);
+  stroke-width: 3;
+}
+
+/* The segment the estimate is weighing rather than counting. */
+.sw-seg--prev {
+  fill: url(#sw-hatch);
+  stroke: var(--cpu);
+  stroke-width: 3;
+  stroke-dasharray: 14 9;
+}
+
+[data-sw-part="0"] .sw-seg--live-0,
+[data-sw-part="1"] .sw-seg--live-1,
+[data-sw-part="2"] .sw-seg--live-2,
+[data-sw-part="0"] .sw-seg--curr-0,
+[data-sw-part="1"] .sw-seg--curr-1,
+[data-sw-part="2"] .sw-seg--curr-2,
+[data-sw-part="1"] .sw-seg--prev-0,
+[data-sw-part="2"] .sw-seg--prev-1 {
+  opacity: 1;
+}
+
+/* The last window length, whose right edge is `now`. One piece, no walls. */
+.sw-band {
+  fill: var(--request);
+  fill-opacity: 0.3;
+  stroke: var(--request);
+  stroke-width: 4;
+}
+
+/* The fourth step counts nothing, so the track is left with a plain rule. */
+.sw-norule {
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+  stroke-dasharray: 4 12;
+  stroke-linecap: round;
+}
+
+/* What one window length across the seam actually held. */
+.sw-seam {
+  fill: var(--state-half);
+  fill-opacity: 0.16;
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 16 10;
+  opacity: 0;
+}
+
+[data-sw-seam="on"] .sw-seam {
+  opacity: 1;
+}
+
+/* --- one arrival on the track -------------------------------------------- */
+
+.sw-tick-off,
+.sw-tick-ok,
+.sw-tick-drop {
+  opacity: 0;
+}
+
+/* Nothing has happened here yet: a stub straddling the track. */
+.sw-tick-off {
+  fill: var(--muted);
+}
+
+/* Admitted: a tick standing above the track, capped. */
+.sw-tick-ok-bar,
+.sw-tick-ok-cap {
+  fill: var(--state-closed);
+}
+
+/* Dropped: a dashed tick hanging below the track, with a bar across its foot. */
+.sw-tick-drop-bar {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 3;
+  stroke-dasharray: 7 5;
+}
+
+.sw-tick-drop-foot {
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+[data-sw-tick="off"] .sw-tick-off,
+[data-sw-tick="ok"] .sw-tick-ok,
+[data-sw-tick="drop"] .sw-tick-drop {
+  opacity: 1;
+}
+
+/* --- the mark the window is measured back from --------------------------- */
+
+.sw-now-word {
+  fill: var(--fg);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.sw-now-cap {
+  fill: var(--fg);
+}
+
+.sw-now-line {
+  stroke: var(--fg);
+  stroke-width: 4;
+  stroke-dasharray: 10 8;
+}
+
+/* --- what the limiter has to remember ------------------------------------ */
+
+.sw-panel {
+  opacity: 0;
+}
+
+[data-sw-panel="counter"] .sw-panel--counter,
+[data-sw-panel="log"] .sw-panel--log,
+[data-sw-panel="approx"] .sw-panel--approx,
+[data-sw-panel="level"] .sw-panel--level {
+  opacity: 1;
+}
+
+/* One number, or two, or a depth: cheap memory, drawn as a block. */
+.sw-panel-cell {
+  fill: var(--request);
+  fill-opacity: 0.26;
+  stroke: var(--request);
+  stroke-width: 3;
+}
+
+/* The half of the estimate that is being weighed rather than counted. */
+.sw-panel-cell--prev {
+  fill: url(#sw-hatch);
+  stroke: var(--cpu);
+  stroke-dasharray: 12 8;
+}
+
+.sw-panel-wedge {
+  fill: var(--cpu);
+  fill-opacity: 0.55;
+}
+
+/* A timestamp per arrival, per key: the ledger exactness costs. */
+.sw-panel-row {
+  fill: var(--cpu);
+  fill-opacity: 0.45;
+}
+
+/* --- what the scene is pointing at --------------------------------------- */
+
+.sw-mark {
+  opacity: 0;
+}
+
+.sw-ring {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 18 12;
+}
+
+[data-sw-mark="wall"] .sw-mark--wall,
+[data-sw-mark="now"] .sw-mark--now,
+[data-sw-mark="band"] .sw-mark--band,
+[data-sw-mark="hold"] .sw-mark--hold,
+[data-sw-mark="ledger"] .sw-mark--ledger {
+  opacity: 1;
+}
+
+/* --- the Out band -------------------------------------------------------- */
+
+.sw-bucket-word,
+.sw-leak-word {
+  fill: var(--fg);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.sw-bucket-wall {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+/* Four depths on one spot. The empty one is the floor, not an absence. */
+.sw-level {
+  opacity: 0;
+}
+
+.sw-level--0 {
+  fill: var(--fg-soft);
+}
+
+.sw-level--1,
+.sw-level--2,
+.sw-level--3 {
+  fill: var(--state-closed);
+  fill-opacity: 0.34;
+  stroke: var(--state-closed);
+  stroke-width: 3;
+}
+
+[data-sw-level="0"] .sw-level--0,
+[data-sw-level="1"] .sw-level--1,
+[data-sw-level="2"] .sw-level--2,
+[data-sw-level="3"] .sw-level--3 {
+  opacity: 1;
+}
+
+/* The rim, and the rim with what went over it. */
+.sw-rim {
+  opacity: 0;
+}
+
+.sw-rim--plain,
+.sw-rim-line {
+  stroke: var(--fg-soft);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.sw-rim--spill .sw-rim-line {
+  stroke: var(--state-open);
+}
+
+.sw-rim-splash {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-sw-spill="off"] .sw-rim--plain,
+[data-sw-spill="on"] .sw-rim--spill {
+  opacity: 1;
+}
+
+.sw-spout {
+  stroke: var(--fg-soft);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+/* The bead at the spout: hollow between drips, filled on one. */
+.sw-bead {
+  opacity: 0;
+}
+
+.sw-bead--idle {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+  stroke-dasharray: 5 4;
+}
+
+.sw-bead--drip {
+  fill: var(--state-closed);
+}
+
+[data-sw-leak="idle"] .sw-bead--idle,
+[data-sw-leak="drip"] .sw-bead--drip {
+  opacity: 1;
+}
+
+/* The band a departure lands on: two rows on one rule, one revealed. */
+.sw-out-rule {
+  stroke: var(--border);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.sw-outrow {
+  opacity: 0;
+}
+
+[data-sw-out="arr"] .sw-outrow--arr,
+[data-sw-out="drip"] .sw-outrow--drip {
+  opacity: 1;
+}
+
+.sw-out-slot,
+.sw-out-tick {
+  opacity: 0;
+}
+
+.sw-out-slot {
+  fill: var(--muted);
+}
+
+.sw-out-tick {
+  fill: var(--state-closed);
+}
+
+[data-sw-out-hit="off"] .sw-out-slot,
+[data-sw-out-hit="on"] .sw-out-tick {
+  opacity: 1;
+}
+
+/* The closing frame: the bucket empty, the drip even, and nothing in flight. */
+[data-sw-settled="on"] .sw-outbox > .scene-box {
+  stroke: var(--state-closed);
+}

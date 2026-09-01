@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as slidingWindowDuration,
+  stageMarkup as slidingWindowStage,
+} from './sliding-window/stage';
+import {
   SCENE_DURATION as shadowDeploymentDuration,
   stageMarkup as shadowDeploymentStage,
 } from './shadow-deployment/stage';
@@ -689,6 +693,10 @@ const scenes: Record<string, SceneAsset> = {
   'shadow-deployment': {
     markup: shadowDeploymentStage,
     duration: shadowDeploymentDuration,
+  },
+  'sliding-window': {
+    markup: slidingWindowStage,
+    duration: slidingWindowDuration,
   },
 };
 

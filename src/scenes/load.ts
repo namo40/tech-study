@@ -178,6 +178,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./database-migration/scene')).default;
     case 'authorization':
       return (await import('./authorization/scene')).default;
+    case 'sliding-window':
+      return (await import('./sliding-window/scene')).default;
     default:
       return null;
   }
