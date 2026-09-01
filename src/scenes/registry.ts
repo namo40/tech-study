@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as dependencyInjectionDuration,
+  stageMarkup as dependencyInjectionStage,
+} from './dependency-injection/stage';
+import {
   SCENE_DURATION as rollbackDuration,
   stageMarkup as rollbackStage,
 } from './rollback/stage';
@@ -673,6 +677,10 @@ const scenes: Record<string, SceneAsset> = {
   rollback: {
     markup: rollbackStage,
     duration: rollbackDuration,
+  },
+  'dependency-injection': {
+    markup: dependencyInjectionStage,
+    duration: dependencyInjectionDuration,
   },
 };
 
