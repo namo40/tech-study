@@ -6,6 +6,8 @@ import type { SceneModule } from './types';
  */
 export async function loadScene(id: string): Promise<SceneModule | null> {
   switch (id) {
+    case 'io-completion-port':
+      return (await import('./io-completion-port/scene')).default;
     case 'cap-theorem':
       return (await import('./cap-theorem/scene')).default;
     case 'sidecar':

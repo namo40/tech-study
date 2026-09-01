@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as ioCompletionPortDuration,
+  stageMarkup as ioCompletionPortStage,
+} from './io-completion-port/stage';
+import {
   SCENE_DURATION as capTheoremDuration,
   stageMarkup as capTheoremStage,
 } from './cap-theorem/stage';
@@ -657,6 +661,10 @@ const scenes: Record<string, SceneAsset> = {
   'cap-theorem': {
     markup: capTheoremStage,
     duration: capTheoremDuration,
+  },
+  'io-completion-port': {
+    markup: ioCompletionPortStage,
+    duration: ioCompletionPortDuration,
   },
 };
 
