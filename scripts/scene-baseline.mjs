@@ -132,6 +132,7 @@ const SCENE_IDS = [
   'dependency-injection',
   'shadow-deployment',
   'sliding-window',
+  'cross-site-scripting',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */

@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as crossSiteScriptingDuration,
+  stageMarkup as crossSiteScriptingStage,
+} from './cross-site-scripting/stage';
+import {
   SCENE_DURATION as slidingWindowDuration,
   stageMarkup as slidingWindowStage,
 } from './sliding-window/stage';
@@ -697,6 +701,10 @@ const scenes: Record<string, SceneAsset> = {
   'sliding-window': {
     markup: slidingWindowStage,
     duration: slidingWindowDuration,
+  },
+  'cross-site-scripting': {
+    markup: crossSiteScriptingStage,
+    duration: crossSiteScriptingDuration,
   },
 };
 

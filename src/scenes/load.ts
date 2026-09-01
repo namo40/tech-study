@@ -180,6 +180,8 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
       return (await import('./authorization/scene')).default;
     case 'sliding-window':
       return (await import('./sliding-window/scene')).default;
+    case 'cross-site-scripting':
+      return (await import('./cross-site-scripting/scene')).default;
     default:
       return null;
   }

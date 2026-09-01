@@ -31632,3 +31632,687 @@ rect.repo-verdict--none {
 [data-sw-settled="on"] .sw-outbox > .scene-box {
   stroke: var(--state-closed);
 }
+
+/* ---------------------------------------------------------------- */
+/* Cross-site Scripting stage                                        */
+/* ---------------------------------------------------------------- */
+
+/*
+ * User text rendered as code, and the three things that stop it mattering.
+ *
+ * The colour argument is small, and it is never the only signal. Red is the
+ * comment that carries markup and everything it touches: the ribbon of teeth,
+ * the page that executed it, the lamp, the leak, the burst where something ran
+ * into a shut door, and the tear through a seal made for somewhere else. Blue is
+ * ordinary traffic — a rounded comment, a reader opening a page, the row of even
+ * bars a page shows when markup arrived as letters. Green is the machinery that
+ * works: the comb across the way out, a seal that holds, the bar across the shut
+ * door, and the settled frame. Amber is the second layer — the policy net, and
+ * the seal that is present and made for the wrong place.
+ *
+ * Every shape is told apart by outline before it is told apart by colour. A
+ * comment carrying markup is a ribbon of teeth and an ordinary one is a rounded
+ * plate; the way out is two rails with an open gap or the same rails with a comb
+ * across them; a seal is a dashed empty box, a solid box with its own glyph, or a
+ * solid box with the wrong glyph and a tear; a page that ran something is a
+ * filled ribbon under a lit lamp, a page that displayed is a row of even bars,
+ * and a page whose script was refused is a hollow ribbon with a hatch through it.
+ *
+ * No script text is drawn anywhere on this stage in any state, and none of these
+ * rules ever puts one there.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a base
+ * rule hiding all of them, so nothing is interpolated and scrubbing backwards is
+ * exact. There is no continuous quantity on this stage at all.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+.xss-lane {
+  stroke-linecap: round;
+}
+
+.xss-lane--in {
+  opacity: 0.9;
+}
+
+.xss-lane--out {
+  opacity: 0.85;
+}
+
+/* While the replay is up, the way out is the way the script got through. */
+[data-xss-ghost="on"] .xss-lane--out {
+  stroke: var(--state-open);
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/* An ordinary comment and a page that came back safe are the same plain dot,
+   because on the lane they are the same ordinary event. A reader opening a page
+   is a ring rather than a disc, and the attempt the net catches is a dashed
+   ring: both are shapes before they are colours. */
+.xss-req--plain .scene-req-dot,
+.xss-req--safe .scene-req-dot {
+  fill: var(--request);
+}
+
+.xss-req--view .scene-req-dot {
+  fill: none;
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+.xss-req--leak .scene-req-dot {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: 6 6;
+}
+
+/* A comment carrying markup keeps its silhouette all the way down the lane. */
+.xss-req--spiky .scene-req-dot,
+.xss-req--exec .scene-req-dot {
+  fill: none;
+}
+
+.xss-spike {
+  fill: var(--state-open);
+  fill-opacity: 0.9;
+  stroke: var(--state-open);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+/* --- the Users band ----------------------------------------------------- */
+
+.xss-capsule {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+/* How many pages were served with nothing executing in them. Zero is not a
+   failure, it is a scene that has not served one yet, so it stays in the plain
+   colour; every number above it is the ordinary road working. */
+.xss-ok {
+  font-family: var(--font-mono);
+  font-size: 34px;
+  fill: var(--fg-soft);
+}
+
+.xss-ok--1,
+.xss-ok--2,
+.xss-ok--3,
+.xss-ok--4 {
+  fill: var(--state-closed);
+}
+
+[data-xss-ok="0"] .xss-ok--0,
+[data-xss-ok="1"] .xss-ok--1,
+[data-xss-ok="2"] .xss-ok--2,
+[data-xss-ok="3"] .xss-ok--3,
+[data-xss-ok="4"] .xss-ok--4 {
+  opacity: 1;
+}
+
+/* Two shapes on one spot, neither showing until somebody is writing. */
+.xss-draft {
+  opacity: 0;
+}
+
+.xss-draft--spiky {
+  fill: var(--state-open);
+  fill-opacity: 0.3;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+
+.xss-draft--plain {
+  fill: var(--request);
+  fill-opacity: 0.28;
+  stroke: var(--request);
+  stroke-width: 4;
+}
+
+[data-xss-draft="spiky"] .xss-draft--spiky,
+[data-xss-draft="plain"] .xss-draft--plain {
+  opacity: 1;
+}
+
+/* A reader is not looking, looking, or looking at a page that ran a script with
+   their session. The last one is a burst, not a shade. */
+.xss-face {
+  opacity: 0;
+}
+
+.xss-face--idle {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 9 8;
+}
+
+.xss-face--view {
+  fill: var(--request);
+  fill-opacity: 0.55;
+  stroke: var(--request);
+  stroke-width: 3;
+}
+
+.xss-face-plate {
+  fill: var(--state-open);
+  fill-opacity: 0.28;
+  stroke: var(--state-open);
+  stroke-width: 3;
+}
+
+.xss-face-burst {
+  fill: var(--state-open);
+  fill-opacity: 0.9;
+  stroke: var(--state-open);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+[data-xss-face="idle"] .xss-face--idle,
+[data-xss-face="view"] .xss-face--view,
+[data-xss-face="hit"] .xss-face--hit {
+  opacity: 1;
+}
+
+/* --- the store ---------------------------------------------------------- */
+
+.xss-card {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.xss-store-text {
+  fill: var(--fg-soft);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+/* The comment this scene follows, exactly as it was written. It is drawn once
+   and it never changes again, in any step, because encoding happens on the way
+   out and the original is left alone. */
+.xss-stored {
+  fill: var(--state-open);
+  fill-opacity: 0.3;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+[data-xss-store="held"] .xss-stored {
+  opacity: 1;
+}
+
+[data-xss-store="held"] .xss-store-text {
+  fill: var(--fg);
+}
+
+/* --- the way out -------------------------------------------------------- */
+
+/* Two rails with an open gap, or the same rails with a comb across them. Drawn
+   on one spot, so the change reads as a change of shape rather than of shade. */
+.xss-pipe {
+  fill: none;
+  opacity: 0;
+}
+
+.xss-pipe--plain {
+  stroke: var(--muted);
+  stroke-width: 5;
+  stroke-dasharray: 18 12;
+  stroke-linecap: round;
+}
+
+.xss-pipe--encode {
+  stroke: var(--state-closed);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+[data-xss-mode="plain"] .xss-pipe--plain,
+[data-xss-mode="encode"] .xss-pipe--encode {
+  opacity: 1;
+}
+
+.xss-comb {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 6;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+[data-xss-mode="encode"] .xss-comb {
+  opacity: 0.55;
+}
+
+[data-xss-encode="on"] .xss-comb {
+  opacity: 1;
+  stroke-width: 8;
+}
+
+.xss-render-text {
+  fill: var(--fg-soft);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+[data-xss-mode="plain"][data-xss-ghost="on"] .xss-render-text {
+  fill: var(--state-open);
+}
+
+.xss-encode-text {
+  fill: var(--muted);
+  font-size: 34px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-xss-mode="encode"] .xss-encode-text {
+  opacity: 1;
+}
+
+[data-xss-encode="on"] .xss-encode-text {
+  fill: var(--state-closed);
+}
+
+/* What is sitting in the pipe right now, in the same two comment shapes. The
+   comment that emptied a session in the first step looks exactly the same here,
+   and comes out the other side as letters. */
+.xss-hold {
+  opacity: 0;
+}
+
+.xss-hold--spiky {
+  fill: var(--state-open);
+  fill-opacity: 0.35;
+  stroke: var(--state-open);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.xss-hold--plain {
+  fill: var(--request);
+  fill-opacity: 0.5;
+  stroke: var(--request);
+  stroke-width: 3;
+}
+
+[data-xss-hold="spiky"] .xss-hold--spiky,
+[data-xss-hold="plain"] .xss-hold--plain {
+  opacity: 1;
+}
+
+/* --- where the value lands ---------------------------------------------- */
+
+/* The three output contexts, drawn as three different places rather than as
+   three words: a run of lines between tags, a quoted slot, and a path made of
+   segments. They share their ground with the raw door, and the two are never up
+   at once. */
+.xss-contexts {
+  opacity: 0;
+}
+
+[data-xss-ctx="on"] .xss-contexts {
+  opacity: 1;
+}
+
+.xss-ctx-line {
+  fill: var(--fg-soft);
+  fill-opacity: 0.5;
+}
+
+.xss-ctx-bracket,
+.xss-ctx-slash {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.xss-ctx-quote {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.xss-ctx-slot,
+.xss-ctx-seg {
+  fill: var(--surface-2);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+/* A seal is a dashed empty box until a context has been escaped for; a solid box
+   carrying that context's own glyph once it has; and a solid box carrying
+   somebody else's glyph, with a tear through it, where the wrong rules were
+   applied to a place that has its own. */
+.xss-seal {
+  opacity: 0;
+}
+
+.xss-seal--open {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-dasharray: 10 9;
+}
+
+.xss-seal-box {
+  fill: var(--state-closed);
+  fill-opacity: 0.16;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+}
+
+.xss-seal-glyph {
+  fill: var(--state-closed);
+}
+
+.xss-seal-box--wrong {
+  fill: var(--state-half);
+  fill-opacity: 0.16;
+  stroke: var(--state-half);
+  stroke-width: 4;
+  stroke-dasharray: 14 8;
+}
+
+.xss-seal-glyph--wrong {
+  fill: var(--state-half);
+}
+
+.xss-seal-tear {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-xss-body="open"] .xss-ctx--body .xss-seal--open,
+[data-xss-body="sealed"] .xss-ctx--body .xss-seal--sealed,
+[data-xss-attr="open"] .xss-ctx--attr .xss-seal--open,
+[data-xss-attr="sealed"] .xss-ctx--attr .xss-seal--sealed,
+[data-xss-attr="wrong"] .xss-ctx--attr .xss-seal--wrong,
+[data-xss-url="open"] .xss-ctx--url .xss-seal--open,
+[data-xss-url="sealed"] .xss-ctx--url .xss-seal--sealed {
+  opacity: 1;
+}
+
+/* The quote marks are the thing the attribute context adds, so they say so once
+   that row is sealed by its own rules, and go back to a warning when it is
+   wearing somebody else's. */
+[data-xss-attr="sealed"] .xss-ctx-quote {
+  stroke: var(--state-closed);
+}
+
+[data-xss-attr="wrong"] .xss-ctx-slot {
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-dasharray: 12 8;
+}
+
+/* --- the escape hatch --------------------------------------------------- */
+
+.xss-rawdoor {
+  opacity: 0;
+}
+
+[data-xss-raw="shut"] .xss-rawdoor,
+[data-xss-raw="hit"] .xss-rawdoor {
+  opacity: 1;
+}
+
+.xss-door {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+}
+
+.xss-leaf {
+  fill: var(--surface-2);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.xss-seam {
+  opacity: 0;
+}
+
+.xss-seam--shut {
+  fill: var(--state-closed);
+  fill-opacity: 0.35;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+}
+
+.xss-seam--hit {
+  fill: var(--state-open);
+  fill-opacity: 0.9;
+  stroke: var(--state-open);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+[data-xss-raw="shut"] .xss-seam--shut,
+[data-xss-raw="hit"] .xss-seam--hit {
+  opacity: 1;
+}
+
+.xss-raw-text {
+  fill: var(--fg-soft);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+[data-xss-raw="hit"] .xss-raw-text {
+  fill: var(--state-open);
+}
+
+/* --- the Browser -------------------------------------------------------- */
+
+.xss-page-text {
+  fill: var(--fg-soft);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+.xss-text-word {
+  fill: var(--state-closed);
+  font-size: 34px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-xss-page="text"] .xss-text-word {
+  opacity: 1;
+}
+
+/* The net the browser hangs under everything else: drawn as a net, and only ever
+   after somebody has told the browser which scripts are legitimate. */
+.xss-net {
+  opacity: 0;
+}
+
+[data-xss-net="on"] .xss-net {
+  opacity: 1;
+}
+
+.xss-net-line {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* What the page is showing. The ribbon and the row of bars are the same
+   characters: one of them was handed to the browser as code, and the other was
+   handed to it as letters. */
+.xss-display {
+  opacity: 0;
+}
+
+.xss-display--script {
+  fill: var(--state-open);
+  fill-opacity: 0.85;
+  stroke: var(--state-open);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.xss-letter {
+  fill: var(--request);
+  fill-opacity: 0.85;
+}
+
+.xss-held-shape {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.xss-held-hatch {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+[data-xss-page="script"] .xss-display--script,
+[data-xss-page="text"] .xss-display--text,
+[data-xss-page="held"] .xss-display--held {
+  opacity: 1;
+}
+
+/* The lamp and the leak, which only ever appear together and only ever inside
+   the replay. */
+.xss-run {
+  opacity: 0;
+}
+
+[data-xss-run="on"] .xss-run {
+  opacity: 1;
+}
+
+.xss-run-lamp {
+  fill: var(--state-open);
+}
+
+.xss-run-ring {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-dasharray: 8 7;
+}
+
+.xss-run-text {
+  fill: var(--state-open);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.xss-cookie {
+  opacity: 0;
+}
+
+[data-xss-cookie="on"] .xss-cookie {
+  opacity: 1;
+}
+
+.xss-cookie-disc {
+  fill: var(--state-open);
+  fill-opacity: 0.35;
+  stroke: var(--state-open);
+  stroke-width: 3;
+}
+
+.xss-cookie-chip {
+  fill: var(--state-open);
+}
+
+.xss-cookie-trail {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-dasharray: 7 6;
+  stroke-linecap: round;
+}
+
+.xss-cookie-text {
+  fill: var(--state-open);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+/* --- the replay --------------------------------------------------------- */
+
+/* The first step is a hypothetical, so the two bands it is about wear a warning
+   frame while it is up. Nothing on this stage is ever the real world in red. */
+[data-xss-ghost="on"] .xss-app > .scene-box,
+[data-xss-ghost="on"] .xss-browser > .scene-box {
+  stroke: var(--state-open);
+  stroke-width: 6;
+  stroke-dasharray: 18 12;
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The five things the captions stop on, each drawn on the band it is about. */
+[data-xss-mark="become"] .xss-stored,
+[data-xss-mark="become"] .xss-pipe--plain,
+[data-xss-mark="become"] .xss-pipe--encode {
+  stroke: var(--state-half);
+  stroke-width: 8;
+}
+
+[data-xss-mark="victim"] .xss-users > .scene-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-xss-mark="victim"] .xss-capsule {
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+[data-xss-mark="output"] .xss-store-card {
+  stroke: var(--state-closed);
+  stroke-width: 6;
+}
+
+[data-xss-mark="output"] .xss-comb {
+  opacity: 1;
+  stroke-width: 9;
+}
+
+[data-xss-mark="edge"] .xss-pipe--encode {
+  stroke: var(--request);
+  stroke-width: 9;
+}
+
+[data-xss-mark="where"] .xss-seal--open,
+[data-xss-mark="where"] .xss-seal-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: a way out that encodes for the place a value lands in, a shut
+   door, and a net under both of them. */
+[data-xss-settled="on"] .xss-app > .scene-box,
+[data-xss-settled="on"] .xss-browser > .scene-box {
+  stroke: var(--state-closed);
+}
