@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as rollbackDuration,
+  stageMarkup as rollbackStage,
+} from './rollback/stage';
+import {
   SCENE_DURATION as ioCompletionPortDuration,
   stageMarkup as ioCompletionPortStage,
 } from './io-completion-port/stage';
@@ -665,6 +669,10 @@ const scenes: Record<string, SceneAsset> = {
   'io-completion-port': {
     markup: ioCompletionPortStage,
     duration: ioCompletionPortDuration,
+  },
+  rollback: {
+    markup: rollbackStage,
+    duration: rollbackDuration,
   },
 };
 
