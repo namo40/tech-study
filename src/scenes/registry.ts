@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as shadowDeploymentDuration,
+  stageMarkup as shadowDeploymentStage,
+} from './shadow-deployment/stage';
+import {
   SCENE_DURATION as dependencyInjectionDuration,
   stageMarkup as dependencyInjectionStage,
 } from './dependency-injection/stage';
@@ -681,6 +685,10 @@ const scenes: Record<string, SceneAsset> = {
   'dependency-injection': {
     markup: dependencyInjectionStage,
     duration: dependencyInjectionDuration,
+  },
+  'shadow-deployment': {
+    markup: shadowDeploymentStage,
+    duration: shadowDeploymentDuration,
   },
 };
 
