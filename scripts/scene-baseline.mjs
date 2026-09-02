@@ -135,6 +135,7 @@ const SCENE_IDS = [
   'cross-site-scripting',
   'multiplexing',
   'eviction',
+  'error-budget',
 ];
 
 /** Sampling grid: 481 points, 0.05s apart, covering 0 to 24 inclusive. */

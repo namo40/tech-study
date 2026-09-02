@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as errorBudgetDuration,
+  stageMarkup as errorBudgetStage,
+} from './error-budget/stage';
+import {
   SCENE_DURATION as evictionDuration,
   stageMarkup as evictionStage,
 } from './eviction/stage';
@@ -721,6 +725,10 @@ const scenes: Record<string, SceneAsset> = {
   eviction: {
     markup: evictionStage,
     duration: evictionDuration,
+  },
+  'error-budget': {
+    markup: errorBudgetStage,
+    duration: errorBudgetDuration,
   },
 };
 
