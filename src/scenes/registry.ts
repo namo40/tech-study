@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as multiplexingDuration,
+  stageMarkup as multiplexingStage,
+} from './multiplexing/stage';
+import {
   SCENE_DURATION as crossSiteScriptingDuration,
   stageMarkup as crossSiteScriptingStage,
 } from './cross-site-scripting/stage';
@@ -705,6 +709,10 @@ const scenes: Record<string, SceneAsset> = {
   'cross-site-scripting': {
     markup: crossSiteScriptingStage,
     duration: crossSiteScriptingDuration,
+  },
+  multiplexing: {
+    markup: multiplexingStage,
+    duration: multiplexingDuration,
   },
 };
 
