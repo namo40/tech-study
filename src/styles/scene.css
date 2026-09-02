@@ -32672,3 +32672,356 @@ rect.repo-verdict--none {
 [data-mux-settled="on"] .scene-service > .scene-box {
   stroke: var(--state-closed);
 }
+
+/* ---------------------------------------------------------------- */
+/* Eviction stage                                                    */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One idea carries this stage: how recently an entry was read is a picture, and
+ * the policy's choice is the dim end of that picture. `data-ev-cell` names one
+ * of four rungs — `hot`, `warm`, `cool`, `cold` — plus `empty` for a cell with
+ * nothing in it and `victim` for the moment the policy has chosen. The rungs are
+ * fixed values, not an animated fade, so a cell scrubbed backwards lands on the
+ * rung it left and the dimmest occupied cell is always the one that leaves next.
+ *
+ * Colour never carries a fact on its own. A cell says what it holds in words,
+ * the pinned one carries the word `pin`, and the counts in the App and the
+ * Origin say in numbers what the cells say in brightness.
+ *
+ * Every value the reader can read is a stack of text elements on one spot with
+ * a base rule hiding all of them, and exactly one is revealed by the `data-*`
+ * value that names it. Nothing is interpolated anywhere on this stage.
+ */
+
+/* --- what travels ------------------------------------------------------- */
+
+/* A read is a solid dot, the trip to the origin is the amber one it costs, and
+   the answer coming back is hollow, so a lane says which of the three it is
+   carrying before the reader has read anything. */
+.ev-req--read .scene-req-dot {
+  fill: var(--request);
+}
+
+.ev-req--origin .scene-req-dot {
+  fill: var(--state-half);
+}
+
+.ev-req--answer .scene-req-dot {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 6;
+}
+
+/* --- the App band ------------------------------------------------------- */
+
+/* The plate naming the key being asked for. Empty between reads. */
+.ev-ask-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+[data-ev-ask="none"] .ev-ask-bg {
+  fill: none;
+  stroke-dasharray: 9 9;
+}
+
+.ev-ask-key {
+  fill: var(--fg);
+  font-size: 34px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-ev-ask="k1"] .ev-ask-key--k1,
+[data-ev-ask="k2"] .ev-ask-key--k2,
+[data-ev-ask="k3"] .ev-ask-key--k3,
+[data-ev-ask="k4"] .ev-ask-key--k4,
+[data-ev-ask="k5"] .ev-ask-key--k5,
+[data-ev-ask="k6"] .ev-ask-key--k6,
+[data-ev-ask="k7"] .ev-ask-key--k7,
+[data-ev-ask="k8"] .ev-ask-key--k8,
+[data-ev-ask="v-a"] .ev-ask-key--v-a,
+[data-ev-ask="v-b"] .ev-ask-key--v-b,
+[data-ev-ask="v-c"] .ev-ask-key--v-c {
+  opacity: 1;
+}
+
+/* The ring is up while the App is normalizing the key before it uses it, which
+   is why three spellings stop being three entries. */
+.ev-ask-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 5;
+  opacity: 0;
+}
+
+[data-ev-norm="on"] .ev-ask-ring {
+  opacity: 0.95;
+}
+
+/* Reads the cache answered, and reads it did not. */
+.ev-hits {
+  font-size: 34px;
+  fill: var(--state-closed);
+}
+
+.ev-misses {
+  font-size: 34px;
+  fill: var(--state-half);
+}
+
+[data-ev-hits="0"] .ev-hits--0,
+[data-ev-hits="1"] .ev-hits--1,
+[data-ev-hits="2"] .ev-hits--2,
+[data-ev-hits="3"] .ev-hits--3,
+[data-ev-hits="4"] .ev-hits--4,
+[data-ev-hits="5"] .ev-hits--5,
+[data-ev-hits="6"] .ev-hits--6,
+[data-ev-hits="7"] .ev-hits--7,
+[data-ev-hits="8"] .ev-hits--8,
+[data-ev-hits="9"] .ev-hits--9,
+[data-ev-hits="10"] .ev-hits--10,
+[data-ev-hits="11"] .ev-hits--11,
+[data-ev-hits="12"] .ev-hits--12,
+[data-ev-hits="13"] .ev-hits--13,
+[data-ev-hits="14"] .ev-hits--14,
+[data-ev-hits="15"] .ev-hits--15,
+[data-ev-hits="16"] .ev-hits--16,
+[data-ev-hits="17"] .ev-hits--17,
+[data-ev-hits="18"] .ev-hits--18 {
+  opacity: 1;
+}
+
+[data-ev-misses="0"] .ev-misses--0,
+[data-ev-misses="1"] .ev-misses--1,
+[data-ev-misses="2"] .ev-misses--2,
+[data-ev-misses="3"] .ev-misses--3,
+[data-ev-misses="4"] .ev-misses--4,
+[data-ev-misses="5"] .ev-misses--5,
+[data-ev-misses="6"] .ev-misses--6,
+[data-ev-misses="7"] .ev-misses--7,
+[data-ev-misses="8"] .ev-misses--8,
+[data-ev-misses="9"] .ev-misses--9,
+[data-ev-misses="10"] .ev-misses--10,
+[data-ev-misses="11"] .ev-misses--11,
+[data-ev-misses="12"] .ev-misses--12 {
+  opacity: 1;
+}
+
+/* The closing beat holds the miss count up, because how little it moved in the
+   last step against how much it moved in the middle two is the whole argument. */
+.ev-mark {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 5;
+  opacity: 0;
+}
+
+[data-ev-mark="on"] .ev-mark {
+  opacity: 0.95;
+}
+
+/* --- the Cache band ----------------------------------------------------- */
+
+/* The policy plate. It is not there until the cache first has to choose. */
+.ev-policy {
+  opacity: 0;
+}
+
+[data-ev-policy="lru"] .ev-policy {
+  opacity: 1;
+}
+
+.ev-policy-bg {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 4;
+}
+
+.ev-policy-text {
+  fill: var(--state-half);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+/* How many of the six cells are taken. Six of six is where a policy starts to
+   matter, so that is the only value the readout colours differently. */
+.ev-size {
+  font-size: 34px;
+  fill: var(--fg-soft);
+}
+
+.ev-size--6 {
+  fill: var(--state-half);
+}
+
+[data-ev-size="0"] .ev-size--0,
+[data-ev-size="1"] .ev-size--1,
+[data-ev-size="2"] .ev-size--2,
+[data-ev-size="3"] .ev-size--3,
+[data-ev-size="4"] .ev-size--4,
+[data-ev-size="5"] .ev-size--5,
+[data-ev-size="6"] .ev-size--6 {
+  opacity: 1;
+}
+
+/* One cell per unit of the capacity. An empty one is an outline. */
+.ev-cell-bg {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 9 9;
+}
+
+.ev-cell[data-ev-cell="cold"] .ev-cell-bg,
+.ev-cell[data-ev-cell="cool"] .ev-cell-bg,
+.ev-cell[data-ev-cell="warm"] .ev-cell-bg,
+.ev-cell[data-ev-cell="hot"] .ev-cell-bg,
+.ev-cell[data-ev-cell="victim"] .ev-cell-bg {
+  fill: var(--surface-2);
+  stroke-dasharray: none;
+}
+
+.ev-cell[data-ev-cell="hot"] .ev-cell-bg {
+  stroke: var(--request);
+}
+
+.ev-cell[data-ev-cell="victim"] .ev-cell-bg {
+  stroke: var(--state-open);
+  stroke-width: 6;
+}
+
+/* What is in the cell. Nothing is written in an empty one. */
+.ev-cell-key {
+  fill: var(--fg);
+  font-size: 30px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.ev-cell[data-ev-key="k1"] .ev-cell-key--k1,
+.ev-cell[data-ev-key="k2"] .ev-cell-key--k2,
+.ev-cell[data-ev-key="k3"] .ev-cell-key--k3,
+.ev-cell[data-ev-key="k4"] .ev-cell-key--k4,
+.ev-cell[data-ev-key="k5"] .ev-cell-key--k5,
+.ev-cell[data-ev-key="k6"] .ev-cell-key--k6,
+.ev-cell[data-ev-key="k7"] .ev-cell-key--k7,
+.ev-cell[data-ev-key="k8"] .ev-cell-key--k8,
+.ev-cell[data-ev-key="v-a"] .ev-cell-key--v-a,
+.ev-cell[data-ev-key="v-b"] .ev-cell-key--v-b,
+.ev-cell[data-ev-key="v-c"] .ev-cell-key--v-c {
+  opacity: 1;
+}
+
+.ev-cell[data-ev-cell="cold"] .ev-cell-key {
+  fill: var(--muted);
+}
+
+.ev-cell[data-ev-cell="cool"] .ev-cell-key {
+  fill: var(--fg-soft);
+}
+
+.ev-cell[data-ev-cell="victim"] .ev-cell-key {
+  fill: var(--state-open);
+}
+
+/*
+ * The recency ladder. Four fixed rungs, dimmest last: the bar under a key says
+ * how long ago that key was read, and the policy takes whichever cell the bar
+ * says has waited longest. Nothing about it is animated, so the rung a cell is
+ * on is a fact about the frame rather than about which way the reader scrubbed.
+ */
+.ev-cell-bar {
+  fill: var(--request);
+  opacity: 0;
+}
+
+.ev-cell[data-ev-cell="hot"] .ev-cell-bar {
+  opacity: 1;
+}
+
+.ev-cell[data-ev-cell="warm"] .ev-cell-bar {
+  opacity: 0.68;
+}
+
+.ev-cell[data-ev-cell="cool"] .ev-cell-bar {
+  opacity: 0.42;
+}
+
+.ev-cell[data-ev-cell="cold"] .ev-cell-bar {
+  opacity: 0.2;
+}
+
+.ev-cell[data-ev-cell="victim"] .ev-cell-bar {
+  fill: var(--state-open);
+  opacity: 1;
+}
+
+/* The mark that takes one entry out of the policy's reach. */
+.ev-cell-pin {
+  fill: var(--cpu);
+  font-size: 24px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.ev-cell[data-ev-pin="on"] .ev-cell-pin {
+  opacity: 1;
+}
+
+.ev-cell[data-ev-pin="on"] .ev-cell-bg {
+  stroke: var(--cpu);
+  stroke-width: 5;
+}
+
+.ev-cell[data-ev-pin="on"] .ev-cell-bar {
+  fill: var(--cpu);
+  opacity: 1;
+}
+
+/* --- the Origin band ---------------------------------------------------- */
+
+/* Lit while the origin is answering a read the cache could not. */
+.ev-work {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 4;
+}
+
+[data-ev-work="on"] .ev-work {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+}
+
+/* How many reads the cache sent on. Every one of them is an eviction or a
+   cold start, which is why it is worth reading next to the miss count. */
+.ev-load {
+  font-size: 34px;
+  fill: var(--fg-soft);
+}
+
+[data-ev-load="0"] .ev-load--0,
+[data-ev-load="1"] .ev-load--1,
+[data-ev-load="2"] .ev-load--2,
+[data-ev-load="3"] .ev-load--3,
+[data-ev-load="4"] .ev-load--4,
+[data-ev-load="5"] .ev-load--5,
+[data-ev-load="6"] .ev-load--6,
+[data-ev-load="7"] .ev-load--7,
+[data-ev-load="8"] .ev-load--8,
+[data-ev-load="9"] .ev-load--9,
+[data-ev-load="10"] .ev-load--10,
+[data-ev-load="11"] .ev-load--11,
+[data-ev-load="12"] .ev-load--12 {
+  opacity: 1;
+}
+
+/* The closing frame: the cache full, the pinned entry still in it, and the miss
+   count barely moved since the pin went on. */
+[data-ev-settled="on"] .scene-client > .scene-box,
+[data-ev-settled="on"] .scene-node > .scene-box,
+[data-ev-settled="on"] .scene-service > .scene-box {
+  stroke: var(--state-closed);
+}

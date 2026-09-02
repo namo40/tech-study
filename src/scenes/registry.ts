@@ -1,4 +1,8 @@
 import {
+  SCENE_DURATION as evictionDuration,
+  stageMarkup as evictionStage,
+} from './eviction/stage';
+import {
   SCENE_DURATION as multiplexingDuration,
   stageMarkup as multiplexingStage,
 } from './multiplexing/stage';
@@ -713,6 +717,10 @@ const scenes: Record<string, SceneAsset> = {
   multiplexing: {
     markup: multiplexingStage,
     duration: multiplexingDuration,
+  },
+  eviction: {
+    markup: evictionStage,
+    duration: evictionDuration,
   },
 };
 
