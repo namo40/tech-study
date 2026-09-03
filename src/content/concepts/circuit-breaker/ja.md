@@ -29,7 +29,6 @@ related:
     slug: half-open-state
   - label: Polly
     slug: polly
-  - label: Microsoft.Extensions.Resilience
 references:
   - title: Circuit Breaker pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker
