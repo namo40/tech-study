@@ -62,6 +62,7 @@ const en = {
   'player.time': 'Elapsed time',
   'player.loop': 'Repeat the scene',
   'player.sound': 'Sound effects',
+  'player.speed': 'Playback speed',
   'player.step': 'Step {n}',
   'player.goToStep': 'Go to step {n}',
   'player.keyboardHint':

@@ -176,6 +176,14 @@ const [stepLabelBefore, stepLabelAfter] = tSplit(locale, 'player.goToStep', 'n')
                         <path d="M7 5h3.4v14H7zM13.6 5H17v14h-3.4z" />
                       </svg>
                     </button>
+                    <button
+                      type="button"
+                      class="home-controls__play home-controls__speed"
+                      data-speed
+                      aria-label={t(locale, 'player.speed')}
+                    >
+                      1×
+                    </button>
                     <div class="home-controls__steps" data-steps></div>
                   </div>
 

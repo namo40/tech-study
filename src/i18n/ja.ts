@@ -58,6 +58,7 @@ const ja: Messages = {
   'player.time': '再生時間',
   'player.loop': 'シーンを繰り返す',
   'player.sound': '効果音',
+  'player.speed': '再生速度',
   'player.step': 'ステップ {n}',
   'player.goToStep': 'ステップ {n} へ移動',
   'player.keyboardHint':

@@ -150,6 +150,15 @@ const totalLabel = `0:00 / ${totalMinutes}:${String(totalSeconds).padStart(2, '0
           </svg>
         </button>
 
+        <button
+          type="button"
+          class="btn btn--speed"
+          data-speed
+          aria-label={t(locale, 'player.speed')}
+        >
+          1×
+        </button>
+
         <span class="controls__time" data-time aria-label={t(locale, 'player.time')}>
           {totalLabel}
         </span>

@@ -1,5 +1,6 @@
 import { loadScene } from '../scenes/load';
 import type { SceneInstance, SceneStep } from '../scenes/types';
+import { formatSpeed, getSpeed, nextSpeed, setSpeed } from './speed';
 
 /**
  * Concept index.
@@ -43,8 +44,19 @@ function initTheater(root: HTMLElement): void {
   const scrub = root.querySelector<HTMLInputElement>('[data-scrub]');
   const timeLabel = root.querySelector<HTMLElement>('[data-time]');
   const playButton = root.querySelector<HTMLButtonElement>('[data-play]');
+  const speedButton = root.querySelector<HTMLButtonElement>('[data-speed]');
   const stepBar = root.querySelector<HTMLElement>('[data-steps]');
-  if (!stage || !controls || !sceneTitle || !cta || !scrub || !timeLabel || !playButton || !stepBar) {
+  if (
+    !stage ||
+    !controls ||
+    !sceneTitle ||
+    !cta ||
+    !scrub ||
+    !timeLabel ||
+    !playButton ||
+    !speedButton ||
+    !stepBar
+  ) {
     return;
   }
 
@@ -61,6 +73,7 @@ function initTheater(root: HTMLElement): void {
   let serverRendered = true;
   /** Guards against an older scene chunk resolving after a newer switch. */
   let switchToken = 0;
+  let speed = getSpeed();
   let activeId =
     rows.find((row) => row.getAttribute('aria-current') === 'true')?.dataset.sceneRow ?? '';
 
@@ -185,6 +198,8 @@ function initTheater(root: HTMLElement): void {
     }
 
     instance = built;
+    // Every switch builds a fresh timeline, so the chosen rate is applied again.
+    built.tl.timeScale(speed);
     buildSteps(built.steps);
     built.tl.eventCallback('onUpdate', render);
     built.tl.eventCallback('onComplete', () => {
@@ -215,6 +230,14 @@ function initTheater(root: HTMLElement): void {
     render();
     syncPlayButton();
   });
+
+  speedButton.addEventListener('click', () => {
+    speed = nextSpeed(speed);
+    setSpeed(speed);
+    if (instance) instance.tl.timeScale(speed);
+    speedButton.textContent = formatSpeed(speed);
+  });
+  speedButton.textContent = formatSpeed(speed);
 
   for (const row of rows) {
     row.addEventListener('click', () => {

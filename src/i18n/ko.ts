@@ -58,6 +58,7 @@ const ko: Messages = {
   'player.time': '재생 시간',
   'player.loop': '장면 반복',
   'player.sound': '효과음',
+  'player.speed': '재생 속도',
   'player.step': '{n}단계',
   'player.goToStep': '{n}단계로 이동',
   'player.keyboardHint':

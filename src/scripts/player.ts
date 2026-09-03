@@ -1,6 +1,7 @@
 import { loadScene } from '../scenes/load';
 import type { SceneCue, SceneStep } from '../scenes/types';
 import { isSoundEnabled, playCue, setSoundEnabled, unlockAudio } from './audio';
+import { formatSpeed, getSpeed, nextSpeed, setSpeed } from './speed';
 
 /**
  * Scene player.
@@ -53,6 +54,7 @@ async function initPlayer(root: HTMLElement): Promise<void> {
   const nextButton = must<HTMLButtonElement>(root, '[data-next]');
   const loopButton = must<HTMLButtonElement>(root, '[data-loop]');
   const soundButton = must<HTMLButtonElement>(root, '[data-sound]');
+  const speedButton = must<HTMLButtonElement>(root, '[data-speed]');
   const scrub = must<HTMLInputElement>(root, '[data-scrub]');
   const timeLabel = must<HTMLElement>(root, '[data-time]');
   const stepCards = Array.from(root.querySelectorAll<HTMLElement>('[data-caption]'));
@@ -61,11 +63,12 @@ async function initPlayer(root: HTMLElement): Promise<void> {
 
   let scrubbing = false;
   let soundOn = isSoundEnabled();
+  let speed = getSpeed();
   let shownStep = -1;
   let wasPaused = true;
 
   /**
-   * Scenes ask for a sound at storyboard times. Suppress it while the reader is
+   * Scenes ask for a sound at authored times. Suppress it while the reader is
    * dragging the scrub bar and whenever the timeline is not actually running,
    * so seeking never produces a burst of cues.
    */
@@ -75,6 +78,10 @@ async function initPlayer(root: HTMLElement): Promise<void> {
   };
 
   const { tl, steps } = scene.build(stage, { cue });
+
+  // The rate scales the timeline itself. The label keeps reporting timeline
+  // time, so every step stays at the moment the scene gave it.
+  tl.timeScale(speed);
 
   const applyStep = (index: number): void => {
     for (const card of stepCards) {
@@ -168,6 +175,14 @@ async function initPlayer(root: HTMLElement): Promise<void> {
     if (soundOn) unlockAudio();
   });
   soundButton.setAttribute('aria-pressed', String(soundOn));
+
+  speedButton.addEventListener('click', () => {
+    speed = nextSpeed(speed);
+    setSpeed(speed);
+    tl.timeScale(speed);
+    speedButton.textContent = formatSpeed(speed);
+  });
+  speedButton.textContent = formatSpeed(speed);
 
   const stopScrubbing = (): void => {
     scrubbing = false;
