@@ -1,5 +1,5 @@
 ---
-title: "Idempotency-Key"
+title: "Idempotency Key"
 summary: "Idempotency-Key는 무언가를 바꾸는 요청을 두 번 바꾸지 않고 다시 보낼 수 있게 해 주는 헤더입니다. 서버는 키를 기억해 두고 작업은 한 번만 하며, 같은 키로 다시 오는 요청에는 저장해 둔 응답을 그대로 돌려줍니다."
 category: "API와 실시간 통신"
 scene: idempotency-key

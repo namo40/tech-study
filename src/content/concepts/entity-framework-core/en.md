@@ -28,7 +28,7 @@ references:
 ## When to use
 
 - Take it when persistence should follow a domain model rather than a table list. Entities with navigation properties let an order carry its lines and its customer as objects, the mapping between those and the foreign keys is configuration, and the code that expresses a business rule reads as objects rather than as joins.
-- Use migrations so the schema travels with the code that needs it. A model change produces a migration file that is reviewed, committed and applied in the same deployment as the code, which is what makes "the schema on this branch" a meaningful phrase instead of a question for whoever owns the database.
+- Use migrations so the schema travels with the code that needs it. A model change produces a migration file that is reviewed, versioned with the code and applied as a step before the rollout, which is what makes "the schema on this branch" a meaningful phrase instead of a question for whoever owns the database.
 - Lean on change tracking when a unit of work covers several entities. Load, mutate the objects, call `SaveChangesAsync` once, and EF Core works out the inserts, updates and deletes, orders them by their dependencies and wraps them in a transaction.
 - Choose it when most queries are CRUD and moderate joins. That is the range the translation handles well, and the productivity is real: filtering, projection, paging and related-data loading come out of the same LINQ surface with the types checked at compile time.
 
@@ -37,7 +37,7 @@ references:
 - N+1 is a usage pattern, not a framework defect, and it is the most common performance bug in EF Core code. A loop that touches a navigation property runs a query per row; `Include` or a projection asks for it all in one. Read the query log rather than guessing, and treat query count as something a test can assert.
 - Read paths should not pay for tracking. `AsNoTracking` skips the snapshot the change tracker keeps for each returned entity, which matters most on list endpoints returning hundreds of rows that nobody will modify. Projecting to a DTO with `Select` gets you the same benefit and sends fewer columns.
 - Not every C# expression can become SQL, and the boundary is worth knowing precisely. An unsupported call in a `Where` throws at runtime rather than at compile time, and older habits of forcing evaluation with `AsEnumerable` early move the filter into memory, which pulls the whole table across the wire to discard most of it.
-- Bulk work is against the grain of an ORM that loads, tracks and writes objects one at a time. `ExecuteUpdateAsync` and `ExecuteDeleteAsync` issue one set-based statement without loading anything, and for large imports or heavy reporting queries, dapper or raw SQL is the honest answer rather than a defeat.
+- Bulk work is against the grain of an ORM that loads, tracks and writes objects one at a time. `ExecuteUpdateAsync` and `ExecuteDeleteAsync` issue one set-based statement without loading anything, and for large imports or heavy reporting queries, Dapper or raw SQL is the honest answer rather than a defeat.
 
 ## In .NET
 

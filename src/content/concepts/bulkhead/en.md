@@ -12,7 +12,7 @@ steps:
   - title: "Bulkhead"
     text: "A wall splits the pool. B still fills its three slots and its extra calls fail fast, but B's failure stays on B's side. A keeps flowing."
   - title: "Timeouts free the slots"
-    text: "A stuck call must not hold its slot forever. Pair every compartment with a timeout, size it for that dependency's budget, and B can recover without anyone else noticing."
+    text: "A stuck call must not hold its slot forever. Pair the compartment with a timeout, size it for that dependency's budget, and B can recover without anyone else noticing."
 related:
   - label: Concurrency Limiter
     slug: concurrency-limiter

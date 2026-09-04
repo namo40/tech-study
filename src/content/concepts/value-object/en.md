@@ -25,6 +25,8 @@ related:
 references:
   - title: "Implement value objects"
     url: https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/implement-value-objects
+  - title: "Complex types in EF Core"
+    url: https://learn.microsoft.com/en-us/ef/core/modeling/complex-types
   - title: "Owned entity types in EF Core"
     url: https://learn.microsoft.com/en-us/ef/core/modeling/owned-entities
   - title: "Value conversions in EF Core"
@@ -55,17 +57,17 @@ public readonly record struct Money(decimal Amount, string Currency)
 }
 ```
 
-Persistence follows the same rule: because there is no identity, there is nothing to store a value under, so it is stored as part of whatever entity carries it. `OwnsOne` puts it in columns on the owner's table, and there is no `Money` table and no way to load one on its own — which is the modelling equivalent of "no repository".
+Persistence follows the same rule: because there is no identity, there is nothing to store a value under, so it is stored as part of whatever entity carries it. `ComplexProperty` puts it in columns on the owner's table, and there is no `Money` table and no way to load one on its own — which is the modelling equivalent of "no repository". The neighbouring tool, `OwnsOne`, maps an owned *entity* instead: it has a key, it is tracked in its own right, and it has to be a reference type, so a `readonly record struct` cannot be one.
 
 ```csharp
 model.Entity<Order>(order =>
 {
-    order.OwnsOne(o => o.Total);      // Total_Amount, Total_Currency on Orders
-    order.OwnsMany(o => o.Lines);     // lines have no life outside the order
+    order.ComplexProperty(o => o.Total);   // Total_Amount, Total_Currency on Orders
+    order.OwnsMany(o => o.Lines);          // lines have no life outside the order
 });
 ```
 
-When the value is really one column, a value conversion is lighter than an owned type: the domain keeps the type and the database keeps the primitive.
+When the value is really one column, a value conversion is lighter than a complex type: the domain keeps the type and the database keeps the primitive.
 
 ```csharp
 model.Entity<Customer>()
@@ -73,4 +75,4 @@ model.Entity<Customer>()
      .HasConversion(email => email.Value, text => EmailAddress.Of(text));
 ```
 
-Two cautions are worth carrying away. First, EF Core tracks an owned value through its owner, so assigning a whole new instance (`order.Total = order.Total.Add(line.Amount)`) is the update; there is nothing to mutate and nothing to save separately. Second, `record` is right for values and wrong for entities, and the boundary between the two pages is exactly there: give an entity structural equality and two different customers who share a name today become the same customer, while the same customer becomes a stranger after moving house.
+Two cautions are worth carrying away. First, EF Core tracks the value through its owner, so assigning a whole new instance (`order.Total = order.Total.Add(line.Amount)`) is the update; there is nothing to mutate and nothing to save separately. Second, `record` is right for values and wrong for entities, and the boundary between the two pages is exactly there: give an entity structural equality and two different customers who share a name today become the same customer, while the same customer becomes a stranger after moving house.

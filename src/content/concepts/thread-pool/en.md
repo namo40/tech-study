@@ -7,11 +7,11 @@ steps:
   - title: "Short work"
     text: "Requests arrive, a free thread runs each one for a moment, and the thread is back in the pool. Four threads are plenty."
   - title: "Blocked"
-    text: "Each request parks on its thread while it waits for I/O. Soon every thread is waiting, the queue grows, and the pool adds threads only one at a time. This is thread pool starvation."
+    text: "Each request parks on its thread while it waits for I/O. Soon every thread is waiting, the queue grows, three requests come back late, and the pool adds new ones only a couple per second. This is thread pool starvation."
   - title: "Await"
     text: "The same requests now await their I/O. Each one leaves its thread while it waits and comes back to any free thread afterwards. Four threads carry the whole stream."
   - title: "CPU work"
-    text: "Long computations really do need a thread. Bound how many run at once so the rest of the pool keeps serving requests, and never wrap blocking I/O in Task.Run to make it look async."
+    text: "Long computations really do need a thread. Here two of them take two threads while the other two keep serving requests — bound how many run at once and the pool stays useful."
 related:
   - label: Thread Pool Starvation
     slug: threadpool-starvation
@@ -76,4 +76,4 @@ await Parallel.ForEachAsync(
     async (image, token) => await ResizeAsync(image, token));
 ```
 
-`dotnet-counters monitor --counters System.Runtime` shows `ThreadPool Thread Count` and `ThreadPool Queue Length` live. A thread count that climbs about one per second while the queue keeps growing is the signature of starvation.
+`dotnet-counters monitor --counters System.Runtime` shows the pool live: on .NET 9 and later as `dotnet.thread_pool.thread.count` and `dotnet.thread_pool.queue.length`, on older runtimes under the old display names `ThreadPool Thread Count` and `ThreadPool Queue Length`. A thread count that keeps climbing one or two per second, once past the pool's fast initial ramp to a few times the core count, while the queue keeps growing is the signature of starvation. Since .NET 6 the pool reacts faster to `Task.Wait`-style blocking, which shortens that climb without removing it.

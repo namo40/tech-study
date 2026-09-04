@@ -63,7 +63,7 @@ references:
 - Date and time keys make today the hot part. Every new row carries today, so every write lands on the same part while the others sit idle, and the design that looked balanced on paper collapses back into one busy table. Time-based partitioning is right when the access pattern is also time-based — retention, archival, append-only telemetry read by range — and wrong the moment the workload is "recent things, constantly".
 - Low cardinality caps the number of parts. A key with six distinct values can never make more than six parts, however many machines you buy, and a key whose distribution is skewed at the source makes parts whose sizes are skewed the same way. Count the distinct values before counting the machines.
 - A query that does not carry the key must visit every part and merge the answers. That is a real operation with a real cost, and it turns a cheap lookup into a fan-out whose latency is the slowest part's. Design the key around the queries that must stay fast and accept the fan-out for the ones that can be slow — or keep a second, differently keyed copy for them.
-- Transactions and unique constraints stop at the part boundary. Two rows in two parts cannot be updated atomically by the database, and a unique index cannot span parts, so uniqueness becomes something the application or a separate store has to enforce. Foreign keys across parts stop being enforceable at all.
+- Transactions and unique constraints stop at the part boundary once the parts are separate databases. Two rows in two of them cannot be updated atomically by the database, and a unique index cannot span them, so uniqueness becomes something the application or a separate store has to enforce, and foreign keys across parts stop being enforceable at all. A partitioned table inside one database is the exception: it is still one logical table, so transactions and unique indexes that include the partitioning column work as they always did.
 - A vertical split pays a join, or a second fetch, on any read that wants the whole row. That is the trade being made deliberately — the rare read pays so the common one does not — but it stops being a good trade the moment something starts reading both halves on the hot path.
 - Count the parts you can operate, not the parts you can imagine. Every part is a thing to monitor, back up, patch, fail over, and reason about at three in the morning. Four parts a team can actually run beat sixty-four that exist mostly in a diagram.
 - Moving data later is the expensive story. Changing the key or the part count means rewriting rows across stores while the system is serving traffic, with a plan for what a reader sees mid-move. This is why the key is chosen as though permanent, and why consistent hashing and rebalancing exist as their own subjects.
@@ -105,8 +105,9 @@ Horizontal partitioning has no framework feature, because the framework cannot k
 ```csharp
 public sealed class ShardMap(IReadOnlyList<string> connections)
 {
-    // The key rule lives in one place. Everything else reads it and nothing
-    // else decides it, which is what makes changing it a bounded change.
+    // The key rule lives in one place, and nothing else decides it. The mod-N
+    // body is the naive version: see consistent hashing and rebalancing for a
+    // rule that survives a change in the number of parts.
     public string ConnectionFor(Guid tenantId) =>
         connections[(int)((uint)tenantId.GetHashCode() % connections.Count)];
 }
@@ -123,7 +124,7 @@ public sealed class OrdersContextFactory(ShardMap map)
 }
 ```
 
-The rule above hashes rather than ranging on the key, which is the difference between spreading and piling: a range on a date puts every new row in the last part, while a hash on a tenant scatters them. Note also that `GetHashCode` is not stable across processes or runtime versions — a real shard map uses a hash it owns, such as a hash of the string form, so the same key resolves to the same part next year.
+The rule above hashes rather than ranging on the key, which is the difference between spreading and piling: a range on a date puts every new row in the last part, while a hash on a tenant scatters them. Note also that `GetHashCode` is the wrong hash to place data with. `Guid.GetHashCode` happens to be deterministic today, but nothing promises it across runtime versions, and `string.GetHashCode` is randomised per process, so a key hashed that way lands somewhere else after a restart. A real shard map owns its hash — `XxHash64`, as on the sharding page — so the same key resolves to the same part next year.
 
 Managed platforms provide the shape rather than the plumbing. Azure SQL Database offers elastic database tools with a shard map manager that keeps key ranges and their databases; Azure Cosmos DB makes the partition key part of the container definition, so the choice is declared at creation and cannot be edited afterwards.
 

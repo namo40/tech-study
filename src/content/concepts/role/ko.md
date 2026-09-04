@@ -7,7 +7,7 @@ sceneStep: 3
 related:
   - label: Resource-based Authorization
     slug: resource-based-authorization
-  - label: Role-based Access Control
+  - label: Role-Based Access Control
     slug: role-based-access-control
   - label: Default Deny
     slug: default-deny
@@ -17,7 +17,7 @@ related:
     slug: claims
   - label: Least Privilege
     slug: least-privilege
-  - label: Attribute-based Access Control
+  - label: Attribute-Based Access Control
     slug: attribute-based-access-control
   - label: Authentication
     slug: authentication
@@ -27,7 +27,7 @@ references:
   - title: "Policy-based authorization in ASP.NET Core"
     url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/policies
   - title: "Resource-based authorization in ASP.NET Core"
-    url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/resourcebased
+    url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/resource-based
 ---
 
 장면의 3단계는 역할이 실수인가 아닌가 하는 논쟁이 끝나는 대목입니다. Check 안에 `admin` 카드가 올라오고, 한 호출자에게 배지가 붙고, 소유 규칙이라면 거절했을 요청이 통과합니다. 그것이 관리자라는 말의 뜻이고, 그 규칙을 owner 규칙과 같은 스택에 카드로 그린 것이 요점입니다. 자원 검사가 도착했다고 역할이 사라진 것도 아니고, 역할이 이긴 것도 아닙니다. 역할은 목록에서 owner 규칙 위에 한 줄을 차지하고, 딱 한 가지만 말합니다.

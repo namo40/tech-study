@@ -5,7 +5,7 @@ category: "APIs and real-time communication"
 related:
   - label: gRPC
     slug: grpc
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
   - label: Idempotency
     slug: idempotency
@@ -72,6 +72,6 @@ orders.MapPut("/{id:guid}", async (Guid id, OrderInput input, IOrderStore store)
 });
 ```
 
-- `AddProblemDetails` makes the error shape uniform for free. Registered once, unhandled exceptions and status-code-only responses come back as `application/problem+json` with the same fields, so clients get one failure format instead of three that grew separately.
+- `AddProblemDetails` plus `UseExceptionHandler()` and `UseStatusCodePages()` make the error shape uniform. The registration supplies the service; the two middleware are what turn unhandled exceptions and status-code-only responses into `application/problem+json` with the same fields, so clients get one failure format instead of three that grew separately. Leave them out and an unhandled exception leaves production as an empty 500.
 - OpenAPI generation belongs in the project from the first endpoint. `AddOpenApi` and `MapOpenApi` publish the document from the routes and types you already declared, which turns the contract into something consumers can generate clients from rather than a wiki page that drifts.
 - Two neighbours shape a public REST surface more than the framework does. The gateway in front of it owns authentication, rate limiting and versioned routing, and CORS decides which browser origins may call it at all: a REST API that browsers cannot reach is usually a missing policy rather than a missing endpoint.

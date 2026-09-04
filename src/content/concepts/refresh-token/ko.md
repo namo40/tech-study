@@ -24,8 +24,8 @@ references:
     url: https://www.rfc-editor.org/info/rfc9700/
   - title: "The OAuth 2.0 Authorization Framework (RFC 6749)"
     url: https://www.rfc-editor.org/rfc/rfc6749
-  - title: OAuth 2.0 for Browser-Based Apps
-    url: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-browser-based-apps
+  - title: "OAuth 2.0 for Browser-Based Applications (RFC 10017)"
+    url: https://www.rfc-editor.org/rfc/rfc10017
 ---
 
 짧은 access token은 장면의 4단계가 보여 주는 문제를 만듭니다. 사용자가 아직 일하고 있는데 토큰이 죽는 것입니다. API는 401을 돌려주고, 누군가는 아무도 방해하지 않으면서 새 토큰을 만들어 내야 합니다. 브라우저를 authorization server로 다시 보내도 되기는 하지만, 그 일이 몇 분마다 일어나고 그때마다 사용자를 리다이렉트에 끌고 다니게 됩니다. Refresh token은 앱이 그 일을 혼자, back channel에서, 사용자의 개입도 브라우저도 없이 해내라고 있는 것입니다.

@@ -12,7 +12,7 @@ steps:
   - title: "The kill switch is the cheapest rollback ever built"
     text: "v2 starts throwing errors at half the users — and one flag flip sends everyone back to v1 in seconds. No build, no deploy, no rollback window: the bad code is still on the servers, it just stopped being reachable. Speed of recovery is the whole reason the flag exists."
   - title: "A flag that is always on is debt with a switch attached"
-    text: "Fixed and verified, v2 rolls to 100% — and then the flag comes out, because every flag doubles the paths through your code. Release it, prove it, remove it. The standard API keeps the checks portable, so the discipline survives the vendor."
+    text: "Fixed and verified, v2 rolls to 100% — and then the flag comes out, because every flag doubles the paths through your code. Release it, prove it, remove it: the switch goes, and the path is unconditional again."
 related:
   - label: Canary Release
     slug: canary-release
@@ -77,7 +77,7 @@ if (await featureManager.IsEnabledAsync("NewCheckout"))
 return await legacyCheckout.PlaceAsync(order, ct);
 ```
 
-Percentages and cohorts are filters rather than code. The targeting filter hashes a supplied identifier, so the same user stays on the same side across requests and across servers, and widening the rollout is an edit to configuration rather than a deployment.
+Percentages and cohorts are filters rather than code. The targeting filter hashes a supplied identifier, so the same user stays on the same side across requests and across servers, and widening the rollout is an edit to configuration rather than a deployment. What follows is the Microsoft Feature Management schema that `Microsoft.FeatureManagement` 4.x reads; 3.x and earlier used a differently shaped `FeatureManagement` section, which is worth checking before copying either one.
 
 ```json
 {
@@ -100,6 +100,6 @@ Percentages and cohorts are filters rather than code. The targeting filter hashe
 }
 ```
 
-In Azure App Configuration the flags live outside the application and a sentinel key drives the refresh, so flipping a switch in the portal reaches every instance within the refresh interval without a restart. `AddAzureAppConfiguration` with `UseFeatureFlags` wires that up, and `ITargetingContextAccessor` is where you decide what the hash is taken of: the user id for a user rollout, the tenant id when a whole customer has to move together.
+In Azure App Configuration the flags live outside the application, so flipping a switch in the portal reaches every instance within the refresh interval without a restart. `AddAzureAppConfiguration` with `UseFeatureFlags` wires that up, and the flags get a refresh interval of their own — 30 seconds by default, changed with `UseFeatureFlags(o => o.SetRefreshInterval(...))` — which is separate from the sentinel key that drives the refresh of ordinary key-values. `ITargetingContextAccessor` is where you decide what the hash is taken of: the user id for a user rollout, the tenant id when a whole customer has to move together.
 
 For anything larger than one application, OpenFeature is the vendor-neutral API. Your code asks a client for a boolean and a provider answers it, so the checks scattered through the codebase stop naming a particular vendor and the decision about which service evaluates flags stays a decision you can change.

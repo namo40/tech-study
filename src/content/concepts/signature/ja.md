@@ -30,12 +30,12 @@ related:
   - label: Authentication
     slug: authentication
 references:
-  - title: Configure cryptographic key auto-rotation in Azure Key Vault
-    url: https://learn.microsoft.com/en-us/azure/key-vault/keys/how-to-configure-key-rotation
-  - title: Key management in ASP.NET Core
-    url: https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/implementation/key-management?view=aspnetcore-10.0
-  - title: Rotation tutorial for resources with two sets of credentials
-    url: https://learn.microsoft.com/en-us/azure/key-vault/secrets/tutorial-rotation-dual
+  - title: "JSON Web Signature (JWS) (RFC 7515)"
+    url: https://www.rfc-editor.org/rfc/rfc7515
+  - title: "JSON Web Key (JWK) (RFC 7517)"
+    url: https://www.rfc-editor.org/rfc/rfc7517
+  - title: JSON Web Token Best Current Practices (RFC 8725)
+    url: https://www.rfc-editor.org/rfc/rfc8725
 ---
 
 署名は暗号化ではありません。署名されたトークンのペイロードは、たいてい手にした人なら誰でも読めます。署名が付け加えるのは、ほかの誰にもできない主張です。特定の鍵がまさにこのバイト列を作り、それ以来一文字も変わっていない、という主張です。ペイロードの文字を一つ書き換えるだけで検証は失敗します。署名がペイロードの上で計算されたのに、もう二つが一致しないからです。証明するのはそれだけですが、自分が制御していないネットワークの向こうへアイデンティティを運ぶにはそれで十分です。偽造できない主張は、信じるしかない通り道より価値があります。

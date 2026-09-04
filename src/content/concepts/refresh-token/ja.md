@@ -24,8 +24,8 @@ references:
     url: https://www.rfc-editor.org/info/rfc9700/
   - title: "The OAuth 2.0 Authorization Framework (RFC 6749)"
     url: https://www.rfc-editor.org/rfc/rfc6749
-  - title: OAuth 2.0 for Browser-Based Apps
-    url: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-browser-based-apps
+  - title: "OAuth 2.0 for Browser-Based Applications (RFC 10017)"
+    url: https://www.rfc-editor.org/rfc/rfc10017
 ---
 
 短い access token は、場面の第 4 段階がたどる問題を生みます。ユーザーがまだ作業している最中にトークンが死ぬのです。API は 401 を返し、誰かが誰の邪魔もせずに新しいトークンを作らなければなりません。ブラウザーを authorization server へ送り直しても動きますが、それが数分おきに起こり、そのたびユーザーをリダイレクトに引き回すことになります。refresh token は、アプリがその仕事を 1 人で、back channel で、ユーザーの操作もブラウザーもなしに片付けるためにあります。

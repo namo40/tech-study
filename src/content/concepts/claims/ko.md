@@ -3,7 +3,7 @@ title: "Claims"
 summary: "Claim은 토큰이 누구를 위한 것인지, 무엇을 허용하는지, 그것이 언제까지 사실인지를 키와 값으로 진술한 것입니다. 검증은 그것들을 두루 읽는 일이 아니라 정해진 관문 몇 개이며, 각 관문은 이름 붙은 클레임 하나를 API가 이미 알고 있는 값과 비교합니다."
 category: "인증과 인가"
 scene: bearer-token
-sceneStep: 3
+sceneStep: 2
 related:
   - label: Bearer Token
     slug: bearer-token

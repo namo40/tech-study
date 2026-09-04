@@ -18,7 +18,7 @@ related:
     slug: elasticity
   - label: Horizontal Pod Autoscaler
     slug: horizontal-pod-autoscaler
-  - label: Web-Queue-Worker
+  - label: Web Queue Worker
     slug: web-queue-worker
   - label: Graceful Shutdown
     slug: graceful-shutdown

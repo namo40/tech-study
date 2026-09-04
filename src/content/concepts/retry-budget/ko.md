@@ -14,6 +14,8 @@ related:
   - label: Timeout
     slug: timeout
 references:
+  - title: "Handling Overload (Google SRE Book)"
+    url: https://sre.google/sre-book/handling-overload/
   - title: Build resilient HTTP apps with .NET
     url: https://learn.microsoft.com/en-us/dotnet/core/resilience/http-resilience
 ---

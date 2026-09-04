@@ -30,6 +30,8 @@ references:
     url: https://learn.microsoft.com/en-us/dotnet/framework/data/transactions/transaction-fundamentals
   - title: "Enlisting Resources as Participants in a Transaction"
     url: https://learn.microsoft.com/en-us/dotnet/framework/data/transactions/enlisting-resources-as-participants-in-a-transaction
+  - title: "TransactionManager.ImplicitDistributedTransactions Property"
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.transactions.transactionmanager.implicitdistributedtransactions
   - title: "Distributed data in cloud-native applications"
     url: https://learn.microsoft.com/en-us/dotnet/architecture/cloud-native/distributed-data
 ---

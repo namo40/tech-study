@@ -41,7 +41,7 @@ references:
   - title: "Stateless, a state machine library for .NET"
     url: https://github.com/dotnet-state-machine/stateless
   - title: "Durable Functions overview"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview
+    url: https://learn.microsoft.com/en-us/azure/durable-task/durable-functions/durable-functions-overview
   - title: "Dapr Workflow overview"
     url: https://docs.dapr.io/developing-applications/building-blocks/workflow/workflow-overview/
 ---

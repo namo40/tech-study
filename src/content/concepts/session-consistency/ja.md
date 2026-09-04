@@ -23,7 +23,7 @@ references:
   - title: Consistency levels in Azure Cosmos DB
     url: https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels
   - title: Manage consistency levels in Azure Cosmos DB
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/how-to-manage-consistency
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-manage-consistency
 ---
 
 最終的な一貫性はシステム全体について 1 つ約束し、個々の読み手には何も約束しません。だから最初に見える失敗はやけに個人的です。ユーザーが何かを保存し、まだその変更を適用していない replica から画面が描き直され、自分がいま加えた編集が消えています。セッション一貫性は、その約束の範囲をクライアント 1 つに狭めます。そのセッションの中では、セッションが行ったすべての書き込みが読み取りに見え、すでに見た値より後ろへは戻りません。セッションの外にいる他人の変更は依然として抜けていることがあり、それこそがこの水準を安く保っている理由です。

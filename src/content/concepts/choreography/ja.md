@@ -23,7 +23,7 @@ references:
   - title: Event-driven architecture style
     url: https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/event-driven
   - title: MassTransit sagas
-    url: https://masstransit.io/documentation/patterns/saga
+    url: https://masstransit.massient.com/concepts/saga-state-machines
 ---
 
 Order が自分の行を commit して `OrderPlaced` を発行します。Payment はそのイベントを購読して決済を行い、`PaymentCompleted` を発行します。Inventory はそれを購読して在庫を確保します。全体の順序を知っているサービスはひとつもなく、互いを直接呼ぶこともありません。どのイベントに反応し、どのイベントを出すかだけを知っています。ステップを増やす作業が購読者をひとつ足すだけで済むので、始めのうちはとても安く感じられます。

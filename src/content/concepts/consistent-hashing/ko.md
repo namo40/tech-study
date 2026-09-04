@@ -19,23 +19,15 @@ related:
     slug: cross-shard-query
   - label: Load Balancer
     slug: load-balancer
-  - label: Replication
-    slug: replication
-  - label: Replication Lag
-    slug: replication-lag
-  - label: Database Index
-    slug: database-index
-  - label: Ordering
-    slug: ordering
-  - label: Event Stream
-    slug: event-stream
+  - label: Consumer Group
+    slug: consumer-group
 references:
   - title: "Sharding pattern"
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding
   - title: "Data partitioning guidance"
     url: https://learn.microsoft.com/en-us/azure/architecture/best-practices/data-partitioning
   - title: "Partitioning and horizontal scaling in Azure Cosmos DB"
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning
 ---
 
 장면의 세 번째 단계는 같은 질문에 대한 두 답을 나란히 놓고, 숫자가 논증이 됩니다. 열두 개의 키가 두 샤드에 앉아 있습니다. 셋째 샤드가 도착합니다. `hash mod n` 아래에서는 라우터가 새 개수로 모든 키를 다시 계산하고, 열둘 중 여덟이 전과 다른 답을 받습니다. 데이터의 3분의 2를 한 상자에서 읽어 내 다른 상자에 써 넣어야 누구든 다시 찾을 수 있습니다. 링에서는 넷이 이사하고 여덟은 있던 자리에 그대로 있습니다.

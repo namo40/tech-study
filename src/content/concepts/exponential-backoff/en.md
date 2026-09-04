@@ -23,4 +23,4 @@ Exponential backoff multiplies the wait between attempts, usually by two. A firs
 
 A fixed interval is the problem it solves. Retrying every 200 ms turns a slow dependency into a dependency under load, because the caller keeps adding work while nothing is draining. Doubling the gap gives the queue a chance to clear.
 
-Cap it. Growth without a ceiling eventually produces waits nobody will sit through, so pair the multiplier with a maximum delay and an overall deadline.
+Cap it. Growth without a ceiling eventually produces waits nobody will sit through, so pair the multiplier with a maximum delay and an overall deadline. In Polly those are `MaxDelay` on the retry options, which is unset by default, and a timeout strategy added before the retry so that it nests outside it.

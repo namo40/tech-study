@@ -20,6 +20,8 @@ related:
     slug: pipelining
   - label: Keep-Alive
     slug: keep-alive
+  - label: HttpClient Connection Pool
+    slug: httpclient-connection-pool
   - label: HTTP/2
     slug: http-2
   - label: gRPC
@@ -30,14 +32,6 @@ related:
     slug: tail-latency
   - label: Request Timeout
     slug: request-timeout
-  - label: Connection Timeout
-    slug: connection-timeout
-  - label: Database Connection Pool
-    slug: database-connection-pool
-  - label: I/O Completion Port
-    slug: io-completion-port
-  - label: SemaphoreSlim
-    slug: semaphoreslim
 references:
   - title: "Evolution of HTTP"
     url: https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Evolution_of_HTTP
@@ -51,9 +45,9 @@ references:
 
 Multiplexing is not a feature you switch on so much as a property of the protocol you are already speaking. The useful question is whether the calls you make are shaped like the calls it helps, and whether anything in your stack is quietly taking it away from you.
 
-- Read this when p95 climbs under fan-out and p50 does not move. That shape — a median that looks fine and a tail that does not — is what a queue in front of a shared resource produces. If the client is on HTTP/1.1 and the page or the handler makes eight small calls to the same host, the eighth one is waiting for the first seven whether or not the server is busy.
+- Read this when p95 climbs under fan-out and p50 does not move. That shape — a median that looks fine and a tail that does not — is what a queue in front of a shared resource produces. If the client is on HTTP/1.1 and something has pinned the path to one connection — a browser at its per-origin limit, an `HttpClient` with `MaxConnectionsPerServer` set low, a proxy hop that will only hold one — then the eighth of eight small calls to the same host is waiting for the first seven whether or not the server is busy.
 - Look at it when one screen needs many small pieces. A dashboard assembling twelve widgets, a detail page pulling its related entities, a service composing an answer from four upstreams: all of them are the same three-requests-one-wire picture with a bigger number. Multiplexing turns that from a sum into a maximum.
-- Take it seriously for service-to-service calls, because they do not get the shim browsers have. A browser hid the HTTP/1.1 problem for years by opening six connections per origin, which is parallelism bought with connections rather than won inside one. Your `HttpClient` does not do that by default, and the pool it does have is sized for reuse rather than for concurrency.
+- Take it seriously for service-to-service calls, because the shim they have is paid for in sockets. A browser hid the HTTP/1.1 problem for years by opening six connections per origin, which is parallelism bought with connections rather than won inside one. Your `HttpClient` buys it the same way and with no ceiling at all, since `MaxConnectionsPerServer` is unbounded by default, so a fan-out of eight opens eight connections and the cost arrives as handshakes and sockets in `TIME_WAIT` rather than as a queue. Set that ceiling, and the queue is back.
 - Reach for it when one long-lived response would otherwise occupy the wire. A streaming endpoint, a server-sent event feed, a long poll: on HTTP/1.1 each of these owns a connection for its whole life, so they consume the very thing everything else needs. On HTTP/2 they are one stream among many.
 - Assume it when gRPC is on the table. gRPC is HTTP/2 by definition, and its whole calling model — many concurrent calls on one channel, bidirectional streams that stay open — is built on the assumption that the transport multiplexes. A single `GrpcChannel` shared across a service is the intended shape, not a shortcut.
 - Do not reach for it to fix a slow server. Multiplexing removes the waiting a request does for other requests. It does nothing at all about the time a request spends being answered, so if the slow call in the scene took a second because the query behind it takes a second, every step of the scene still ends no earlier than that second.
@@ -69,7 +63,7 @@ Multiplexing is not a feature you switch on so much as a property of the protoco
 
 ## In .NET
 
-- `SocketsHttpHandler` is where the client-side behaviour lives. Set the version and the policy on the request or the client, and remember that `HttpVersion.Version20` on its own is a preference that will fall back; `RequestVersionExact` is what makes a failure to negotiate an error rather than a silent downgrade to a queue.
+- `SocketsHttpHandler` is where the client-side behaviour lives. Set the version and the policy on the request or the client, and remember that `HttpVersion.Version20` on its own is a preference that will fall back, because the default policy is `RequestVersionOrLower`. `RequestVersionOrHigher`, used below, refuses to drop below HTTP/2 but lets the handler take HTTP/3 if the server advertises it; `RequestVersionExact` pins HTTP/2 and nothing else. Either one makes a failure to negotiate an error rather than a silent downgrade to a queue.
 
 ```csharp
 var handler = new SocketsHttpHandler

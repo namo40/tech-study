@@ -8,7 +8,7 @@ steps:
   - title: "The dance"
     text: "The app sends the browser to the authorization server to log in. The server sends it back with a short-lived code. The app trades the code for tokens over a channel the browser never touches, then calls the API with the access token."
   - title: "Why a code"
-    text: "Everything that passes through the browser can leak: URLs, history, referrers, logs. So the front channel carries only a code that is single-use, expires in seconds, and is worthless without the app's secret. Tokens travel the back channel only."
+    text: "Anything through the browser can leak: URLs, history, referrers, logs. So the front channel carries only a code: single-use, worthless without the app's secret. A token there would land where the code did, so tokens use the back channel only."
   - title: "PKCE"
     text: "A browser or mobile app cannot keep a secret. So it invents one per login: a random verifier, sent as a hash when asking for the code and in clear when redeeming it. A stolen code without the verifier is useless."
   - title: "Short tokens, rotating refresh"
@@ -64,7 +64,7 @@ references:
 
 ## In .NET
 
-An ASP.NET Core web app signs the user in with a cookie handler for the session and an OpenID Connect handler for the flow. `AddOpenIdConnect` runs the code flow, validates `state` and `nonce`, and turns PKCE on by default.
+An ASP.NET Core web app signs the user in with a cookie handler for the session and an OpenID Connect handler for the flow. With `ResponseType = Code` set, as below, `AddOpenIdConnect` runs the code flow, validates `state` and `nonce`, and turns PKCE on by default; the handler's own default response type is `id_token`, so the code flow is something you ask for rather than something you get.
 
 ```csharp
 // Web app: sign the user in with the authorization code flow.
@@ -81,7 +81,7 @@ builder.Services.AddAuthentication(options =>
     options.ClientSecret = builder.Configuration["Oidc:ClientSecret"];   // absent for public clients
     options.ResponseType = OpenIdConnectResponseType.Code;
     options.UsePkce = true;
-    options.SaveTokens = true;                                          // keep the tokens server-side
+    options.SaveTokens = true;                                          // tokens ride in the auth cookie
     options.Scope.Add("openid");
     options.Scope.Add("profile");
     options.Scope.Add("offline_access");                                // ask for a refresh token
@@ -97,6 +97,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 ```
 
-`SaveTokens = true` puts the tokens in the authentication cookie's properties, which keeps them on the server side of the session rather than in the browser. Renewal is not automatic: either call `/token` with the refresh token yourself when the access token is close to expiring, or use a token management library that does it for you and writes the new pair back into the session.
+`SaveTokens = true` puts the tokens in the authentication ticket's properties, and that ticket travels inside the encrypted authentication cookie: script cannot read them, but the cookie grows, which is why the option is off by default. To keep the ticket on the server and send the browser only a key, set `options.SessionStore` on the cookie handler. Renewal is not automatic: either call `/token` with the refresh token yourself when the access token is close to expiring, or use a token management library that does it for you and writes the new pair back into the session.
 
 A single-page app or a mobile app has no secret to keep, so it registers as a public client and relies on PKCE. In a SPA, prefer a backend-for-frontend: the server completes the flow, holds the tokens, and gives the browser nothing but a cookie for its own origin.

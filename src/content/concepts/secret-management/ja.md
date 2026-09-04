@@ -30,12 +30,12 @@ related:
   - label: Authentication
     slug: authentication
 references:
-  - title: Configure cryptographic key auto-rotation in Azure Key Vault
-    url: https://learn.microsoft.com/en-us/azure/key-vault/keys/how-to-configure-key-rotation
-  - title: Key management in ASP.NET Core
-    url: https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/implementation/key-management?view=aspnetcore-10.0
-  - title: Rotation tutorial for resources with two sets of credentials
-    url: https://learn.microsoft.com/en-us/azure/key-vault/secrets/tutorial-rotation-dual
+  - title: Azure Key Vault configuration provider
+    url: https://learn.microsoft.com/en-us/aspnet/core/security/key-vault-configuration
+  - title: Safe storage of app secrets in development
+    url: https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets
+  - title: Azure Key Vault logging
+    url: https://learn.microsoft.com/en-us/azure/key-vault/general/logging
 ---
 
 シークレット管理は一つの規則から始まります。シークレットの家はちょうど一つで、ほかのすべての場所は写しではなく参照を持ちます。接続文字列が appsettings ファイルに、CI 変数に、デプロイマニフェストに、同僚へのメッセージに貼り付けられた瞬間、資格情報はもう一つではなく四つです。それぞれが自分の寿命を持ち、それぞれが漏れ出る自分の経路を持ちます。だから本当に問うべきなのは「どこで暗号化するか」ではなく「入れ替えるには何か所を直すのか」で、二つ目の問いのよい答えは一か所です。

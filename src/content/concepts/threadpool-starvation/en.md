@@ -17,8 +17,8 @@ references:
     url: https://learn.microsoft.com/en-us/dotnet/standard/threading/the-managed-thread-pool
 ---
 
-The symptoms are distinctive. Latency jumps in steps rather than climbing smoothly, because the pool injects threads slowly and each new one relieves the queue for a moment. The queue length keeps growing, and the CPU stays low the whole time. A machine that is barely working while requests time out is almost never short of capacity.
+The symptoms are distinctive. Latency jumps in steps rather than climbing smoothly, because the pool injects threads slowly once past its fast initial ramp, one or two per second, and each new one relieves the queue for a moment. The queue length keeps growing, and the CPU stays low the whole time. A machine that is barely working while requests time out is almost never short of capacity.
 
 The cause is nearly always sync-over-async: a `.Result`, a `.Wait()`, a `GetAwaiter().GetResult()`, or a synchronous database or HTTP call somewhere on the request path. Each of those parks a pool thread for the whole wait, and once the requests outnumber the threads, every new request queues behind work that is doing nothing but waiting.
 
-Diagnose it with `dotnet-counters monitor --counters System.Runtime`. If `ThreadPool Queue Length` climbs while `ThreadPool Thread Count` creeps up about one per second and CPU usage stays flat, that is starvation, and the fix is to find the blocking call rather than to raise the minimum thread count.
+Diagnose it with `dotnet-counters monitor --counters System.Runtime`. If `dotnet.thread_pool.queue.length` climbs while `dotnet.thread_pool.thread.count` creeps up one or two per second and CPU usage stays flat, that is starvation, and the fix is to find the blocking call rather than to raise the minimum thread count. On .NET 8 and earlier those two appear under their old display names, `ThreadPool Queue Length` and `ThreadPool Thread Count`. Since .NET 6 the pool reacts faster to `Task.Wait`-style blocking, so the climb is briefer than it used to be without being gone.

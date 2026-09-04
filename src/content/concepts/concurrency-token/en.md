@@ -24,7 +24,7 @@ related:
     slug: retry
 references:
   - title: Concurrency tokens (EF Core)
-    url: https://learn.microsoft.com/en-us/ef/core/modeling/concurrency
+    url: https://learn.microsoft.com/en-us/ef/core/saving/concurrency
   - title: Handling concurrency conflicts (EF Core)
     url: https://learn.microsoft.com/en-us/ef/core/saving/concurrency
   - title: TimestampAttribute Class
@@ -39,6 +39,6 @@ Which property to mark is a design decision with real consequences. A database-g
 
 The handler is where most of the difficulty lives, and the shape depends on whose value should win. Store wins means reload the entry and abandon the attempted change, which is right when the user was only confirming something. Client wins means reload the entry, copy the database's current values into the original values so the next write matches, and save again, which is right when the change is an unconditional command like "mark cancelled". A real merge means presenting both versions and asking, which is right for anything a human typed. Whichever it is, the token itself has to be refreshed as part of the reload, or the retry fails for the same reason as the first attempt.
 
-Two mistakes are common enough to name. The first is retrying only the statement that failed: the transaction it belonged to was rolled back, so replaying one write into a transaction that no longer exists either fails or, worse, succeeds outside the unit of work it was meant to be part of. The retry has to re-run the whole operation, which is what an execution strategy does when you hand it the whole block. The second is trusting a token that made a round trip through a client without being treated as opaque. A `byte[]` row version that a browser turned into a number, or a `DateTime` token that a serializer rounded to milliseconds, compares unequal to itself and produces a conflict on every save.
+Two mistakes are common enough to name. The first is retrying only the statement that failed: the transaction it belonged to was rolled back, so replaying one write into a transaction that no longer exists either fails or, worse, succeeds outside the unit of work it was meant to be part of. The retry has to re-run the whole operation, which is what your retry loop has to do; the built-in execution strategy only re-runs the block for transient database errors, not for concurrency conflicts. The second is trusting a token that made a round trip through a client without being treated as opaque. A `byte[]` row version that a browser turned into a number, or a `DateTime` token that a serializer rounded to milliseconds, compares unequal to itself and produces a conflict on every save.
 
 There is a boundary worth stating plainly, because tokens are often reached for to solve a problem they do not solve. A token protects one row against a concurrent write to the same row. It does nothing about a rule that spans several rows, nothing about rows that did not exist when the query ran, and nothing about work that a second service is doing in a different database. Those need an isolation level that covers the range, a constraint the database can enforce, or a design where the invariant lives inside a single row. The token's job is narrow and it does that job without making anyone wait, which is exactly why it is worth having.

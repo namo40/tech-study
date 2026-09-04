@@ -6,13 +6,13 @@ tags: ["database", "consistency"]
 scene: rebalancing
 steps:
   - title: "Adding a node does nothing until data follows it"
-    text: "The ghost shows two full nodes and rising load; then a third joins — empty. Requests still go where the partitions are, so the new machine idles while the old two burn. Capacity is not the node count; it is how the partitions sit across the nodes, and changing that sitting is rebalancing."
+    text: "The ghost shows two full nodes and rising load; then a third joins — empty, and it stays empty: the partitions, and the load with them, are still on the old two. Capacity is not the node count; it is how the partitions sit across the nodes."
   - title: "What moves is a partition, and the count is the minimum"
     text: "The naive scheme reshuffles everything — six moves to gain one node. A good scheme moves just the share the new node should own and touches nothing else: two partitions travel, four stay exactly where they were. Data motion is the entire cost of rebalancing, so the scheme's whole job is to move less."
   - title: "The answers do not stop while the data moves"
-    text: "A moving partition still serves: the map says who owns it right now, requests follow the map, and one that lands on the old node gets redirected instead of an error. This is the discipline that makes rebalancing an operation instead of an outage — the node is just a shelf; the map is the truth."
+    text: "A moving partition still serves: the map says who owns it right now, and a client still holding an old map asks N2 for P6 and is sent on to N3 instead of getting an error. The node is just a shelf; the map is the truth."
   - title: "A shard heavy with state moves in three beats"
-    text: "Copy — the original keeps serving while a replica fills. Catch up — the changes that happened during the copy replay onto the replica. Switch — one short moment where ownership flips and writes drain. The pause is the length of the switch, not the length of the copy, and that is the entire trick of moving big state."
+    text: "Copy — the original keeps serving while a replica fills. Catch up — the changes that happened during the copy replay onto the replica. Switch — ownership flips on the map, and the next P5 goes to N1. The pause is the switch, not the copy."
 related:
   - label: Sharding
     slug: sharding
@@ -34,7 +34,7 @@ related:
     slug: competing-consumers
 references:
   - title: Partitioning and horizontal scaling in Azure Cosmos DB
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning
   - title: Sharding pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding
   - title: Partition Service Fabric reliable services
@@ -94,7 +94,8 @@ The Cosmos DB SDK already does that for you, which is why the practical advice t
 // refreshes it when a physical partition splits, so a split is invisible.
 services.AddSingleton(_ => new CosmosClient(connectionString, new CosmosClientOptions
 {
-    // A split shows up as a retryable failure, not as a permanent one.
+    // Nothing here handles the split itself; this is the retry budget for the
+    // 429s a busy partition returns on its way to one (9 is also the default).
     MaxRetryAttemptsOnRateLimitedRequests = 9,
 }));
 ```
@@ -122,4 +123,4 @@ public sealed record PartitionMap(int Version, IReadOnlyDictionary<int, string> 
 }
 ```
 
-Four thousand partitions across eight nodes means adding a ninth moves about an eighth of the assignments and leaves the rest untouched, which is the entire point. The number of partitions is chosen once and is hard to change; the number of nodes is changed often and should be cheap. Getting that ratio right at the start is what makes every later rebalance a routine operation instead of a project.
+Four thousand partitions across eight nodes means adding a ninth moves about a ninth of the assignments and leaves the rest untouched, which is the entire point. The number of partitions is chosen once and is hard to change; the number of nodes is changed often and should be cheap. Getting that ratio right at the start is what makes every later rebalance a routine operation instead of a project.

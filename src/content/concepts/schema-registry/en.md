@@ -41,7 +41,7 @@ references:
 
 ## In .NET
 
-- On Azure, the registry lives beside Event Hubs and the serializer is what talks to it. `Azure.Data.SchemaRegistry` plus the Avro serializer registers or resolves the schema for you and puts the id in the message properties, so the producing code keeps sending a typed object.
+- On Azure, the registry lives beside Event Hubs and the serializer is what talks to it. `Azure.Data.SchemaRegistry` plus the Avro serializer in `Microsoft.Azure.Data.SchemaRegistry.ApacheAvro` registers or resolves the schema for you and puts the id in the message properties, so the producing code keeps sending a typed object.
 
 ```csharp
 var registry = new SchemaRegistryClient(
@@ -54,7 +54,9 @@ var serializer = new SchemaRegistryAvroSerializer(
     // wrong in production: schema changes should be a reviewed deployment.
     new SchemaRegistryAvroSerializerOptions { AutoRegisterSchemas = false });
 
-var message = (EventData)await serializer.SerializeAsync<EventData, OrderPlaced>(
+// OrderPlaced is the class avrogen generated from the schema, so it implements
+// ISpecificRecord; a GenericRecord works here too, a plain POCO does not.
+EventData message = await serializer.SerializeAsync<EventData, OrderPlaced>(
     new OrderPlaced { Id = id, Total = total });
 await producer.SendAsync(new[] { message });
 ```

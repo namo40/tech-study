@@ -7,7 +7,7 @@ sceneStep: 3
 related:
   - label: Database Index
     slug: database-index
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
   - label: N+1 Query
     slug: n-plus-1-query

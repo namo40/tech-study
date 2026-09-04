@@ -25,7 +25,7 @@ related:
     slug: retry
   - label: Idempotent Consumer
     slug: idempotent-consumer
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
   - label: Competing Consumers
     slug: competing-consumers

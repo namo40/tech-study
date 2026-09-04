@@ -4,7 +4,7 @@ summary: "어떤 연산을 다시 수행해도 한 번 수행한 뒤와 같은 �
 category: "API와 실시간 통신"
 scene: idempotency-key
 related:
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
   - label: Deduplication
     slug: deduplication

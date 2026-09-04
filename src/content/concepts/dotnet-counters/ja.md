@@ -22,6 +22,8 @@ references:
     url: https://learn.microsoft.com/en-us/dotnet/core/diagnostics/dotnet-counters
   - title: "Well-known EventCounters in .NET"
     url: https://learn.microsoft.com/en-us/dotnet/core/diagnostics/available-counters
+  - title: ".NET runtime metrics"
+    url: https://learn.microsoft.com/en-us/dotnet/core/diagnostics/built-in-metrics-runtime
 ---
 
 ## いつ使うか

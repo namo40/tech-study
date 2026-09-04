@@ -21,7 +21,7 @@ related:
     slug: canary-release
   - label: Zero-Downtime Deployment
     slug: zero-downtime-deployment
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
 references:
   - title: Safe deployment practices

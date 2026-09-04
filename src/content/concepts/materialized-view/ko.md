@@ -25,7 +25,7 @@ related:
     slug: n-plus-1-query
   - label: Data Warehouse
     slug: data-warehouse
-  - label: Index
+  - label: Database Index
     slug: database-index
   - label: Query Plan
     slug: query-plan

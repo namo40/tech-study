@@ -31,12 +31,12 @@ related:
   - label: Authentication
     slug: authentication
 references:
-  - title: Configure cryptographic key auto-rotation in Azure Key Vault
-    url: https://learn.microsoft.com/en-us/azure/key-vault/keys/how-to-configure-key-rotation
-  - title: Key management in ASP.NET Core
-    url: https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/implementation/key-management?view=aspnetcore-10.0
-  - title: Rotation tutorial for resources with two sets of credentials
-    url: https://learn.microsoft.com/en-us/azure/key-vault/secrets/tutorial-rotation-dual
+  - title: Azure Key Vault configuration provider
+    url: https://learn.microsoft.com/en-us/aspnet/core/security/key-vault-configuration
+  - title: Safe storage of app secrets in development
+    url: https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets
+  - title: Azure Key Vault logging
+    url: https://learn.microsoft.com/en-us/azure/key-vault/general/logging
 ---
 
 Secret management starts from one rule: a secret has exactly one home, and everywhere else holds a reference to it rather than a copy. The moment a connection string is pasted into an appsettings file, a CI variable, a deployment manifest and a colleague's message, you no longer have one credential, you have four, each with its own lifetime and its own way of getting out. That is why the interesting question is never "where do we encrypt it" but "how many places would we have to change to replace it", and a good answer to the second question is one.

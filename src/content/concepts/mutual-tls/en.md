@@ -72,7 +72,7 @@ builder.Services.AddAuthentication(CertificateAuthenticationDefaults.Authenticat
     });
 ```
 
-The client side is a certificate attached to the handler the `HttpClient` uses, which is why a typed client is the natural place for it: the handler is built once and shared, and the key it holds never appears anywhere else.
+The client side is a certificate attached to the handler the `HttpClient` uses, which is why a typed client is the natural place for it: the handler is built by the factory and pooled rather than created per call, and the key it holds never appears anywhere else.
 
 ```csharp
 builder.Services.AddHttpClient("ledger")
@@ -85,4 +85,4 @@ builder.Services.AddHttpClient("ledger")
     });
 ```
 
-Two habits keep this honest. A valid certificate is still only an identity, so the authorization question remains open: check the subject or thumbprint against the list of callers you actually meant to serve, rather than accepting everything your certificate authority ever signed. And where the connection terminates before your code — a load balancer, an ingress, an API gateway — the proof is consumed there and your application receives an ordinary request with a header describing what happened. That header is trustworthy only if nothing else can reach your application and set it, which is a network property rather than a code one, and it is worth confirming rather than assuming.
+Two habits keep this honest. A valid certificate is still only an identity, so the authorization question remains open: check the subject or thumbprint against the list of callers you actually meant to serve, rather than accepting everything your certificate authority ever signed. And where the connection terminates before your code — a load balancer, an ingress, an API gateway — the proof is consumed there and your application receives an ordinary request with a header describing what happened. ASP.NET Core has a shape for that case: `AddCertificateForwarding` plus `UseCertificateForwarding` rebuilds the certificate from the header and hands it to the certificate scheme, so nothing downstream has to know where the handshake happened. The header is trustworthy only if nothing else can reach your application and set it, which is a network property rather than a code one, and it is worth confirming rather than assuming.

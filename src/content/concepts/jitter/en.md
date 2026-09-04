@@ -21,4 +21,4 @@ Jitter adds a random offset to every backoff wait. Instead of retrying at exactl
 
 It matters because clients fail together. A dependency that goes down takes every caller with it, and every caller then starts the same backoff schedule at the same moment. Without jitter their retries arrive as a single spike, again and again.
 
-Prefer full jitter, which picks the delay uniformly between zero and the current backoff ceiling. It spreads load better than adding a small wobble to a fixed value.
+Prefer full jitter, which picks the delay uniformly between zero and the current backoff ceiling. It spreads load better than adding a small wobble to a fixed value. Polly's `UseJitter` is not that: it applies a decorrelated jitter formula to exponential backoff and ±25% to constant or linear backoff, and full jitter needs a `DelayGenerator` of your own.

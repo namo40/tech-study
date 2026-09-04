@@ -16,7 +16,7 @@ related:
     slug: database-connection-pool
   - label: Repository
     slug: repository
-  - label: Transaction
+  - label: Local Transaction
     slug: local-transaction
 references:
   - title: DbContext lifetime, configuration and initialization

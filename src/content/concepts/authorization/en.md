@@ -6,9 +6,9 @@ tags: ["oauth"]
 scene: authorization
 steps:
   - title: "Logging in opens the door, not every drawer"
-    text: "With no authorization stage, any signed-in user can touch anything — the ghost shows B deleting A's document, successfully. Authentication answers \"who is this\"; authorization answers \"may they do this\". Two questions, two stages, and the second one is where safety lives."
+    text: "With no authorization stage, any signed-in user can touch anything — the ghost shows B writing to A's document, successfully. Authentication answers \"who is this\"; authorization answers \"may they do this\". The second is where safety lives."
   - title: "A role is a bundle of permissions with a name"
-    text: "The gate checks the badge: editor may write, viewer may read — and the viewer's write comes back 403 without any document being touched. Roles keep a thousand users manageable, because you grant the bundle, not the person-by-person list."
+    text: "The gate checks the badge: editor may write, viewer may read — and the viewer's write is denied without any document being touched. Roles keep a thousand users manageable, because you grant the bundle, not the person-by-person list."
   - title: "\"Editor\" cannot say \"only your own\""
     text: "A is an editor, so the role happily lets A edit B's document — the bundle knows verbs, not ownership. A policy asks a question at decision time: is the caller the owner of this resource? Same request, same badge, different answer — because now the resource is part of the decision."
   - title: "Deny by default, grant the minimum"
@@ -24,7 +24,7 @@ related:
     slug: least-privilege
   - label: Default Deny
     slug: default-deny
-  - label: Resource-Based Authorization
+  - label: Resource-based Authorization
     slug: resource-based-authorization
   - label: Attribute-Based Access Control
     slug: attribute-based-access-control
@@ -121,7 +121,7 @@ static async Task<IResult> CreateRevision(
 }
 ```
 
-Register the requirement as a named policy so the rule has one spelling, and add the handler as a singleton.
+Register the requirement as a named policy so the rule has one spelling, and add the handler as a singleton — which is safe here because it takes no dependencies. A handler that injects a `DbContext` or anything else scoped has to be registered scoped instead, which is what the Resource-based Authorization page does.
 
 ```csharp
 builder.Services.AddAuthorizationBuilder()
@@ -137,4 +137,4 @@ builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
 ```
 
-Two smaller habits are worth having. Prefer permission-shaped claims over role names in the policy — `RequireClaim("permission", "documents.write")` survives a reorganisation that renames every role, and it keeps the bundle definition in one place rather than spread across attributes. And return `403` rather than `404` when a caller is authenticated but not permitted, unless you have decided that the existence of the resource is itself a secret; `Results.Forbid()` and `Results.Challenge()` mean different things, and mixing them up is how a signed-in user ends up in a login loop.
+Two smaller habits are worth having. Prefer permission-shaped claims over role names in the policy — `RequireClaim("permission", "documents.write")` survives a reorganisation that renames every role, and it keeps the bundle definition in one place rather than spread across attributes. And return `403` rather than `404` when a caller is authenticated but not permitted, unless you have decided that the existence of the resource is itself a secret; `Results.Forbid()` and `Results.Challenge()` mean different things, and mixing them up is how a signed-in user ends up in a login loop. `Forbid` defers to the scheme, so what a caller actually receives depends on which one answered: the JWT bearer handler writes a `403`, while the cookie handler redirects to `AccessDeniedPath` unless you override `OnRedirectToAccessDenied`.

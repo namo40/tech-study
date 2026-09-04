@@ -15,7 +15,7 @@ related:
     slug: api-gateway
   - label: Load Balancer
     slug: load-balancer
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
 references:
   - title: gRPC Documentation

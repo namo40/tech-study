@@ -3,7 +3,6 @@ title: "Connection Lifetime"
 summary: "연결 수명은 풀에 든 연결의 은퇴 나이입니다. 반납하는 순간 한도보다 오래된 연결은 풀로 돌아가지 못하고 버려집니다. 이 설정이 존재하는 이유는 재분배입니다. 은퇴하지 않는 연결은 처음 열릴 때 붙은 서버 노드에 계속 묶여 있기 때문입니다."
 category: "Pool과 자원 관리"
 scene: database-connection-pool
-sceneStep: 4
 related:
   - label: Database Connection Pool
     slug: database-connection-pool

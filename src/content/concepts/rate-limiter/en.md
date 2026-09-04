@@ -10,9 +10,9 @@ steps:
   - title: "Bursts"
     text: "A full bucket absorbs a burst up to its size. Once it is empty, further requests are rejected with 429 instead of slowing everyone down."
   - title: "Retry-After"
-    text: "A 429 carries a hint of when to come back. A client that honours it returns after the refill, and the burst becomes a steady flow."
+    text: "A 429 carries a hint of when to come back. A client that honours it comes back after the refill — and gets through."
   - title: "Partitioned"
-    text: "Limits are keyed by client, tenant, or endpoint, so one noisy caller empties only its own bucket. With several instances, keep the buckets in a shared store."
+    text: "Limits are keyed by client, tenant, or endpoint, so one noisy caller empties only its own bucket while everyone else keeps their tokens."
 related:
   - label: Token Bucket
     slug: token-bucket
@@ -85,9 +85,12 @@ builder.Services.AddRateLimiter(options =>
 });
 
 var app = builder.Build();
+app.UseAuthentication();   // without this, User is empty and every caller shares one bucket
 app.UseRateLimiter();
 app.MapGet("/orders", () => Results.Ok())
    .RequireRateLimiting("per-client");
 ```
+
+A key drawn from `User` only exists once authentication has run, so `UseRateLimiter` goes after `UseAuthentication` — and after `UseRouting` in apps that call it explicitly, because the policy is attached per endpoint. Callers who are still anonymous at that point all share the `"anonymous"` bucket, so partition them by something they do have, such as the client IP or an API key.
 
 `System.Threading.RateLimiting` provides fixed window, sliding window, token bucket, and concurrency limiters. Across several instances the limit belongs in front of them or in shared state, so reach for an API gateway or a Redis-based limiter rather than a per-process one.

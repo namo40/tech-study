@@ -8,8 +8,12 @@ related:
     slug: materialized-view
   - label: Replication
     slug: replication
+  - label: Read Replica
+    slug: read-replica
   - label: Partitioning
     slug: partitioning
+  - label: Change Data Capture
+    slug: change-data-capture
   - label: Event Stream
     slug: event-stream
   - label: Database Index
@@ -38,6 +42,6 @@ references:
 ## In .NET
 
 - The application is almost always a read-only consumer here, and that is the healthy relationship. Services write to their own operational stores, a pipeline moves the data across, and the reporting endpoints or the BI tool read from the warehouse with a separate connection string, separate credentials and its own resource governance. Nothing in the request path of a customer-facing feature should be reaching into it.
-- On Azure, Microsoft Fabric's warehouse and lakehouse and the Synapse SQL surfaces are the managed destinations, and they speak T-SQL over the same tabular protocol that `Microsoft.Data.SqlClient` and Dapper already speak. That means a dashboard endpoint is an ordinary query against an ordinary connection, and the interesting differences are in the plumbing around it rather than in the client library: separate scaling, separate cost, and credentials that grant no access to production data.
+- On Azure, Microsoft Fabric's warehouse and lakehouse are the managed destinations for new work, with existing Synapse dedicated SQL pools the thing teams are migrating from, and all of them speak T-SQL over the same tabular protocol that `Microsoft.Data.SqlClient` and Dapper already speak. That means a dashboard endpoint is an ordinary query against an ordinary connection, and the interesting differences are in the plumbing around it rather than in the client library: separate scaling, separate cost, and credentials that grant no access to production data.
 - Getting the data across is the part with real choices. A scheduled extract is the simplest and the coarsest; change data capture or an event-stream that the operational services already publish gives a continuous feed with a much shorter interval; replication of a whole database is easy to set up and copies the operational model rather than the analytical one, which leaves the remodelling still to do. Pick by the freshness you promised and by how much of the transformation you want to run continuously.
 - Table design in the warehouse pays attention to different things than in the operational store. Partitioning by date is what lets a query touch one month instead of five years, and the columnar layout means the index discipline you would apply to a transactional table mostly does not transfer. Design the physical layout around the scans you expect, and expect to revise it once real queries arrive.

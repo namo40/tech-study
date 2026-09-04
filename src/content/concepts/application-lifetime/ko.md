@@ -21,7 +21,7 @@ references:
   - title: .NET Generic Host
     url: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host
   - title: Dependency injection in .NET
-    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection
+    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/overview
   - title: Dependency injection in ASP.NET Core
     url: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection
 ---

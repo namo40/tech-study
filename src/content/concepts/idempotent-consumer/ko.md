@@ -9,7 +9,7 @@ related:
     slug: competing-consumers
   - label: Idempotency
     slug: idempotency
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
   - label: Deduplication
     slug: deduplication
@@ -27,7 +27,7 @@ references:
   - title: Duplicate detection in Azure Service Bus
     url: https://learn.microsoft.com/en-us/azure/service-bus-messaging/duplicate-detection
   - title: MassTransit consumers
-    url: https://masstransit.io/documentation/concepts/consumers
+    url: https://masstransit.massient.com/concepts/consumers
 ---
 
 쓸 만한 브로커는 하나같이 최소 한 번 전달만 약속하므로, 핸들러는 같은 메시지를 두 번 보게 됩니다. 효과를 낸 뒤 확인 응답 전에 죽은 소비자, 네트워크가 갈라진 뒤의 재전달, 재배치 뒤의 재생, dead-letter queue에서 한 묶음을 되돌리는 운영자가 모두 그 원인입니다. 이것을 흡수할 수 있는 자리는 소비자뿐입니다. 효과가 무엇이었는지 아는 곳이 거기뿐이기 때문입니다. 흡수하는 방법은 둘 중 하나입니다. 반복임을 알아보고 아무것도 하지 않거나, 몇 번을 돌려도 같은 결과가 나오는 형태로 효과를 쓰는 것입니다.

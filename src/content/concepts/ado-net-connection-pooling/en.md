@@ -31,12 +31,16 @@ const string cs =
     "Server=db;Database=orders;Encrypt=True;Application Name=orders-api;" +
     "Min Pool Size=5;Max Pool Size=100;Connection Lifetime=600";
 
-using var connection = new SqlConnection(cs);
-await connection.OpenAsync(ct);   // rent, from the pool for this string
-var orders = await connection.QueryAsync<Order>(sql, new { id }, ct);
-                                  // Dispose returns it, it is not closed
+// Rent from the pool for this string. Disposal returns it, it is not closed.
+await using var connection = new SqlConnection(cs);
+await connection.OpenAsync(ct);
+
+// Dapper takes the cancellation token through CommandDefinition; its positional
+// third argument is the transaction, not a token.
+var orders = await connection.QueryAsync<Order>(
+    new CommandDefinition(sql, new { id }, cancellationToken: ct));
 ```
 
-The detail that surprises people is how pools are identified. There is one pool per distinct connection string within a process, compared as text after parsing, so two strings differing by an `Application Name`, a whitespace-free rewrite of the same options, or a different credential produce two independent pools, each with its own minimum, maximum and lifetime. Under integrated authentication the identity is part of the key as well. This is what turns a per-tenant connection string into a per-tenant pool, and a hundred tenants into a hundred maximums the database has to satisfy at once, so building connection strings at runtime is worth treating as a pooling decision rather than a formatting one. The pool itself lives in the provider inside the process, which is also why every limit in it is per process and has to be multiplied by the instance count before it can be compared with anything on the server.
+The detail that surprises people is how pools are identified. There is one pool per distinct connection string within a process, and the string is compared exactly as you passed it rather than as parsed options: the same keywords supplied in a different order are pooled separately. Two strings differing by an `Application Name`, by a rewrite that only moved the whitespace, or by a credential therefore produce two independent pools, each with its own minimum, maximum and lifetime. Under integrated authentication the identity is part of the key as well. This is what turns a per-tenant connection string into a per-tenant pool, and a hundred tenants into a hundred maximums the database has to satisfy at once, so building connection strings at runtime is worth treating as a pooling decision rather than a formatting one. The pool itself lives in the provider inside the process, which is also why every limit in it is per process and has to be multiplied by the instance count before it can be compared with anything on the server.
 
 Two escape hatches exist and are used rarely and deliberately. `SqlConnection.ClearPool` and `ClearAllPools` mark the pooled connections as invalid so the next `Open` builds new ones, which is occasionally what you want immediately after a failover or a credential rotation, and is otherwise a way to convert a warm service into a cold one; routine rebalancing belongs to connection lifetime instead. Everything above this layer inherits it silently. Dapper is extension methods on the same `IDbConnection`, and EF Core opens and closes provider connections around its work, so a `DbContext` that lives for one request holds a pooled connection only while it is executing something. `AddDbContextPool` is a second, unrelated pool of context objects sitting above this one, and disabling pooling in the connection string, `Pooling=false`, turns the scene's second step back into its first for every layer at once.

@@ -6,13 +6,13 @@ tags: ["oauth", "kubernetes"]
 scene: workload-identity
 steps:
   - title: "A stored secret is debt from the moment it is written"
-    text: "The ghost shows a client secret baked into the pod: copied into config, echoed into logs, remembered by registries — and someone owns rotating it forever. Workload identity deletes the premise: nothing is stored, because proof will be issued instead."
+    text: "The ghost shows a client secret baked into the pod: copied into config, echoed into logs, remembered by registries — one leak lights every copy at once, and someone owns rotating it forever. Workload identity stores nothing; proof is issued."
   - title: "Identity is issued at birth, not configured by hand"
-    text: "The platform knows which workload this is — it started it — so it mounts a short-lived token that says so. The token expires in hours and renews itself; rotation is the default state of the world, not a quarterly project. Nobody typed a secret anywhere."
+    text: "The platform knows which workload this is — it started it — so it mounts a short-lived token that says so. The token renews itself before it expires; rotation is the default, not a quarterly project. Nobody typed a secret anywhere."
   - title: "The exchange checks two names: who issued this, and who it is for"
     text: "The cloud trusts the platform's issuer and verifies the audience says \"me\" — then swaps the platform token for a cloud credential. A token minted for someone else is refused on the spot. Federation means no shared secret ever existed between the two sides."
   - title: "Every workload holds exactly its own share"
-    text: "Pod A's role opens storage; pod B's opens the database; neither can borrow the other's reach. No shared service account means a compromised pod leaks one workload's permissions, not the fleet's. Least privilege stops being paperwork when identity is this granular — it is just how the tokens come."
+    text: "Pod A's role opens storage; pod B's opens the database; pod A reaching for the database is refused, because neither can borrow the other's reach. A compromised pod leaks one workload's permissions, not the fleet's."
 related:
   - label: Authentication
     slug: authentication
@@ -53,7 +53,7 @@ references:
 
 - When a workload calls a cloud API and the platform it runs on already knows what that workload is. A pod on Kubernetes, a job in a CI pipeline, a function on a serverless host: in every case something started the process, and that something can vouch for it. Once the platform will vouch, the connection string with a password in it has no job left to do, and the honest question is not "where do we keep the secret" but "why is there one".
 - When you are replacing client secrets and connection-string credentials. This is the payoff that funds the migration on its own: every secret deleted is a rotation task deleted, a vault entry deleted, an audit finding deleted, and an incident that can no longer happen. The cheapest secret to protect is the one that was never created.
-- When CI has to authenticate to a cloud. A GitHub Actions workflow federating to Azure or AWS with OIDC holds no deploy key at all: the runner presents a token the CI provider minted for that repository and branch, and the cloud exchanges it for a short-lived credential. The alternative — a long-lived deploy key in a repository secret — is the single most commonly leaked credential in the industry, and it never expires on its own.
+- When CI has to authenticate to a cloud. A GitHub Actions workflow federating to Azure or AWS with OIDC holds no deploy key at all: the runner presents a token the CI provider minted for that repository and branch, and the cloud exchanges it for a short-lived credential. The alternative — a long-lived deploy key in a repository secret — is one of the most commonly leaked credentials there is, and it never expires on its own.
 - When several workloads share one cloud account today. Splitting them is only realistic once each workload can prove who it is without paperwork; workload identity is what makes "one role per workload" cost nothing to issue, which is what makes least privilege actually achievable rather than aspirational.
 - **Not** on a laptop, and not as a smuggled production secret for local development. Developer machines have their own path — a developer credential, a device login, a local emulator. If local dev needs the production secret to work, then the production secret still exists and the pattern has not been adopted; it has been decorated.
 - **Not** as a way to skip authorisation. Workload identity answers "who is calling", nothing more. What that caller may do is a separate decision, and giving every workload one enormous role reproduces the shared account with extra steps.
@@ -86,12 +86,14 @@ There is no connection string, no key, and nothing to rotate. The credential obj
 When you want to be explicit about what is expected in production, name the credential rather than relying on the chain. `WorkloadIdentityCredential` reads the projected token straight off the filesystem and exchanges it.
 
 ```csharp
-var credential = builder.Environment.IsDevelopment()
+// TokenCredential, not var: the two branches are different types, and the
+// declaration is where the intent — "some credential" — belongs anyway.
+TokenCredential credential = builder.Environment.IsDevelopment()
     ? new DefaultAzureCredential()          // developer login, on a laptop
     : new WorkloadIdentityCredential();     // the mounted token, in the cluster
 ```
 
-What is actually mounted is a short-lived JWT that the cluster's API server projected into the pod, and the three environment variables that say where it is and who it is for. The deployment declares them; nothing in the application does.
+What is actually mounted is a short-lived JWT that the cluster's API server projected into the pod, and the environment variables that say where it is and who it is for. The deployment declares them; nothing in the application does.
 
 ```yaml
 # The service account is the identity. The annotation is the federation subject.
@@ -117,13 +119,25 @@ spec:
 The exchange itself is the part worth understanding, because it is the third step of the scene. The credential reads the projected token, posts it to the identity provider, and gets a cloud access token back. The provider checks two things before it answers: that the token was signed by an issuer it has been told to trust, and that its audience names the provider rather than somebody else.
 
 ```csharp
-// What WorkloadIdentityCredential does, spelled out.
-var assertion = await File.ReadAllTextAsync(
-    Environment.GetEnvironmentVariable("AZURE_FEDERATED_TOKEN_FILE")!, ct);
+using Microsoft.Identity.Client;
+
+// What WorkloadIdentityCredential does, spelled out. Every value comes from an
+// environment variable the platform injected, and none of them is a secret.
+var tokenFile = Environment.GetEnvironmentVariable("AZURE_FEDERATED_TOKEN_FILE")!;
+var authority = Environment.GetEnvironmentVariable("AZURE_AUTHORITY_HOST")
+    + Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
+
+var confidentialClient = ConfidentialClientApplicationBuilder
+    .Create(Environment.GetEnvironmentVariable("AZURE_CLIENT_ID"))
+    .WithAuthority(authority)
+    // The assertion belongs to the application, not to one request, and the
+    // file is read again on every acquisition because the platform rotates it.
+    .WithClientAssertion(async (AssertionRequestOptions options) =>
+        await File.ReadAllTextAsync(tokenFile, options.CancellationToken))
+    .Build();                                              // no client secret anywhere
 
 var token = await confidentialClient
-    .AcquireTokenForClient(new[] { "https://storage.azure.com/.default" })
-    .WithClientAssertion(_ => Task.FromResult(assertion))   // no client secret anywhere
+    .AcquireTokenForClient(["https://storage.azure.com/.default"])
     .ExecuteAsync(ct);
 ```
 
@@ -140,7 +154,10 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
         ValidateIssuer = true,
         ValidIssuer = "https://login.microsoftonline.com/<tenant>/v2.0",
         ValidateAudience = true,
-        ValidAudience = "api://orders",   // a token minted for anyone else is refused
+        // Both entries name this one API — a v2.0 token carries its client id,
+        // a v1.0 token may carry the `api://` URI — and a token minted for
+        // anyone else is refused.
+        ValidAudiences = [ordersClientId, $"api://{ordersClientId}"],
         ValidateLifetime = true,
     };
 });

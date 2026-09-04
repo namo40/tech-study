@@ -8,11 +8,11 @@ steps:
   - title: "Steady"
     text: "Two pods run at 35% CPU against a 60% target. Every fifteen seconds the autoscaler recomputes the desired count and gets the same answer: two. Nothing changes, which is the point."
   - title: "The spike"
-    text: "Traffic triples, the two pods saturate, and requests start being refused. The autoscaler notices on its next tick, asks for four, and the new pods take half a minute to start. Until they are ready, the old two carry everything. Headroom is what covers that gap."
+    text: "Traffic triples and the two pods saturate. The autoscaler asks for four on its next tick; while the new pods take half a minute to start the old two carry everything, and a request or two is refused. Headroom covers that gap."
   - title: "Scale in slowly"
     text: "When traffic drops the arithmetic says two again, but the autoscaler waits out a stabilisation window before removing pods, so a brief spike in between does not make it flap. Scaling out is eager; scaling in is patient."
   - title: "The right metric"
-    text: "The work becomes I/O bound. CPU sits at 30% and never asks for anything, while the queue behind the pods grows until requests are being dropped. Point the autoscaler at the queue instead and the same formula finally says four."
+    text: "The work is now I/O bound. CPU sits at 30% of its request and never asks for anything, while the queue grows toward its limit. Point the autoscaler at the queue and it finally says four; requests are dropped until the new pods are ready."
 related:
   - label: Vertical Pod Autoscaler
     slug: vertical-pod-autoscaler
@@ -40,7 +40,7 @@ references:
   - title: "Kubernetes: autoscaling workloads"
     url: https://kubernetes.io/docs/concepts/workloads/autoscaling/
   - title: "HorizontalPodAutoscaler walkthrough"
-    url: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+    url: https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/
   - title: "Kubernetes: liveness, readiness and startup probes"
     url: https://kubernetes.io/docs/concepts/workloads/pods/probes/
 ---
@@ -63,7 +63,7 @@ references:
 
 ## In .NET
 
-The manifest is where the policy lives. `behavior` is the half that is easy to leave out, and it is the half that decides whether the deployment flaps: a stabilisation window on the way down, none on the way up.
+The manifest is where the policy lives. The `behavior` block below writes down what Kubernetes already does by default — a five minute stabilisation window on the way down, none on the way up — which is worth spelling out once so the asymmetry is visible; reach for it in earnest when you need different windows, or `policies` that cap the rate, such as allowing only one pod to be removed a minute.
 
 ```yaml
 apiVersion: autoscaling/v2
@@ -85,7 +85,7 @@ spec:
         target: { type: AverageValue, averageValue: "100" }
 ```
 
-The second metric only exists because the application exports it. An `ObservableGauge` read through the Prometheus exporter, and an adapter in the cluster that turns the scrape into a custom metric, is the whole of the plumbing.
+The second metric only exists because the application exports it. An `ObservableGauge` read through the Prometheus exporter, and an adapter in the cluster that turns the scrape into a custom metric, is the whole of the plumbing. The exporter is `OpenTelemetry.Exporter.Prometheus.AspNetCore`, which has never shipped a stable version; where a prerelease dependency is not acceptable, export OTLP to a collector instead and let the collector expose the scrape endpoint.
 
 ```csharp
 // The app exports the number the autoscaler scales on.

@@ -7,11 +7,11 @@ steps:
   - title: "In, then out"
     text: "A request passes down through every middleware, reaches the endpoint, and the response climbs back through the same ones in reverse. Each middleware wraps everything below it."
   - title: "Short-circuit"
-    text: "A middleware can answer without calling the next one: 401 from authentication, or a file straight from static files. Everything below it never runs."
+    text: "A middleware can answer without calling the next one: 401 from authorization when the endpoint requires a user, or a file straight from static files. Everything below it never runs."
   - title: "Exceptions climb"
     text: "An exception thrown at the endpoint travels back up through every middleware. Only the outermost one can turn it into a proper 500, so the exception handler goes first."
   - title: "Order is the design"
-    text: "The same middleware in a different order is a different application. Exception handler first, cheap protections before expensive work, authentication before authorization, endpoint last."
+    text: "The same middleware in a different order is a different application. Exception handler first, cheap protections before expensive work — swap the rate limiter above authentication and two of the four are refused with 429 before authentication."
 related:
   - label: Endpoint Routing
     slug: endpoint-routing
@@ -55,6 +55,11 @@ references:
 ## In .NET
 
 ```csharp
+// UseExceptionHandler() with no arguments delegates to the problem-details
+// service. Without this registration — or a path, or a handler passed in —
+// the host throws at startup rather than on the first failure.
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -69,9 +74,18 @@ app.UseAuthorization();
 app.Use(async (context, next) =>
 {
     var started = Stopwatch.GetTimestamp();
+
+    // Headers are read-only once the response has started, so setting one
+    // after next returns throws. Register it instead: this runs at the last
+    // moment the headers are still writable.
+    context.Response.OnStarting(() =>
+    {
+        var elapsed = Stopwatch.GetElapsedTime(started);
+        context.Response.Headers["X-Elapsed-Ms"] = elapsed.TotalMilliseconds.ToString("F0");
+        return Task.CompletedTask;
+    });
+
     await next(context);                       // everything below runs here
-    var elapsed = Stopwatch.GetElapsedTime(started);
-    context.Response.Headers["X-Elapsed-Ms"] = elapsed.TotalMilliseconds.ToString("F0");
 });
 
 app.MapGet("/orders/{id:int}", (int id) => Results.Ok(new { id }))

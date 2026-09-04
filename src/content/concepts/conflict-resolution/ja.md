@@ -19,7 +19,7 @@ references:
   - title: Consistency levels in Azure Cosmos DB
     url: https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels
   - title: Manage conflicts between regions in Azure Cosmos DB
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/how-to-manage-conflicts
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-manage-conflicts
 ---
 
 シーンの 3 番目のステップは、分断の下で両側に答え続けさせ、一文で終わります。ネットワークが癒えるとレプリカは収束する、という一文です。このページはその一文を解きほぐしたものです。片側だけが書き込みを受けていたなら、癒えることは再生でしかなく、問うことは何もありません。両側が同じ項目への書き込みを受けていたなら、癒える瞬間には値が 2 つあります。どちらも受け付けられ、どちらももう去ってしまった呼び出し元に成功と答えており、システムは 1 つを差し出さなければなりません。ネットワークのどの部分もそれを決めてくれません。consistent prefix は観測する側が何をどの順で見てよいかを取り仕切り、このページは保存された値が何になるのかを扱います。

@@ -30,12 +30,12 @@ related:
   - label: Authentication
     slug: authentication
 references:
-  - title: Configure cryptographic key auto-rotation in Azure Key Vault
-    url: https://learn.microsoft.com/en-us/azure/key-vault/keys/how-to-configure-key-rotation
-  - title: Key management in ASP.NET Core
-    url: https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/implementation/key-management?view=aspnetcore-10.0
-  - title: Rotation tutorial for resources with two sets of credentials
-    url: https://learn.microsoft.com/en-us/azure/key-vault/secrets/tutorial-rotation-dual
+  - title: Azure Key Vault configuration provider
+    url: https://learn.microsoft.com/en-us/aspnet/core/security/key-vault-configuration
+  - title: Safe storage of app secrets in development
+    url: https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets
+  - title: Azure Key Vault logging
+    url: https://learn.microsoft.com/en-us/azure/key-vault/general/logging
 ---
 
 비밀 관리는 규칙 하나에서 출발합니다. 비밀은 집이 정확히 하나이고, 나머지 모든 곳은 사본이 아니라 참조를 들고 있습니다. 연결 문자열이 appsettings 파일에, CI 변수에, 배포 매니페스트에, 동료에게 보낸 메시지에 붙여 넣어지는 순간 자격 증명은 더 이상 하나가 아니라 넷입니다. 각각 자기 수명이 있고, 각각 새어 나가는 자기만의 경로가 있습니다. 그래서 진짜 물어야 할 것은 "어디에 암호화해 둘까"가 아니라 "교체하려면 몇 군데를 고쳐야 하는가"이고, 두 번째 질문의 좋은 대답은 한 군데입니다.

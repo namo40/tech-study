@@ -35,7 +35,7 @@ related:
     slug: saga
 references:
   - title: "Logging in .NET"
-    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/logging
+    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/logging/overview
   - title: "Logging in ASP.NET Core"
     url: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/logging/
   - title: ".NET distributed tracing concepts"

@@ -29,7 +29,7 @@ related:
     slug: slo
   - label: Database Connection Pool
     slug: database-connection-pool
-  - label: ThreadPool Starvation
+  - label: Thread Pool Starvation
     slug: threadpool-starvation
   - label: Rate Limiter
     slug: rate-limiter
@@ -41,7 +41,7 @@ references:
   - title: dotnet-counters
     url: https://learn.microsoft.com/en-us/dotnet/core/diagnostics/dotnet-counters
   - title: NBomber documentation
-    url: https://nbomber.com/docs/
+    url: https://nbomber.com/docs/getting-started/overview/
 ---
 
 ## 언제 쓰나

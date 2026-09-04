@@ -50,7 +50,7 @@ finally
 }
 ```
 
-When fragmentation is already the problem and the allocations cannot be removed quickly, the collector can be asked to compact the large object heap once, on the next full collection. It is an expensive, blocking operation and it belongs in a maintenance window or a quiet moment in a background job, never on a request path and never on a timer. Compaction buys time; removing the allocation is what fixes it.
+When fragmentation is already the problem and the allocations cannot be removed quickly, the collector can be asked to compact the large object heap once, on the next full collection. It is an expensive, blocking operation and it belongs in a maintenance window or a quiet moment in a background job, never on a request path and never on a timer. The standing alternative is `DOTNET_GCConserveMemory` at any value from 1 to 9, which lets the collector compact the large object heap by itself once fragmentation gets bad, in exchange for collecting more often. Either way, compaction buys time; removing the allocation is what fixes it.
 
 ```csharp
 // A one-off, in a background task and not on a request path.
@@ -58,4 +58,4 @@ GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.Compa
 GC.Collect();
 ```
 
-Watch it with the same counters as everything else. `gc-heap-size` climbing while the live set is flat, gen2 collection counts rising in step with a p99 spike, and a container whose memory grows without a matching object count are the three signals that point here rather than at a leak.
+Watch it on the counter that is specific to it before anything else. On .NET 9 and later that is `dotnet.gc.last_collection.heap.size` read at its `gc.heap.generation=loh` dimension; on .NET 8 and lower it is the `loh-size` EventCounter. That number climbing while the live set is flat, gen2 collection counts rising in step with a p99 spike, and a container whose memory grows without a matching object count are the three signals that point here rather than at a leak.

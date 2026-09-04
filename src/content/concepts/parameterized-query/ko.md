@@ -29,7 +29,7 @@ references:
   - title: "Configuring parameters and parameter data types"
     url: https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/configuring-parameters-and-parameter-data-types
   - title: "SqlCommand.Prepare Method"
-    url: https://learn.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlcommand.prepare
+    url: https://learn.microsoft.com/en-us/dotnet/api/microsoft.data.sqlclient.sqlcommand.prepare
   - title: "SQL Queries (EF Core)"
     url: https://learn.microsoft.com/en-us/ef/core/querying/sql-queries
 ---

@@ -12,7 +12,7 @@ related:
     slug: retry
   - label: Exponential Backoff
     slug: exponential-backoff
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
   - label: At-Least-Once
     slug: at-least-once
@@ -30,7 +30,7 @@ references:
   - title: Retry pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/retry
   - title: "Error handling in Durable Functions"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-error-handling
+    url: https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-error-handling
   - title: "Implement retries with exponential backoff"
     url: https://learn.microsoft.com/en-us/dotnet/architecture/microservices/implement-resilient-applications/implement-retries-exponential-backoff
 ---

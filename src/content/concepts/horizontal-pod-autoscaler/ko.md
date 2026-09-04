@@ -39,7 +39,7 @@ references:
   - title: "Kubernetes: autoscaling workloads"
     url: https://kubernetes.io/docs/concepts/workloads/autoscaling/
   - title: "HorizontalPodAutoscaler walkthrough"
-    url: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+    url: https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/
   - title: "Kubernetes: liveness, readiness and startup probes"
     url: https://kubernetes.io/docs/concepts/workloads/pods/probes/
 ---

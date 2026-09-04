@@ -24,7 +24,7 @@ references:
 
 ## When to use
 
-- You are already using it, and that is the first thing worth knowing. `WebApplication.CreateBuilder` configures Kestrel as the server, so every request in a default ASP.NET Core application has already been parsed, decompressed and framed by it before the middleware pipeline sees a `HttpContext`. Tuning it is not adopting something new; it is adjusting the component that is already on the path.
+- You are already using it, and that is the first thing worth knowing. `WebApplication.CreateBuilder` configures Kestrel as the server, so every request in a default ASP.NET Core application has already been parsed and framed by it before the middleware pipeline sees a `HttpContext`. Tuning it is not adopting something new; it is adjusting the component that is already on the path.
 - Serve with it directly in containers and behind a load balancer. A container that exposes one port and runs one process does not need another web server in the image, and an ingress controller or cloud load balancer in front supplies what an edge normally supplies.
 - Let it terminate HTTP/2 and HTTP/3 when clients or gRPC need them. Protocol selection is per endpoint, HTTP/2 needs TLS with ALPN for browsers, and HTTP/3 needs the QUIC support present on the platform, so this is where those protocol decisions actually get made.
 - Configure endpoints and certificates through configuration rather than code where you can. The `Kestrel` section of `appsettings.json` binds URLs, protocols, certificates and limits, which lets one image run with different endpoints per environment without a rebuild.

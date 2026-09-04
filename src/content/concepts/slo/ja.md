@@ -11,22 +11,18 @@ related:
     slug: sli
   - label: p95
     slug: p95
+  - label: p99
+    slug: p99
   - label: Tail Latency
     slug: tail-latency
-  - label: Health Check
-    slug: health-check
-  - label: Load Test
-    slug: load-test
+  - label: Latency
+    slug: latency
   - label: Capacity Test
     slug: capacity-test
-  - label: Distributed Tracing
-    slug: distributed-tracing
-  - label: Sampling
-    slug: sampling
-  - label: Rollback
-    slug: rollback
   - label: Canary Release
     slug: canary-release
+  - label: Rollback
+    slug: rollback
 references:
   - title: "Architecture strategies for defining reliability targets"
     url: https://learn.microsoft.com/en-us/azure/well-architected/reliability/metrics

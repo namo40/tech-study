@@ -7,7 +7,7 @@ sceneStep: 3
 related:
   - label: Resource-based Authorization
     slug: resource-based-authorization
-  - label: Role-based Access Control
+  - label: Role-Based Access Control
     slug: role-based-access-control
   - label: Default Deny
     slug: default-deny
@@ -17,7 +17,7 @@ related:
     slug: claims
   - label: Least Privilege
     slug: least-privilege
-  - label: Attribute-based Access Control
+  - label: Attribute-Based Access Control
     slug: attribute-based-access-control
   - label: Authentication
     slug: authentication
@@ -27,7 +27,7 @@ references:
   - title: "Policy-based authorization in ASP.NET Core"
     url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/policies
   - title: "Resource-based authorization in ASP.NET Core"
-    url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/resourcebased
+    url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/resource-based
 ---
 
 場面の第三段階は、ロールが間違いかどうかという議論が終わるところです。Check の中に `admin` カードが上がり、ある呼び出し元にバッジが付き、所有のルールなら断ったはずのリクエストが通ります。それが管理者という言葉の意味であり、そのルールを owner ルールと同じスタックにカードとして描いたことが要点です。リソース検査が来たからといってロールが消えたわけでも、ロールが勝ったわけでもありません。ロールはリストの中で owner ルールの上に一行を占め、ちょうど一つのことだけを言います。

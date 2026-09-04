@@ -3,7 +3,7 @@ title: "Claims"
 summary: "Claim は、トークンが誰のためのものか、何を許すか、それがいつまで真かをキーと値で述べたものです。検証はそれらを広く読む作業ではなく、決まった数のゲートであり、各ゲートは名前の付いたクレーム一つを API がすでに知っている値と突き合わせます。"
 category: "認証と認可"
 scene: bearer-token
-sceneStep: 3
+sceneStep: 2
 related:
   - label: Bearer Token
     slug: bearer-token

@@ -24,8 +24,8 @@ related:
 references:
   - title: rowversion (Transact-SQL)
     url: https://learn.microsoft.com/en-us/sql/t-sql/data-types/rowversion-transact-sql
-  - title: Snapshot isolation in SQL Server
-    url: https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server
+  - title: Transaction locking and row versioning guide (SQL Server)
+    url: https://learn.microsoft.com/en-us/sql/relational-databases/sql-server-transaction-locking-and-row-versioning-guide
   - title: PostgreSQL transaction isolation
     url: https://www.postgresql.org/docs/current/transaction-iso.html
 ---

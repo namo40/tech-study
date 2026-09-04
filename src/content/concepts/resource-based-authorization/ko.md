@@ -21,13 +21,13 @@ related:
     slug: role
   - label: Default Deny
     slug: default-deny
-  - label: Role-based Access Control
+  - label: Role-Based Access Control
     slug: role-based-access-control
   - label: Claims
     slug: claims
   - label: Least Privilege
     slug: least-privilege
-  - label: Attribute-based Access Control
+  - label: Attribute-Based Access Control
     slug: attribute-based-access-control
   - label: Workload Identity
     slug: workload-identity
@@ -35,7 +35,7 @@ related:
     slug: audience
 references:
   - title: "Resource-based authorization in ASP.NET Core"
-    url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/resourcebased
+    url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/resource-based
   - title: "Policy-based authorization in ASP.NET Core"
     url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/policies
   - title: "Role-based authorization in ASP.NET Core"

@@ -24,8 +24,8 @@ references:
     url: https://www.rfc-editor.org/rfc/rfc7636
   - title: "OAuth 2.0 Security Best Current Practice (RFC 9700)"
     url: https://www.rfc-editor.org/info/rfc9700/
-  - title: OAuth 2.0 for Browser-Based Apps
-    url: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-browser-based-apps
+  - title: "OAuth 2.0 for Browser-Based Applications (RFC 10017)"
+    url: https://www.rfc-editor.org/rfc/rfc10017
 ---
 
 장면의 3단계는 앱에 대해 한 가지를 바꿉니다. client secret이 없다는 것입니다. 단일 페이지 앱은 소스를 방문자 모두에게 내려보내고 모바일 앱은 누구나 풀어 볼 수 있는 바이너리를 배포합니다. 그 안에 박아 넣은 secret은 누군가 들여다보기 전까지만 secret입니다. 그래서 2단계가 기대던 검사가 사라집니다. code는 여전히 front channel로 다니고, 공격자는 여전히 URL에서 그것을 복사할 수 있으며, 이제 `/token`에서는 두 호출자를 구별할 방법이 없습니다.

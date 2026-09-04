@@ -21,11 +21,11 @@ related:
     slug: message-id
 references:
   - title: "Logging in .NET"
-    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/logging
+    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/logging/overview
   - title: "High-performance logging in .NET"
-    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/high-performance-logging
+    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/logging/high-performance-logging
   - title: "Compile-time logging source generation"
-    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/logger-message-generator
+    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/logging/source-generation
   - title: "Message Templates"
     url: https://messagetemplates.org/
 ---

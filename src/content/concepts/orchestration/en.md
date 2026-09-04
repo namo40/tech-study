@@ -24,9 +24,9 @@ references:
   - title: Saga distributed transactions pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/saga
   - title: MassTransit sagas
-    url: https://masstransit.io/documentation/patterns/saga
+    url: https://masstransit.massient.com/concepts/saga-state-machines
   - title: Durable Functions overview
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview
+    url: https://learn.microsoft.com/en-us/azure/durable-task/durable-functions/durable-functions-overview
 ---
 
 The coordinator holds the sequence. It sends `Charge` to Payment, waits for the answer, writes down that the saga is now `Paid`, sends `Reserve` to Inventory, and so on. The services no longer subscribe to each other; they expose commands and answer them, which makes them simpler than under choreography, because none of them needs to know what comes next or who to tell when something goes wrong.

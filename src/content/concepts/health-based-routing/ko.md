@@ -13,9 +13,9 @@ related:
     slug: round-robin
   - label: Health Check
     slug: health-check
-  - label: Readiness
+  - label: Readiness Probe
     slug: readiness-probe
-  - label: Liveness
+  - label: Liveness Probe
     slug: liveness-probe
   - label: Circuit Breaker
     slug: circuit-breaker

@@ -19,7 +19,7 @@ related:
     slug: choreography
   - label: Orchestration
     slug: orchestration
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
   - label: Idempotent Consumer
     slug: idempotent-consumer
@@ -39,11 +39,11 @@ related:
     slug: local-transaction
 references:
   - title: Transactional Outbox pattern with Azure Cosmos DB
-    url: https://learn.microsoft.com/en-us/azure/architecture/databases/guide/transactional-outbox-cosmos
+    url: https://learn.microsoft.com/en-us/azure/architecture/databases/guide/transactional-out-box-cosmos
   - title: Using transactions (EF Core)
     url: https://learn.microsoft.com/en-us/ef/core/saving/transactions
   - title: Transactional Outbox (MassTransit)
-    url: https://masstransit.io/documentation/patterns/transactional-outbox
+    url: https://masstransit.massient.com/concepts/outbox
   - title: Implementing event-based communication between microservices
     url: https://learn.microsoft.com/en-us/dotnet/architecture/microservices/multi-container-microservice-net-applications/subscribe-events
 ---

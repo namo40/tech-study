@@ -92,8 +92,8 @@ dotnet ef migrations script AddDiscountColumn PreviousMigration --output down.sq
 protected override void Down(MigrationBuilder migrationBuilder)
 {
     throw new NotSupportedException(
-        "DropColumn(LegacyTotal) は値を失います。このマイグレーションの復旧は " +
-        "down スクリプトではなく、特定時点への復元です。");
+        "DropColumn(LegacyTotal) is lossy. Recovery for this migration is a " +
+        "point-in-time restore, not a down script.");
 }
 ```
 

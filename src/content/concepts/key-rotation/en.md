@@ -12,7 +12,7 @@ steps:
   - title: "Sign with one key; verify with the ring"
     text: "New tokens are signed with the newest key, but yesterday's tokens are still in flight — so the verifier keeps a ring of recent keys and the `kid` header says which one to try. Old signatures stay checkable exactly as long as they need to, and no rotation ever invalidates a token mid-life."
   - title: "A leak is an emergency rotation — the same road, driven faster"
-    text: "Key B leaks; because rotation is routine, revoke-and-replace is a practiced motion, not a 3 a.m. invention. The window closes in minutes. What makes it possible is discipline around the keys themselves: kept in a secret store, delivered by reference, every access audited."
+    text: "Key B leaks; because rotation is routine, revoke-and-replace is practiced, not a 3 a.m. invention. The window closes far faster than the scheduled one. What makes it possible is discipline: keys in a secret store, delivered by reference."
 related:
   - label: API Key
     slug: api-key
@@ -115,8 +115,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.Authority = "https://login.example.com";
-        // How long a rotated-out key can still be accepted, and how quickly a
-        // new one becomes usable. Both are this number.
+        // Two different clocks, spelled out here at the values they already
+        // default to. Metadata is refetched every AutomaticRefreshInterval,
+        // which caps how long a rotated-out key stays in this cache; an unknown
+        // `kid` forces a refetch that RefreshInterval throttles, which caps how
+        // long a newly cut key takes to become usable.
         options.AutomaticRefreshInterval = TimeSpan.FromHours(12);
         options.RefreshInterval = TimeSpan.FromMinutes(5);
     });

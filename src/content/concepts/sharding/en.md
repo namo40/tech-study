@@ -44,7 +44,7 @@ references:
   - title: "Data partitioning guidance"
     url: https://learn.microsoft.com/en-us/azure/architecture/best-practices/data-partitioning
   - title: "Partitioning and horizontal scaling in Azure Cosmos DB"
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning
 ---
 
 ## When to use
@@ -101,6 +101,10 @@ public sealed class OrderQueries(ShardMap map, IDbContextFactory<OrderDbContext>
 
     public async Task<List<Order>> PlacedSinceAsync(DateTimeOffset cutoff, CancellationToken token)
     {
+        // The fan-out reduced to its bones. A real one needs the three things
+        // the cross-shard query page insists on and this omits: one deadline
+        // for the whole gather, bounded concurrency, and a policy for the
+        // shard that never answers.
         var pages = await Task.WhenAll(map.Connections.Select(async connection =>
         {
             await using var context = Open(connection);
@@ -121,4 +125,4 @@ public sealed class OrderQueries(ShardMap map, IDbContextFactory<OrderDbContext>
 }
 ```
 
-Managed options move the routing out of your code without changing the thinking. Azure Cosmos DB asks for a partition key on every container and shards on it for you, so the design work is choosing that key and keeping queries inside one logical partition. Azure SQL Database offers elastic pools plus a shard map manager, which keeps the key-to-database map in a catalogue database and hands you a connection for a given key. For cache tiers the same idea appears one layer up: a client-side consistent hash over the cache nodes, so adding a node invalidates a slice of the cache instead of all of it.
+Managed options move the routing out of your code without changing the thinking. Azure Cosmos DB asks for a partition key on every container and shards on it for you, so the design work is choosing that key and keeping queries inside one logical partition. Azure SQL Database's Elastic Database tools (the Elastic Database client library) provide a shard map manager, which keeps the key-to-database map in a catalogue database and hands you a connection for a given key. For cache tiers the same idea appears one layer up: a client-side consistent hash over the cache nodes, so adding a node invalidates a slice of the cache instead of all of it.

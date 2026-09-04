@@ -16,6 +16,8 @@ related:
     slug: hexagonal-architecture
   - label: Domain-Driven Design
     slug: domain-driven-design
+  - label: Vertical Slice Architecture
+    slug: vertical-slice-architecture
 references:
   - title: "Common web application architectures"
     url: https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures
@@ -38,7 +40,7 @@ references:
 
 ## In .NET
 
-- The natural spelling of a module is a project, and the natural spelling of a boundary is a project reference. Give each module a contracts project holding the types other modules are allowed to see and an implementation project that nobody references, keep the implementation types `internal`, and let one host project reference every module and compose them at startup. Then the dependency graph in the solution is the architecture diagram, and it is the version that cannot drift from the code.
+- The natural spelling of a module is a project, and the natural spelling of a boundary is a project reference. Give each module a contracts project holding the types other modules are allowed to see and an implementation project that no other module references, keep the implementation types `internal`, and let one host project reference every module and compose them at startup. Then the dependency graph in the solution is the architecture diagram, and it is the version that cannot drift from the code.
 - Audit the direction of those references the way an onion architecture audits its own: the rule is short enough to state, so it is short enough to test. An architecture test that walks the assemblies and asserts that no module implementation is referenced from outside its own project turns the convention into something the pipeline enforces, which is the difference between a rule and a preference.
 - Give each module its own `DbContext` and its own migrations even while the modules share a database. Scope each context to its own schema, name the migration history table per module, and let modules read another module's data only through its contract. When one module is later extracted, its schema and its migration history travel with it and the change at the call site is which implementation of the contract gets registered.
 - Compose at the edge. A module contributes its own service registrations and its own endpoints through a small registration type the host calls, so adding a module is one line in the host and removing one is the same line. That also keeps the host free of module internals, which is what lets the host stay small enough to read while the system grows.

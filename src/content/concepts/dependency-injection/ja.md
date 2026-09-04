@@ -35,9 +35,9 @@ related:
     slug: graceful-shutdown
 references:
   - title: Dependency injection in .NET
-    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection
+    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/overview
   - title: Dependency injection guidelines
-    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection-guidelines
+    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines
   - title: Dependency injection in ASP.NET Core
     url: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection
 ---

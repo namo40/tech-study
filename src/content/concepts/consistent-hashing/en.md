@@ -20,23 +20,15 @@ related:
     slug: cross-shard-query
   - label: Load Balancer
     slug: load-balancer
-  - label: Replication
-    slug: replication
-  - label: Replication Lag
-    slug: replication-lag
-  - label: Database Index
-    slug: database-index
-  - label: Ordering
-    slug: ordering
-  - label: Event Stream
-    slug: event-stream
+  - label: Consumer Group
+    slug: consumer-group
 references:
   - title: "Sharding pattern"
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding
   - title: "Data partitioning guidance"
     url: https://learn.microsoft.com/en-us/azure/architecture/best-practices/data-partitioning
   - title: "Partitioning and horizontal scaling in Azure Cosmos DB"
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning
 ---
 
 The third step of the scene puts two answers to the same question side by side, and the numbers are the argument. Twelve keys sit in two shards. A third shard arrives. Under `hash mod n` the router recomputes every key against the new count, and eight of the twelve get a different answer than before: two thirds of the data has to be read out of one box and written into another before anybody can find it again. On a ring, four keys move and eight stay exactly where they are.

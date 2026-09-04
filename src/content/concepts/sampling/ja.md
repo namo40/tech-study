@@ -23,7 +23,7 @@ references:
   - title: "OpenTelemetry sampling"
     url: https://opentelemetry.io/docs/concepts/sampling/
   - title: "Sampling in OpenTelemetry .NET"
-    url: https://opentelemetry.io/docs/languages/net/sampling/
+    url: https://opentelemetry.io/docs/languages/dotnet/sampling/
   - title: ".NET distributed tracing concepts"
     url: https://learn.microsoft.com/en-us/dotnet/core/diagnostics/distributed-tracing-concepts
   - title: "Tail sampling processor"

@@ -14,8 +14,8 @@ related:
 references:
   - title: Language Integrated Query (LINQ)
     url: https://learn.microsoft.com/en-us/dotnet/csharp/linq/
-  - title: Deferred execution and lazy evaluation in LINQ to XML
-    url: https://learn.microsoft.com/en-us/dotnet/standard/linq/deferred-execution-lazy-evaluation
+  - title: Introduction to LINQ queries (deferred execution)
+    url: https://learn.microsoft.com/en-us/dotnet/csharp/linq/get-started/introduction-to-linq-queries
 ---
 
 ## 언제 쓰나

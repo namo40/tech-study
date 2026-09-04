@@ -10,7 +10,7 @@ steps:
   - title: "Parameters separate the sentence from the values"
     text: "The query ships as a skeleton with placeholders; the input travels beside it as pure data. The same attack string arrives — and matches nobody, because it is now a name being compared, not SQL being run. Nothing to escape, nothing to sanitize: the boundary is structural."
   - title: "The same skeleton is also the same plan"
-    text: "Every new SQL text costs a parse and a plan before it runs. Concatenated queries are all different texts, so the cache misses forever. Parameterized queries are one text with changing values: one plan, compiled once, reused every call. Security and speed come from the same decision."
+    text: "Parameterized queries are one text with changing values: one plan, compiled once and reused — until the dashed replay of the concatenated version, three texts and three misses, pushes it out of the three-slot cache and it is compiled again."
   - title: "In practice you rarely call Prepare — you just never concatenate"
     text: "Modern drivers and EF Core parameterize for you and the server caches plans by text; the discipline that remains is keeping the text stable and the values in parameters. One skeleton, one plan, a cache that stays warm — and an attack surface that closed as a side effect."
 related:
@@ -36,7 +36,7 @@ related:
     slug: materialized-view
 references:
   - title: "SqlCommand.Prepare Method"
-    url: https://learn.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlcommand.prepare
+    url: https://learn.microsoft.com/en-us/dotnet/api/microsoft.data.sqlclient.sqlcommand.prepare
   - title: "Configuring parameters and parameter data types"
     url: https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/configuring-parameters-and-parameter-data-types
   - title: "SQL Queries (EF Core)"
@@ -57,7 +57,7 @@ references:
 - Wildly varying `IN` list sizes fragment the cache. A query with three parameters and the same query with four are different texts, so a list that ranges from one to a thousand produces a thousand plans. Round the size up to a bucket, or pass the set as a table-valued parameter and keep one text.
 - Parameter types and lengths are part of the text on some servers. A `varchar(10)` and a `varchar(4000)` holding the same value produce two plans on SQL Server, so let the value decide the size and you get a new plan per distinct length. Specify `DbType` and `Size` explicitly and the statement stays one statement.
 - Plan reuse can hurt when the data is skewed. The plan compiled for the first value is reused for the next one, and if the first customer had ten orders and the next has two million, the plan chosen for ten is now being used for two million. That is parameter sniffing, it is a tuning problem with tuning answers — `OPTIMIZE FOR`, `RECOMPILE`, filtered indexes — and it is never a reason to go back to concatenation.
-- Interpolation is not parameterization, except where it is. `FromSqlInterpolated` is safe because EF Core turns each hole in the interpolated string into a parameter; the identical-looking string passed to `FromSqlRaw` is the injection, because the string was already assembled before EF ever saw it. The two calls differ by one word, so make the safe one the habit.
+- Interpolation is not parameterization, except where it is. `FromSql` (named `FromSqlInterpolated` before EF Core 7, and still available under that name) is safe because EF Core turns each hole in the interpolated string into a parameter; the identical-looking string passed to `FromSqlRaw` is the injection, because the string was already assembled before EF ever saw it. The two calls differ by one word, so make the safe one the habit.
 
 ## In .NET
 
@@ -92,7 +92,7 @@ foreach (var e in events)
 }
 ```
 
-EF Core parameterizes on your behalf. A captured variable in a LINQ query becomes a parameter, so the generated SQL is the same text for every value of `name`; a constant written into the expression is folded into the text instead, which is correct but means a different text per constant. When you drop to SQL, `FromSqlInterpolated` and the `SqlQuery` overloads turn the interpolation holes into parameters, and `FromSqlRaw` takes the string exactly as you built it.
+EF Core parameterizes on your behalf. A captured variable in a LINQ query becomes a parameter, so the generated SQL is the same text for every value of `name`; a constant written into the expression is folded into the text instead, which is correct but means a different text per constant. When you drop to SQL, `FromSql` and the `SqlQuery` overloads turn the interpolation holes into parameters, and `FromSqlRaw` takes the string exactly as you built it.
 
 ```csharp
 // parameterized: one text, one plan
@@ -100,7 +100,7 @@ var users = await db.Users.Where(u => u.Name == name).ToListAsync(ct);
 
 // also parameterized: the holes become @p0 and @p1
 var rows = await db.Users
-    .FromSqlInterpolated($"SELECT * FROM Users WHERE Name = {name} AND CreatedAt > {since}")
+    .FromSql($"SELECT * FROM Users WHERE Name = {name} AND CreatedAt > {since}")
     .ToListAsync(ct);
 ```
 

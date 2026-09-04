@@ -10,9 +10,9 @@ steps:
   - title: "The state is a replay"
     text: "Wipe the aggregate and nothing is lost: play the log from the start and the same state grows back, event by event. Stop the replay early and you are looking at the past — the log remembers every version of the truth."
   - title: "When the replay grows long, take a picture"
-    text: "A snapshot stores the state as of one sequence number. The next rebuild starts there and replays only what came after. It is an optimization, nothing more — the log is still the truth, and the snapshot can always be thrown away and rebuilt."
+    text: "A snapshot stores the state as of one sequence number. The next rebuild starts there and replays only what came after — and here nothing came after, so it reads nothing at all. The log is still the truth, and the snapshot can be thrown away."
   - title: "One log, many truths derived from it"
-    text: "The same events feed a read model here and an audit trail there, for free — they are just more replays. And a correction is not an UPDATE: it is one more event appended, and every derived view catches up. The history stays honest because it only ever grows."
+    text: "The same events feed a projection here and an audit trail there — just more replays. And a correction is not an UPDATE: it is one more event appended, and every derived view catches up. The history stays honest because it only ever grows."
 related:
   - label: Aggregate
     slug: aggregate
@@ -134,10 +134,11 @@ public class Order
 }
 ```
 
-Appending is where optimistic concurrency lives. The expected version is part of the insert, so two writers racing on one aggregate produce a unique key violation rather than a lost update — the same guarantee a `rowversion` gives a mutable row, obtained here for free from the primary key.
+Appending is where optimistic concurrency lives. The expected version is part of the insert, so two writers racing on one aggregate produce a unique key violation rather than a lost update — the same guarantee a `rowversion` gives a mutable row, obtained here for free from the primary key. EF Core surfaces that violation as a `DbUpdateException` wrapping the provider's error, not as a `DbUpdateConcurrencyException`, so that is the exception the reload-and-retry loop has to catch.
 
 ```csharp
-public async Task AppendAsync(Guid stream, int expectedVersion, IEnumerable<object> events)
+public async Task AppendAsync(
+    Guid stream, int expectedVersion, IEnumerable<object> events, CancellationToken ct)
 {
     var version = expectedVersion;
     foreach (var e in events)
@@ -147,7 +148,13 @@ public async Task AppendAsync(Guid stream, int expectedVersion, IEnumerable<obje
         {
             StreamId = stream,
             Version = version,
-            Type = e.GetType().Name,
+            Type = e switch                        // a chosen name, not a class name
+            {
+                ItemAdded => "ItemAdded",
+                ItemRemoved => "ItemRemoved",
+                OrderPaid => "OrderPaid",
+                _ => throw new NotSupportedException(e.GetType().Name),
+            },
             SchemaVersion = 1,
             Data = JsonSerializer.Serialize(e, e.GetType()),
             At = DateTimeOffset.UtcNow,
@@ -155,11 +162,11 @@ public async Task AppendAsync(Guid stream, int expectedVersion, IEnumerable<obje
     }
 
     // Unique on (StreamId, Version): whoever gets there second is told so.
-    await db.SaveChangesAsync();
+    await db.SaveChangesAsync(ct);
 }
 ```
 
-Serialization is `System.Text.Json`, and the `Type` and `SchemaVersion` columns are what make an event readable in five years. Reading is a switch on those two columns, not `JsonSerializer.Deserialize<object>`, because the payload's shape is decided by what was written rather than by what the current code happens to expect.
+The stored name comes from that switch rather than from `e.GetType().Name`, because the name in the table has to outlive the name in the code: rename the class and a reflected name silently stops matching every row already written. Serialization is `System.Text.Json`, and the `Type` and `SchemaVersion` columns are what make an event readable in five years. Reading is a switch on those two columns, not `JsonSerializer.Deserialize<object>`, because the payload's shape is decided by what was written rather than by what the current code happens to expect.
 
 ```csharp
 static object Rehydrate(StoredEvent row) => (row.Type, row.SchemaVersion) switch
@@ -177,7 +184,7 @@ A snapshot is a second table keyed by stream and version, holding the serialized
 var snap = await db.Snapshots
     .Where(s => s.StreamId == id)
     .OrderByDescending(s => s.Version)
-    .FirstOrDefaultAsync();
+    .FirstOrDefaultAsync(ct);
 
 var order = snap is null
     ? new Order()
@@ -187,7 +194,8 @@ var from = snap?.Version ?? 0;
 await foreach (var row in db.Events
     .Where(e => e.StreamId == id && e.Version > from)
     .OrderBy(e => e.Version)
-    .AsAsyncEnumerable())
+    .AsAsyncEnumerable()
+    .WithCancellation(ct))
 {
     order.Apply(Rehydrate(row));
 }
@@ -195,4 +203,4 @@ await foreach (var row in db.Events
 
 Projections are the fourth step, and they are the same fold written by somebody else. A subscriber walks the log in order, keeps the position it has reached, and writes whatever shape its screen wants; a second subscriber does the same for an audit view and neither knows about the other. Because the position is stored with the view, rebuilding a projection is deleting its table, resetting its position to zero, and letting it run — which is why a bug in a read model is an afternoon rather than a migration.
 
-Marten and EventStoreDB package all of this if you would rather not own it. Both are worth reaching for once you have more than one stream type; neither changes the shape above, which is the point of writing it out first.
+Marten and KurrentDB (formerly EventStoreDB) package all of this if you would rather not own it. Both are worth reaching for once you have more than one stream type; neither changes the shape above, which is the point of writing it out first.

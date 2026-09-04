@@ -21,6 +21,8 @@ related:
     slug: maximum-pool-size
   - label: Connection Lifetime
     slug: connection-lifetime
+  - label: Idle Timeout
+    slug: idle-timeout
   - label: Connection Timeout
     slug: connection-timeout
   - label: Pool Exhaustion

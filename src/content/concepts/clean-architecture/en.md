@@ -23,6 +23,8 @@ related:
   - label: Repository
     slug: repository
 references:
+  - title: "The Clean Architecture"
+    url: https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
   - title: "Common web application architectures"
     url: https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures
   - title: "Architectural principles"

@@ -10,7 +10,7 @@ related:
     slug: competing-consumers
   - label: Idempotency
     slug: idempotency
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
   - label: Deduplication
     slug: deduplication
@@ -28,10 +28,10 @@ references:
   - title: Duplicate detection in Azure Service Bus
     url: https://learn.microsoft.com/en-us/azure/service-bus-messaging/duplicate-detection
   - title: MassTransit consumers
-    url: https://masstransit.io/documentation/concepts/consumers
+    url: https://masstransit.massient.com/concepts/consumers
 ---
 
-Every broker worth using promises at-least-once delivery and nothing more, so the handler will see the same message twice: a consumer that crashed between the effect and the acknowledgement, a redelivery after a network partition, a replay after a rebalance, an operator moving a batch back out of the dead-letter queue. The consumer is the only place that can absorb this, because it is the only place that knows what the effect was. Making it absorb them means one of two things: recognising the repeat and doing nothing, or writing the effect in a form that produces the same result however many times it runs.
+Beyond its own transactional boundary, every broker worth using promises at-least-once delivery and nothing more, so the handler will see the same message twice: a consumer that crashed between the effect and the acknowledgement, a redelivery after a network partition, a replay after a rebalance, an operator moving a batch back out of the dead-letter queue. The consumer is the only place that can absorb this, because it is the only place that knows what the effect was. Making it absorb them means one of two things: recognising the repeat and doing nothing, or writing the effect in a form that produces the same result however many times it runs.
 
 Recognising the repeat is a store of message ids and a claim against it, and the claim has to be atomic and in the same transaction as the effect. An `INSERT` of the message id into a table with a unique constraint, in the transaction that also writes the order row, either both happens or neither does; a read followed by a write does not, and two copies delivered at the same moment will both find the store empty and both proceed. Where the effect is not in the same database as the store, the problem moves rather than disappearing: calling a payment API and then recording the id is two systems again, and the way out is usually to make the call itself carry the key so the far side deduplicates, or to write an outbox row and let a separate process do the call.
 

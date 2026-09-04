@@ -27,6 +27,8 @@ references:
     url: https://www.rfc-editor.org/rfc/rfc6749
   - title: "OAuth 2.0 Security Best Current Practice (RFC 9700)"
     url: https://www.rfc-editor.org/info/rfc9700/
+  - title: "JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens (RFC 9068)"
+    url: https://www.rfc-editor.org/rfc/rfc9068
   - title: JSON Web Token Best Current Practices (RFC 8725)
     url: https://www.rfc-editor.org/rfc/rfc8725
 ---

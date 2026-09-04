@@ -9,9 +9,9 @@ steps:
   - title: "Exponential backoff with jitter"
     text: "Each wait is longer than the last, and a random offset keeps retries from lining up. Doubling gives the dependency room to recover."
   - title: "Retry storm"
-    text: "Clients that retry in lockstep hit the recovering service in waves and knock it over again. Jitter spreads the waves out."
+    text: "Three calls retrying in lockstep hit the recovering service in waves and knock it over again. Jitter spreads the waves out."
   - title: "Bounded"
-    text: "Retries stop at the budget or the deadline, and never run for calls that are not idempotent. Then fail fast and let the circuit breaker take over."
+    text: "Three attempts, then the budget is spent: the call fails fast instead of trying forever."
 related:
   - label: Exponential Backoff
     slug: exponential-backoff
@@ -47,7 +47,7 @@ references:
 ## Cautions
 
 - Never retry blindly on POST or any other non-idempotent call.
-- Let one layer own the retries. Client, gateway, and service each retrying three times turns one failure into twenty-seven calls.
+- Let one layer own the retries. Client, gateway, and service each making three attempts turns one failure into twenty-seven calls.
 - Honour `Retry-After`. The server is telling you when to come back.
 - Record attempts and final outcomes as metrics. A rising retry rate is an early warning.
 
@@ -61,16 +61,20 @@ builder.Services
         client.BaseAddress = new Uri("https://catalog.internal"))
     .AddResilienceHandler("catalog-pipeline", pipeline =>
     {
-        pipeline.AddRetry(new HttpRetryStrategyOptions
+        var retry = new HttpRetryStrategyOptions
         {
             MaxRetryAttempts = 3,
             Delay = TimeSpan.FromMilliseconds(500),
             BackoffType = DelayBackoffType.Exponential,
             UseJitter = true,
             ShouldRetryAfterHeader = true,
-        });
+        };
+        retry.DisableForUnsafeHttpMethods();   // POST, PATCH, PUT, DELETE, CONNECT
+        pipeline.AddRetry(retry);
         pipeline.AddTimeout(TimeSpan.FromSeconds(2));
     });
 ```
+
+Left alone the options retry every HTTP method, so the `DisableForUnsafeHttpMethods()` line is what makes the code agree with the caution above it; `DisableFor(HttpMethod.Post, …)` names the methods one at a time instead.
 
 The default `ShouldHandle` treats 5xx responses, 408, 429, `HttpRequestException`, and an attempt timeout as transient. `AddStandardResilienceHandler()` bundles the same retry strategy with a rate limiter, timeouts, and a circuit breaker, so a hand-written pipeline is only needed when those defaults do not fit.

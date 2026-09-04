@@ -30,7 +30,7 @@ references:
   - title: "Query processing architecture guide"
     url: https://learn.microsoft.com/en-us/sql/relational-databases/query-processing-architecture-guide
   - title: "SqlCommand.Prepare Method"
-    url: https://learn.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlcommand.prepare
+    url: https://learn.microsoft.com/en-us/dotnet/api/microsoft.data.sqlclient.sqlcommand.prepare
   - title: "SQL Queries (EF Core)"
     url: https://learn.microsoft.com/en-us/ef/core/querying/sql-queries
 ---

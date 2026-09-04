@@ -15,6 +15,8 @@ related:
     slug: hexagonal-architecture
   - label: Domain-Driven Design
     slug: domain-driven-design
+  - label: Vertical Slice Architecture
+    slug: vertical-slice-architecture
 references:
   - title: "Common web application architectures"
     url: https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures

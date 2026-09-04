@@ -12,7 +12,7 @@ related:
     slug: bounded-concurrency
   - label: Batching
     slug: batching
-  - label: Web-Queue-Worker
+  - label: Web Queue Worker
     slug: web-queue-worker
   - label: Work Queue
     slug: work-queue

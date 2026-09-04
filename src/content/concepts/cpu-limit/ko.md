@@ -9,6 +9,10 @@ related:
     slug: memory-pressure
   - label: Memory Limit
     slug: memory-limit
+  - label: Resource Limit
+    slug: resource-limit
+  - label: Resource Request
+    slug: resource-request
   - label: Horizontal Pod Autoscaler
     slug: horizontal-pod-autoscaler
   - label: Throughput

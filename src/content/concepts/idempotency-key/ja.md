@@ -1,5 +1,5 @@
 ---
-title: "Idempotency-Key"
+title: "Idempotency Key"
 summary: "Idempotency-Key は、何かを変えるリクエストを二重に変えることなく送り直せるようにするヘッダーです。サーバーはキーを覚えておき、作業は一度だけ行い、同じキーで来たリクエストには保存した応答をそのまま返します。"
 category: "API とリアルタイム通信"
 scene: idempotency-key

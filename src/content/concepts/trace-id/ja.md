@@ -25,7 +25,7 @@ references:
   - title: "Distributed tracing concepts in .NET"
     url: https://learn.microsoft.com/en-us/dotnet/core/diagnostics/distributed-tracing-concepts
   - title: "Logging in .NET: log scopes"
-    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/logging
+    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/logging/overview
 ---
 
 シーンの 2 番目のステップでは、gateway がリクエストを受け取るまでパネルは空で `no trace id` と書かれています。受け取った瞬間に id が現れ、3 本の棒がはじめて成り立ちます。この順序が大事です。id は trace にあとから貼るラベルではなく、trace を存在させるもの自体です。id ができる前には別々のファイルに書き込むサービスが 3 つあるだけで、できたあとには部分が 3 つあるリクエストが 1 つあります。

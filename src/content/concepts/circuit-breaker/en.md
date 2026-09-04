@@ -48,7 +48,7 @@ references:
 
 - Scope the breaker correctly. One breaker per dependency endpoint is usually right; a breaker shared across unrelated endpoints blocks healthy traffic when one endpoint fails.
 - Pair it with a timeout. Without timeouts, slow calls never register as failures.
-- Decide the order with Retry. Retry probes whether a failure is transient; the breaker stops probing while recovery is unlikely.
+- Put the breaker inside the retry. Retry probes whether a failure is transient; the breaker stops probing while recovery is unlikely. Inside, it counts attempts rather than whole operations, and an open circuit ends the retry sequence instead of feeding it.
 - Emit state changes as metrics and logs. An open breaker is an operational signal, not just a code path.
 
 ## In .NET
@@ -61,7 +61,6 @@ builder.Services
         client.BaseAddress = new Uri("https://inventory.internal"))
     .AddResilienceHandler("inventory-pipeline", pipeline =>
     {
-        pipeline.AddTimeout(TimeSpan.FromSeconds(2));
         pipeline.AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions
         {
             FailureRatio = 0.5,
@@ -69,7 +68,10 @@ builder.Services
             SamplingDuration = TimeSpan.FromSeconds(30),
             BreakDuration = TimeSpan.FromSeconds(15),
         });
+        pipeline.AddTimeout(TimeSpan.FromSeconds(2));
     });
 ```
+
+Strategies nest in the order they are added, so the attempt timeout added second sits inside the breaker and the `TimeoutRejectedException` it throws is counted as a failure. Added first it would wrap the breaker instead, and the `OperationCanceledException` that a slow call then ends with is not something the breaker's default `ShouldHandle` counts.
 
 `AddStandardResilienceHandler()` bundles a rate limiter, a total request timeout, retry, a circuit breaker, and a per-attempt timeout with default settings, so a hand-written pipeline is only needed when those defaults do not fit.

@@ -6,7 +6,7 @@ tags: ["database", "deployment"]
 scene: database-migration
 steps:
   - title: "A rename is instant; a deployment is not"
-    text: "Two v1 instances read the old column while the ghost shows the one-shot migration: rename, then deploy. But versions overlap during every rollout, and in that window old code queries a column that no longer exists. The schema arrived on time; the outage came from the calendar."
+    text: "Two v1 instances read the old column while the ghost shows the one-shot migration: rename now, deploy later. Versions overlap during every rollout, and old code then queries a column that no longer exists. The outage came from the calendar."
   - title: "Add, never break: the expand step"
     text: "A new column appears next to the old one, and adding is invisible to v1. Then v2 rolls in writing both columns while v1 keeps writing the old, and every reader still finds what it expects. A backward-compatible change is one both versions can live with, and that property is what makes the rollout boring."
   - title: "History catches up, then reads move"
@@ -67,7 +67,7 @@ EF Core migrations give you the versioned history and the tooling; the disciplin
 ```csharp
 // Expand. Nullable and without a default, so adding it is a catalogue change
 // rather than a rewrite of every row.
-public partial class AddFullName : Migration
+public partial class AddFullNameColumn : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder) =>
         migrationBuilder.AddColumn<string>(
@@ -78,25 +78,39 @@ public partial class AddFullName : Migration
 }
 ```
 
-While both columns exist, the newer version keeps them in step. That is the only code in the application that knows there are two, and it is deleted with the contract.
+While both columns exist, the newer version keeps them in step. That is the only code in the application that knows there are two, and it is deleted with the contract. Only public read-write properties are mapped by convention, so keeping the two columns internal means naming them in `OnModelCreating` — and ignoring the public property in front of them, which convention would otherwise turn into a third column.
 
 ```csharp
 public sealed class Customer
 {
     public int Id { get; set; }
 
-    // The columns, mapped privately so nothing else in the application can
-    // write one of them without the other.
+    // The columns. Internal, so nothing else in the application can write one
+    // of them without the other.
     internal string Name { get; set; } = "";
     internal string? FullName { get; set; }
 
     // The property everything else uses. Reads prefer the new column once the
-    // backfill has run; writes land in both while both are there.
+    // backfill has run; writes land in both while both are there. It is not a
+    // column itself, so the model has to be told to leave it alone.
     public string DisplayName
     {
         get => FullName ?? Name;
         set { Name = value; FullName = value; }
     }
+}
+
+protected override void OnModelCreating(ModelBuilder builder)
+{
+    builder.Entity<Customer>(customer =>
+    {
+        // Convention would map neither of these, so map them by hand.
+        customer.Property(c => c.Name).HasColumnName("name");
+        customer.Property(c => c.FullName).HasColumnName("full_name");
+
+        // And it would map this one, which is not a column at all.
+        customer.Ignore(c => c.DisplayName);
+    });
 }
 ```
 
@@ -110,6 +124,9 @@ public sealed class FullNameBackfill(IDbContextFactory<ShopDbContext> factory, I
         while (!token.IsCancellationRequested)
         {
             await using var db = await factory.CreateDbContextAsync(token);
+
+            // PostgreSQL. On SQL Server the batch is UPDATE TOP (500), and
+            // MySQL does not allow LIMIT inside an IN subquery at all.
             var copied = await db.Database.ExecuteSqlRawAsync(
                 """
                 UPDATE customers SET full_name = name

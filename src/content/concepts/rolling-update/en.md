@@ -8,11 +8,11 @@ steps:
   - title: "One at a time"
     text: "A new pod starts, passes readiness, joins the endpoints, and only then is an old pod asked to stop. The count never drops below four, so the traffic never notices. For a while, both versions serve."
   - title: "Readiness is the gate"
-    text: "The new version fails its probe, so it never joins the endpoints and never sees a request. The rollout stalls with the old pods still serving, and undoing it is one command. A broken build stays invisible."
+    text: "The new version fails its probe, so it never joins the endpoints and never sees a request. The rollout stalls with the old pods still serving, and undoing it is one command — the same controller then walks the fleet back one pod at a time."
   - title: "Drain, then exit"
-    text: "A terminating pod is removed from the endpoints, but that takes a moment to propagate, so it keeps accepting for a beat and finishes every request it already has before it exits. SIGTERM is a request to stop, not a kill, and the grace period is the deadline."
+    text: "The fixed build rolls out again; when its pod is ready, an old one is told to stop. A terminating pod leaves the endpoints, but that takes a moment, so it keeps accepting for a beat and finishes what it has. SIGTERM is a request, not a kill."
   - title: "Two versions, one database"
-    text: "During the rollout old and new pods share the schema and the API. Expand first, add the column, keep the old one, ship the code that handles both, and contract only after the last old pod is gone. A rename in one step breaks the version still running."
+    text: "During the rollout old and new pods share the schema and the API. A rename tried mid-flight breaks the version still running and is undone; expand instead — add the column, keep the old one — and contract once every pod is on the new version."
 related:
   - label: Zero-Downtime Deployment
     slug: zero-downtime-deployment
@@ -90,7 +90,7 @@ spec:
             preStop: { exec: { command: ["sh", "-c", "sleep 5"] } }   # let endpoints propagate
 ```
 
-The application's half is smaller than it looks. Report not-ready as soon as shutdown starts, so the endpoints change is already on its way while the in-flight requests are still finishing, and keep the shutdown timeout inside the grace period.
+The application's half is smaller than it looks. Report not-ready as soon as shutdown starts, for routers that probe the pod directly; on Kubernetes the endpoints change was triggered by the deletion and the preStop sleep covers its propagation. Keep the shutdown timeout inside the grace period.
 
 ```csharp
 // Report not-ready as soon as shutdown starts, then finish in-flight work.

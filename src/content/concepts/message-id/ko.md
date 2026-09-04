@@ -11,7 +11,7 @@ related:
     slug: idempotent-consumer
   - label: Deduplication
     slug: deduplication
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
   - label: Correlation ID
     slug: correlation-id

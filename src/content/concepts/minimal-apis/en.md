@@ -46,14 +46,20 @@ public static class OrderEndpoints
 {
     public static RouteGroupBuilder MapOrders(this IEndpointRouteBuilder app)
     {
+        // Everything on the group applies to every endpoint added below it.
         var group = app.MapGroup("/orders")
             .RequireAuthorization()
-            .WithTags("Orders")
-            // The filter applies to every endpoint added to this group below.
-            .AddEndpointFilter<ValidationFilter<OrderInput>>();
+            .WithTags("Orders");
 
-        group.MapGet("/{id:guid}", (Guid id, IOrderStore store) => store.FindAsync(id));
-        group.MapPost("/", (OrderInput input, IOrderStore store) => store.CreateAsync(input));
+        group.MapGet("/{id:guid}", (Guid id, IOrderStore store, CancellationToken ct) =>
+            store.FindAsync(id, ct));
+
+        // Which is why the validation filter goes on the endpoint that has
+        // something to validate: on the group it would also run for the GET,
+        // where there is no OrderInput argument to find.
+        group.MapPost("/", (OrderInput input, IOrderStore store, CancellationToken ct) =>
+                store.CreateAsync(input, ct))
+            .AddEndpointFilter<ValidationFilter<OrderInput>>();
 
         return group;
     }

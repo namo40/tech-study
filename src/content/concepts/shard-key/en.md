@@ -20,21 +20,17 @@ related:
     slug: rebalancing
   - label: Database Index
     slug: database-index
-  - label: Ordering
-    slug: ordering
   - label: Replication
     slug: replication
   - label: Replication Lag
     slug: replication-lag
   - label: Load Balancer
     slug: load-balancer
-  - label: Event Stream
-    slug: event-stream
 references:
   - title: "Data partitioning guidance"
     url: https://learn.microsoft.com/en-us/azure/architecture/best-practices/data-partitioning
   - title: "Partitioning and horizontal scaling in Azure Cosmos DB"
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning
   - title: "Sharding pattern"
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding
 ---
@@ -47,7 +43,7 @@ The bad thing is the same sentence read backwards. A query that does not carry t
 
 So the key is chosen by looking at the queries rather than at the data. Write down the reads that matter — the ones on the critical path, the ones that run most often — and see which value they all already hold. In a business application that value is almost always the tenant, the customer or the account, because the product is already organised around it. If most of your important reads name a customer, `customer_id` is the shard key, and the fact that some analytics job will have to fan out is a price you have decided to pay rather than a surprise.
 
-The second criterion is distribution, and it is the one people check second and regret first. A key that routes well but spreads badly gives you all of the complexity and none of the scale. Low cardinality is the obvious failure: sharding on `country` when 70% of your users are in one country means one shard holds 70% of the data no matter how many you add. Monotonic keys are the subtle one: sharding on a timestamp or an auto-increment id sends every new write to whichever shard owns the current range, so all the write load lands on one box while the others hold history. That pattern has a name in Cosmos DB and DynamoDB documentation for a reason.
+The second criterion is distribution, and it is the one people check second and regret first. A key that routes well but spreads badly gives you all of the complexity and none of the scale. Low cardinality is the obvious failure: sharding on `country` when 70% of your users are in one country means one shard holds 70% of the data no matter how many you add. Monotonic keys are the subtle one: sharding on a timestamp or an auto-increment id sends every new write to whichever shard owns the current range, so all the write load lands on one box while the others hold history. That pattern is what the Cosmos DB and DynamoDB documentation call a hot partition.
 
 When one column cannot do both jobs, a composite key often can. `tenant_id` alone may be too coarse if one tenant is a hundred times the size of the rest; `tenant_id + region`, or `tenant_id` hashed together with a bucket number, splits the giant while keeping every ordinary tenant in one place. The cost is that queries now need both parts to stay single-shard, so the composite has to be something the query already knows too.
 

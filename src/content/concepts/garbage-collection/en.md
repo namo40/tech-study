@@ -1,6 +1,6 @@
 ---
 title: "Garbage Collection"
-summary: "The .NET garbage collector reclaims memory by generations: most objects die young and are swept cheaply from gen0, the few that survive are promoted, and a full gen2 collection is the one that stops everything. What you control is how much you allocate, and how much memory the process may use."
+summary: "The .NET garbage collector reclaims memory by generations: most objects die young and are swept cheaply from gen0, the few that survive are promoted, and a blocking gen2 collection is the one that stops everything. What you control is how much you allocate, and how much memory the process may use."
 category: "Performance and optimization"
 tags: ["memory", "latency"]
 scene: garbage-collection
@@ -8,11 +8,11 @@ steps:
   - title: "Generations"
     text: "New objects land in gen0. When it fills, the collector pauses the threads for about a millisecond, throws away everything nothing points to, and moves the few survivors up a generation. Most objects die young, which is exactly why this is cheap."
   - title: "The expensive one"
-    text: "Objects that live long, caches and sessions, pile up in gen2, and big arrays go straight to the large object heap. Collecting those means walking the whole heap with every thread stopped. That pause is your p99 spike."
+    text: "Objects that live long, caches and sessions, pile up in gen2, and big arrays go straight to the large object heap. Collecting those walks the whole heap, and a blocking gen2 stops every thread to do it. That pause is your p99 spike."
   - title: "Allocation is the lever"
-    text: "The collector runs as often as you fill gen0. A request that allocates a megabyte buffer forces collections and large-object churn; renting from a pool and slicing with Span allocates almost nothing. Fewer allocations, fewer collections, flatter tail."
+    text: "The collector runs as often as you fill gen0. A request that allocates a megabyte buffer forces collections and large-object churn; renting from a pool and slicing with Span costs a fraction of it. Fewer allocations, flatter tail."
   - title: "Server GC and the limit"
-    text: "ASP.NET Core defaults to Server GC: one heap per core, collected in parallel, for shorter pauses at the price of a bigger footprint. In a container the collector sizes itself to the memory limit; run close to it and collections become constant, cross it and the process is killed."
+    text: "ASP.NET Core defaults to Server GC: since .NET 9 it starts with one heap and adds more under load. In a container it sizes itself to the memory limit; cross the line and the process is killed, then a full collection brings it back."
 related:
   - label: Server GC
     slug: server-gc
@@ -55,7 +55,7 @@ references:
 
 - Reduce allocation before tuning the collector: pooled buffers, `Span<T>`, streaming instead of whole-body strings, fewer LINQ temporaries on hot paths.
 - Long-lived object graphs are what make gen2 big. Unbounded caches, static lists and closures captured by singletons all keep objects alive past the point where the collector could help; bound them.
-- Server GC is the default for ASP.NET Core and is right for most services. Workstation GC suits small sidecars, or a node running many processes that would each otherwise claim a heap per core.
+- Server GC is the default for ASP.NET Core and is right for most services. Since .NET 9 it starts with a single heap and adds more as the load asks for them (DATAS, on by default), so it no longer claims a heap per core from the first allocation. Workstation GC still suits small sidecars, or a node packing many processes, where every heap Server GC decides it needs adds up to memory nobody is using.
 - In containers, set a memory limit and let the heap hard limit derive from it, which is 75% by default. Keep the steady-state heap well below that line, because a heap that lives against it collects constantly.
 - Never call `GC.Collect()` in a production code path. It forces the expensive collection you were trying to avoid, and it does it at the moment you are least able to afford it.
 - Measure with `dotnet-counters`, and reproduce with a load test before and after a change. A GC change that was not measured under load has not been tested.
@@ -98,7 +98,9 @@ In a container the collector reads the limit rather than the machine, and sizes 
 ```text
 # Container: memory limit 512Mi -> heap hard limit defaults to 75% (384 MB); override only with evidence.
 DOTNET_GCHeapHardLimitPercent=0x4B   # 75, hex
-dotnet-counters monitor --process-id <pid> System.Runtime   # gc-heap-size, gen-0/1/2-gc-count, time-in-gc, alloc-rate
+dotnet-counters monitor --process-id <pid> --counters System.Runtime
+# .NET 9+:  dotnet.gc.pause.time, dotnet.gc.collections, dotnet.gc.last_collection.heap.size, dotnet.gc.heap.total_allocated
+# .NET 8-:  time-in-gc, gen-0/1/2-gc-count, gc-heap-size, alloc-rate
 ```
 
 Settings such as `DOTNET_gcServer`, `GCHeapCount` and `GCConserveMemory` change how the collector divides its work, and they are worth changing only when a load test and the counters agree that the current division is the problem.

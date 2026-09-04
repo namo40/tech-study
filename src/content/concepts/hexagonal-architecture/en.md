@@ -8,11 +8,11 @@ steps:
   - title: "Without direction, the outside cracks the inside"
     text: "The ghost shows the domain wired straight to the database: a renamed column cracks the domain, and the crack runs on into the web layer. Nothing chose this — it is just what dependencies do when nobody points them. The whole architecture is one rule: every dependency points inward."
   - title: "The inside speaks only contracts"
-    text: "A port is an interface the domain owns: requests come in through one, the domain's needs go out through another, and both are written in the domain's own words — \"save this order\", never \"INSERT INTO\". Look inside and there is no web, no SQL, no vendor name anywhere. That absence is the design."
+    text: "A port is an interface the domain owns: requests come in through one, the domain's needs will go out through another — both in the domain's words, \"save this order\", never \"INSERT INTO\". No web, no SQL, no vendor name. That is the design."
   - title: "An adapter translates the world into the contract"
     text: "On one side it speaks HTTP or SQL; on the other, only the port. Swap the database adapter for an in-memory one and the domain never notices — which is why the test in this scene runs the real domain at full speed with no database at all. If you can swap it, it was a detail. The adapters are where all the details went."
   - title: "Same rule, different drawings"
-    text: "Hexagonal draws ports on a hexagon; clean architecture draws rings with the entities in the middle; onion draws layers around a core. All three are the same rule: dependencies point inward, the middle knows no outside name. Pick the drawing your team likes; keep the rule; spend the argument elsewhere."
+    text: "The three names on the cards are three drawings of one rule: hexagonal, clean, onion — dependencies point inward, and the middle knows no outside name. Pick the drawing your team likes; keep the rule; spend the argument elsewhere."
 related:
   - label: Domain-Driven Design
     slug: domain-driven-design
@@ -94,6 +94,8 @@ public sealed class PlaceOrder(IOrderStore orders, IClock clock)
 }
 ```
 
+`IClock` is a port too, and one .NET already provides: `TimeProvider` is the built-in version of it, registered as `TimeProvider.System` and faked in tests with `FakeTimeProvider` from `Microsoft.Extensions.TimeProvider.Testing`. Hand-write the interface when the domain wants its own vocabulary for time, and take the built-in one when it does not.
+
 The EF Core adapter is the same interface with a storage engine behind it. It is the only file in the solution that knows the table exists.
 
 ```csharp
@@ -108,6 +110,19 @@ internal sealed class EfOrderStore(ShopDbContext db) : IOrderStore
     {
         if (db.Entry(order).State == EntityState.Detached) db.Orders.Add(order);
         await db.SaveChangesAsync(ct);       // the only place SQL is ever spoken
+    }
+}
+
+// The infrastructure project registers its own adapters, which is what lets the
+// adapter stay internal: no other project has to be able to see its name.
+public static class InfrastructureRegistration
+{
+    public static IServiceCollection AddInfrastructure(
+        this IServiceCollection services, string connectionString)
+    {
+        services.AddDbContext<ShopDbContext>(o => o.UseNpgsql(connectionString));
+        services.AddScoped<IOrderStore, EfOrderStore>();
+        return services;
     }
 }
 ```
@@ -130,12 +145,11 @@ public sealed class InMemoryOrderStore : IOrderStore
 }
 ```
 
-The composition root is the only place that names both sides. Everything above it was written against an interface; this is where the interface is finally given a body.
+The composition root is the only place that names both sides — though what it names on the outside is the infrastructure project rather than the adapter class, which is how `EfOrderStore` gets to stay `internal`. Everything above it was written against an interface; this is where the interface is finally given a body.
 
 ```csharp
 // Program.cs, in Shop.Web
-builder.Services.AddDbContext<ShopDbContext>(o => o.UseNpgsql(connectionString));
-builder.Services.AddScoped<IOrderStore, EfOrderStore>();   // the driven adapter
+builder.Services.AddInfrastructure(connectionString);      // the driven adapters
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddScoped<PlaceOrder>();
 
@@ -154,7 +168,8 @@ Tests then come in two sizes, and the cheap size is the one you write hundreds o
 public async Task placing_an_order_stores_it()
 {
     var store = new InMemoryOrderStore();
-    var id = await new PlaceOrder(store, new FixedClock(...)).HandleAsync(command, default);
+    var clock = new FixedClock(DateTimeOffset.Parse("2026-03-03T09:00:00Z"));
+    var id = await new PlaceOrder(store, clock).HandleAsync(command, default);
 
     Assert.NotNull(await store.FindAsync(id, default));
 }

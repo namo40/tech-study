@@ -39,7 +39,7 @@ A signature only proves that the issuer wrote the token. It says nothing at all 
 
 The mechanics are small. In a JWT the audience is the `aud` claim, and the receiver compares it against the identifier it knows itself by. In the OAuth flows the client asks for a token for a particular resource, and the authorization server writes that resource's identifier into `aud`. In workload identity federation the same rule runs one level up: the platform mints a token whose audience is the identity provider it is going to be exchanged at, so a token intended for one cloud cannot be replayed at another.
 
-Three ways to get this wrong are worth naming. Turning the check off is the obvious one, and it is usually done to make an integration work on a Friday; the setting is `ValidateAudience = false`, and once it is in a configuration file nobody reads it again. Widening the accepted set is the quieter version: an API that accepts three audiences because three callers asked for tokens differently has three chances to be handed somebody else's proof. And accepting the wrong kind of identifier is the subtle one. Access tokens for your own API should carry your API's identifier, not a client id and not a graph endpoint; a receiver that accepts tokens minted for a different resource has effectively federated with that resource's audience without saying so.
+Three ways to get this wrong are worth naming. Turning the check off is the obvious one, and it is usually done to make an integration work on a Friday; the setting is `ValidateAudience = false`, and once it is in a configuration file nobody reads it again. Widening the accepted set is the quieter version: an API that accepts three audiences because three callers asked for tokens differently has three chances to be handed somebody else's proof. And accepting the wrong kind of identifier is the subtle one. Access tokens for your own API should carry your API's own identifier, not the calling client's id and not a graph endpoint; a receiver that accepts tokens minted for a different resource has effectively federated with that resource's audience without saying so. What your own identifier looks like is the issuer's business: Entra writes this API's client id into a v2.0 token and allows the `api://` resource URI in a v1.0 one, which is why the pair below is registered rather than a single string.
 
 In .NET the check belongs in `TokenValidationParameters`, next to the issuer, and it is worth writing out rather than inheriting.
 
@@ -49,7 +49,7 @@ options.TokenValidationParameters = new TokenValidationParameters
     ValidateIssuer = true,
     ValidIssuer = "https://login.microsoftonline.com/<tenant>/v2.0",
     ValidateAudience = true,
-    ValidAudience = "api://orders",   // one name, and it is mine
+    ValidAudiences = [ordersClientId, $"api://{ordersClientId}"],   // one API, and it is mine
     ValidateLifetime = true,
 };
 ```

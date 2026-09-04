@@ -9,14 +9,18 @@ steps:
   - title: "Uneven work"
     text: "Round robin does not know that server 2 is still busy with three slow requests, and keeps sending more. Least connections looks at what is in flight and sends the next request where there is room."
   - title: "Health checks"
-    text: "Two failed probes take a server out of the rotation, and two successes bring it back. Between the fault and the second probe a few requests still fail, which is why the probe interval matters."
+    text: "Two failed probes take a server out of the rotation, and two successes bring it back. Between the fault and the second probe two requests still fail, which is why the probe interval matters."
   - title: "Scaling out"
     text: "A new server joins once its probes pass, and its share of the traffic ramps up while it warms its caches and its JIT. This only works because any server can answer any request: no state lives on just one of them."
 related:
   - label: Round Robin
     slug: round-robin
+  - label: Weighted Round Robin
+    slug: weighted-round-robin
   - label: Least Connections
     slug: least-connections
+  - label: Power of Two Choices
+    slug: power-of-two-choices
   - label: Health-Based Routing
     slug: health-based-routing
   - label: Health Check
@@ -31,7 +35,7 @@ related:
     slug: yarp
   - label: Sticky Session
     slug: sticky-session
-  - label: Readiness
+  - label: Readiness Probe
     slug: readiness-probe
 references:
   - title: Configure ASP.NET Core to work with proxy servers and load balancers
@@ -98,4 +102,4 @@ app.UseForwardedHeaders();
 app.MapHealthChecks("/healthz/ready", new HealthCheckOptions { Predicate = c => c.Tags.Contains("ready") });
 ```
 
-`LeastRequests` is YARP's least connections, and `ConsecutiveFailures` with a threshold of two is the rule the scene draws: one bad probe is noise, two in a row is a decision. A cloud balancer such as Azure Load Balancer or Application Gateway, and a Kubernetes Service or Ingress, are configured from the same three pieces: the policy that picks a destination, the health check that decides which destinations exist, and the forwarding headers that let the app behind them see the original request.
+`LeastRequests` is YARP's least connections, and `ConsecutiveFailures` with a threshold of two — YARP's own default, written out above for clarity — is the failure half of the rule the scene draws: one bad probe is noise, two in a row is a decision. Coming back is where YARP is simpler than the scene, because it marks a destination healthy again on its first successful probe; a success threshold like the scene's is a Kubernetes `successThreshold`-style setting rather than a YARP one. An L7 balancer such as Application Gateway or a Kubernetes Ingress is configured from the same three pieces: the policy that picks a destination, the health check that decides which destinations exist, and the forwarding headers that let the app behind it see the original request. An L4 one such as Azure Load Balancer or a Kubernetes Service has only the first two — and for a Service the second is the pods' readiness rather than a probe of its own — because it never reads the request and so has no headers to add to it.

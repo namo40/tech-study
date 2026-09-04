@@ -8,11 +8,11 @@ steps:
   - title: "A heap far from its limit barely notices the GC"
     text: "Allocations fill, a collection empties, and the gauge breathes between thirty and fifty percent. Collections are cheap background noise — this is what healthy looks like, and nobody graphs it."
   - title: "Pressure shows up as frequency first"
-    text: "Triple the allocation rate and the collector runs five times as often, pausing longer each time, reclaiming less each pass. The heap now lives near its ceiling — same machine, same code, and every request feels the difference."
+    text: "Triple the allocation rate and the collector runs several times as often — the readout climbs from 4/min past 20 — pausing longer each time, reclaiming less each pass. The heap now lives near its ceiling, and every allocation pays for it."
   - title: "The limit throws nothing"
     text: "There is no OutOfMemoryException to catch at the cgroup boundary — the kernel kills the container mid-request, the pod restarts, and the counter ticks. The heap starts empty, the code is unchanged, and the same climb begins again."
   - title: "The fix is fewer allocations, not a bigger limit"
-    text: "Pool the big buffers — rent, use, return — and the allocation rate collapses. The same traffic replays and the gauge idles at forty percent; the GC goes quiet. A bigger limit would only have moved the cliff. The restart count stays: the scar is the lesson."
+    text: "Pool the big buffers — rent, use, return — and the rate collapses. The same traffic replays and the gauge settles back around half; the GC goes quiet. A bigger limit would only move the cliff. The restart count stays: the scar is the lesson."
 related:
   - label: Allocation Rate
     slug: allocation-rate
@@ -60,7 +60,7 @@ references:
 - A bigger limit buys time, and charges for it. Doubling the limit moves the cliff without changing the slope, and the pause is roughly proportional to the live set the collector has to walk — so the service that used to die every forty minutes now dies every eighty and stops for twice as long each time on the way. That is sometimes worth doing deliberately, to keep a service up while the real fix is written. It is never the fix.
 - Allocation rate is the lever, and it is almost the only one. Pooling the large buffers, streaming a response instead of buffering it, slicing with `Span<T>` instead of copying, and not allocating in the hot path at all are the changes that move the regime. Tuning the collector rarely does: Server GC will trade footprint for shorter pauses and `GCConserveMemory` will trade throughput for a smaller heap, but neither of them stops the process producing garbage.
 - The large object heap is where this goes wrong quietly. Anything over 85,000 bytes — a buffer, a big array, a serialised payload — is allocated there, is collected only with gen2, and is not compacted unless you ask for it. A workload that allocates large buffers per request will fragment the LOH into holes it cannot reuse, so the heap keeps growing while the live set does not, and the graph looks like a leak that no profiler can find an owner for.
-- Memory is not CPU, and the two limits do not fail alike. Over the CPU limit a container is throttled and gets slower; over the memory limit it is killed and gets gone. That asymmetry is why memory limits deserve headroom that CPU limits do not, and why setting a memory limit equal to the request — which is what makes a pod Guaranteed — is a decision about eviction priority as well as about the ceiling.
+- Memory is not CPU, and the two limits do not fail alike. Over the CPU limit a container is throttled and gets slower; over the memory limit it is killed and gets gone. That asymmetry is why memory limits deserve headroom that CPU limits do not, and why setting a memory limit equal to the request — which, together with an equal CPU limit and request on every container in the pod, is what makes a pod Guaranteed — is a decision about eviction priority as well as about the ceiling.
 
 ## In .NET
 
@@ -74,9 +74,11 @@ The runtime is container-aware by default: it reads the cgroup memory limit and 
   "configProperties": {
     // An explicit ceiling in bytes, or a percentage of the container limit.
     "System.GC.HeapHardLimit": 402653184,
+    // Ignored while HeapHardLimit is set: the two are alternatives, not a pair.
     "System.GC.HeapHardLimitPercent": 75,
-    // Server GC: one heap per core. Shorter pauses, a larger footprint — which
-    // is a trade you can only afford if the limit has room for it.
+    // Server GC: up to one heap per core, and DATAS (on by default since
+    // .NET 9) starts from one and grows into that. Shorter pauses, a larger
+    // footprint — a trade you can only afford if the limit has room for it.
     "System.GC.Server": true
   }
 }

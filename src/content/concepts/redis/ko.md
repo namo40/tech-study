@@ -27,7 +27,7 @@ references:
   - title: Distributed caching in ASP.NET Core
     url: https://learn.microsoft.com/en-us/aspnet/core/performance/caching/distributed?view=aspnetcore-10.0
   - title: StackExchange.Redis
-    url: https://stackexchange.github.io/StackExchange.Redis/
+    url: https://seredis.dev/
 ---
 
 ## 언제 쓰나

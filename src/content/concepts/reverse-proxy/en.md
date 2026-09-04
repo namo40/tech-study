@@ -9,9 +9,9 @@ steps:
   - title: "The edge does the boundary work"
     text: "TLS ends at the proxy: encrypted outside, plain inside. And because the backend now sees the proxy as its caller, the original client rides along in `X-Forwarded-For` — a header to trust only when your own proxy wrote it."
   - title: "Failure stays behind the door"
-    text: "The proxy keeps probing its backends. When an instance goes down, new requests flow to the healthy one without a client noticing; when it comes back, it quietly rejoins. The edge is where failure gets absorbed."
+    text: "The proxy keeps probing its backends. When an instance goes down, the next request flows to the healthy one without a client noticing; when it comes back, it quietly rejoins. The edge is where failure gets absorbed."
   - title: "Give the seat product duties and it becomes a gateway"
-    text: "Same position, more jobs: reject the request with no token, trim the burst over the limit, compose one API surface out of many services. An API gateway is a reverse proxy that has taken on product concerns."
+    text: "Same position, more jobs: reject the request with no token, trim the burst over the limit, add a third route to the same front door. An API gateway is a reverse proxy that has taken on product concerns."
 related:
   - label: Load Balancer
     slug: load-balancer
@@ -19,6 +19,8 @@ related:
     slug: round-robin
   - label: Least Connections
     slug: least-connections
+  - label: Layer 7 Load Balancing
+    slug: layer-7-load-balancing
   - label: Health-Based Routing
     slug: health-based-routing
   - label: Sticky Session
@@ -100,6 +102,7 @@ The configuration is two lists that reference each other: routes match an incomi
           "Active": {
             "Enabled": true,
             "Interval": "00:00:05",
+            "Policy": "ConsecutiveFailures",
             "Path": "/healthz"
           }
         },
@@ -145,7 +148,7 @@ app.UseAuthentication();
 
 The ordering is not decoration. Authentication, rate limiting, redirect-to-HTTPS and request logging all read the values `UseForwardedHeaders` writes, so it goes first, before any of them. If it runs late, you get a redirect loop: the service sees `http`, redirects to `https`, and the proxy sends the same request back in as `http` again.
 
-When you need a rule that configuration cannot express, YARP gives you a transform, which is the same pipeline idea applied to one route.
+When you need a rule that configuration cannot express, YARP gives you a transform, which is the same pipeline idea applied to the request the proxy makes on your behalf. The callback below runs for every route; when the rule belongs to one of them, check `context.Route` inside it or put a `Transforms` entry on that route in configuration instead.
 
 ```csharp
 builder.Services

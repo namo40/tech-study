@@ -10,9 +10,9 @@ steps:
   - title: "The limit is mercy"
     text: "At the third failure the broker stops insisting: the message is moved aside, history attached, and the consumer is free. Throughput snaps back the moment the poison leaves the line. Nothing was lost — it is parked."
   - title: "What lands there tells you why"
-    text: "A message that can never be parsed, one whose retries ran out, one that expired before anyone got to it — each arrives with a reason. The dead-letter queue is not a trash can; it is a labelled shelf."
+    text: "Two whose retries ran out — one failing fast, one slow — and one that expired before anyone got to it: each arrives with a reason. The dead-letter queue is not a trash can; it is a labelled shelf."
   - title: "Depth is an alarm, replay is the repair"
-    text: "Watch the shelf: a rising count means something upstream is wrong right now. Fix the cause, resubmit what can run again, discard what is truly dead — deliberately, with a record, not by letting it rot."
+    text: "Watch the shelf: a count that stays high means something upstream is wrong right now. Fix the cause, resubmit what can run again, discard what is truly dead — deliberately, with a record, not by letting it rot."
 related:
   - label: Competing Consumers
     slug: competing-consumers
@@ -20,7 +20,7 @@ related:
     slug: consumer-acknowledgement
   - label: Work Queue
     slug: work-queue
-  - label: Web-Queue-Worker
+  - label: Web Queue Worker
     slug: web-queue-worker
   - label: Idempotent Consumer
     slug: idempotent-consumer
@@ -57,7 +57,7 @@ references:
 - Resubmitting is a duplicate by design: the message may already have had partial effects on an earlier attempt. Consumers have to be safe to run twice before replay is safe to offer, which usually means a message id and a record of what has already been handled.
 - Record why each message was dead-lettered, and record why you discarded one. The reason is the whole value of the shelf, and a discard with no note is indistinguishable from a message that vanished.
 - Fix the cause before you replay. Resubmitting into the same broken dependency just fills the shelf again, and the second round of history makes the first harder to read.
-- The dead-letter queue is a queue like any other, with its own quota and its own expiry. Left to fill, it stops accepting, and then the failures really are lost.
+- It is not quite a queue like any other, and which broker you are on changes what "left to fill" costs. A Service Bus dead-letter queue cannot be created, deleted or sized apart from its parent entity, time to live is not observed inside it, nothing cleans it up, and what sits there counts against the parent's size quota, so the shelf nobody empties is what makes the main queue start rejecting new sends. RabbitMQ routes through a dead letter exchange to an ordinary queue instead, which means its length limit, its TTL and its own dead-letter target are all yours to set.
 
 ## In .NET
 
@@ -97,14 +97,22 @@ var dead = client.CreateReceiver("orders", new ServiceBusReceiverOptions
 
 await foreach (var message in dead.ReceiveMessagesAsync())
 {
-    var reason = message.DeadLetterReason;               // MaxDeliveryCountExceeded, TTLExpired, or yours
+    var reason = message.DeadLetterReason;               // MaxDeliveryCountExceeded, TTLExpiredException, or yours
     var detail = message.DeadLetterErrorDescription;
 
     if (!CanRunAgain(reason)) { await dead.CompleteMessageAsync(message); continue; }   // discarded, on purpose
 
-    await sender.SendMessageAsync(new ServiceBusMessage(message)); // resubmit: a fresh delivery count
+    var resubmit = new ServiceBusMessage(message)
+    {
+        // A new id, because duplicate detection would accept a copy of the
+        // original one and then silently drop it.
+        MessageId = Guid.NewGuid().ToString(),
+    };
+    resubmit.ApplicationProperties["original-message-id"] = message.MessageId;
+
+    await sender.SendMessageAsync(resubmit);              // resubmit: a fresh delivery count
     await dead.CompleteMessageAsync(message);
 }
 ```
 
-Two details are worth knowing. `DeadLetterMessageAsync` takes a reason and a description, and they arrive on the message as `DeadLetterReason` and `DeadLetterErrorDescription`, which is the difference between a shelf you can triage and a pile you have to open one at a time. And a resubmit is a new message: copying the old one through `new ServiceBusMessage(message)` keeps the body and the application properties, including your own `MessageId`, so a consumer that deduplicates on it still recognises the repeat. RabbitMQ arranges the same thing differently, with a dead letter exchange named in the queue's `x-dead-letter-exchange` argument; the queue it routes to is an ordinary queue, which is what makes replay there just another publish.
+Two details are worth knowing. `DeadLetterMessageAsync` takes a reason and a description, and they arrive on the message as `DeadLetterReason` and `DeadLetterErrorDescription`, which is the difference between a shelf you can triage and a pile you have to open one at a time. And a resubmit is a new message. Copying the old one through `new ServiceBusMessage(message)` keeps the body and the application properties, but keeping the `MessageId` with them is a trap on an entity with duplicate detection turned on: for as long as the window lasts, ten minutes by default and up to seven days, the copy is reported as sent and then discarded, while the original has already been completed off the shelf. Give the copy a fresh id, carry the old one in an application property, and deduplicate on that. On a session-enabled entity the copy also gets a new sequence number, so it rejoins the session at the end rather than in its old place. RabbitMQ arranges the same thing differently, with a dead letter exchange named in the queue's `x-dead-letter-exchange` argument; the queue it routes to is an ordinary queue, which is what makes replay there just another publish.

@@ -23,9 +23,9 @@ references:
   - title: Saga distributed transactions pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/saga
   - title: MassTransit sagas
-    url: https://masstransit.io/documentation/patterns/saga
+    url: https://masstransit.massient.com/concepts/saga-state-machines
   - title: Durable Functions overview
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview
+    url: https://learn.microsoft.com/en-us/azure/durable-task/durable-functions/durable-functions-overview
 ---
 
 순서는 조정자가 쥡니다. Payment에 `Charge`를 보내고, 답을 기다리고, 이제 saga가 `Paid`라고 적고, Inventory에 `Reserve`를 보내는 식입니다. 서비스끼리 서로를 구독하지 않고 명령을 받아 답만 하므로, Choreography일 때보다 서비스가 단순해집니다. 다음에 무엇이 오는지도, 잘못됐을 때 누구에게 알려야 하는지도 알 필요가 없기 때문입니다.

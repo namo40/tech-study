@@ -23,7 +23,7 @@ related:
     slug: least-privilege
   - label: Default Deny
     slug: default-deny
-  - label: Resource-Based Authorization
+  - label: Resource-based Authorization
     slug: resource-based-authorization
   - label: Attribute-Based Access Control
     slug: attribute-based-access-control

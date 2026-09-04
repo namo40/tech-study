@@ -30,8 +30,6 @@ references:
     url: https://kubernetes.io/docs/concepts/architecture/leases/
   - title: Leader Election pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/leader-election
-  - title: BackgroundService Class
-    url: https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice
 ---
 
 シーンの二つ目のステップはリングが空になってまた満ちる場面ですが、注目すべきは、その間ほかの何も変わらないことです。リーダーは自分が生きていることを証明するために何かをしているわけではありません。放っておけば 0 に届くカウントダウンを詰め直しているだけで、席はそのカウントダウンが持ちこたえている間だけ彼のものです。これが定義のすべてです。リース TTL はリクエスト一つに掛けたタイムアウトでもなく、ヘルスチェックの間隔でもなく、リトライの予算でもありません。黙ってしまった保持者を保管庫が信じ続ける時間の長さです。

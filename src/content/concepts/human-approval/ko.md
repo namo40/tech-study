@@ -26,12 +26,12 @@ related:
   - label: Temporal
     slug: temporal
 references:
-  - title: "Human interaction in durable functions"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview#human
+  - title: "Durable orchestrations overview"
+    url: https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-orchestrations
   - title: "Wait for external events in durable orchestrations"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-external-events
+    url: https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-external-events
   - title: "Temporal signals"
-    url: https://docs.temporal.io/encyclopedia/application-message-passing
+    url: https://docs.temporal.io/encyclopedia/workflow-message-passing
 ---
 
 승인은 언뜻 다른 서비스를 호출하는 일처럼 보입니다. 이름값을 하는 타임아웃이 없다는 점을 알아채기 전까지는 그렇습니다. 서비스는 1초 안에 답하거나 실패한 것이지만, 사람은 한 시간 뒤에 답하기도 하고 월요일에 답하기도 하며 두 번 재촉을 받은 뒤에 답하기도 합니다. 그중 어느 것도 실패가 아닙니다. 승인을 호출이 아니라 상태로 만드는 것이 바로 이 차이 하나입니다.

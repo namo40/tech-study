@@ -80,14 +80,16 @@ private static readonly ActivitySource Source = new("Shop.Orders");
 
 public async Task PlaceAsync(Order order, CancellationToken ct)
 {
-    using var activity = Source.StartActivity("place order");
+    using var activity = Source.StartActivity("place order", ActivityKind.Producer);
     activity?.SetTag("order.id", order.Id);
     Baggage.SetBaggage("tenant", order.TenantId);
 
     // Carry the context on the message so the consumer continues the same trace.
+    // StartActivity returns null when nobody is listening, so never dereference it here.
+    var spanContext = activity?.Context ?? Activity.Current?.Context ?? default;
     var headers = new Dictionary<string, string>();
     Propagators.DefaultTextMapPropagator.Inject(
-        new PropagationContext(activity!.Context, Baggage.Current), headers,
+        new PropagationContext(spanContext, Baggage.Current), headers,
         (carrier, key, value) => carrier[key] = value);
     await bus.PublishAsync(new OrderPlaced(order.Id), headers, ct);
 }
@@ -97,4 +99,4 @@ public async Task PlaceAsync(Order order, CancellationToken ct)
 
 The consumer side of a message reads the headers back with `Propagators.DefaultTextMapPropagator.Extract`, starts an activity with `ActivityKind.Consumer`, and passes the extracted context as a link rather than as the parent when the work is genuinely detached from the request that queued it. Libraries such as MassTransit and the Azure Service Bus SDK do the inject and extract themselves, so the only thing left to get right is not swallowing the headers in your own envelope format.
 
-Sampling is configured next to the exporter: `SetSampler(new TraceIdRatioBasedSampler(0.1))` is head sampling in the process, and a tail sampling processor in the OpenTelemetry Collector is where the decision to keep errors and outliers belongs, because only the collector has seen the whole trace.
+Sampling is configured next to the exporter: `SetSampler(new ParentBasedSampler(new TraceIdRatioBasedSampler(0.1)))` is head sampling in the process, and the parent-based wrapper is what stops a service that is not the root from re-rolling a decision its caller already made. A tail sampling processor in the OpenTelemetry Collector is where the decision to keep errors and outliers belongs, because only the collector has seen the whole trace.

@@ -6,13 +6,13 @@ tags: ["queue"]
 scene: background-service
 steps:
   - title: "No request should wait for slow work"
-    text: "The ghost shows a report built inside the request: the reply time balloons, the client times out, and a retry starts the same heavy job again. The fix is a handoff — enqueue the work, answer now, and let something that owns time do the doing."
+    text: "The ghost shows a report built inside the request: the reply time balloons and the client times out — and would retry the same heavy job again. The fix is a handoff — enqueue the work, answer now, and let something that owns time do the doing."
   - title: "A hosted service lives and dies with the host — on purpose"
     text: "It starts when the app starts and drains the queue in its loop. When shutdown comes, it is told, not killed: it finishes the job in hand, stops taking new ones, and exits clean. Graceful shutdown is not politeness; it is the difference between \"stopped\" and \"lost work\"."
   - title: "When the work grows, give it its own process"
-    text: "A worker service is the same loop moved out of the web app: it deploys on its own schedule and scales by queue depth, not by web traffic. The app restarts and the worker keeps running; the worker restarts and the queue holds the work. Decoupled lifetimes are the feature."
+    text: "A worker service is the same loop moved out of the web app: it deploys on its own schedule and scales alone. The app restarts and the worker keeps running; the worker restarts and the queue holds the work. Decoupled lifetimes are the feature."
   - title: "The two production sins: running twice, and losing one"
-    text: "Scale the worker out and both instances grab the same job — unless a lease says only one may. Crash mid-job and the queue must still hold it for retry. Keep the state in the queue and the worker stateless, and both sins become configuration instead of incidents."
+    text: "Scale the worker out and both instances grab the same job — unless a lease says only one may. If a worker crashes mid-job, the queue must still hold it. Keep the state in the queue and the worker stateless, and both become configuration."
 related:
   - label: IHostedService
     slug: ihostedservice

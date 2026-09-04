@@ -8,11 +8,11 @@ steps:
   - title: "One slow request in a hundred"
     text: "The mean says 62 ms and p50 says 44. p99 says 400, because the tail is where the slow requests live."
   - title: "Fan-out"
-    text: "A page that makes ten calls waits for the slowest one. With a 1% tail, one page in ten hits it. At a hundred calls, nearly every page does."
+    text: "A page that makes ten calls waits for the slowest one. With a 1% tail the maths says one page in ten; with the tail this service has, two of these three pages did."
   - title: "Hedge"
-    text: "After the p95 wait, send a second copy to another replica and take whichever answers first. Cap hedges at a few percent of traffic, or you have doubled the load on a service that is already slow."
+    text: "After the p95 wait, send a second copy to another replica and take whichever answers first. Cap hedges at a few percent of traffic — the third page here is over budget and eats the whole tail — or you have doubled the load on a slow service."
   - title: "Set the target on p99"
-    text: "A timeout with a fallback puts a ceiling on the tail, and the histogram tells you whether that ceiling is below your target. Here it is not, and that is the next thing to fix."
+    text: "A timeout with a fallback puts a ceiling on the tail, and the p99 line tells you whether that ceiling is below your target. Here it is not, and that is the next thing to fix."
 related:
   - label: Latency
     slug: latency
@@ -76,5 +76,7 @@ var meter = new Meter("Shop.Checkout");
 var checkoutDuration = meter.CreateHistogram<double>("checkout.duration", unit: "ms");
 checkoutDuration.Record(stopwatch.Elapsed.TotalMilliseconds);
 ```
+
+That pipeline re-sends to the same `BaseAddress`. To hedge to a different replica rather than to the same address, use `AddStandardHedgingHandler` instead and give it a routing strategy, which is what picks the second endpoint.
 
 ASP.NET Core and `HttpClient` already emit `http.server.request.duration` and `http.client.request.duration` as histograms, so collecting them with OpenTelemetry gives you p99 per endpoint without writing any instrumentation of your own.

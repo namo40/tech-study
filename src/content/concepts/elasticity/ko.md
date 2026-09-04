@@ -39,7 +39,7 @@ references:
   - title: "Kubernetes: autoscaling workloads"
     url: https://kubernetes.io/docs/concepts/workloads/autoscaling/
   - title: "Kubernetes: cluster autoscaling"
-    url: https://kubernetes.io/docs/concepts/cluster-administration/cluster-autoscaling/
+    url: https://kubernetes.io/docs/concepts/cluster-administration/node-autoscaling/
   - title: "Scaling options for applications in AKS"
     url: https://learn.microsoft.com/en-us/azure/aks/concepts-scale
 ---

@@ -1,18 +1,18 @@
 ---
 title: "Readiness Probe"
-summary: "A readiness probe answers one question every few seconds: should this instance receive traffic right now? Fail it and the pod is quietly taken out of rotation; pass it and traffic returns. Liveness asks the harsher question, whether the process should keep existing at all, and answers with a restart."
+summary: "A readiness probe answers one question every few seconds: should this instance receive traffic right now? Fail it and the pod is quietly taken out of rotation, pass it and traffic returns — while liveness asks the harsher question, whether the process should keep existing at all, and answers with a restart."
 category: "Containers and orchestration"
 tags: ["kubernetes"]
 scene: readiness-probe
 steps:
   - title: "Two questions, two answers"
-    text: "Readiness asks: should this instance receive traffic right now? Liveness asks: should this process keep existing? A pod that is starting up fails readiness, receives nothing, and joins the rotation the moment it is ready."
+    text: "Readiness asks: should this instance receive traffic right now? Liveness asks: should this process keep existing? A pod that is starting up fails readiness, receives nothing, and joins the rotation on the next probe that passes."
   - title: "Not ready is a quiet exit"
     text: "A dependency hiccups, readiness fails three times, and the pod is removed from the endpoints. Nothing is killed; traffic simply flows around it. When the probe passes again, traffic returns as quietly as it left."
   - title: "Liveness answers with a restart"
-    text: "A hung process passes nothing, so the kubelet kills and restarts the container. The counter ticks, readiness gates the fresh start, and traffic waits until the pod is actually ready. Restart is the remedy for being stuck, not for being busy."
+    text: "A hung process passes nothing, so traffic still lands on it and fails until readiness catches up; then the kubelet kills and restarts the container. The counter ticks, readiness gates the fresh start, and traffic waits until the pod is ready."
   - title: "Point liveness at yourself, readiness at your dependencies"
-    text: "Let liveness check the database, and one blip restarts every pod at once: a self-inflicted outage. Split correctly, the same blip only pulls pods from rotation, and they return the moment the dependency does."
+    text: "Let liveness check the database, and one blip restarts every pod at once: a self-inflicted outage. Move the wire to readiness and the restarts stop: the pods come back, sit out of rotation while the database is down, and rejoin when it answers."
 related:
   - label: Health Check
     slug: health-check
@@ -58,7 +58,7 @@ references:
 - A readiness check that fails under load shrinks the fleet exactly when you need it whole. If the check measures latency or queue depth, a busy instance removes itself, its share moves to its neighbours, and they remove themselves in turn. Pair the check with load shedding and a concurrency limit rather than with a looser probe.
 - Use a startup probe for a slow starter instead of stretching liveness to cover boot time. A liveness probe generous enough for a two minute start is also generous enough to leave a hung process running for two minutes.
 - Make readiness fail as soon as shutdown begins. Removing an instance from the endpoints is not instant, so a pod that starts refusing at the same moment it stops reporting ready will refuse requests that were routed a fraction of a second earlier.
-- Keep the endpoint cheap and unauthenticated inside the cluster, and keep it off the public router. It runs several times a second on every instance, so a check that queries anything expensive is a load generator with a health-shaped name.
+- Keep the endpoint cheap and unauthenticated inside the cluster, and keep it off the public router. It runs every few seconds on every instance, forever, so a check that queries anything expensive is a load generator with a health-shaped name.
 
 ## In .NET
 
@@ -93,7 +93,7 @@ startupProbe:
   failureThreshold: 30                           # up to 150s to boot
 ```
 
-The last piece is shutdown. Report not-ready the instant `ApplicationStopping` fires, so the endpoints change is already propagating while the in-flight requests finish, and keep the host's shutdown timeout inside the platform's grace period.
+The last piece is shutdown. Report not-ready the instant `ApplicationStopping` fires, so that routers which probe the pod directly stop sending work while the in-flight requests finish — on Kubernetes the Service endpoints were already told at deletion — and keep the host's shutdown timeout inside the platform's grace period.
 
 ```csharp
 // One flag, set by the lifetime and read by readiness, is the whole handshake.

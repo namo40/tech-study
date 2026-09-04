@@ -3,7 +3,7 @@ title: "Idle Timeout"
 summary: "idle timeout は、しばらく誰も使っていないプール内の接続を回収します。年齢ではなく使われていない時間を測るので、静かなサービスがデータベースにとってどれだけ安くつくか、そして誰かがすでに閉じた接続をプールが抱えている確率がどれだけになるかを決める設定になります。"
 category: "プールとリソース管理"
 scene: database-connection-pool
-sceneStep: 4
+sceneStep: 2
 related:
   - label: Database Connection Pool
     slug: database-connection-pool

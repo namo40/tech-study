@@ -24,6 +24,6 @@ A token bucket holds up to a fixed number of tokens and refills at a fixed rate.
 
 Capacity is the burst allowance. A bucket of 20 lets a client that has been quiet send 20 requests back to back, because the tokens accumulated while it was idle. Refill rate is the sustained rate: over a long enough window, a client can never exceed it.
 
-A fixed window counter has a boundary problem that a bucket does not. With a limit of 100 per minute, a client can send 100 just before the minute ends and another 100 just after, which is 200 requests in about a second and entirely within the rules. Tokens are spent and replaced continuously, so there is no boundary to line up against.
+A fixed window counter has a boundary problem that a bucket does not. With a limit of 100 per minute, a client can send 100 just before the minute ends and another 100 just after, which is 200 requests in about two seconds and entirely within the rules. Tokens are spent and replaced continuously, so there is no boundary to line up against.
 
 Pick the refill rate from what the dependency can sustain, then pick capacity from how large a legitimate burst is. A few seconds of refill is a common starting point for capacity. Much more than that and the limit stops protecting anything for as long as the burst lasts.

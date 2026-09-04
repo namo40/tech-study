@@ -58,7 +58,7 @@ references:
 - A budget only guards voluntary disruptions. A kernel panic, a failing disk, a node that loses power, an OOM kill: none of these ask the eviction API for permission, and none of them consume the budget. `minAvailable: 2` does not mean two pods will always be ready. It means the platform will not be the reason fewer than two are, which is a much smaller promise and still the one worth having.
 - `minAvailable` equal to the replica count deadlocks every drain. Three replicas with `minAvailable: 3` allows zero disruptions forever, so the node drain that started your cluster upgrade blocks, retries, and blocks again, and the upgrade never finishes. The failure is quiet: nothing crashes, the drain simply never returns. `maxUnavailable: 0` is the same mistake written the other way round.
 - The budget is arithmetic on a readiness count, and if readiness lies the arithmetic is worthless. A pod whose readiness probe returns 200 while it is refusing connections counts toward `minAvailable` and is doing nothing for anybody. Everything the budget protects rests on the probe being an honest answer to "can this pod serve a request right now".
-- Readiness has to drop when shutdown begins, and before the connections are drained. The endpoint lists that name this pod live on every node in the cluster and they are copies, so there is a window between "I am shutting down" and "nobody is routing to me any more". The preStop hook exists to sit in that window. Skip it and the pod stops accepting while traffic is still arriving, which is a 502 with a graceful shutdown wrapped around it.
+- The pod is dropped from the endpoints when it is deleted, but the copies take time. The endpoint lists that name this pod live on every node in the cluster, so there is a window between "this pod is going away" and "nobody is routing to me any more". The preStop hook exists to sit in that window. Skip it and the pod stops accepting while traffic is still arriving, which is a 502 with a graceful shutdown wrapped around it.
 - The grace period is a deadline, not a suggestion. When it expires the process is killed outright, so a shutdown that has not finished becomes a crash with whatever half-written state that implies. Measure the longest honest shutdown you have, including connection draining and the last slow request, and set the grace above it. Setting it from the average is how a service loses one request in a thousand at every deployment and nobody can reproduce it.
 - Do not put a budget on a workload with one replica and expect it to help. One replica with `minAvailable: 1` blocks every drain; one replica with `maxUnavailable: 1` permits the only disruption there is. The budget cannot create availability that the replica count does not have, and pretending otherwise moves the outage from the pod to the upgrade.
 - A budget rations disruption, it does not make disruption safe. It buys the time in which a pod can leave properly; whether the pod uses that time is the application's problem, and an application that ignores SIGTERM will drop requests at exactly the same rate with a budget as without one. The two halves only work together.
@@ -77,7 +77,7 @@ builder.Services.Configure<HostOptions>(options =>
 });
 ```
 
-The one thing the host does not know about is your readiness endpoint, and that is the piece the budget reads. Fail readiness the moment shutdown starts, so the endpoint lists begin dropping this pod while it is still answering the requests it already has.
+The one thing the host does not know about is your readiness endpoint, and that is the piece the budget reads: it counts pods whose `Ready` condition is true, so the arithmetic is only as good as the probe while the pod is running. Fail readiness the moment shutdown starts as well, so that routers which probe this pod directly stop sending it work — on Kubernetes the Service endpoints were already told at deletion.
 
 ```csharp
 // Registered as the readiness probe's target. It answers "route to me", which
@@ -97,12 +97,20 @@ public sealed class OutboxPump(IHostApplicationLifetime lifetime) : BackgroundSe
 {
     protected override async Task ExecuteAsync(CancellationToken stopping)
     {
-        while (!stopping.IsCancellationRequested)
+        try
         {
-            // The token is cancelled by the host on SIGTERM. A loop that ignores
-            // it is a loop the grace period will eventually kill mid-write.
-            await PumpOnceAsync(stopping);
-            await Task.Delay(TimeSpan.FromSeconds(1), stopping);
+            while (!stopping.IsCancellationRequested)
+            {
+                // The token is cancelled by the host on SIGTERM. A loop that
+                // ignores it is a loop the grace period will kill mid-write.
+                await PumpOnceAsync(stopping);
+                await Task.Delay(TimeSpan.FromSeconds(1), stopping);
+            }
+        }
+        catch (OperationCanceledException) when (stopping.IsCancellationRequested)
+        {
+            // The cancellation nearly always lands inside the delay, and it
+            // arrives as an exception. Without this the drain below never runs.
         }
 
         // Not `stopping` — that one is already cancelled. Finishing what is in
@@ -112,7 +120,7 @@ public sealed class OutboxPump(IHostApplicationLifetime lifetime) : BackgroundSe
 }
 ```
 
-On the platform side the budget is four lines, and the pod spec is where the ritual gets its timings. The preStop sleep is not a hack: it is the window in which readiness has already failed and the endpoint lists are still catching up.
+On the platform side the budget is four lines, and the pod spec is where the ritual gets its timings. The preStop sleep is not a hack: the endpoint lists started dropping this pod the moment it was deleted, and the sleep is the window in which those copies catch up.
 
 ```yaml
 apiVersion: policy/v1
@@ -136,9 +144,9 @@ spec:
           lifecycle:
             preStop:
               exec:
-                # Readiness has already started failing; this is the pause that
-                # lets every routing table hear about it before the listener
-                # closes. Nothing else happens in it.
+                # The deletion already marked this pod's endpoint terminating;
+                # this is the pause that lets every routing table hear about it
+                # before the listener closes. Nothing else happens in it.
                 command: ["/bin/sleep", "10"]
           readinessProbe:
             httpGet: { path: /healthz/ready, port: 8080 }
@@ -146,7 +154,7 @@ spec:
             failureThreshold: 2
 ```
 
-The three numbers have to be read together. Readiness fails within about four seconds of the hook starting, the hook holds the pod for ten, the host then has up to twenty-five to finish, and the platform allows forty-five before it stops asking. Change any one of them and check the other two, because the only symptom of getting it wrong is a small number of requests that fail during deployments and never fail anywhere else.
+The three numbers have to be read together. The endpoints change starts at deletion, the hook holds the pod for ten seconds while it propagates, the host then has up to twenty-five to finish, and the platform allows forty-five before it stops asking. Readiness only turns 503 when SIGTERM arrives at the end of the hook, which is early enough for a router that probes the pod itself; if you need it to fail while the hook is still running, the hook has to signal the application — touch a file it watches, call a local endpoint — instead of sleeping. Change any one of them and check the other two, because the only symptom of getting it wrong is a small number of requests that fail during deployments and never fail anywhere else.
 
 Finally, check the budget before you trust it. `kubectl get pdb` reports what the cluster currently believes, and `ALLOWED DISRUPTIONS: 0` on a healthy-looking service is the deadlock above, waiting for someone to start an upgrade.
 

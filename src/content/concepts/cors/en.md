@@ -1,17 +1,17 @@
 ---
 title: "CORS"
-summary: "CORS is the browser asking a server whether a page from another origin may read its response. The request usually still reaches the server; what CORS controls is whether the page gets to see the answer. It is not a security boundary for anything that is not a browser."
+summary: "CORS is the browser asking a server whether a page from another origin may read its response. The request usually still reaches the server, and what CORS controls is whether the page gets to see the answer, which is why it is not a security boundary for anything that is not a browser."
 category: "Application security"
 scene: cors
 steps:
   - title: "Request out, answer blocked"
-    text: "A page on shop.example calls api.example. The server handles it, twice. The browser drops the response both times because the server never said this origin may read it."
+    text: "A page on shop.example calls its own origin — no permission needed — then calls api.example, and the server handles that one twice. The browser drops the response both times because the server never said this origin may read it."
   - title: "Allow it, precisely"
     text: "The server names the origins that may read it, and the browser lets those responses through. A wildcard is fine for public data, but never together with cookies."
   - title: "Preflight"
     text: "For anything beyond a simple GET or form post, the browser first asks with OPTIONS which methods and headers are allowed, caches the answer, and only then sends the real request. A method the server did not list never leaves the browser."
   - title: "Not a security boundary"
-    text: "A server, a script, or curl never sees the browser's gate. And a malicious page can still make the browser send your cookies to the API; CORS only hides the answer. Stopping the request is the job of SameSite cookies and antiforgery tokens."
+    text: "A server, a script, or curl never sees the browser's gate. A malicious page can still make the browser send your cookies to the API; CORS only hides the answer. SameSite keeps the cookie off the request; the antiforgery token refuses it."
 related:
   - label: Same-Origin Policy
     slug: same-origin-policy

@@ -3,7 +3,7 @@ title: "Idle Timeout"
 summary: "Idle timeout은 한동안 아무도 쓰지 않은 풀 속 연결을 회수합니다. 나이가 아니라 쓰이지 않은 시간을 재기 때문에, 조용한 서비스가 데이터베이스에 얼마나 싸게 굴지, 그리고 이미 남이 닫아 버린 연결을 풀이 쥐고 있을 확률이 얼마나 될지를 정하는 설정이 됩니다."
 category: "Pool과 자원 관리"
 scene: database-connection-pool
-sceneStep: 4
+sceneStep: 2
 related:
   - label: Database Connection Pool
     slug: database-connection-pool

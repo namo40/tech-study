@@ -3,7 +3,6 @@ title: "Streaming"
 summary: "스트리밍은 만드는 쪽이 다 만들기 전에 받는 쪽이 답을 보기 시작하는 것입니다. 버퍼를 흐름으로 바꾸는 거래여서 메모리가 드는 방식과 첫 바이트가 도착하는 시점이 달라지고, 그 결과 취소와 백프레셔가 반드시 다뤄야 할 두 가지가 됩니다."
 category: "엣지, 라우팅과 서비스 네트워크"
 scene: multiplexing
-sceneStep: 4
 related:
   - label: Multiplexing
     slug: multiplexing

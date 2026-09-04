@@ -23,7 +23,7 @@ references:
   - title: Consistency levels in Azure Cosmos DB
     url: https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels
   - title: Manage consistency levels in Azure Cosmos DB
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/how-to-manage-consistency
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-manage-consistency
 ---
 
 최종 일관성은 시스템 전체에 대해 하나를 약속하고 개별 독자에게는 아무것도 약속하지 않습니다. 그래서 처음 눈에 띄는 실패가 유난히 개인적입니다. 사용자가 무언가를 저장하고, 화면이 아직 그 변경을 적용하지 않은 replica에서 다시 그려지고, 자기가 방금 한 편집이 사라져 있습니다. 세션 일관성은 그 약속의 범위를 클라이언트 하나로 좁힙니다. 그 세션 안에서는 세션이 한 모든 쓰기가 읽기에 보이고, 이미 지나쳐 본 값보다 뒤로 돌아가지 않습니다. 세션 밖의 다른 사람 변경은 여전히 빠져 있을 수 있는데, 바로 그 덕분에 비용이 낮게 유지됩니다.

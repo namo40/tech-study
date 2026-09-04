@@ -21,7 +21,7 @@ references:
   - title: Load and stress testing ASP.NET Core
     url: https://learn.microsoft.com/en-us/aspnet/core/test/load-tests?view=aspnetcore-10.0
   - title: Horizontal Pod Autoscaler
-    url: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+    url: https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/
 ---
 
 ランプは行儀がよく、実際のトラフィックはそうではありません。Spike Test は平常の負荷から一気に数倍へ跳び、そのまま維持します。キャンペーンメールが送られたとき、キャッシュが空にされたとき、サーバーの半分が残りの半分へ寄せられたときに起きることです。欲しい数字は新しい水準での定常状態ではありません。それはすでに Load Test が測っています。大事なのは、そのあいだの数分がいくらかかるかです。

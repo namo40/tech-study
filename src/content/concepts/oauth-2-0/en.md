@@ -6,7 +6,7 @@ tags: ["oauth"]
 scene: oauth-2-0
 steps:
   - title: "Don't hand over the key to your whole house"
-    text: "The old way, the app asks for your password and holds the power to do anything, forever, as you. OAuth replaces that with delegation: you approve, the server issues a key that opens one door for a while, and the app never sees your password."
+    text: "The old way, the app asks for your password and holds the power to do anything, forever, as you. OAuth replaces that with delegation: you approve, and the server will issue a key that opens one door for a while — the key itself comes next."
   - title: "The code is a receipt; the token is the key"
     text: "The app sends you to the authorization server, you consent, and a one-time code comes back. The app exchanges it for an access token scoped to read, short-lived on purpose, plus a refresh token for later. The API checks the token, not the person."
   - title: "Expiry is the design, and rotation is the alarm"
@@ -57,7 +57,7 @@ OAuth 2.0 is a delegation protocol. It exists for one situation, and once you ca
 
 - An app calls an API for a user. A calendar tool that reads your meetings, a photo printer that fetches your album, an internal dashboard that queries an order service as the signed-in employee. The app needs access, not identity, and it needs a bounded amount of it.
 - A first-party single page app or mobile app talks to your own API. It is still delegation, because the browser or the phone cannot keep a secret; authorization code with PKCE is the flow, and the reason is that the code has to be useless to anyone who copies it out of a URL.
-- A server-rendered web app signs users in and then calls APIs. Authorization code without PKCE is acceptable when the app really can hold a client secret, and even then PKCE costs nothing and closes an injection hole.
+- A server-rendered web app signs users in and then calls APIs. Authorization code is the flow here too, and so is PKCE: RFC 9700 makes it a MUST for public clients and a RECOMMENDED for confidential ones, and on an app that really can hold a client secret it still costs nothing and closes an injection hole.
 - Two services talk with no user in the picture at all. Client credentials is OAuth without the delegation half: the token says which service is calling, and the scopes say what that service may do. It is the right flow precisely because there is nobody to consent.
 - Anywhere the alternative would be storing somebody's password. If a design document contains the phrase "we'll need their credentials", that is the moment OAuth is the answer, whether or not anybody has said the word yet.
 
@@ -67,7 +67,7 @@ The one case it is not for is a plain login to your own application with no API 
 
 - Tokens are bearer instruments. Whoever holds one is you, to the API, until it expires. That single sentence generates most of the rules: short lifetimes, TLS on every hop, never in a URL or a log line or an analytics payload, never in `localStorage` if a cross-site scripting bug can reach it.
 - An access token is not a session. It has an expiry, but no logout, no idle timeout, no revocation you can count on before it expires. Building your application's login state out of access tokens gives you a session with none of a session's controls.
-- Never send ID tokens to APIs, and never read identity out of an access token. The ID token is addressed to the app, the access token is addressed to the API, and each is signed for its own audience. An API that accepts an ID token is accepting a token minted for a different recipient, which is exactly the confusion `aud` validation exists to prevent.
+- Never send ID tokens to APIs, and never let a client work out who signed in from an access token. The ID token is addressed to the app, the access token is addressed to the API, and each is signed for its own audience. An API that accepts an ID token is accepting a token minted for a different recipient, which is exactly the confusion `aud` validation exists to prevent. The API is the one party that may read identity claims out of an access token, and only after validating that token against its own audience.
 - Refresh tokens need rotation and reuse detection. Without them, a stolen refresh token is silent and permanent access. With them, the second use of a spent token is a signal, and the correct response is to revoke the whole family rather than the one token.
 - Scopes are coarse permissions, not your authorization model. `orders.read` is a gate at the edge; whether this user may read *this* order is a question only your domain can answer. Treating scopes as the whole answer produces APIs that are wide open to any caller who got past the gate.
 - Validate every token on every call. Signature against the issuer's published keys, `iss`, `aud`, `exp`, and `nbf`. A token that is merely well formed is not a token that was issued to you, and skipping audience validation is the difference between authorization and decoration.
@@ -87,9 +87,11 @@ builder.Services
         options.TokenValidationParameters = new TokenValidationParameters
         {
             // The audience check is the one that stops a token minted for
-            // somebody else's API from working against yours.
+            // somebody else's API from working against yours. Both entries are
+            // this one API: a v2.0 token carries its client id, a v1.0 token
+            // may carry the `api://` resource URI instead.
             ValidateAudience = true,
-            ValidAudiences = ["api://orders"],
+            ValidAudiences = [ordersClientId, $"api://{ordersClientId}"],
             ValidateIssuer = true,
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30),
@@ -97,13 +99,15 @@ builder.Services
     });
 ```
 
-Scopes become policies, so the coarse gate is declared once and the endpoints say which gate they sit behind.
+Scopes become policies, so the coarse gate is declared once and the endpoints say which gate they sit behind. Where the app already references Microsoft.Identity.Web, `RequireScope` and `[RequiredScope]` do the same splitting for you.
 
 ```csharp
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("orders.read", policy =>
-        policy.RequireClaim("scp", "orders.read"));
+    // `scp` arrives as one space-separated string, so an exact claim match
+    // would refuse a token that was granted more than one scope.
+    options.AddPolicy("orders.read", policy => policy.RequireAssertion(context =>
+        (context.User.FindFirstValue("scp") ?? "").Split(' ').Contains("orders.read")));
 });
 
 app.MapGet("/orders/{id}", async (string id, ClaimsPrincipal user, IOrders orders) =>
@@ -111,17 +115,25 @@ app.MapGet("/orders/{id}", async (string id, ClaimsPrincipal user, IOrders order
     // The scope says the caller may read orders. Whether it may read THIS one
     // is a domain question, and it still has to be asked here.
     var order = await orders.FindAsync(id);
-    return order is null || !order.BelongsTo(user.GetObjectId())
+    return order is null || !order.BelongsTo(user.FindFirstValue("oid"))
         ? Results.NotFound()
         : Results.Ok(order);
 }).RequireAuthorization("orders.read");
 ```
 
-For a web app that signs users in, the OpenID Connect handler runs the authorization code flow, and PKCE is on by default.
+For a web app that signs users in, the OpenID Connect handler runs the authorization code flow once `ResponseType` asks for it, and PKCE is then on by default.
 
 ```csharp
 builder.Services
-    .AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+    .AddAuthentication(options =>
+    {
+        // The cookie is what the app reads on every later request; the
+        // OpenID Connect handler only runs the sign-in. Naming it the default
+        // scheme instead is a startup error, because the remote handler would
+        // then be asked to sign the user in to itself.
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+    })
     .AddOpenIdConnect(options =>
     {
         options.Authority = "https://login.microsoftonline.com/{tenant}/v2.0";
@@ -148,11 +160,18 @@ builder.Services
 
 public sealed class OrdersClient(ITokenAcquisition tokens, HttpClient http)
 {
-    public async Task<Order?> GetAsync(string id)
+    public async Task<Order?> GetAsync(string id, CancellationToken ct)
     {
-        var token = await tokens.GetAccessTokenForUserAsync(["api://orders/orders.read"]);
-        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        return await http.GetFromJsonAsync<Order>($"/orders/{id}");
+        var accessToken = await tokens.GetAccessTokenForUserAsync(["api://orders/orders.read"]);
+
+        // Per request, not on DefaultRequestHeaders: the client is shared, so
+        // one caller's token must not be left on it for the next caller.
+        using var message = new HttpRequestMessage(HttpMethod.Get, $"/orders/{id}");
+        message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        var response = await http.SendAsync(message, ct);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<Order>(ct);
     }
 }
 ```

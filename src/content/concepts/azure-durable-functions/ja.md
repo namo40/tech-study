@@ -23,9 +23,9 @@ related:
     slug: event-sourcing
 references:
   - title: Durable Functions overview
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview
+    url: https://learn.microsoft.com/en-us/azure/durable-task/durable-functions/durable-functions-overview
   - title: "Durable orchestrations: code constraints"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-code-constraints
+    url: https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-code-constraints
 ---
 
 ## いつ使うか

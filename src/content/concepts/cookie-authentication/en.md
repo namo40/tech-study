@@ -9,9 +9,9 @@ steps:
   - title: "Automatic means indiscriminate"
     text: "A page you never wrote submits a form to your site, and the browser attaches the cookie just the same. The server sees a signed-in request — it cannot tell your page from theirs. That is cross-site request forgery, and the cookie is the vehicle."
   - title: "SameSite draws the first line"
-    text: "Mark the cookie Lax and it stops riding cross-site POSTs; the forged request arrives naked and fails. Top-level navigation still carries it, so links keep working — Strict closes even that door, at the cost of every inbound link starting signed out."
+    text: "Mark the cookie Lax and it stops riding cross-site POSTs; the forged request arrives naked and fails. Top-level navigation still carries it — Strict closes even that door, at the cost of every inbound link starting signed out."
   - title: "The token only your page can echo"
-    text: "The server hides an antiforgery token in the form; a real submission returns cookie and token together, a forged one cannot read the page and so cannot echo it. Layer it with SameSite and an origin check — each line fails differently, together they hold."
+    text: "The server hides an antiforgery token in the form; a real submission returns cookie and token together, and even a link that still carries the cookie cannot echo it. Layer it with SameSite and an origin check, so no one line has to hold alone."
 related:
   - label: SameSite Cookie
     slug: samesite-cookie
@@ -55,14 +55,14 @@ references:
 ## Cautions
 
 - Cookie authentication without a cross-site request forgery defence is an open door, and it is open by default. The browser attaches the cookie because the request went to your site, not because your page sent it. Assume every state-changing endpoint is reachable from a page you did not write.
-- Set `SameSite=Lax` deliberately rather than relying on the browser default. `Lax` is the modern default in every major browser, but a cookie written without the attribute is at the mercy of what the user's browser decided this year, and older clients still default to `None`.
+- Set `SameSite=Lax` deliberately rather than relying on the browser default. Some browsers apply `Lax` when the attribute is absent and others do not, so a cookie written without it is at the mercy of what the user's browser decided this year, and older clients still default to `None`.
 - `Lax` is not the whole answer. It holds the cookie back from a cross-site POST, but a top-level GET navigation still carries it, which means any endpoint that changes state on a GET is still forgeable. Never change state on a GET, and put an antiforgery token on the ones that do change state.
 - `Strict` closes the navigation door too, and charges for it: a user arriving from a search result or an email link lands signed out, then signs in again on the next click. It is the right setting for a bank and the wrong one for a content site.
 - `HttpOnly` and `Secure` always, and `__Host-` prefixes where you can. `HttpOnly` keeps the cookie out of `document.cookie`; `Secure` keeps it off plaintext connections; the `__Host-` prefix binds it to one exact host with no `Domain` attribute, which stops a compromised sibling subdomain writing a cookie your site will accept.
 - Reissue the cookie at sign-in. Session fixation is the attack where somebody plants a known session identifier in the victim's browser before they log in and then rides the session they already know. Calling `SignInAsync` after authentication is what mints a new one.
 - A long-lived cookie widens every window it touches. Sliding expiration keeps an active user signed in without giving an idle one an open-ended session; an absolute expiry on top of it puts a ceiling on how long a stolen cookie is worth anything.
 - A cookie is only a browser credential. A mobile app, a daemon, a service calling your API from a datacentre: none of them have a cookie jar, and none of them are protected by SameSite. Those callers want a token, and mixing the two schemes on one endpoint means the endpoint is only as safe as its weakest one.
-- Scale is a real constraint. A cookie holding an encrypted principal travels on every request and is capped at about 4 KB, so a large claims set has to live server-side with the cookie carrying only a key.
+- Scale is a real constraint. A cookie holding an encrypted principal travels on every request, and browsers stop at about 4 KB each; ASP.NET Core works around that by splitting a larger one into chunks, which is more bytes on every request rather than fewer. The real answer for a large claims set is `SessionStore` — an `ITicketStore` that keeps the ticket server-side and leaves the cookie carrying only a key.
 
 ## In .NET
 
@@ -119,18 +119,18 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
 ```
 
-Minimal APIs get the same protection from the antiforgery middleware, which runs after authentication and validates the token on every unsafe request that carries a form:
+Minimal APIs get the same protection from the antiforgery middleware, which runs after authentication and validates every unsafe request to an endpoint that carries antiforgery metadata, which form-binding endpoints get automatically:
 
 ```csharp
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 
-app.MapPost("/transfer", (TransferRequest request) => Results.Ok())
+app.MapPost("/transfer", ([FromForm] TransferRequest request) => Results.Ok())
    .RequireAuthorization();
 ```
 
-For an endpoint that has to check the token itself — a fetch from a script that sends it in a header, say — `IAntiforgery.ValidateRequestAsync` is the call, and `GetAndStoreTokens` is what hands the page a token to send back.
+The binding is what earns the protection, so an endpoint that reads its body as JSON carries no such metadata and the middleware lets it through. For those — and for a fetch from a script that sends the token in a header — `IAntiforgery.ValidateRequestAsync` is the call, and `GetAndStoreTokens` is what hands the page a token to send back.
 
 ```csharp
 app.MapGet("/antiforgery/token", (IAntiforgery antiforgery, HttpContext context) =>
@@ -148,4 +148,4 @@ app.MapPost("/api/transfer", async (IAntiforgery antiforgery, HttpContext contex
 
 The token is a pair, not a single value: one half is written into a cookie of its own and the other into the form or a header, and validation checks that the two match. That is why a forged page cannot produce it. It can make the browser send the session cookie, and it can make the browser send the antiforgery cookie, but it cannot read your page to learn what to put in the field, and the two halves have to agree.
 
-Two more pieces belong to the same posture. `IUserClaimsPrincipalFactory` or `OnValidatePrincipal` is where a session gets re-checked against the database mid-life, which is how a disabled account stops being able to use the cookie it already has. And the cookie is encrypted with a data protection key, so a farm of servers has to share a key ring — an unshared key ring shows up as users being signed out at random as requests land on different machines.
+Two more pieces belong to the same posture. `CookieAuthenticationEvents.OnValidatePrincipal` is where a session gets re-checked against the database mid-life — ASP.NET Core Identity wires `SecurityStampValidator` into it and paces the check with `ValidationInterval` — which is how a disabled account stops being able to use the cookie it already has. And the cookie is encrypted with a data protection key, so a farm of servers has to share a key ring — an unshared key ring shows up as users being signed out at random as requests land on different machines.

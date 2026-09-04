@@ -5,12 +5,12 @@ category: "Caching"
 tags: ["overload"]
 scene: cache-stampede
 steps:
-  - title: "One hot key, thousands of hits"
+  - title: "One hot key, every request a hit"
     text: "The popular value sits in the cache and every request takes the short path, so the origin barely notices. The TTL ring is quietly counting down the whole time."
   - title: "Expiry is a starting gun"
-    text: "The key dies and every in-flight request misses at once, and they all charge the origin for the same value together. The origin that served one recomputation per hour now serves hundreds per second, and slows for everyone."
+    text: "The key dies and every in-flight request misses at once, and they all charge the origin for the same value together. The origin that served one recomputation per hour now serves seven at once, and slows for everyone."
   - title: "Send one, serve the rest stale"
-    text: "On a miss, one request goes to the origin; everyone else gets the old value now and the fresh one next time. Stale-while-revalidate makes the trade explicit: a moment of staleness for an origin that never sees the crowd."
+    text: "On a miss, single flight sends one request to the origin; everyone else gets the old value now and the fresh one next time. Stale-while-revalidate makes the trade explicit: a moment of staleness for an origin that never sees the crowd."
   - title: "Design the expiry, not just the value"
     text: "Jitter the TTLs so keys do not die together, refresh hot keys early before they expire, and cache the answer not found too, so missing keys cannot stampede either. The same spike arrives, and the origin's needle barely moves."
 related:
@@ -79,11 +79,11 @@ public sealed class ProductReader(HybridCache cache, ProductRepository repositor
         cache.GetOrCreateAsync(
             $"product:{id}",
             id,
-            async (key, token) => await repository.FindAsync(key, token),
+            async (id, token) => await repository.FindAsync(id, token),
             new HybridCacheEntryOptions
             {
                 // Spread the expiry so a batch filled together does not die together.
-                Expiration = TimeSpan.FromMinutes(10) + TimeSpan.FromSeconds(Jitter.Next(0, 120)),
+                Expiration = TimeSpan.FromMinutes(10) + TimeSpan.FromSeconds(Jitter.Next(0, 60)),
             },
             cancellationToken: ct);
 }
@@ -92,13 +92,31 @@ public sealed class ProductReader(HybridCache cache, ProductRepository repositor
 Three details matter more than the API. Give every entry a jittered expiry, because entries filled in the same loop otherwise expire in the same millisecond. Store the miss as well as the hit, so a lookup for a key that does not exist is answered from memory with a short TTL of its own rather than going to the database every time. And if you need the old value served while the new one is computed, keep the entry alive past its logical expiry and refresh it in the background, because `GetOrCreateAsync` on an entry that has already been evicted makes callers wait for the recomputation, which is exactly the wait you were trying to avoid.
 
 ```csharp
-// Cache the answer "no such product" too, with a much shorter life.
-var found = await cache.GetOrCreateAsync(
+// The sentinel the negative-cache page describes: an answer, not an absence.
+public sealed record Cached<T>(T? Value, bool Found);
+
+// Entry options are fixed before the factory runs, so the factory cannot choose
+// the expiry from what it found. Store the answer, then rewrite the empty one.
+var cached = await cache.GetOrCreateAsync(
     $"product:{id}",
     id,
-    async (key, token) => await repository.FindAsync(key, token),
-    new HybridCacheEntryOptions { Expiration = TimeSpan.FromSeconds(30) },
+    async (id, token) =>
+    {
+        var product = await repository.FindAsync(id, token);
+        return new Cached<Product>(product, product is not null);
+    },
+    new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(10) },
     cancellationToken: ct);
+
+if (!cached.Found)
+{
+    // "No such product" gets the same key and a much shorter life.
+    await cache.SetAsync(
+        $"product:{id}",
+        cached,
+        new HybridCacheEntryOptions { Expiration = TimeSpan.FromSeconds(30) },
+        cancellationToken: ct);
+}
 ```
 
 On the HTTP side the same idea is spelled out by `stale-while-revalidate` in `Cache-Control`, which tells a shared cache it may answer from a stale copy while it refreshes underneath.

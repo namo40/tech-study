@@ -21,7 +21,7 @@ references:
   - title: Load and stress testing ASP.NET Core
     url: https://learn.microsoft.com/en-us/aspnet/core/test/load-tests?view=aspnetcore-10.0
   - title: NBomber documentation
-    url: https://nbomber.com/docs/
+    url: https://nbomber.com/docs/getting-started/overview/
 ---
 
 Stress Test는 Load Test가 끝나는 지점에서 시작합니다. 무릎을 지나면 부하를 더 줘도 처리량은 늘지 않으므로, 더해진 부하는 전부 대기로 바뀝니다. 지연이 오르고, 클라이언트 timeout이 요청을 끊기 시작하며, 가장 먼저 포화된 자원이 실패의 모양을 결정합니다. 목적은 더 큰 숫자를 찾는 것이 아니라, 실제 트래픽 이벤트가 보여 주기 전에 실패를 먼저 보는 것입니다.

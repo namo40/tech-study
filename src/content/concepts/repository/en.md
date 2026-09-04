@@ -12,7 +12,7 @@ steps:
   - title: "An entity is equal by identity, not by looks"
     text: "Two cards both say id 7 — different fields, same thing at two moments of its life. Two cards with identical fields but different ids are strangers. Identity is what the repository finds by, tracks by, and updates by; the attributes are just today's state."
   - title: "A value object is equal by content, and that is all it is"
-    text: "Two 10 USD chips are the same money — no id, no history, no repository. You never modify one; you replace it with a new value, which is why they are safe to share and trivial to test. Entities carry them; the repository stores the entity and the values ride along."
+    text: "Two 10 USD chips are the same money — no id, no history, no repository. You never modify one; you replace it with a new chip, and if the content is the same, it is the same money. Safe to share, trivial to test."
 related:
   - label: Domain-Driven Design
     slug: domain-driven-design
@@ -119,7 +119,7 @@ public readonly record struct Money(decimal Amount, string Currency)
 }
 ```
 
-EF Core stores a value object as columns on the owner's table with `OwnsOne`, which is the modelling equivalent of "it has no identity and no repository of its own": there is no `Money` table and no way to load one on its own.
+EF Core stores a value object as columns on the owner's table with `ComplexProperty`, which is the modelling equivalent of "it has no identity and no repository of its own": there is no `Money` table and no way to load one on its own. `OwnsOne` looks like the same tool and is not — an owned type is still an entity, with its own key and its own tracked identity, and only a reference type can be one.
 
 ```csharp
 protected override void OnModelCreating(ModelBuilder model)
@@ -127,8 +127,8 @@ protected override void OnModelCreating(ModelBuilder model)
     model.Entity<Order>(order =>
     {
         order.HasKey(o => o.Id);
-        order.OwnsOne(o => o.Total);      // Total_Amount, Total_Currency on Orders
-        order.OwnsMany(o => o.Lines);     // lines have no life of their own
+        order.ComplexProperty(o => o.Total);   // Total_Amount, Total_Currency on Orders
+        order.OwnsMany(o => o.Lines);          // lines have no life of their own
     });
 }
 ```

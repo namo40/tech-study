@@ -19,6 +19,8 @@ related:
     slug: sli
   - label: p95
     slug: p95
+  - label: p99
+    slug: p99
   - label: Tail Latency
     slug: tail-latency
   - label: Health Check
@@ -27,10 +29,6 @@ related:
     slug: load-test
   - label: Capacity Test
     slug: capacity-test
-  - label: Distributed Tracing
-    slug: distributed-tracing
-  - label: Sampling
-    slug: sampling
   - label: Rollback
     slug: rollback
   - label: Canary Release

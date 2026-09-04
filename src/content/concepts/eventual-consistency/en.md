@@ -10,7 +10,7 @@ steps:
   - title: "Where you read decides what you see"
     text: "Two readers ask the same question at the same moment and get different answers, because each replica trails the primary by its own lag. Under a write burst, that lag has no ceiling."
   - title: "Your own write is the promise that breaks first"
-    text: "Save, refresh, and the change is gone: the read landed on a replica the write had not reached. Session consistency pins that user's reads to a copy that has their writes, and the promise holds again."
+    text: "Save, refresh, and the change is gone: the read landed on a replica the write had not reached. Session consistency makes that user's reads wait for, or go to, a copy that has their writes, and the promise holds again."
   - title: "Choose per read, not per system"
     text: "A balance check reads the primary and pays the latency; a product page reads any replica and pays nothing. A staleness bound in the middle keeps a lagging replica out of rotation until it catches up."
 related:
@@ -40,7 +40,7 @@ references:
   - title: Consistency levels in Azure Cosmos DB
     url: https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels
   - title: Manage consistency levels in Azure Cosmos DB
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/how-to-manage-consistency
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-manage-consistency
   - title: Distributed data in cloud-native applications
     url: https://learn.microsoft.com/en-us/dotnet/architecture/cloud-native/distributed-data
   - title: Caching guidance (Azure Architecture Center)
@@ -65,24 +65,28 @@ references:
 
 ## In .NET
 
-Azure Cosmos DB makes the choice explicit, one account-wide default plus a per-request override. Session is the practical default, and it only holds if the session token travels with the user.
+Azure Cosmos DB makes the choice explicit, one account-wide default plus a per-request override that can only relax it. Session is the practical level, it only holds if the session token travels with the user, and an account that needs one `Strong` read has to be configured `Strong` and relaxed to `Session` everywhere else.
 
 ```csharp
-// Session is the practical default: a client always sees its own writes.
+// Session for everything ordinary: a client always sees its own writes. The
+// account behind this is configured Strong, which is what lets one read below
+// ask for Strong at all.
 builder.Services.AddSingleton(_ => new CosmosClient(connection, new CosmosClientOptions
 {
     ConsistencyLevel = ConsistencyLevel.Session,
 }));
 
-// The token is what carries the guarantee. Keep it per user, not per process,
-// or the next request lands on a node that has never heard of the write.
+// The token is what carries the guarantee. The SDK keeps it inside one client
+// instance, so carry it with the user (cookie, header) or a request that lands
+// on another instance arrives without it.
 var read = await container.ReadItemAsync<Cart>(
     id,
     new PartitionKey(userId),
     new ItemRequestOptions { SessionToken = tokens.Get(userId) });
 tokens.Set(userId, read.Headers.Session);
 
-// The one read that cannot be eventual, asked for explicitly and paid for.
+// The one read that cannot be eventual: it keeps the account's Strong level
+// instead of relaxing, asked for explicitly and paid for.
 var balance = await container.ReadItemAsync<Account>(
     accountId,
     new PartitionKey(userId),

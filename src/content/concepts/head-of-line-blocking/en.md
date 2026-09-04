@@ -12,24 +12,14 @@ related:
     slug: pipelining
   - label: Keep-Alive
     slug: keep-alive
+  - label: HttpClient Connection Pool
+    slug: httpclient-connection-pool
   - label: HTTP/2
     slug: http-2
-  - label: gRPC
-    slug: grpc
   - label: Streaming
     slug: streaming
   - label: Tail Latency
     slug: tail-latency
-  - label: Request Timeout
-    slug: request-timeout
-  - label: Connection Timeout
-    slug: connection-timeout
-  - label: Database Connection Pool
-    slug: database-connection-pool
-  - label: I/O Completion Port
-    slug: io-completion-port
-  - label: SemaphoreSlim
-    slug: semaphoreslim
 references:
   - title: "Evolution of HTTP"
     url: https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Evolution_of_HTTP
@@ -43,6 +33,6 @@ Head-of-line blocking is what a queue does to the items that are not at the fron
 
 What makes it worth a name of its own is that the queue is invisible in the measurement that matters. Look at the server and every request was answered quickly except one. Look at the client and three requests each took as long as the slowest. The waiting happened before the work began, in a place neither side is instrumented for, which is why the symptom reaches you as a latency distribution with a fat tail rather than as an error. Median stays honest because the median request usually is not behind the slow one; p95 and p99 collapse because they are exactly the requests that were.
 
-On HTTP/1.1 the queue is the connection. Keep-alive lets a connection carry request after request without being reopened, which is worth a great deal, but it carries them one at a time: the client may not send the next request until the previous response has been read. So a single slow answer occupies the wire for its whole duration, and the small, ready, cheap requests behind it pay the full price. Browsers hid this for a decade by opening several connections per origin, which converts the problem into contention for connections rather than removing it. Service-to-service callers rarely get that shim automatically, which is why a fan-out inside a cluster can behave much worse than the same fan-out from a browser.
+On HTTP/1.1 the queue is the connection. Keep-alive lets a connection carry request after request without being reopened, which is worth a great deal, but it carries them one at a time: the client may not send the next request until the previous response has been read. So a single slow answer occupies the wire for its whole duration, and the small, ready, cheap requests behind it pay the full price. Browsers hid this for a decade by opening several connections per origin, which converts the problem into contention for connections rather than removing it. Service-to-service callers get the same shim from their connection pool, at the price of a socket per concurrent request, and the queue reappears the moment that pool is capped or the path is forced onto one connection.
 
 The general fix is to stop imposing an order that the work does not require. HTTP/2 gives each request its own stream on one connection, so a slow stream blocks only itself, and the same move appears everywhere the pattern does: a partitioned queue so one poison message does not stall a topic, a bounded parallel pipeline instead of a strictly sequential one, a separate pool for the calls that are allowed to be slow. What does not fix it is adding capacity, because the queue is not full — it is ordered. And ordering can survive a layer change: HTTP/2 removes the blocking at the HTTP layer and leaves it at the TCP layer, where one lost packet still stalls every stream sharing that connection. That residue is the reason HTTP/3 moved to QUIC, and it is a good reminder that the question to ask is always which layer is insisting on the order.

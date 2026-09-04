@@ -25,7 +25,7 @@ references:
   - title: "Distributed tracing concepts in .NET"
     url: https://learn.microsoft.com/en-us/dotnet/core/diagnostics/distributed-tracing-concepts
   - title: "Logging in .NET: log scopes"
-    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/logging
+    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/logging/overview
 ---
 
 장면의 두 번째 단계에서 패널은 gateway가 요청을 받기 전까지 비어 있고 `no trace id`라고 적혀 있습니다. gateway가 요청을 받는 순간 id가 나타나고 막대 셋이 비로소 가능해집니다. 이 순서가 중요합니다. id는 trace에 나중에 붙이는 이름표가 아니라, trace를 존재하게 하는 것 자체입니다. id가 있기 전에는 서로 다른 파일 셋에 기록하는 서비스 셋이 있을 뿐이고, id가 생긴 뒤에는 부분이 셋인 요청 하나가 있습니다.

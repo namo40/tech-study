@@ -26,8 +26,8 @@ related:
   - label: Eventual Consistency
     slug: eventual-consistency
 references:
-  - title: "Configure and manage quorum (Failover Clustering)"
-    url: https://learn.microsoft.com/en-us/windows-server/failover-clustering/manage-cluster-quorum
+  - title: "Understand cluster and pool quorum"
+    url: https://learn.microsoft.com/en-us/windows-server/storage/storage-spaces/quorum
   - title: "Windows Server Failover Clustering with SQL Server"
     url: https://learn.microsoft.com/en-us/sql/sql-server/failover-clusters/windows/windows-server-failover-clustering-wsfc-with-sql-server
   - title: "Overview of Always On availability groups"

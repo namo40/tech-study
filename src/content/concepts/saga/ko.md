@@ -39,7 +39,7 @@ references:
   - title: Compensating Transaction pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/compensating-transaction
   - title: MassTransit sagas
-    url: https://masstransit.io/documentation/patterns/saga
+    url: https://masstransit.massient.com/concepts/saga-state-machines
 ---
 
 ## 언제 쓰나

@@ -29,7 +29,7 @@ references:
   - title: Consumer acknowledgements and publisher confirms
     url: https://www.rabbitmq.com/docs/confirms
   - title: MassTransit exceptions, retries and redelivery
-    url: https://masstransit.io/documentation/concepts/exceptions
+    url: https://masstransit.massient.com/concepts/exceptions
 ---
 
 シーンの第一段階では、同じメッセージがコンシューマーへ三回渡ります。システムの誤動作のように読めますが、実際は逆です。ブローカーは約束を守っています。少なくとも一回とは、誰かが終わったと確認するまでメッセージを配信するという意味で、死ぬかもしれないコンシューマーを相手にその約束を守る方法は、確認が来ないときにもう一度渡すことしかありません。増えていく配信回数は、保証が人前で働いている姿です。

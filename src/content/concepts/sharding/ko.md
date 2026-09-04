@@ -43,7 +43,7 @@ references:
   - title: "Data partitioning guidance"
     url: https://learn.microsoft.com/en-us/azure/architecture/best-practices/data-partitioning
   - title: "Partitioning and horizontal scaling in Azure Cosmos DB"
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning
 ---
 
 ## 언제 쓰나

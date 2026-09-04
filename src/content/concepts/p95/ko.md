@@ -15,7 +15,7 @@ related:
     slug: hedging
 references:
   - title: Built-in metrics in ASP.NET Core
-    url: https://learn.microsoft.com/en-us/dotnet/core/diagnostics/built-in-metrics-aspnetcore
+    url: https://learn.microsoft.com/en-us/aspnet/core/metrics/built-in
 ---
 
 p95를 알림 기준으로 삼는 이유는, 하나의 숫자에 바라는 두 가지인 민감도와 안정성 사이에 놓여 있기 때문입니다. p99는 요청 몇 개에 반응하며 그만큼 함께 흔들리고, p50은 거의 반응하지 않습니다. p95는 트래픽의 의미 있는 비율이 느려졌을 때 움직이고, p99보다 먼저 움직입니다.

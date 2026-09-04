@@ -3,7 +3,7 @@ title: "MassTransit"
 summary: "MassTransit はメッセージブローカーの上に載せるアプリケーションフレームワークです。コンシューマーも再試行のポリシーも遅延再配信もサガも .NET のコードとして一度書けば、その下の転送はアプリケーションの形ではなく設定の一行になります。"
 category: "メッセージングとイベント処理"
 related:
-  - label: Web-Queue-Worker
+  - label: Web Queue Worker
     slug: web-queue-worker
   - label: Work Queue
     slug: work-queue
@@ -23,7 +23,7 @@ related:
     slug: rabbitmq
 references:
   - title: MassTransit concepts
-    url: https://masstransit.io/documentation/concepts
+    url: https://masstransit.massient.com/concepts
 ---
 
 ## いつ使うか

@@ -26,12 +26,12 @@ related:
   - label: Temporal
     slug: temporal
 references:
-  - title: "Human interaction in durable functions"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview#human
+  - title: "Durable orchestrations overview"
+    url: https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-orchestrations
   - title: "Wait for external events in durable orchestrations"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-external-events
+    url: https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-external-events
   - title: "Temporal signals"
-    url: https://docs.temporal.io/encyclopedia/application-message-passing
+    url: https://docs.temporal.io/encyclopedia/workflow-message-passing
 ---
 
 承認は、名前に値するタイムアウトがないことに気づくまでは、別のサービスの呼び出しのように見えます。サービスは 1 秒で答えるか失敗したかのどちらかですが、人は 1 時間後に答えることもあれば、月曜に答えることも、2 回催促されてから答えることもあります。そのどれも失敗ではありません。承認を呼び出しではなく状態にするのは、この違い 1 つです。

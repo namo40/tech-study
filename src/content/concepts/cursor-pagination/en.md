@@ -32,7 +32,7 @@ references:
   - title: RESTful web API design
     url: https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design
   - title: Pagination in Azure Cosmos DB
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/query/pagination
+    url: https://learn.microsoft.com/en-us/cosmos-db/query/pagination
 ---
 
 A cursor is a bookmark made of a row rather than of a count. Instead of "give me the fourth page", the reader says "give me what comes after the row I last saw", and the database turns that into `WHERE key > @after ORDER BY key LIMIT 20`. Because the ordering column is indexed and the comparison is a range, the engine seeks straight to that position and reads twenty rows. It does not produce the rows in front of the page, so it does not pay for them: the second page and the two thousandth page cost the same, and the query plan is the same shape for both. That flatness is the first of the two reasons to reach for a cursor, and on any endpoint whose depth is unbounded it is the decisive one.

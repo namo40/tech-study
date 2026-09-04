@@ -25,7 +25,7 @@ references:
     url: https://learn.microsoft.com/en-us/dotnet/standard/memory-and-spans/
 ---
 
-A buffer per request is the most ordinary allocation a service makes and one of the most expensive. At a thousand requests a second, a 64 KB read buffer is 64 MB a second of garbage: enough to fill gen0 several times over, and if the buffer is larger than 85,000 bytes, enough to churn the large object heap and force full collections. `ArrayPool<T>` removes the allocation rather than making it cheaper. The array is created once, handed out, handed back, and handed out again.
+A buffer per request is the most ordinary allocation a service makes and one of the most expensive. At a thousand requests a second, a 64 KB read buffer is 64 MB a second of garbage: enough to fill gen0 several times over, and if the buffer is 85,000 bytes or more, enough to churn the large object heap and force full collections. `ArrayPool<T>` removes the allocation rather than making it cheaper. The array is created once, handed out, handed back, and handed out again.
 
 Two things about `Rent` surprise people the first time, and both follow from the pool being a set of size buckets rather than a warehouse of exact arrays. The array you get back is at least the length you asked for and usually longer, so `buffer.Length` is not your length and you have to carry the count you actually filled. And the contents are whatever the previous renter left, because clearing on every rent would put back some of the cost the pool exists to remove. Ask for `Rent(64 * 1024)`, read `n` bytes into it, and work with the first `n` — never with the whole array.
 

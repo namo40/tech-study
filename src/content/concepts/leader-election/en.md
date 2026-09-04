@@ -7,9 +7,9 @@ steps:
   - title: "Three start, one leads"
     text: "Three identical instances boot and all ask the same lease store for one named lease. The store grants it to exactly one; the winner becomes the leader and starts the work, and the rest stand by as followers."
   - title: "Leadership is a lease, not a title"
-    text: "The leader keeps its seat only as long as it renews before the TTL runs out. Stop renewing — a crash, a long pause, a network split — and the seat simply expires. That expiry is the whole safety mechanism."
+    text: "The leader keeps its seat only as long as it renews before the TTL runs out. Stop renewing — a crash, a long pause, a network split — and the seat simply expires. That expiry frees the seat from a dead holder; the epoch keeps it safe."
   - title: "The leader dies; still only one leads"
-    text: "The lease runs out, both followers race for it, and the store grants exactly one — the epoch ticks up. When the old leader comes back and tries to renew, its stale epoch is refused. Two nodes that both believe they lead — a split brain — is the one thing this machinery exists to prevent."
+    text: "The lease runs out, the next follower to look wins it and the one after is refused — the epoch ticks up. When the old leader comes back and tries to renew, its stale epoch is refused too. Split brain is the one thing this machinery prevents."
   - title: "All of it exists so the job runs once"
     text: "Watch the work strip: through boots, deaths and re-elections, the ticks stay in one unbroken lane and the duplicate counter never moves. One seat — sometimes briefly empty, never shared."
 related:
@@ -21,6 +21,10 @@ related:
     slug: fencing-token
   - label: Lease TTL
     slug: lease-ttl
+  - label: Lease Renewal
+    slug: lease-renewal
+  - label: Kubernetes Lease
+    slug: kubernetes-lease
   - label: Split Brain
     slug: split-brain
   - label: Singleton Worker
@@ -108,7 +112,20 @@ public sealed class LeaderLoop(ILeaseStore store, ILogger<LeaderLoop> log) : Bac
         finally
         {
             await seat.CancelAsync();
-            await work.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken.None);
+            try
+            {
+                await work.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken.None);
+            }
+            catch (OperationCanceledException)
+            {
+                // The expected way for cancelled work to end.
+            }
+            catch (TimeoutException)
+            {
+                log.LogWarning("work did not stop within the grace period");
+            }
+            // Anything thrown here would leave ExecuteAsync, and the default
+            // BackgroundServiceExceptionBehavior would stop the host.
         }
     }
 }
@@ -116,18 +133,18 @@ public sealed class LeaderLoop(ILeaseStore store, ILogger<LeaderLoop> log) : Bac
 
 Two details in that loop are the whole pattern. The renewal is its own `Task.Delay` cadence rather than something the work calls between items, so a slow unit of work cannot delay it. And `seat` is cancelled the instant a renewal fails, so the work stops on the same signal that the lease vanished on.
 
-The lease primitive itself is whatever the platform already has. In Kubernetes it is a `Lease` object in `coordination.k8s.io`, which the .NET client can create and update, and whose `spec.renewTime` and `spec.leaseTransitions` are exactly the record card and the epoch. On SQL Server, `sp_getapplock` inside a session held open by the leader gives the same thing without another dependency. On Azure, a blob lease with a fixed duration is a lease in the plainest possible form.
+The lease primitive itself is whatever the platform already has. In Kubernetes it is a `Lease` object in `coordination.k8s.io`, which the .NET client can create and update, and whose `spec.renewTime` and `spec.leaseTransitions` are roughly the record card and the epoch — though `leaseTransitions` is written by the client that takes the seat rather than minted by the server, so it is an epoch by convention and not by construction. On SQL Server, `sp_getapplock` inside a session held open by the leader gives the exclusion half without another dependency; the epoch still has to come from a row like the one above. On Azure, a blob lease with a fixed duration is a lease in the plainest possible form.
 
 ```csharp
 // SQL Server: one row, one holder, an expiry, and a number that only goes up.
 const string acquire = """
     UPDATE leases
        SET holder = @identity,
-           expires_at = SYSUTCDATETIME() + @ttl,
+           expires_at = DATEADD(SECOND, @ttlSeconds, SYSUTCDATETIME()),
            epoch = epoch + 1
+    OUTPUT inserted.epoch
      WHERE name = @name
-       AND (holder IS NULL OR expires_at <= SYSUTCDATETIME())
-    OUTPUT inserted.epoch;
+       AND (holder IS NULL OR expires_at <= SYSUTCDATETIME());
     """;
 ```
 
@@ -142,4 +159,4 @@ const string commit = """
     """;
 ```
 
-The clock is the last thing worth saying out loud. Every expiry decision belongs to the store, not to the instances, because two machines never agree on the time closely enough to be trusted with a seat. Ask the store whether the lease is still yours and use `TimeProvider` for the delays; never compare a local `DateTime.UtcNow` against an expiry that somebody else wrote.
+The clock is the last thing worth saying out loud. Every expiry decision belongs to the store, or, on Kubernetes, to the candidates reading the store's record; never to the holder's own clock, because two machines never agree on the time closely enough to be trusted with a seat. Ask the store whether the lease is still yours and use `TimeProvider` for the delays; never compare a local `DateTime.UtcNow` against an expiry that somebody else wrote.

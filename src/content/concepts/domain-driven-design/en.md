@@ -6,9 +6,9 @@ tags: ["consistency"]
 scene: domain-driven-design
 steps:
   - title: "A model everyone shares is a model no one owns"
-    text: "The ghost shows one Order object grown to serve sales, shipping and billing at once — forty fields, four meanings per word, and every change a negotiation. DDD starts with a confession: the business does not have one model. Draw borders where the language changes."
+    text: "The ghost shows one Order object grown field by field until it serves sales and shipping at once, every change a negotiation. DDD starts with a confession: the business does not have one model. Draw borders where the language changes."
   - title: "Inside a bounded context, one word means one thing"
-    text: "Sales' Order knows prices and discounts; Shipping's Order knows addresses and boxes. Same word, two models, both small and both right — because each is defined by the questions its own context asks. The border is not a wall against people; it is a promise about meaning."
+    text: "Sales' Order knows prices and totals; Shipping's Order knows addresses and item counts. Same word, two models, both small and both right, because each is defined by the questions its own context asks. The border is a promise about meaning."
   - title: "The aggregate root is the border's gatekeeper for consistency"
     text: "Order lines change only through the Order — the root checks the invariant (the total must match) on every change, so no writer can sneak past and break it. Outside references hold the root's id, never a line. One door, one guard, one always-true rule."
   - title: "Contexts talk by translation, not by sharing"
@@ -41,6 +41,8 @@ related:
   - label: Transactional Outbox
     slug: transactional-outbox
 references:
+  - title: "Domain-Driven Design Reference"
+    url: https://www.domainlanguage.com/ddd/reference/
   - title: "Design a DDD-oriented microservice"
     url: https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice
   - title: "Using domain analysis to model microservices"
@@ -73,11 +75,14 @@ An aggregate is a plain class. No base class, no framework, no attributes — pr
 ```csharp
 public class Order
 {
+    private const int MaxLines = 500;
     private readonly List<OrderLine> _lines = new();
 
     public Guid Id { get; private set; } = Guid.NewGuid();
     public Guid CustomerId { get; private set; }          // an id, not a Customer
+    public OrderStatus Status { get; private set; } = OrderStatus.Draft;
     public decimal Total { get; private set; }
+    public Address ShipTo { get; private set; } = null!;  // a value object, set on creation
     public IReadOnlyCollection<OrderLine> Lines => _lines;
 
     // The one door. Everything the invariant depends on is inside this class,
@@ -90,24 +95,26 @@ public class Order
         CheckInvariants();
     }
 
+    // The rules that have to hold at the end of every change, in one place.
     private void CheckInvariants()
     {
-        if (Total != _lines.Sum(l => l.Quantity * l.Price))
-            throw new DomainException("the total no longer matches the lines");
+        if (Status != OrderStatus.Draft)
+            throw new DomainException("a placed order cannot change its lines");
+        if (_lines.Count > MaxLines)
+            throw new DomainException($"an order may not have more than {MaxLines} lines");
     }
 }
 ```
 
 `order.AddLine(...)` rather than `order.Lines.Add(...)` is the whole design in one line: the second spelling is a write that went around the guard, and the type system refuses it because `Lines` is an `IReadOnlyCollection` over a private list.
 
-EF Core persists that shape without leaking it. Backing fields let the collection stay private, and owned types let a value object be columns on the parent table rather than a table of its own.
+EF Core persists that shape without leaking it. It discovers the private `_lines` field by convention and reads and writes it directly rather than going through the property, so the collection stays private with no configuration at all, and owned types let a value object be columns on the parent table rather than a table of its own.
 
 ```csharp
 protected override void OnModelCreating(ModelBuilder model)
 {
     model.Entity<Order>(order =>
     {
-        order.Navigation(o => o.Lines).UsePropertyAccessMode(PropertyAccessMode.Field);
         order.OwnsMany(o => o.Lines);              // lines have no life of their own
         order.OwnsOne(o => o.ShipTo);              // a value object, not an entity
         order.Property(o => o.Total).HasPrecision(18, 2);
@@ -139,18 +146,24 @@ public class Order
         Status = OrderStatus.Placed;
         _events.Add(new OrderPlaced(Id, CustomerId, _lines.Count));
     }
+
+    public void ClearEvents() => _events.Clear();
 }
 
-// One DbContext per context, and the events go out with the commit.
+// One DbContext per context, and the events go out with the commit. `mediator`
+// is injected into this context's constructor.
 public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
 {
     var roots = ChangeTracker.Entries<Order>().Select(e => e.Entity).ToList();
     var events = roots.SelectMany(r => r.Events).ToList();
     var saved = await base.SaveChangesAsync(ct);
     foreach (var e in events) await mediator.Publish(e, ct);   // after the commit
+    roots.ForEach(r => r.ClearEvents());                       // or the next save publishes them again
     return saved;
 }
 ```
+
+Publishing in process after the commit is at-most-once: if the process dies between the commit and the publish, the event is simply gone. That is acceptable for a subscriber inside the same deployable, which can be rebuilt from the data; anything that has to cross a service boundary goes through a transactional outbox written in the same transaction as the change.
 
 Shipping subscribes to `OrderPlaced` and builds its own `Shipment` from the fields it cares about. It does not reference the Sales assembly and it does not deserialize a Sales class: the event is a contract of names and primitives, and the handler is the translation.
 
@@ -164,5 +177,7 @@ public class OrderPlacedHandler : INotificationHandler<OrderPlaced>
     }
 }
 ```
+
+`INotificationHandler<T>` and `mediator.Publish` above are MediatR, and it is worth naming because the licence changed: version 13.0 and later are commercial, with a free community tier for small organisations, while earlier versions stay under their original open-source licence. Check which side of that line you are on before taking the dependency, or dispatch to your own `IDomainEventHandler<T>` from a handful of lines in the composition root and keep the concept without the package.
 
 One `DbContext` per bounded context, one assembly per bounded context, and never a shared `Entities` project. When the two contexts eventually become two services, the only thing that changes is how the event gets from one to the other — which is the point of having drawn the border first.

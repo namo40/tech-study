@@ -68,4 +68,4 @@ builder.Services.AddReverseProxy().LoadFromMemory(
     ]);
 ```
 
-The `ActivityTimeout` above is not decoration. Least connections only works if a request eventually leaves the count, and a request that hangs forever holds a slot forever: the policy and the timeout are the same mechanism seen from two ends. Nginx spells the policy `least_conn`, HAProxy spells it `leastconn`, and Envoy's default is `LEAST_REQUEST`, which is power-of-two-choices with a configurable sample size.
+The `ActivityTimeout` above is not decoration. Least connections only works if a request eventually leaves the count, and a request that hangs forever holds a slot forever: the policy and the timeout are the same mechanism seen from two ends. Nginx spells the policy `least_conn`, HAProxy spells it `leastconn`, and Envoy's `LEAST_REQUEST` is power-of-two-choices with a configurable sample size, though the policy an Envoy cluster gets when it names none is `ROUND_ROBIN`.

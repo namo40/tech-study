@@ -88,3 +88,5 @@ public sealed class UserReader(HybridCache cache, UserRepository repository)
 ```
 
 `HybridCache` collapses concurrent misses for the same key into a single call, which is the stampede protection you would otherwise have to write yourself. When an `IDistributedCache` is registered it becomes the second level, so a shared cache such as Redis sits behind the in-process one.
+
+One detail the shape above hides: a `null` from `FindAsync` is cached like any other value, on the same five-minute expiry, because the entry options are fixed before the factory runs. If missing keys arrive in bulk, that is not the brief negative cache the fourth caution asks for, and the negative cache page has the sentinel-and-short-TTL shape that is.

@@ -3,7 +3,6 @@ title: "Connection Lifetime"
 summary: "接続の寿命は、プールに入っている接続の引退年齢です。返す瞬間に上限より古い接続はプールへ戻らず捨てられます。この設定がある理由は再分配です。引退しない接続は、開いたときに結びついたサーバーのノードにずっと縛られたままだからです。"
 category: "プールとリソース管理"
 scene: database-connection-pool
-sceneStep: 4
 related:
   - label: Database Connection Pool
     slug: database-connection-pool

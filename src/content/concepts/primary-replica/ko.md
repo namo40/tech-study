@@ -29,7 +29,7 @@ references:
   - title: "Availability modes (Always On availability groups)"
     url: https://learn.microsoft.com/en-us/sql/database-engine/availability-groups/windows/availability-modes-always-on-availability-groups
   - title: "Auto-failover groups (Azure SQL Database)"
-    url: https://learn.microsoft.com/en-us/azure/azure-sql/database/auto-failover-group-sql-db
+    url: https://learn.microsoft.com/en-us/azure/azure-sql/database/failover-group-sql-db
   - title: "Failover and load balancing (Npgsql)"
     url: https://www.npgsql.org/doc/failover-and-load-balancing.html
 ---

@@ -12,7 +12,7 @@ related:
     slug: idempotent-consumer
   - label: Deduplication
     slug: deduplication
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
   - label: Correlation ID
     slug: correlation-id
@@ -33,4 +33,4 @@ Where the id comes from decides whether it holds. It has to be assigned when the
 
 The consumer side is the half that costs something. Recognising a repeat means remembering what has already been handled, which means a table of seen ids with an index on the id and a policy for how long a row stays. That window is a real decision: too short and a message that was stuck in a retry queue for an hour comes back looking new, too long and the table grows without bound. Size it against the longest redelivery your broker and your relay can produce together, and write the seen-id row in the same transaction as the work the message caused, or a crash between the two brings you back to handling the message twice.
 
-Brokers can do part of this for you. Azure Service Bus takes `MessageId` and, when duplicate detection is enabled on the entity, drops a second message with an id it has seen inside the configured window, which removes the repeats a flaky publisher produces before they reach anyone. It does not remove the repeats a consumer produces by failing after it handled a message and before it acknowledged it, so the id still has to be visible to your own code. Keep it distinct from the correlation id, too: the message id names this message, and the correlation id names the conversation it belongs to. Using one for the other makes every message in a flow look like a duplicate of the first.
+Brokers can do part of this for you. Azure Service Bus takes `MessageId` and, when duplicate detection is enabled on the entity, drops a second message with an id it has seen inside the configured window, which defaults to ten minutes and can be set anywhere from twenty seconds to seven days. That removes the repeats a flaky publisher produces before they reach anyone, and it also removes some you meant to send: scheduled messages are checked too, so a retry copy or a dead-letter resubmit that keeps the original id is reported as sent and then discarded while the window is open. It does not remove the repeats a consumer produces by failing after it handled a message and before it acknowledged it, so the id still has to be visible to your own code. Keep it distinct from the correlation id, too: the message id names this message, and the correlation id names the conversation it belongs to. Using one for the other makes every message in a flow look like a duplicate of the first.

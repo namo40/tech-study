@@ -44,7 +44,7 @@ references:
 
 ## In .NET
 
-`RoundRobin` is YARP's default policy, and `FirstAlphabetical` is the one to reach for when you deliberately want no spreading at all. Weights live on the destination as metadata that a weighted policy reads.
+`RoundRobin` is one of YARP's built-in policies — the default, if a cluster names none, is `PowerOfTwoChoices` — and `FirstAlphabetical` is the one to reach for when you deliberately want no spreading at all. None of the built-in policies is weighted: weights go on the destination as metadata, and a custom `ILoadBalancingPolicy` is what reads them.
 
 ```csharp
 builder.Services.AddReverseProxy().LoadFromMemory(

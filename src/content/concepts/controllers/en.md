@@ -27,7 +27,7 @@ references:
 
 ## Cautions
 
-- There is per-action machinery, and on a hot path it is measurable. Action selection, model binding, filter invocation and result execution all cost something per request, and for a very small service under heavy load minimal-apis avoids that layer entirely. For an ordinary API dominated by database and network time, the difference is noise.
+- There is per-action machinery, and on a hot path it is measurable. Action selection, model binding, filter invocation and result execution all cost something per request, and for a very small service under heavy load minimal APIs avoid that layer entirely. For an ordinary API dominated by database and network time, the difference is noise.
 - A controller with forty actions is just a large class with routing attributes. The usual remedies apply: split by resource rather than by verb, push logic into services the actions call, and treat the controller as a thin translation between HTTP and the domain. Growth is what makes controllers useful and what makes them unreadable, depending on whether anybody splits them.
 - The automatic `400` is convenient and is not the whole error story. `[ApiController]` turns an invalid `ModelState` into a `ValidationProblemDetails` response before the action runs, which is a narrower promise than a uniform error format: making every failure, including unhandled exceptions and bare status codes, come back as `application/problem+json` takes `AddProblemDetails` and exception handling configured on top.
 - The choice between the two models is about surface size and how much convention you want, not ideology. Both are built on the same endpoint routing, run through the same middleware pipeline, and are hosted by the same server, so an application can map minimal endpoints for a webhook and use controllers for the main API without any contradiction.
@@ -42,19 +42,20 @@ references:
 public class OrdersController(IOrderStore store) : ControllerBase
 {
     // ActionResult<T> keeps both the payload type and the status codes visible,
-    // which is also what OpenAPI generation reads.
+    // which is also what OpenAPI generation reads. A CancellationToken
+    // parameter binds to HttpContext.RequestAborted.
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Order>> Get(Guid id) =>
-        await store.FindAsync(id) is { } order ? Ok(order) : NotFound();
+    public async Task<ActionResult<Order>> Get(Guid id, CancellationToken ct) =>
+        await store.FindAsync(id, ct) is { } order ? Ok(order) : NotFound();
 
     // With [ApiController], an invalid model is answered 400 with
     // ValidationProblemDetails before this body runs. Checking ModelState
     // here would be dead code.
     [HttpPost]
-    public async Task<ActionResult<Order>> Create(OrderInput input)
+    public async Task<ActionResult<Order>> Create(OrderInput input, CancellationToken ct)
     {
-        var created = await store.CreateAsync(input);
+        var created = await store.CreateAsync(input, ct);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 }

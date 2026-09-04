@@ -8,7 +8,7 @@ steps:
   - title: "Two environments, one taking traffic"
     text: "Blue serves 100% while v2 is deployed to Green beside it. Green warms up, passes its health checks, even takes a smoke test — all without a single production request."
   - title: "One switch there, one switch back"
-    text: "Traffic flips to Green in a single move. When errors surface, flipping back is just as instant, because Blue is still warm. Blue-green buys the cheapest rollback there is: the old version, still running."
+    text: "Traffic flips to Green in a single move. When errors surface, flipping back is just as instant, because Blue is still warm. Fix it and flip again. Blue-green buys the cheapest rollback there is: the old version, still running."
   - title: "A dial instead of a switch"
     text: "A canary sends 10% first and watches the error rate. Bad version? Roll back having burned only 10%. Good one? Widen to 50, then 100. The metric, not the calendar, sets the pace."
   - title: "The database does not get a Green"
@@ -70,7 +70,7 @@ az webapp deployment slot swap --resource-group shop --name shop-api --slot stag
 az webapp deployment slot swap --resource-group shop --name shop-api --slot staging
 ```
 
-Warmup is what keeps the first request after the swap from being the slow one. `applicationInitialization` tells the platform which paths to hit before the slot is considered ready, and the slot-specific settings are the ones that must not travel with the swap.
+Warmup is what keeps the first request after the swap from being the slow one. On Windows plans `applicationInitialization` in `web.config` tells the platform which paths to hit before the slot is considered ready; on Linux plans, and as an alternative that works on either, the `WEBSITE_SWAP_WARMUP_PING_PATH` and `WEBSITE_SWAP_WARMUP_PING_STATUSES` app settings say the same thing. Either way, the slot-specific settings are the ones that must not travel with the swap.
 
 ```xml
 <system.webServer>

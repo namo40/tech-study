@@ -25,8 +25,8 @@ references:
     url: https://www.rfc-editor.org/rfc/rfc7636
   - title: "OAuth 2.0 Security Best Current Practice (RFC 9700)"
     url: https://www.rfc-editor.org/info/rfc9700/
-  - title: OAuth 2.0 for Browser-Based Apps
-    url: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-browser-based-apps
+  - title: "OAuth 2.0 for Browser-Based Applications (RFC 10017)"
+    url: https://www.rfc-editor.org/rfc/rfc10017
 ---
 
 The third step of the scene changes one thing about the app: it has no client secret. A single-page app ships its source to every visitor and a mobile app ships a binary anyone can unpack, so a secret compiled into either of them is a secret only until somebody looks. That removes the check the second step relied on. The code still travels the front channel, an attacker can still copy it out of a URL, and now nothing at `/token` can tell the two callers apart.
@@ -37,4 +37,4 @@ What makes this work is that only the hash ever crosses the front channel. An at
 
 Use it everywhere, including on confidential clients that do have a secret. The current security guidance treats PKCE as part of the authorization code flow rather than an option on it, because it also defends a confidential client against code injection, where an attacker gets a victim's browser to redeem the attacker's code and quietly links the two accounts. Always use `S256`; the `plain` method exists only for clients that cannot compute a hash, and it protects nothing when the challenge and the verifier are the same string.
 
-In .NET there is nothing to build. `AddOpenIdConnect` sets `UsePkce = true` by default, generates the verifier, keeps it in the correlation cookie for the round trip, and sends it back on the exchange. For mobile and desktop clients, the same is true of the officially recommended libraries; for a SPA, prefer a backend that runs the flow so the tokens never reach the browser at all, and let PKCE protect the code on the way through it.
+In .NET there is nothing to build. `AddOpenIdConnect` sets `UsePkce = true` by default, generates the verifier, and keeps it for the round trip inside the encrypted `state` parameter rather than anywhere the browser can read it; a correlation cookie ties the response back to the request that started it. On the exchange the handler unprotects the state and sends the verifier along with the code. For mobile and desktop clients, the same is true of the officially recommended libraries; for a SPA, prefer a backend that runs the flow so the tokens never reach the browser at all, and let PKCE protect the code on the way through it.

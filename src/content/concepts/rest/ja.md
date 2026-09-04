@@ -5,7 +5,7 @@ category: "API とリアルタイム通信"
 related:
   - label: gRPC
     slug: grpc
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
   - label: Idempotency
     slug: idempotency

@@ -1,6 +1,6 @@
 ---
 title: "Health Check"
-summary: "A health check is a small endpoint a supervisor calls on a schedule to decide something about the instance behind it. The mechanism is always the same: ask, wait, count the answer. What differs, and what matters, is which question you asked and what the caller does with the answer."
+summary: "A health check is a small endpoint a supervisor calls on a schedule to decide something about the instance behind it, and the mechanism is always the same: ask, wait, count the answer. What differs, and what matters, is which question you asked and what the caller does with the answer."
 category: "Containers and orchestration"
 scene: readiness-probe
 sceneStep: 1
@@ -40,6 +40,6 @@ The threshold is the part people leave at its default and then find surprising. 
 
 The timeout deserves the same attention. A check with no timeout, or with a timeout longer than the period, turns a slow dependency into a queue of overlapping probes, and an instance that was merely slow becomes an instance that is also being hammered by its own supervisor. Give the check a deadline shorter than the interval, and make the check itself honour that deadline internally rather than relying on the caller to hang up.
 
-Keep the check cheap, and keep it honest about what it touched. Cheap, because it runs on every instance several times a second forever: a check that opens a connection, runs a query and serialises a report is a background load generator that grows with your fleet. Honest, because a check that returns healthy without looking at anything is worse than no check at all. It gives the supervisor confidence it has not earned, and the failure it hides will surface as errors to users rather than as an instance quietly leaving the pool.
+Keep the check cheap, and keep it honest about what it touched. Cheap, because it runs on every instance every few seconds forever: a check that opens a connection, runs a query and serialises a report is a background load generator that grows with your fleet. Honest, because a check that returns healthy without looking at anything is worse than no check at all. It gives the supervisor confidence it has not earned, and the failure it hides will surface as errors to users rather than as an instance quietly leaving the pool.
 
 Finally, treat the check as an interface with a contract, not as a debugging page. It has one consumer, it is called by a machine, and its whole vocabulary is a status code. Detail belongs in logs and metrics where a human can read it; the endpoint that a supervisor polls should stay small enough to reason about, cheap enough to ignore, and specific enough that when it says no, you know which of the two questions it was answering.

@@ -57,7 +57,8 @@ In .NET the client side is a header on an `HttpClient` configured once, and the 
 builder.Services.AddHttpClient("billing", client =>
 {
     client.BaseAddress = new Uri("https://billing.internal/");
-    // The key is a header, never a query string: URLs are logged, headers are not.
+    // The key is a header, never a query string: URLs are logged by default,
+    // headers only if somebody turns request logging on.
     client.DefaultRequestHeaders.Add("X-Api-Key", builder.Configuration["Billing:ApiKey"]);
 });
 ```
@@ -66,6 +67,11 @@ The server side is a small authentication handler, and the two details that matt
 
 ```csharp
 var provided = context.Request.Headers["X-Api-Key"].ToString();
+
+// No header, or one too short to hold a prefix: there is nothing to look up,
+// and indexing into it would throw rather than refuse.
+if (provided.Length < 8) return AuthenticateResult.NoResult();
+
 var digest = SHA256.HashData(Encoding.UTF8.GetBytes(provided));
 
 // One lookup, then a constant-time comparison of the stored digest.

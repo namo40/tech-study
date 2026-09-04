@@ -39,7 +39,7 @@ references:
   - title: RESTful web API design
     url: https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design
   - title: Pagination in Azure Cosmos DB
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/query/pagination
+    url: https://learn.microsoft.com/en-us/cosmos-db/query/pagination
 ---
 
 ## いつ使うか

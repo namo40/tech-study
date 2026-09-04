@@ -1,5 +1,5 @@
 ---
-title: "Web-Queue-Worker"
+title: "Web Queue Worker"
 summary: "Web-Queue-Worker splits a service in two: a web tier that accepts a request and answers it in milliseconds, and workers that take the long jobs off a queue at their own pace. The queue absorbs the peaks, and the two tiers scale on their own."
 category: "Application architecture"
 tags: ["queue"]
@@ -10,7 +10,7 @@ steps:
   - title: "Accept, answer, work later"
     text: "The web tier puts the job on a queue and answers 202 in milliseconds. A worker takes it and runs it at its own pace, and the client asks for the outcome when it wants it: pending now, done a moment later."
   - title: "Load levelling"
-    text: "Twelve requests arrive at once. That is twelve fast 202s and a queue twelve deep, and the workers drain it at the rate they can manage. Nothing in front of the queue slowed down at all."
+    text: "Twelve requests arrive at once. That is twelve fast 202s and a queue ten deep with two already running, and the workers drain it at the rate they can manage. Nothing in front of the queue slowed down at all."
   - title: "Scale the workers, not the web"
     text: "Two more workers turn a queue of six into four jobs at a time. A job that fails twice goes to a dead-letter queue instead of going round the retry loop forever, which is why a handler has to be safe to run more than once."
 related:
@@ -26,7 +26,7 @@ related:
     slug: dead-letter-queue
   - label: Idempotent Consumer
     slug: idempotent-consumer
-  - label: BackgroundService
+  - label: Background Service
     slug: background-service
   - label: Worker Service
     slug: worker-service
@@ -62,16 +62,19 @@ references:
 ## In .NET
 
 ```csharp
+// The job carries its own attempt count, and the first run is attempt 1.
+public sealed record ExportJob(Guid Id, Guid ReportId, int Attempt = 1);
+
 // Web: accept the job, answer 202, and hand back a status URL.
-app.MapPost("/exports", async (ExportRequest request, IJobQueue queue) =>
+app.MapPost("/exports", async (ExportRequest request, IJobQueue queue, CancellationToken ct) =>
 {
     var jobId = Guid.NewGuid();
-    await queue.EnqueueAsync(new ExportJob(jobId, request.ReportId));
+    await queue.EnqueueAsync(new ExportJob(jobId, request.ReportId), ct);
     return Results.Accepted($"/exports/{jobId}");
 });
 
-app.MapGet("/exports/{jobId:guid}", async (Guid jobId, IJobStatus status) =>
-    await status.FindAsync(jobId) is { } job ? Results.Ok(job) : Results.NotFound());
+app.MapGet("/exports/{jobId:guid}", async (Guid jobId, IJobStatus status, CancellationToken ct) =>
+    await status.FindAsync(jobId, ct) is { } job ? Results.Ok(job) : Results.NotFound());
 
 // Worker: a separate deployable that drains the queue.
 public sealed class ExportWorker(IJobQueue queue, IJobStatus status, ILogger<ExportWorker> log)
@@ -87,7 +90,7 @@ public sealed class ExportWorker(IJobQueue queue, IJobStatus status, ILogger<Exp
                 await RunExportAsync(job, ct);
                 await status.MarkDoneAsync(job.Id, ct);
             }
-            catch (Exception ex) when (job.Attempt < 3)
+            catch (Exception ex) when (job.Attempt < 2)   // the second failure dead-letters
             {
                 log.LogWarning(ex, "Export {JobId} failed, attempt {Attempt}", job.Id, job.Attempt);
                 await queue.RequeueAsync(job with { Attempt = job.Attempt + 1 }, ct);

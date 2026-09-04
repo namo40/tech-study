@@ -69,19 +69,24 @@ The visible result is subtraction. The app stops doing the platform's work, whic
 builder.WebHost.ConfigureKestrel(o => o.ListenAnyIP(443, l => l.UseHttps(LoadCertificate())));
 builder.Logging.AddOpenTelemetry(o => o.AddOtlpExporter(e => e.Endpoint = CollectorUri));
 builder.Services.AddHttpClient<PricingClient>(c => c.BaseAddress = new Uri("https://pricing.internal"))
-    .AddPolicyHandler(HttpPolicyExtensions.HandleTransientHttpError()
-        .WaitAndRetryAsync(3, attempt => TimeSpan.FromMilliseconds(200 * attempt)));
+    .AddStandardResilienceHandler();
 ```
 
 ```csharp
 // After: plain HTTP on the loopback, logs to stdout, and a base address that
-// is a port on this very pod. No certificate code, no exporter, no policy.
-builder.WebHost.ConfigureKestrel(o => o.ListenLocalhost(8080));
+// is a port on this very pod. No certificate code, no exporter, no retries.
+builder.WebHost.ConfigureKestrel(o =>
+{
+    o.ListenLocalhost(8080);      // traffic: only the sidecar can reach this
+    o.ListenAnyIP(8081);          // health: the kubelet probes the pod IP
+});
 builder.Logging.AddSimpleConsole(o => o.SingleLine = true);
 builder.Services.AddHttpClient<PricingClient>(c => c.BaseAddress = new Uri("http://localhost:3500"));
 ```
 
-Kestrel listening on `ListenLocalhost` is worth stating plainly: the app is no longer reachable from outside the pod at all, and the only thing that can call it is a process sharing the pod's network namespace. That is the sidecar. Terminating TLS somewhere else is not a downgrade if the plaintext never leaves the loopback.
+Kestrel listening on `ListenLocalhost` is worth stating plainly: the traffic port is no longer reachable from outside the pod at all, and the only thing that can call it is a process sharing the pod's network namespace. That is the sidecar. Terminating TLS somewhere else is not a downgrade if the plaintext never leaves the loopback.
+
+The kubelet is not such a process, which is why there is a second listener. An `httpGet` or `tcpSocket` probe connects to the pod IP unless its `host` field says otherwise, so a probe aimed at a loopback-only listener never gets an answer and readiness fails forever. There are three ways out: a listener on the pod IP carrying the health endpoints and nothing else, as above; a probe pointed at the sidecar's port, with the sidecar forwarding to the app; or an `exec` probe, which runs inside the container and can therefore use the loopback.
 
 The manifest is where the second seat and the shared lifetime are declared. The native sidecar is an init container that never exits, which is what buys the start-before and stop-after ordering.
 
@@ -98,6 +103,8 @@ spec:
   containers:
     - name: app
       image: registry.internal/shop/api:9.3.1
+      readinessProbe:
+        httpGet: { path: /healthz/ready, port: 8081 }   # the pod IP, not the loopback
       env:
         - name: PRICING_BASE_URL
           value: http://localhost:3500      # the ambassador, not the real host
@@ -110,8 +117,11 @@ builder.Services.AddHealthChecks()
     .AddDbContextCheck<ShopDbContext>("db")
     .AddCheck("self", () => HealthCheckResult.Healthy());
 
-app.MapHealthChecks("/healthz/ready", new HealthCheckOptions { Predicate = _ => true });
-app.MapHealthChecks("/healthz/live", new HealthCheckOptions { Predicate = c => c.Name == "self" });
+// Bound to the health listener, so nothing on the traffic port serves them.
+app.MapHealthChecks("/healthz/ready", new HealthCheckOptions { Predicate = _ => true })
+   .RequireHost("*:8081");
+app.MapHealthChecks("/healthz/live", new HealthCheckOptions { Predicate = c => c.Name == "self" })
+   .RequireHost("*:8081");
 ```
 
 Dapr is the ready-made version of this for .NET, and it is worth naming because it is the same picture with the parts already built: a sidecar per pod that does service invocation, pub/sub, state and secrets, and an SDK whose calls resolve to `http://localhost:3500` on the way out.

@@ -12,7 +12,7 @@ steps:
   - title: "Lifetime is decided at registration"
     text: "Run two requests and count the boxes: the singleton serves both from one instance, scoped makes one per request, transient makes one per injection. Same classes, three growth curves — chosen where the type is registered, not where it is used. Most lifetime bugs are just a mismatch between those two places."
   - title: "The container has a life of its own"
-    text: "It is built once at startup — registrations close, mistakes surface here, not at 3 a.m. Every request opens a scope and closes it, taking the scoped instances with it. At shutdown, disposal runs in reverse order of creation. The application's lifetime is the container's lifetime; everything else lives inside one of its scopes."
+    text: "It is built once — in a real host before the first request; here the lamp lights late so you can watch the registrations close. Every scope closes taking its instances with it, disposing in reverse order of creation, and so does shutdown."
 related:
   - label: Hexagonal Architecture
     slug: hexagonal-architecture
@@ -36,9 +36,9 @@ related:
     slug: graceful-shutdown
 references:
   - title: Dependency injection in .NET
-    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection
+    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/overview
   - title: Dependency injection guidelines
-    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection-guidelines
+    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines
   - title: Dependency injection in ASP.NET Core
     url: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection
 ---
@@ -120,4 +120,4 @@ public sealed class OutboxPump(IServiceScopeFactory scopeFactory)
 }
 ```
 
-The rest is the host. `IHostApplicationLifetime` gives you the started, stopping and stopped events; `builder.Services.Configure<T>` and `IOptions<T>` make configuration an injected dependency like any other; and `IHost.StopAsync` disposes the container, which disposes everything it is still holding in reverse order of creation. The application's lifetime is the container's lifetime, and everything else lives inside one of its scopes.
+The rest is the host. `IHostApplicationLifetime` gives you the started, stopping and stopped events; `builder.Services.Configure<T>` and `IOptions<T>` make configuration an injected dependency like any other; and `IHost.StopAsync` stops the hosted services, after which disposing the host — which `Run` does for you — disposes the container and everything it is still holding, in reverse order of creation. The application's lifetime is the container's lifetime, and everything else lives inside one of its scopes.

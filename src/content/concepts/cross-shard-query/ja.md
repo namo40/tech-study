@@ -37,7 +37,7 @@ references:
   - title: Sharding pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding
   - title: Query an Azure Cosmos DB container
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/how-to-query-container
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-query-container
   - title: Materialized View pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/materialized-view
 ---

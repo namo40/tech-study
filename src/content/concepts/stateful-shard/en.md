@@ -26,7 +26,7 @@ related:
     slug: eventual-consistency
 references:
   - title: Partitioning and horizontal scaling in Azure Cosmos DB
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning
   - title: Sharding pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding
   - title: Partition Service Fabric reliable services

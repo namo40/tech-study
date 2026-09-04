@@ -12,7 +12,7 @@ steps:
   - title: "What fills the space is the key, not the data"
     text: "Trivially different keys for the same answer each claim a slot, and honest entries get pushed out to make room for duplicates. Normalize the key and the variants collapse into one slot. Cardinality is eviction pressure — you design it when you design the key."
   - title: "Being evicted should be a decision, not an accident"
-    text: "Keep the size limit, but rank the entries: pin what must survive, let LRU spend the rest. The same pressure replays and the hot key never leaves. A cache without priorities treats your checkout page and a stale thumbnail as equals."
+    text: "Keep the size limit, but rank the entries: pin what must survive, let LRU spend the rest. The pinned entry is never a candidate, whatever the pressure. A cache without priorities treats your checkout page and a stale thumbnail as equals."
 related:
   - label: Cache-Aside
     slug: cache-aside
@@ -58,7 +58,7 @@ Eviction is not a feature you turn on. Every bounded cache evicts, and every unb
 
 ## Cautions
 
-- `MemoryCache` without a `SizeLimit` is unbounded until the machine complains. It has no default cap: entries accumulate, and the only thing that removes them is expiration or a compaction triggered by GC memory pressure, which arrives late and takes 5% to 10% of the cache with it rather than the entries you would have chosen. Setting a limit is what turns eviction from an accident into a policy.
+- `MemoryCache` without a `SizeLimit` is unbounded until the machine complains. It has no default cap and the runtime never trims it on your behalf, not even when the system is low on memory: entries accumulate, and nothing but expiration ever removes one. Set a limit and exceeding it triggers a background compaction of `CompactionPercentage`, 5% by default, which is what turns eviction from an accident into a policy.
 - Sizes are unitless, and one entry without a size disables the limit for everybody. `SizeLimit` counts whatever `Size` means in your application — bytes, rows, a flat 1 per entry — and the number only has to be consistent. But an entry added without a size while a limit is set throws, and code paths that bypass your helper are exactly where that is discovered. Pick the unit once, put it in the options factory, and never set sizes at the call site.
 - LRU is vulnerable to a scan. One pass over a large collection touches every key exactly once, and each of those touches looks more recent than the working set you spent the day building, so the pass evicts everything valuable and then evicts itself. If a background job, a report or an admin screen sweeps the same data your hot path caches, that job needs either its own cache, a priority low enough to lose, or no cache at all.
 - Eviction is not expiration, and confusing them produces bugs in both directions. TTL answers "is this still true"; eviction answers "do we have room". A perfectly fresh entry can be evicted a second after it was written, and a stale entry can sit untouched for as long as its TTL allows. Never use a size limit as a freshness mechanism, and never assume a TTL bounds memory.
@@ -67,7 +67,7 @@ Eviction is not a feature you turn on. Every bounded cache evicts, and every unb
 
 ## In .NET
 
-- Set a limit and give every entry a size. This is the whole of the bounded-cache setup, and the two halves have to agree on what the number means.
+- Set a limit and give every entry a size. This is the whole of the bounded-cache setup, and the two halves have to agree on what the number means. Note that `MemoryCache` does not evict one victim synchronously to make room for the newcomer the way the scene draws it: an entry that would push the total past the limit is dropped instead of stored, and the compaction runs in the background afterwards, so a full cache briefly refuses writes rather than swapping one entry for another.
 
 ```csharp
 builder.Services.AddSingleton<IMemoryCache>(_ => new MemoryCache(new MemoryCacheOptions
@@ -103,7 +103,7 @@ options.RegisterPostEvictionCallback((key, value, reason, state) =>
 });
 ```
 
-- Output caching makes the vary-by the key, so the policy question moves there. `SizeLimit` and `MaximumBodySize` bound the store, and every `SetVaryByQuery`, `SetVaryByHeader` or `VaryByRouteValue` you add multiplies the entries competing inside it. A policy that varies by a header the client controls freely is a cache with an unbounded key space and a bounded size, which is the worst of both.
+- Output caching makes the vary-by the key, so the policy question moves there. `SizeLimit` and `MaximumBodySize` bound the store, and every `SetVaryByQuery`, `SetVaryByHeader` or `SetVaryByRouteValue` you add multiplies the entries competing inside it. A policy that varies by a header the client controls freely is a cache with an unbounded key space and a bounded size, which is the worst of both.
 
 ```csharp
 builder.Services.AddOutputCache(options =>
@@ -115,5 +115,5 @@ builder.Services.AddOutputCache(options =>
 });
 ```
 
-- `HybridCache` puts a small in-process cache in front of a distributed one, and only the local half evicts under memory pressure. That is usually what you want — the near cache is a working set and the far cache is the store — but it means a local eviction is invisible in the distributed hit ratio, and the two need separate counters before you can say which one is thrashing.
+- `HybridCache` puts a small in-process cache in front of a distributed one, and the local half is your `IMemoryCache`, so it is bounded only if you gave that cache a `SizeLimit`. Otherwise `LocalCacheExpiration` is the only thing shrinking it. Separately, an entry larger than `MaximumPayloadBytes` (1 MB by default) is logged and never stored at all, in either layer. The near cache is a working set and the far cache is the store, which is usually what you want, but it means a local eviction is invisible in the distributed hit ratio, and the two need separate counters before you can say which one is thrashing.
 - On the distributed side the policy is the server's, not yours. Redis evicts according to its own `maxmemory-policy`, and `allkeys-lru` and `volatile-lru` behave very differently when most of your keys have no TTL: the second one will refuse to evict and start failing writes instead. Whatever your application believes about its cache, the server holds the actual limit.

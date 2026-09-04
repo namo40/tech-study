@@ -25,7 +25,7 @@ related:
     slug: compiled-query
   - label: Query Plan
     slug: query-plan
-  - label: Index
+  - label: Database Index
     slug: database-index
   - label: Dapper
     slug: dapper

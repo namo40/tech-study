@@ -30,7 +30,7 @@ references:
 ## When to use
 
 - Adopt it when you want the instrumentation to outlive the vendor. The spans and metrics your code emits stay the same when the backend changes; only the exporter configuration moves. That is the whole promise, and it is worth having before the first contract renewal rather than during it.
-- Reach for it when traces, metrics and logs need to answer one question together. Because all three carry the same trace id, a slow request can be opened as a span tree, matched against the latency histogram it fell in, and joined to the log lines the same request wrote, without anybody correlating timestamps by hand.
+- Reach for it when traces, metrics and logs need to answer one question together. Traces and logs carry the same trace id, so a slow request can be opened as a span tree and joined to the log lines it wrote without anybody correlating timestamps by hand. Metrics are aggregates and carry no trace id at all; the link from the latency histogram back to an example request is an exemplar, which the SDK attaches only when you turn them on.
 - Use it when a request crosses services written in different languages. The propagation format is the same everywhere, so a .NET gateway calling a Python worker calling a Java service produces one trace rather than three unrelated ones, which is the case where a house instrumentation library stops being cheaper.
 - Standardise on it when several teams are naming the same thing differently. The semantic conventions give attribute names for HTTP, database and messaging operations, and shared names are what make a dashboard portable between services.
 
@@ -57,9 +57,10 @@ builder.Services.AddOpenTelemetry()
         .AddOtlpExporter())
     .WithMetrics(metrics => metrics
         .AddAspNetCoreInstrumentation()
-        .AddRuntimeInstrumentation()
+        // .NET 9 and later publish runtime metrics as a built-in Meter, not a package.
+        .AddMeter("System.Runtime")
         .AddOtlpExporter());
 ```
 
-- The built-in instrumentation covers the boundaries before you write anything. ASP.NET Core produces server spans and the `http.server.request.duration` histogram, `HttpClient` produces the client spans that connect one service to the next, and the runtime package adds garbage collection and thread pool metrics, so the first useful trace arrives from configuration alone.
+- The built-in instrumentation covers the boundaries before you write anything. ASP.NET Core produces server spans and the `http.server.request.duration` histogram, `HttpClient` produces the client spans that connect one service to the next, and on .NET 9 and later the runtime publishes its own `System.Runtime` `Meter`, so garbage collection and thread pool metrics need an `AddMeter` line rather than a package reference. `AddRuntimeInstrumentation` from `OpenTelemetry.Instrumentation.Runtime` is what you still need on .NET 8 and lower. Either way the first useful trace arrives from configuration alone.
 - Logs join the same pipeline through `ILogger`. Adding the OpenTelemetry logging provider stamps the active trace and span id onto every log record, which is what turns structured logging from a separate archive into another view of the same request.

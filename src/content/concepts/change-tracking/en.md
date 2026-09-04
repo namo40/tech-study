@@ -28,7 +28,7 @@ related:
     slug: projection
   - label: N+1 Query
     slug: n-plus-1-query
-  - label: Transaction
+  - label: Local Transaction
     slug: local-transaction
   - label: Lost Update
     slug: lost-update

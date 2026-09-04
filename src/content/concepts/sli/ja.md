@@ -11,22 +11,16 @@ related:
     slug: slo
   - label: p95
     slug: p95
+  - label: p99
+    slug: p99
+  - label: Latency
+    slug: latency
+  - label: Throughput
+    slug: throughput
   - label: Tail Latency
     slug: tail-latency
   - label: Health Check
     slug: health-check
-  - label: Load Test
-    slug: load-test
-  - label: Capacity Test
-    slug: capacity-test
-  - label: Distributed Tracing
-    slug: distributed-tracing
-  - label: Sampling
-    slug: sampling
-  - label: Rollback
-    slug: rollback
-  - label: Canary Release
-    slug: canary-release
 references:
   - title: "Embracing Risk"
     url: https://sre.google/sre-book/embracing-risk/

@@ -8,7 +8,7 @@ steps:
   - title: "N+1"
     text: "One query loads the list, then the code asks for each row's customer one at a time. Five orders cost six round trips."
   - title: "It scales with N"
-    text: "The same code with twenty rows makes twenty-one round trips. Development data never has enough rows to show it, and production data does."
+    text: "The same code with twenty rows makes twenty-one round trips, and the time bar runs off the end. Development data never has enough rows to show it, and production data does."
   - title: "Include"
     text: "Ask for the related rows in the same query and the database joins them: one round trip, all the data. Watch for cartesian blow-up when you include several collections."
   - title: "Load what you need"
@@ -26,7 +26,7 @@ related:
     slug: compiled-query
   - label: Query Plan
     slug: query-plan
-  - label: Index
+  - label: Database Index
     slug: database-index
   - label: Dapper
     slug: dapper
@@ -52,7 +52,7 @@ references:
 ## Cautions
 
 - `Include` is not free either. Several collection includes multiply rows into a cartesian explosion, so use `AsSplitQuery` or project instead.
-- Lazy-loading proxies turn every navigation access into a query. Prefer explicit loading, so the cost is visible in the code that pays it.
+- Lazy-loading proxies turn every navigation access into a query. Prefer eager loading or a projection; if you genuinely have to load on demand, load explicitly, so the query is visible in the code that pays for it.
 - Projection with `Select` is usually the best answer for read endpoints: fewer columns, no change tracking, one query.
 - Log and count queries in tests, and assert the count for list endpoints.
 
@@ -68,7 +68,7 @@ foreach (var order in orders)
 }
 
 // Include: one query with a JOIN.
-var orders = await db.Orders
+var withCustomers = await db.Orders
     .Include(o => o.Customer)
     .ToListAsync(ct);
 

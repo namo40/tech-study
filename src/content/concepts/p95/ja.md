@@ -15,7 +15,7 @@ related:
     slug: hedging
 references:
   - title: Built-in metrics in ASP.NET Core
-    url: https://learn.microsoft.com/en-us/dotnet/core/diagnostics/built-in-metrics-aspnetcore
+    url: https://learn.microsoft.com/en-us/aspnet/core/metrics/built-in
 ---
 
 p95 がアラートの基準になるのは、1 つの数字に求めたい 2 つのこと、感度と安定性のあいだに位置しているからです。p99 はほんの数本のリクエストに反応し、その分だけ一緒に揺れます。p50 はほとんど反応しません。p95 はトラフィックのまとまった割合が遅くなったときに動き、しかも p99 より先に動きます。

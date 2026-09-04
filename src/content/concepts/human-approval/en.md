@@ -26,12 +26,12 @@ related:
   - label: Temporal
     slug: temporal
 references:
-  - title: "Human interaction in durable functions"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview#human
+  - title: "Durable orchestrations overview"
+    url: https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-orchestrations
   - title: "Wait for external events in durable orchestrations"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-external-events
+    url: https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-external-events
   - title: "Temporal signals"
-    url: https://docs.temporal.io/encyclopedia/application-message-passing
+    url: https://docs.temporal.io/encyclopedia/workflow-message-passing
 ---
 
 An approval looks like a call to another service until you notice that it has no timeout worth the name. A service either answers in a second or it has failed; a person answers in an hour, or on Monday, or after being reminded twice, and none of those are failures. That single difference is what makes an approval a state rather than a call.

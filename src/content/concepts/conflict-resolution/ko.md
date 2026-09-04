@@ -19,7 +19,7 @@ references:
   - title: Consistency levels in Azure Cosmos DB
     url: https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels
   - title: Manage conflicts between regions in Azure Cosmos DB
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/how-to-manage-conflicts
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-manage-conflicts
 ---
 
 장면의 세 번째 단계는 단절 아래에서 양쪽이 계속 답하게 두고, 한 문장으로 끝납니다. 네트워크가 아물면 복제본들은 수렴한다는 문장입니다. 이 페이지는 그 문장을 뜯어 놓은 것입니다. 한쪽만 쓰기를 받았다면 아무는 일은 재생일 뿐이고 물을 것이 없습니다. 양쪽이 같은 항목에 쓰기를 받았다면, 아무는 순간에 값이 둘 있습니다. 둘 다 받아들여졌고, 둘 다 이미 떠나 버린 호출자에게 성공이라고 답해 주었으며, 시스템은 하나를 내놓아야 합니다. 네트워크의 어느 부분도 그것을 정해 주지 않습니다. Consistent prefix는 관찰자가 무엇을 어떤 순서로 볼 수 있는지를 다스리고, 이 페이지는 저장된 값이 무엇이 되는지를 다룹니다.

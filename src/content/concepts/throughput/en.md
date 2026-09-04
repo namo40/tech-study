@@ -6,13 +6,13 @@ tags: ["metric", "overload"]
 scene: throughput
 steps:
   - title: "Throughput and latency are different axes"
-    text: "One worker finishing each job in 100 ms serves ten per second — so does a pool of four finishing each in 400. Fast responses do not guarantee volume, and volume does not require speed. A system has both numbers, and tuning one while watching the other is how graphs surprise people."
+    text: "One slot that turns a job over quickly serves ten per second — so do four slots that each take four times as long. Fast responses do not guarantee volume, and volume does not require speed. A system has both numbers."
   - title: "Utilization is how busy; throughput is how much gets done"
     text: "Push arrivals up and both climb together — at 40% busy, everything that arrives leaves promptly; at 80%, still fine, with less room for bursts. Utilization is the cheapest early signal you have, because it tells you how much ceiling is left before anything hurts."
   - title: "Saturation is the queue — and latency lives in the queue"
     text: "Arrivals cross capacity and the line grows: throughput flatlines at the ceiling while waiting time explodes, because every new request now stands behind everyone already waiting. The server is 100% busy and getting nothing extra done. Full is not fast; full is where slow begins."
   - title: "The ceiling belongs to the bottleneck; headroom is a design choice"
-    text: "More capacity raises the ceiling; less arrival pressure steps back from it — and the narrowest stage sets the number no matter what the others do. Running near 80% buys the burst room that keeps queues short. Throughput is bought at the bottleneck, and peace is bought with headroom."
+    text: "More capacity raises the ceiling, and the pressure that saturated four slots sits at 80% of six. Running near 80% buys the burst room that keeps queues short: throughput is bought at the bottleneck, peace with headroom."
 related:
   - label: Utilization
     slug: utilization
@@ -77,7 +77,7 @@ dotnet-counters monitor --process-id 1234 \
   --counters System.Runtime,Microsoft.AspNetCore.Hosting,Microsoft.Data.SqlClient.EventSource
 ```
 
-`Microsoft.AspNetCore.Hosting` reports `requests-per-second` and `current-requests`, which are your `out` and roughly your queue. `System.Runtime` reports `threadpool-queue-length`: anything persistently above zero means work is waiting for a thread, and that wait is latency you will not find in any span.
+`Microsoft.AspNetCore.Hosting` reports `requests-per-second` and `current-requests`, which are your `in` and your in-flight count; `out` is what you have to compute from completions, and the gap between the two is the queue. `System.Runtime` reports `threadpool-queue-length`: anything persistently above zero means work is waiting for a thread, and that wait is latency you will not find in any span. Those are the EventCounter names. The same tool reads the newer `Meter` instruments, and they map the axes better: `http.server.active_requests` is the in-flight count, the count on the `http.server.request.duration` histogram is recorded at completion and so gives you `out` rather than `in`, and since .NET 9 `dotnet.thread_pool.queue.length` on `System.Runtime` is the queue depth.
 
 For your own stages, publish rates and durations as a `Meter` so the same two axes exist per component rather than only at the edge.
 

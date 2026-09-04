@@ -6,7 +6,7 @@ tags: ["duplicates"]
 scene: idempotency-key
 sceneStep: 2
 related:
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
   - label: Idempotency
     slug: idempotency
@@ -20,7 +20,7 @@ related:
     slug: unique-constraint
   - label: Retry
     slug: retry
-  - label: Web-Queue-Worker
+  - label: Web Queue Worker
     slug: web-queue-worker
 references:
   - title: Duplicate detection in Azure Service Bus

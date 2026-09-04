@@ -37,7 +37,7 @@ var page = await db.Orders.AsNoTracking()
     .Take(50)
     .ToListAsync(ct);
 
-// A projection is never tracked, even without AsNoTracking.
+// A projection to a DTO (no entity instances in it) is never tracked.
 var summaries = await db.Orders
     .Where(o => o.CreatedAt > since)
     .Select(o => new OrderSummary(o.Id, o.Status, o.Total))

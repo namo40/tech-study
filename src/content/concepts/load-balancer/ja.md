@@ -15,8 +15,12 @@ steps:
 related:
   - label: Round Robin
     slug: round-robin
+  - label: Weighted Round Robin
+    slug: weighted-round-robin
   - label: Least Connections
     slug: least-connections
+  - label: Power of Two Choices
+    slug: power-of-two-choices
   - label: Health-Based Routing
     slug: health-based-routing
   - label: Health Check
@@ -31,7 +35,7 @@ related:
     slug: yarp
   - label: Sticky Session
     slug: sticky-session
-  - label: Readiness
+  - label: Readiness Probe
     slug: readiness-probe
 references:
   - title: Configure ASP.NET Core to work with proxy servers and load balancers

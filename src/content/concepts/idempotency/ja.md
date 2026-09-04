@@ -4,7 +4,7 @@ summary: "ある操作をもう一度行っても、一度行ったあとと同�
 category: "API とリアルタイム通信"
 scene: idempotency-key
 related:
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
   - label: Deduplication
     slug: deduplication

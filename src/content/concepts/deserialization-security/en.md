@@ -25,14 +25,14 @@ references:
 ## When to use
 
 - Inventory every point where external bytes become objects, not just the request body. Queue messages, cache entries, uploaded files, webhook payloads and rows written by another service all get deserialized, and the ones that are not obviously "user input" are the ones nobody reviewed. "We wrote this ourselves" holds only while nobody else can write to the store, so a shared Redis or a queue with a broad access policy puts those bytes outside the trust boundary too.
-- Audit for the legacy binary formatters as a standing task. `BinaryFormatter`, `SoapFormatter`, `NetDataContractSerializer` and `LosFormatter` all reconstruct arbitrary types named inside the payload, which is the property that makes them unsafe regardless of what the payload happens to contain. Finding them is a grep; replacing them is a migration, and it is better started before a deadline forces it.
+- Audit for the legacy binary formatters as a standing task. `BinaryFormatter` in .NET code, and `SoapFormatter`, `NetDataContractSerializer` and `LosFormatter` in any .NET Framework code you are still carrying, all reconstruct arbitrary types named inside the payload, which is the property that makes them unsafe regardless of what the payload happens to contain. Finding them is a grep; replacing them is a migration, and it is better started before a deadline forces it.
 - Review any JSON that carries type metadata. A document with a field naming a CLR type is asking the deserializer to choose what to construct, and that choice belongs to your allow-list rather than to whoever sent the document.
 - Treat this as a design question when picking a format for a new integration. A contract-first format with a fixed schema removes the whole class of problem, and the decision costs nothing at the start and a rewrite later.
 
 ## Cautions
 
 - `BinaryFormatter` is removed in .NET 9, so migration is no longer optional. The APIs were obsoleted, then made to throw, and now the implementation is gone from the runtime; a component still depending on it is a component that stops working on upgrade. Plan the format change rather than reaching for the compatibility package.
-- Type-name handling turns a data format into a code-selection mechanism. In Newtonsoft.Json, `TypeNameHandling.Auto` and `TypeNameHandling.All` let the document decide which types are constructed, which is acceptable for data you produced and dangerous for data you received. Keep it at `None` on anything reachable from outside.
+- Type-name handling turns a data format into a code-selection mechanism. In Newtonsoft.Json, `TypeNameHandling.Auto` and `TypeNameHandling.All` let the document decide which types are constructed, which is acceptable for data you produced and dangerous for data you received. Keep it at `None` on anything reachable from outside, and where a legacy contract makes that impossible, pair the setting with an `ISerializationBinder` that resolves only the types you name.
 - Validating after deserialization is already too late. Construction itself runs code: constructors, property setters, callbacks and finalizers all execute before your check sees the object, so the check has to be on the shape of the input and the set of permitted types, not on the object that came out.
 - Bound depth and size before parsing. A deeply nested or enormous document consumes CPU and memory during parsing alone, which is a denial of service that needs no type trickery at all. Set a maximum depth, cap the request body, and reject rather than truncate.
 
@@ -49,7 +49,7 @@ public abstract class Payment;
 
 var options = new JsonSerializerOptions
 {
-    // Parsing limit, applied before any object exists.
+    // Parsing limit (the default is 64), applied before any object exists.
     MaxDepth = 32,
     UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
 };

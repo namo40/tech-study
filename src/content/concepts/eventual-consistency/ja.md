@@ -39,7 +39,7 @@ references:
   - title: Consistency levels in Azure Cosmos DB
     url: https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels
   - title: Manage consistency levels in Azure Cosmos DB
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/how-to-manage-consistency
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-manage-consistency
   - title: Distributed data in cloud-native applications
     url: https://learn.microsoft.com/en-us/dotnet/architecture/cloud-native/distributed-data
   - title: Caching guidance (Azure Architecture Center)

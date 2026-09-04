@@ -27,7 +27,7 @@ references:
   - title: Service Bus message sequencing and scheduled delivery
     url: https://learn.microsoft.com/en-us/azure/service-bus-messaging/message-sequencing
   - title: MassTransit exceptions and redelivery
-    url: https://masstransit.io/documentation/concepts/exceptions
+    url: https://masstransit.massient.com/concepts/exceptions
   - title: Retry pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/retry
 ---

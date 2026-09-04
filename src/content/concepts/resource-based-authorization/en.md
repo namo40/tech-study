@@ -8,11 +8,11 @@ steps:
   - title: "A role check never looks at the document"
     text: "The ghost asks one question — \"is this user an editor?\" — and edits whatever arrives, including someone else's document. Nothing failed; the rule did exactly what it says, and that is the problem. The question was too small. Authorization that matters asks three things at once: who, doing what, to which resource."
   - title: "The decision is made with the resource in hand"
-    text: "Two identical requests: edit document one. The handler loads the document, reads its owner, and gives two different answers — allowed for A, refused for B. That is the whole pattern: the rule cannot run on the token alone, because the deciding fact lives on the resource. Same user role, same action, different document, different verdict."
+    text: "Two identical requests: edit document one. The handler loads the document, reads its owner, and gives two different answers — allowed for A, refused for B. Same role, same action, same document; different caller, different verdict."
   - title: "Roles do not disappear; they find their place"
-    text: "The admin card passes ownership — that is what admin means — but it is one narrow, named grant, not a skeleton key. Coarse role gates keep obvious strangers out cheaply; the resource check decides the cases that matter. The two layers answer different questions, which is exactly why you keep both."
+    text: "The admin card passes ownership — that is what admin means — but it is one narrow, named grant, not a skeleton key. Coarse role gates are the cheap outer check; the resource check decides the cases that matter."
   - title: "Silence means no"
-    text: "A new action arrives that no rule has heard of — and the system refuses it, not because a rule said no, but because none said yes. That default is the safety net for every rule you have not written yet. Forgetting a handler should fail closed, loudly, in the test environment — never open, quietly, in production."
+    text: "A new action arrives that no rule has heard of, and the system refuses it — not because a rule said no, but because none said yes. Write the rule, and the same request passes: silence was the only thing refusing it."
 related:
   - label: Authorization
     slug: authorization
@@ -22,13 +22,13 @@ related:
     slug: role
   - label: Default Deny
     slug: default-deny
-  - label: Role-based Access Control
+  - label: Role-Based Access Control
     slug: role-based-access-control
   - label: Claims
     slug: claims
   - label: Least Privilege
     slug: least-privilege
-  - label: Attribute-based Access Control
+  - label: Attribute-Based Access Control
     slug: attribute-based-access-control
   - label: Workload Identity
     slug: workload-identity
@@ -36,7 +36,7 @@ related:
     slug: audience
 references:
   - title: "Resource-based authorization in ASP.NET Core"
-    url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/resourcebased
+    url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/resource-based
   - title: "Policy-based authorization in ASP.NET Core"
     url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/policies
   - title: "Role-based authorization in ASP.NET Core"
@@ -150,6 +150,10 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("EditDocument", policy =>
     {
         policy.RequireAuthenticatedUser();
+        // An exact claim match only works where the issuer emits one claim per
+        // scope. Where it packs them all into one space-separated string, split
+        // the value in a RequireAssertion instead, or a token granted two
+        // scopes matches neither.
         policy.RequireClaim("scope", "documents.write");
         policy.AddRequirements(Operations.Update);
     });

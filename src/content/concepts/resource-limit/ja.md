@@ -23,7 +23,7 @@ references:
   - title: "Kubernetes: quality of service for pods"
     url: https://kubernetes.io/docs/concepts/workloads/pods/pod-qos/
   - title: "Run .NET applications in containers"
-    url: https://learn.microsoft.com/en-us/dotnet/core/docs/containers/
+    url: https://learn.microsoft.com/en-us/dotnet/core/docker/introduction
 ---
 
 シーンの 4 番目のステップに出てくる request は、コンテナーに約束された下限です。limit はコンテナーが押さえつけられる天井で、2 つは同じコンテナーの同じブロックに書かれるため、それだけ混同されやすくもあります。request はスケジューラーが確保するもので、limit はランタイムが強制するものです。

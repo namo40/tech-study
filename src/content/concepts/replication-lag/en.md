@@ -12,7 +12,7 @@ steps:
   - title: "Route by what the session needs"
     text: "After a write, send that session's reads to the primary for a few seconds, or make them wait until the replica has reached the write's position. Everyone else keeps reading the replica."
   - title: "Measure it, and know the cost"
-    text: "Alert on lag before users do. When the primary fails, the replica is promoted, and any change still in flight is lost: that is your RPO. Synchronous replication removes the loss and adds it to every write's latency."
+    text: "Alert on lag before users do. When the primary fails, the replica is promoted, and any change still in flight is lost: that is your RPO, and it is the price of asynchronous replication."
 related:
   - label: Replication
     slug: replication
@@ -56,7 +56,7 @@ references:
 - Read-your-writes is the failure users report. The same person, seconds after saving, reloads and sees the old value. Route that session's reads to the primary for a few seconds, or hold them until the replica has reached the position the write was given.
 - Lag grows with write bursts, long transactions, replica CPU pressure, and schema migrations, and it grows fastest when the replica applies changes on a single thread. Alert on it before a user does, and alert on the trend rather than on one spike.
 - Asynchronous replication trades durability for latency. Promotion during a failover keeps only what the replica had applied, so anything still in flight is gone: that is a non-zero RPO, and it is a business decision rather than a database setting.
-- Synchronous replication removes that loss and puts it on every write instead, because a commit now waits for a second machine. It also couples availability: a replica that stops answering can stop the primary from committing.
+- Synchronous replication removes that loss and puts it on every write instead, because a commit now waits for a second machine. It also couples availability, though how tightly depends on the database: PostgreSQL with a standby named in `synchronous_standby_names` blocks the commit until that standby answers, while a SQL Server availability group waits out its session timeout and then commits without the secondary unless it has been told to require a synchronized one.
 - Never use a replica for a read that feeds a write. Read-modify-write on stale data replaces a change nobody has seen yet, and no error is raised.
 - Watch for lag between a write and an event that depends on it. A message published on commit can reach a consumer that reads the replica before the change has arrived there, which looks like a message about a row that does not exist yet.
 
@@ -100,4 +100,4 @@ public sealed class ReadRouter(
 }
 ```
 
-On SQL Server, an availability group does the routing for you once the connection string says `ApplicationIntent=ReadOnly`: the listener sends that connection to a readable secondary, so the split is configuration rather than code. On PostgreSQL, `pg_last_wal_replay_lsn()` tells you where the replica has got to, which is what a "wait until the replica has reached this position" policy is built from: keep the position the write returned, compare, and fall back to the primary when the wait would be longer than the request can afford. Whichever you use, expose the lag as a metric next to request latency, because the two numbers explain each other during an incident.
+On SQL Server, an availability group does the routing for you once the connection string says `ApplicationIntent=ReadOnly`: the listener sends that connection to a readable secondary, so the split is configuration rather than code. It is configuration you have to do, though — read-only routing has to be set up on the group, with a routing URL and a routing list per replica, and the connection has to name the listener and the database, or the intent is accepted and the session lands on the primary anyway. On PostgreSQL, `pg_last_wal_replay_lsn()` tells you where the replica has got to, which is what a "wait until the replica has reached this position" policy is built from: keep the position the write returned, compare, and fall back to the primary when the wait would be longer than the request can afford. Whichever you use, expose the lag as a metric next to request latency, because the two numbers explain each other during an incident.

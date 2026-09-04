@@ -16,7 +16,7 @@ related:
     slug: api-gateway
   - label: Load Balancer
     slug: load-balancer
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
 references:
   - title: gRPC Documentation
@@ -41,7 +41,7 @@ references:
 
 ## In .NET
 
-- The service is an ASP.NET Core endpoint and the client comes from the factory. `Grpc.AspNetCore` generates the base class from the `.proto` file, and `AddGrpcClient` gives the channel the same lifetime management `IHttpClientFactory` gives an `HttpClient`.
+- The service is an ASP.NET Core endpoint and the client comes from the factory. `Grpc.AspNetCore` generates the base class from the `.proto` file, and `AddGrpcClient`, which comes from the `Grpc.Net.ClientFactory` package, gives the channel the same lifetime management `IHttpClientFactory` gives an `HttpClient`.
 
 ```csharp
 // Server: the generated base class is the contract, the override is the code.
@@ -66,5 +66,5 @@ var reply = await client.GetAsync(
 ```
 
 - Set a deadline on every call and propagate the one you were given. gRPC deadlines are absolute times that travel with the call, so a service that passes `context.CancellationToken` into its own downstream calls lets a caller's timeout cancel the whole chain instead of leaving orphaned work running behind an answer nobody is waiting for.
-- `GrpcChannel` is expensive and meant to be shared. It owns the HTTP/2 connection, every call on it is a stream, and creating one per call throws away the connection reuse that the transport chapter of this design was for.
+- `GrpcChannel` is expensive and meant to be shared. It owns the HTTP/2 connection, every call on it is a stream, and creating one per call throws away the connection reuse HTTP/2 multiplexing exists to provide.
 - The server runs on Kestrel over HTTP/2, which is a deployment constraint worth stating out loud. TLS with ALPN handles it by default; a cleartext endpoint needs `HttpProtocols.Http2` set explicitly, and any proxy in the path must speak HTTP/2 end to end rather than downgrading a hop.

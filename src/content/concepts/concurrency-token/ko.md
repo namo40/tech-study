@@ -23,7 +23,7 @@ related:
     slug: retry
 references:
   - title: Concurrency tokens (EF Core)
-    url: https://learn.microsoft.com/en-us/ef/core/modeling/concurrency
+    url: https://learn.microsoft.com/en-us/ef/core/saving/concurrency
   - title: Handling concurrency conflicts (EF Core)
     url: https://learn.microsoft.com/en-us/ef/core/saving/concurrency
   - title: TimestampAttribute Class

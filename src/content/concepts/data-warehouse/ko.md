@@ -7,8 +7,12 @@ related:
     slug: materialized-view
   - label: Replication
     slug: replication
+  - label: Read Replica
+    slug: read-replica
   - label: Partitioning
     slug: partitioning
+  - label: Change Data Capture
+    slug: change-data-capture
   - label: Event Stream
     slug: event-stream
   - label: Database Index

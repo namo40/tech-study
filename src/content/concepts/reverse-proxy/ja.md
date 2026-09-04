@@ -19,6 +19,8 @@ related:
     slug: round-robin
   - label: Least Connections
     slug: least-connections
+  - label: Layer 7 Load Balancing
+    slug: layer-7-load-balancing
   - label: Health-Based Routing
     slug: health-based-routing
   - label: Sticky Session

@@ -31,7 +31,7 @@ related:
     slug: prepared-statement
   - label: Database Migration
     slug: database-migration
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
 references:
   - title: SQL Server index architecture and design guide

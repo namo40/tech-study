@@ -6,11 +6,11 @@ tags: ["oauth"]
 scene: authentication
 steps:
   - title: "A claim is free; authentication is the evidence check"
-    text: "\"I am dana\" costs nothing to say — the ghost walks straight past a door that only asks for a name. Real authentication demands evidence with the claim and verifies it fresh: something you know, have, or are. The door stops being decoration the moment it checks."
+    text: "A bare name costs nothing to say — the ghost walks straight past a door that only asks for one. Real authentication demands evidence and verifies it fresh: something you know, have, or are. The door stops being decoration the moment it checks."
   - title: "Evidence can be stolen, and the system is as strong as its weakest evidence"
-    text: "The right password in the wrong hands passes the same check — the verifier sees evidence, not intent. That is why passwords travel with defenses: hashing at rest, short sessions, a second factor for the moments that matter. Verification is a door, not a vault."
+    text: "The right password in the wrong hands passes the same check — the verifier sees evidence, not intent. That is why passwords travel with defenses around them rather than on their own. Verification is a door, not a vault."
   - title: "Machines have identities too, and no fingers to type passwords"
-    text: "A service proves itself with something it holds: an API key, issued once, presented on every call, checked against a registry. Possession is the evidence — which is why a leaked key is an identity leak, and why keys are scoped narrow, stored as secrets, and rotated on a schedule."
+    text: "With nothing to show, the service is refused like anyone else. With a key — issued once, presented on every call, checked against a registry — it passes. Possession is the evidence, which is why a leaked key is an identity leak."
   - title: "mTLS makes the proof mutual: both sides show certificates"
     text: "So far only callers proved themselves — the server was taken on faith. With mutual TLS each side presents a certificate signed by an authority the other trusts, and the connection itself becomes the identity. No secret crosses the wire, and impersonating either end now requires stealing a private key, not overhearing one."
 related:
@@ -69,7 +69,7 @@ references:
 
 ## In .NET
 
-ASP.NET Core splits authentication into schemes. A scheme is a named handler that knows how to read evidence out of a request and turn it into a `ClaimsPrincipal`; the default scheme is what runs when nothing else is asked for. Cookies for browsers and bearer tokens for APIs are the two ordinary cases, and an application can carry both.
+ASP.NET Core splits authentication into schemes. A scheme is a named handler that knows how to read evidence out of a request and turn it into a `ClaimsPrincipal`; the default scheme is what runs when nothing else is asked for. Cookies for browsers and bearer tokens for APIs are the two ordinary cases, and an application can carry both. Only one of them can be the default, though, so the API endpoints have to name the other one: `[Authorize(AuthenticationSchemes = "api")]`, or a policy built with `AddAuthenticationSchemes("api")`.
 
 ```csharp
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -78,6 +78,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.HttpOnly = true;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         options.Cookie.SameSite = SameSiteMode.Lax;
+        // An absolute eight hours: activity does not extend it, so every session
+        // has an end somebody chose. Sliding expiration is the other reasonable
+        // answer, and the Cookie Authentication page argues for it.
         options.SlidingExpiration = false;
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
     })
@@ -108,7 +111,11 @@ var result = await signInManager.PasswordSignInAsync(
     userName, password, isPersistent: false, lockoutOnFailure: true);
 
 if (result.RequiresTwoFactor) return Results.Redirect("/mfa");
-if (result.IsLockedOut) return Results.StatusCode(StatusCodes.Status429TooManyRequests);
+
+// A lockout is not announced to the caller: a distinct answer would confirm
+// which accounts exist, since only a real account can be locked. Log it, alert
+// on it, and reply exactly as for a wrong password.
+if (result.IsLockedOut) logger.LogWarning("Lockout on {UserName}", userName);
 if (!result.Succeeded) return Results.Unauthorized();
 ```
 
@@ -123,7 +130,7 @@ builder.Services.Configure<IdentityOptions>(options =>
 });
 ```
 
-For the machine side, certificate authentication is a scheme like any other. The handshake happens in the server before the request reaches the pipeline, so the handler's job is to decide whether the certificate that already arrived belongs to somebody you know — which is a lookup, not a signature check.
+For the machine side, certificate authentication is a scheme like any other. The handshake happens in the server before the request reaches the pipeline, so the handler validates the chain and the revocation state of the certificate that already arrived, and then `OnCertificateValidated` asks the question only you can answer: whether this known-good certificate belongs to a caller you registered. Kestrel has to ask for a certificate in the first place, which is a transport setting rather than a scheme option — that side is on the Mutual TLS page.
 
 ```csharp
 builder.Services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)

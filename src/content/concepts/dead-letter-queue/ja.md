@@ -19,7 +19,7 @@ related:
     slug: consumer-acknowledgement
   - label: Work Queue
     slug: work-queue
-  - label: Web-Queue-Worker
+  - label: Web Queue Worker
     slug: web-queue-worker
   - label: Idempotent Consumer
     slug: idempotent-consumer

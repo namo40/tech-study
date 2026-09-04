@@ -33,7 +33,7 @@ references:
 ## Cautions
 
 - Parameterise every value, without exception. Because you are writing the SQL, string concatenation is available and it is the doorway to SQL injection; passing values as parameters keeps them data, lets the server reuse the plan, and is exactly as convenient as the unsafe version. An anonymous object with a property per parameter is all it takes.
-- There is no change tracking, no unit of work and no migrations. Updates are statements you write, transactions are ones you open, and the schema is managed by something else. Where that discipline is what you want, entity-framework-core is the better tool, and choosing Dapper for a write-heavy domain model usually means rebuilding those features by hand.
+- There is no change tracking, no unit of work and no migrations. Updates are statements you write, transactions are ones you open, and the schema is managed by something else. Where that discipline is what you want, EF Core is the better tool, and choosing Dapper for a write-heavy domain model usually means rebuilding those features by hand.
 - A loop of queries recreates N+1 just as an ORM does, and here it is entirely visible in your own code. Loading a list and then querying for each row's children costs a round trip per row; `QueryAsync` with multi-mapping, a join, or a single `IN` query is the fix, and the cost is the same one the ORM version pays.
 - The SQL lives in strings, so the compiler cannot check it against the schema. A renamed column compiles cleanly and fails at runtime on the row where it is read, which puts the safety net in integration tests that run the real statements against a real database rather than in the build.
 
@@ -55,12 +55,27 @@ var orders = await connection.QueryAsync<OrderSummary>(
     """,
     new { since = DateTime.UtcNow.AddDays(-7), status = "Open" });
 
-// One round trip for parents and children, mapped into a graph by splitOn.
-var withLines = await connection.QueryAsync<Order, OrderLine, Order>(
+// One round trip for parents and children. splitOn says where the second
+// object starts, but Dapper builds a fresh Order for every row, so the
+// lookup is what merges them into one graph.
+var lookup = new Dictionary<Guid, Order>();
+await connection.QueryAsync<Order, OrderLine, Order>(
     "SELECT o.*, l.* FROM Orders o JOIN OrderLines l ON l.OrderId = o.Id WHERE o.Id = @id",
-    (order, line) => { order.Lines.Add(line); return order; },
+    (order, line) =>
+    {
+        if (!lookup.TryGetValue(order.Id, out var parent))
+        {
+            parent = order;
+            parent.Lines = new List<OrderLine>();
+            lookup.Add(parent.Id, parent);
+        }
+        parent.Lines.Add(line);
+        return parent;
+    },
     new { id = orderId },
     splitOn: "Id");
+
+var withLines = lookup.Values.ToList();
 ```
 
 - Do not cache the connection object. `SqlConnection` is cheap to construct because the underlying connection comes from the pool, so opening one inside the `using` and letting it close at the end of the method returns it promptly; a connection held for the lifetime of a service is a pool slot nobody else can use.

@@ -25,7 +25,7 @@ references:
     url: https://learn.microsoft.com/en-us/dotnet/core/diagnostics/dotnet-counters
 ---
 
-A capacity test is a load test read backwards. Ramp until p95 crosses the objective, then back off to the last level that was under it and hold that level long enough to be sure it is stable rather than lucky. The peak throughput you saw on the way up is not the answer; it was measured at a latency nobody agreed to.
+A capacity test is a load test read backwards. Ramp until p95 or the error rate crosses the objective — whichever gives way first, and it is often the errors — then back off to the last level that was under both and hold that level long enough to be sure it is stable rather than lucky. The peak throughput you saw on the way up is not the answer; it was measured at a latency nobody agreed to.
 
 The answer is a number with three parts: a throughput, the objective it was measured against, and the request mix and data it was measured with. Reported without the last two it is a rumour, because the same service will hand you a much larger number on a read-only mix against one hot key, and a much smaller one once writes and cold reads are in proportion.
 

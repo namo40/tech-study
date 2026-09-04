@@ -37,7 +37,7 @@ references:
 - The blocking moved down a layer rather than disappearing. All streams ride one TCP connection, TCP delivers bytes in order, and a single lost segment stalls every stream until it is retransmitted. On a clean datacentre link this is invisible; on a lossy mobile network it can make HTTP/2 slower than several HTTP/1.1 connections were. That fact is precisely why HTTP/3 exists and runs over QUIC, and the head-of-line blocking page walks through it.
 - In practice HTTP/2 means TLS, because negotiation happens in the handshake. ALPN advertises `h2` during the TLS `ClientHello` and the server picks it, which costs no extra round trip. Cleartext `h2c` exists in the specification and no major browser implements it, and RFC 9113 deprecated the `Upgrade`-based path to it, so a plain `http://` endpoint has to be configured on both ends to speak HTTP/2 with no negotiation at all.
 - Server push is a dead feature; do not build on it. It was in the original specification, it never reliably beat the cache it kept fighting with, browsers removed support, and Kestrel never implemented it. Early hints on a `103` response are the surviving answer to the problem push was aimed at.
-- Flow control is two windows, not one, and both default low. Every stream has a window and the connection has its own, each starting at 64 KiB per the specification, and a sender stops when either is exhausted until the peer sends `WINDOW_UPDATE`. Large uploads and long-lived server streams are the traffic that notices, and the fix is to raise the windows deliberately rather than to discover the ceiling under load.
+- Flow control is two windows, not one, and both default low. Every stream has a window and the connection has its own, each starting at 65,535 bytes (just under 64 KiB) per the specification, and a sender stops when either is exhausted until the peer sends `WINDOW_UPDATE`. Large uploads and long-lived server streams are the traffic that notices, and the fix is to raise the windows deliberately rather than to discover the ceiling under load.
 
 ## In .NET
 
@@ -55,11 +55,12 @@ var handler = new SocketsHttpHandler
 var client = new HttpClient(handler)
 {
     DefaultRequestVersion = HttpVersion.Version20,
-    // RequestVersionOrHigher silently falls back to HTTP/1.1; RequestVersionExact
-    // turns a failed negotiation into an exception instead of a quiet downgrade.
+    // The default, RequestVersionOrLower, silently falls back to HTTP/1.1;
+    // RequestVersionExact (or RequestVersionOrHigher) turns a failed negotiation
+    // into an exception instead of a quiet downgrade.
     DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact,
 };
 ```
 
-- The limits worth knowing live on `options.Limits.Http2`. `MaxStreamsPerConnection` defaults to 100 and is the number a fan-out client will hit first, `InitialConnectionWindowSize` and `InitialStreamWindowSize` default to 128 KiB and 96 KiB, and `HeaderTableSize` bounds the HPACK dynamic table the server will keep per connection.
+- The limits worth knowing live on `options.Limits.Http2`. `MaxStreamsPerConnection` defaults to 100 and is the number a fan-out client will hit first, `InitialConnectionWindowSize` and `InitialStreamWindowSize` default to 1 MiB and 768 KiB, and `HeaderTableSize` bounds the HPACK dynamic table the server will keep per connection.
 - For a gRPC service inside a cluster with TLS terminated at the edge, set `HttpProtocols.Http2` explicitly on the cleartext endpoint. There is no ALPN to agree the protocol there, so the endpoint has to be told, and a client talking to it needs `RequestVersionExact` for the same reason.

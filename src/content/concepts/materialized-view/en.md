@@ -26,7 +26,7 @@ related:
     slug: n-plus-1-query
   - label: Data Warehouse
     slug: data-warehouse
-  - label: Index
+  - label: Database Index
     slug: database-index
   - label: Query Plan
     slug: query-plan
@@ -93,4 +93,4 @@ public sealed class SalesViewRefresher(IServiceScopeFactory scopes) : Background
 }
 ```
 
-SQL Server spells the incremental half of the scene differently: build the view `WITH SCHEMABINDING`, add a unique clustered index to it, and the engine maintains it on every write to the base tables. There is no refresh job to run and no lag to explain, and in exchange every insert into `orders` does a little of the aggregate's work on its way in.
+SQL Server spells the incremental half of the scene differently: build the view `WITH SCHEMABINDING`, add a unique clustered index to it, and the engine maintains it on every write to the base tables. There is no refresh job to run and no lag to explain, and in exchange every insert into `orders` does a little of the aggregate's work on its way in. Two rules come attached: a view that groups has to carry `COUNT_BIG(*)` and cannot use `HAVING`, and the optimizer only substitutes the view automatically on Enterprise edition and on Azure SQL Database or Managed Instance — on Standard the query has to name the view with `WITH (NOEXPAND)`.

@@ -22,14 +22,14 @@ references:
   - title: .NET Generic Host
     url: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host
   - title: Dependency injection in .NET
-    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection
+    url: https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/overview
   - title: Dependency injection in ASP.NET Core
     url: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection
 ---
 
 A container is not a lookup table that happens to be alive for a while. It is an object with a beginning, a middle and an end, and almost every lifetime bug is really a disagreement about which of those three a piece of code is in. The host owns that shape. It builds the container once, runs the application inside it, and disposes it on the way out, and everything your code ever resolves is either the container's own or borrowed from a scope the container opened.
 
-The beginning is `Build`. Up to that call the service collection is a mutable list of descriptions; after it the registrations are closed and the provider is the only thing that will ever create anything. That instant is the cheapest place in the whole system to be wrong, which is why it is worth making it strict. `ValidateOnBuild` walks every registration and constructs the graph it would build, so a missing dependency becomes a startup exception instead of a request that fails in an hour. `ValidateScopes` adds the rule this scene is about: a singleton may not hold a scoped service. Both are on by default only in the Development environment, so if your continuous integration runs with the environment left at Production, the checks you think are protecting you are not running.
+The beginning is `Build`. Up to that call the service collection is a mutable list of descriptions; after it the registrations are closed and the provider is the only thing that will ever create anything. That instant is the cheapest place in the whole system to be wrong, which is why it is worth making it strict. `ValidateOnBuild` walks every registration and checks that it can be resolved, without creating the instances, so a missing dependency becomes a startup exception instead of a request that fails in an hour. `ValidateScopes` adds the rule this scene is about: a singleton may not hold a scoped service. Both are on by default only in the Development environment, so if your continuous integration runs with the environment left at Production, the checks you think are protecting you are not running.
 
 The middle is a rhythm of scopes. In a web application the framework opens one around each request and disposes it when the response is finished, and every `AddScoped` registration means one instance per turn of that rhythm. Outside a request the rhythm is yours to define, and the unit is whatever "one piece of work" means in your application: a message consumed from a queue, one iteration of a polling loop, a single row of a nightly import. Background code that skips this is the common way a captive dependency gets in, because a hosted service is a singleton and anything it holds is held for the life of the process. Open a scope from `IServiceScopeFactory` per unit, resolve inside it, and let it go at the end.
 

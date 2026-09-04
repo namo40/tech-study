@@ -11,7 +11,7 @@ related:
     slug: at-least-once
   - label: Idempotent Consumer
     slug: idempotent-consumer
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
   - label: Deduplication
     slug: deduplication

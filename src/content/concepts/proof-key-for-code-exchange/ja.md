@@ -24,8 +24,8 @@ references:
     url: https://www.rfc-editor.org/rfc/rfc7636
   - title: "OAuth 2.0 Security Best Current Practice (RFC 9700)"
     url: https://www.rfc-editor.org/info/rfc9700/
-  - title: OAuth 2.0 for Browser-Based Apps
-    url: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-browser-based-apps
+  - title: "OAuth 2.0 for Browser-Based Applications (RFC 10017)"
+    url: https://www.rfc-editor.org/rfc/rfc10017
 ---
 
 場面の第 3 段階は、アプリについて 1 つだけ条件を変えます。client secret がないということです。シングルページアプリはソースを訪問者全員に配り、モバイルアプリは誰でも展開できるバイナリを配ります。そこに埋め込んだ secret は、誰かが覗くまでの間だけ secret です。こうして第 2 段階が頼っていた検査が消えます。code は相変わらず front channel を通り、攻撃者は相変わらず URL から複製でき、`/token` では 2 人の呼び出し元を見分けられなくなります。

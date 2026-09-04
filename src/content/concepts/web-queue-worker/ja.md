@@ -1,5 +1,5 @@
 ---
-title: "Web-Queue-Worker"
+title: "Web Queue Worker"
 summary: "Web-Queue-Worker はサービスを 2 つに分けます。リクエストを受け取ってミリ秒で答える Web 層と、長い処理をキューから取り出して自分のペースで進めるワーカーです。キューがピークを吸収し、2 つの層はそれぞれ独立して増やせます。"
 category: "アプリケーションアーキテクチャ"
 scene: web-queue-worker
@@ -25,7 +25,7 @@ related:
     slug: dead-letter-queue
   - label: Idempotent Consumer
     slug: idempotent-consumer
-  - label: BackgroundService
+  - label: Background Service
     slug: background-service
   - label: Worker Service
     slug: worker-service

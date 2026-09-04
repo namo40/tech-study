@@ -6,13 +6,13 @@ tags: ["database", "latency"]
 scene: cross-shard-query
 steps:
   - title: "A question without the key must be asked of everyone"
-    text: "The ghost shows every query fanning out to every shard: three machines work, one answer comes back, and the meter reads triple for each ask. Nothing is misconfigured — this is simply the price sheet of partitioned data. Whether the question carries the partition key decides which line of the sheet you pay."
+    text: "The ghost shows every query fanning out to every shard: three machines work for every ask, and the meter climbs with each one. Nothing is misconfigured: this is the price sheet of partitioned data, and the key decides which line you pay."
   - title: "A question that carries the key is a one-shard job"
     text: "The router reads the key, points at the one shard that owns it, and the answer costs the same whether there are three shards or three hundred. This is the whole bargain of sharding: design the hot questions to carry the key, and the fleet scales while each answer stays a single conversation."
   - title: "A legitimate scatter is priced by the slowest shard"
     text: "Some questions really belong to everyone — a total, a search. The router scatters, two shards answer fast, and the gather bar waits for the third: fan-out turns one query into a race against your own tail latency. And when a shard does not answer at all, you choose in advance — return a marked partial, or fail whole. Silence is not an option you can leave undesigned."
   - title: "Turn your most-asked question into a one-shard question"
-    text: "The summary the dashboard wants every second gets precomputed into a view, updated a little on every write, and read back with a key — the scatter happens once per write, not once per read. You did not change the question; you changed the data's shape so it lands on one shard. That trade is the honest way out of fan-out."
+    text: "The summary the dashboard wants every second gets precomputed into a view, updated on every write, and read back from one place. The extra work moves to the write, and it is small: you changed the data's shape, not the question."
 related:
   - label: Sharding
     slug: sharding
@@ -38,7 +38,7 @@ references:
   - title: Sharding pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding
   - title: Query an Azure Cosmos DB container
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/how-to-query-container
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-query-container
   - title: Materialized View pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/materialized-view
 ---
@@ -110,7 +110,7 @@ await Parallel.ForEachAsync(shards, new ParallelOptions
 });
 ```
 
-On Cosmos DB the same distinction is a flag. A query whose predicate includes the partition key is served by one physical partition; one without it becomes a cross-partition query, and the SDK will only run it if you allow it.
+On Cosmos DB the same distinction is one property on the request. A query whose predicate includes the partition key is served by one physical partition; one without it becomes a cross-partition query, and the SDK fans it out silently — there is no flag to withhold and nothing in a code review that marks the difference.
 
 ```csharp
 // Keyed: one partition, one charge.
@@ -119,7 +119,7 @@ var keyed = container.GetItemQueryIterator<Order>(
     requestOptions: new QueryRequestOptions { PartitionKey = new PartitionKey(id) });
 ```
 
-Leaving `PartitionKey` unset makes it a fan-out across every physical partition, and the request charge grows with the number of partitions rather than with the number of rows returned. `QueryRequestOptions.MaxConcurrency` and `MaxItemCount` bound it, but enabling cross-partition queries quietly, everywhere, is the smell: it makes an expensive query look like a cheap one in code review.
+Leaving `PartitionKey` unset makes it a fan-out across every physical partition, and the request charge then grows with the number of partitions as well as with the rows returned: checking one physical partition's index costs a minimum of about 2.5 RU even when it matches nothing. `QueryRequestOptions.MaxConcurrency` and `MaxItemCount` bound the fan-out. The smell to look for is a predicate with no partition key on a query whose request charge nobody reads — so set `PartitionKey` wherever the key is known, and put the RU charge of the queries that cannot on a chart.
 
 For the fourth step, the mechanism is a change feed or an outbox driving a summary document that is keyed the way the question is asked.
 

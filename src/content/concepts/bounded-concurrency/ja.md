@@ -19,7 +19,7 @@ related:
     slug: thread-pool
   - label: Rate Limiter
     slug: rate-limiter
-  - label: Web-Queue-Worker
+  - label: Web Queue Worker
     slug: web-queue-worker
   - label: Competing Consumers
     slug: competing-consumers

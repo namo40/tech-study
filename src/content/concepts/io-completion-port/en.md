@@ -6,13 +6,13 @@ tags: ["memory", "latency"]
 scene: io-completion-port
 steps:
   - title: "Waiting eats threads"
-    text: "The ghost shows blocking I/O: each request parks a thread until the disk answers, four requests park all four, and the pool is full of workers doing nothing. The queue grows behind idle muscle. A thread is for running code — the moment it just waits, you are paying a worker to watch a kettle."
+    text: "The ghost shows blocking I/O: each request parks a thread until the disk or the network answers, four requests park all four, and the pool fills with workers doing nothing. A thread is for running code; waiting pays a worker to watch a kettle."
   - title: "The completion arrives at the port; the thread after"
     text: "Start the I/O, register it, and give the thread straight back. The OS runs the operation with no thread attached; when it finishes, a completion packet lands on the port, and whichever pool thread is free picks up the continuation. Between start and finish there is genuinely nothing to run, so nothing runs."
   - title: "In-flight I/O and thread count are different numbers"
-    text: "Six operations run at once while two threads serve them all: starts cost almost nothing, waits cost nothing at all, and finished work queues as packets until a thread is ready. This is how one process holds thousands of open sockets without a thousand threads — the port is the meeting point that makes the two numbers independent."
+    text: "Six operations run at once while two threads serve them all: starts cost almost nothing, waits nothing at all, and finished work lands on the port as packets, handed out one at a time. That is how one process holds thousands of open sockets."
   - title: "Code can take back what the port gave"
-    text: "Block a pool thread waiting on a task and you have rebuilt the ghost one floor up; launch every operation at once and the packets pile into a wave. The port solves waiting, not discipline. Keep the continuations non-blocking, and bound the launches — a small gate in front is how the free threads stay free."
+    text: "Block a pool thread on a task and you have rebuilt the ghost one floor up; launch every operation at once and the packets pile into a wave. The port solves waiting, not discipline: after the wave drains, a gate goes up so the next never forms."
 related:
   - label: Thread Pool
     slug: thread-pool
@@ -35,8 +35,8 @@ related:
 references:
   - title: The managed thread pool
     url: https://learn.microsoft.com/en-us/dotnet/standard/threading/the-managed-thread-pool
-  - title: Async in depth
-    url: https://learn.microsoft.com/en-us/dotnet/standard/async-in-depth
+  - title: Asynchronous programming scenarios
+    url: https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-scenarios
   - title: I/O Completion Ports
     url: https://learn.microsoft.com/en-us/windows/win32/fileio/i-o-completion-ports
 ---
@@ -67,16 +67,16 @@ Use asynchronous APIs end to end and the machinery is invisible. What is worth w
 // resumes on whichever pool thread is free when the packet lands.
 await using var stream = new FileStream(
     path, FileMode.Open, FileAccess.Read, FileShare.Read,
-    bufferSize: 4096, useAsync: true);          // useAsync: true is the port
+    bufferSize: 4096, useAsync: true);          // on Windows, this is the port
 var buffer = new byte[4096];
-int read = await stream.ReadAsync(buffer);
+int read = await stream.ReadAsync(buffer, ct);
 
 // A launch gate, so ten thousand items do not become ten thousand starts.
 var gate = new SemaphoreSlim(20);
 await Task.WhenAll(items.Select(async item =>
 {
-    await gate.WaitAsync();                     // waits without holding a thread
-    try { await ProcessAsync(item); }
+    await gate.WaitAsync(ct);                   // waits without holding a thread
+    try { await ProcessAsync(item, ct); }
     finally { gate.Release(); }
 }));
 
@@ -87,6 +87,6 @@ await Parallel.ForEachAsync(
     async (item, token) => await ProcessAsync(item, token));
 ```
 
-Two things make the difference visible. `FileStream` opened without `useAsync: true` does not use the port at all, so `ReadAsync` on it is a blocking read on a pool thread wearing an asynchronous signature; sockets and `HttpClient` are asynchronous properly, which is why they scale so differently in practice. And `SemaphoreSlim.WaitAsync` is the asynchronous form on purpose: waiting at the gate has to be free of threads too, or the gate becomes the thing that starves you.
+Two things make the difference visible. On Windows, `useAsync: true` is what binds the handle to the port, so a `FileStream` opened without it turns `ReadAsync` into a blocking read on a pool thread wearing an asynchronous signature; on Linux there is no asynchronous file I/O to bind to at all, so every `FileStream.ReadAsync` is a synchronous read scheduled on the pool whatever the flag says. Sockets and `HttpClient` are genuinely free while they wait on both, which is why they scale so differently in practice. And `SemaphoreSlim.WaitAsync` is the asynchronous form on purpose: waiting at the gate has to be free of threads too, or the gate becomes the thing that starves you.
 
 Watch it with numbers rather than intuition. `ThreadPool.ThreadCount` climbing while `ThreadPool.PendingWorkItemCount` stays high is starvation in progress, and the `System.Runtime` event counters expose both without a debugger attached. The rule of thumb worth keeping: if a pool thread is waiting, something is wrong with the code, not with the pool size.

@@ -19,13 +19,13 @@ related:
     slug: event-sourcing
   - label: Replication Lag
     slug: replication-lag
-  - label: BackgroundService
+  - label: Background Service
     slug: background-service
 references:
   - title: CQRS pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs
   - title: Transactional Outbox pattern
-    url: https://learn.microsoft.com/en-us/azure/architecture/patterns/transactional-outbox
+    url: https://learn.microsoft.com/en-us/azure/architecture/databases/guide/transactional-out-box-cosmos
   - title: Worker services in .NET
     url: https://learn.microsoft.com/en-us/dotnet/core/extensions/workers
 ---

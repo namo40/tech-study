@@ -10,9 +10,9 @@ steps:
   - title: "The copy goes to the shadow; the answer goes to the user"
     text: "Every real request is served by the live version as always, and its twin is replayed against the new one, whose answer falls into a comparator instead of a socket. Real inputs, real volume, real timing, zero user impact: nobody is graded but the code."
   - title: "The shadow's side effects go in a cage"
-    text: "It runs real code against real inputs, so it will try to write, charge and send — and every one of those must hit a wall: read-only stores, mock endpoints, suppressed mail. The cage is configuration, not a fork: the same build, split by settings. An uncaged shadow is a second production emailing your customers twice."
+    text: "It runs real code against real inputs, so it will try to write and send — both must hit a wall: read-only stores, suppressed mail. The cage is configuration, not a fork: one build, split by settings. An uncaged shadow emails customers twice."
   - title: "The comparison is the report card; promotion is graduation"
-    text: "Every mismatch is a bug found on real traffic that no user ever saw — investigate, fix, and let the matches accumulate again. Once the shadow has answered like the live one for weeks, under real load, promoting it is the dullest deploy you will ever run."
+    text: "Every mismatch is a bug found on real traffic that no user ever saw — investigate, fix, and let the matches accumulate again. Promote it and the cage comes down with the settings: its next write lands for real."
 related:
   - label: Canary Release
     slug: canary-release
@@ -76,7 +76,7 @@ http:
     mirrorPercentage: { value: 10.0 }
 ```
 
-Without a mesh, YARP can clone a request in the pipeline. The clone is buffered and dispatched on its own, so the user's response is never held up by it:
+Without a mesh, a small piece of middleware in front of the proxy — YARP or otherwise — can clone the request; YARP has no mirroring of its own to turn on. The clone is buffered and dispatched separately, so the user's response is never held up by it:
 
 ```csharp
 app.Use(async (context, next) =>
@@ -87,6 +87,9 @@ app.Use(async (context, next) =>
 
     // The user's call carries on immediately. The copy is fired at the shadow
     // and its answer goes to the comparator, never back to this response.
+    // `ShadowRequest` and `shadow` are yours to write, and nothing inside them
+    // may touch `context` after this line, because the request may already be
+    // over. Nobody awaits the task either, so it has to log its own failures.
     _ = shadow.SendAndCompareAsync(copy, context.TraceIdentifier);
     await next(context);
 });

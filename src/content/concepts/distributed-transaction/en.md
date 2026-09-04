@@ -31,6 +31,8 @@ references:
     url: https://learn.microsoft.com/en-us/dotnet/framework/data/transactions/transaction-fundamentals
   - title: "Enlisting Resources as Participants in a Transaction"
     url: https://learn.microsoft.com/en-us/dotnet/framework/data/transactions/enlisting-resources-as-participants-in-a-transaction
+  - title: "TransactionManager.ImplicitDistributedTransactions Property"
+    url: https://learn.microsoft.com/en-us/dotnet/api/system.transactions.transactionmanager.implicitdistributedtransactions
   - title: "Distributed data in cloud-native applications"
     url: https://learn.microsoft.com/en-us/dotnet/architecture/cloud-native/distributed-data
 ---
@@ -41,7 +43,7 @@ A local transaction solves this completely inside one store. The database has on
 
 What that leaves is a coordination problem with no purely local answer. Somebody has to hold the outcome for the whole set of stores, and every store has to agree to be bound by what that somebody says — which means agreeing to give up the right to decide for itself, and holding whatever it has staged until it is told. That is the deal two-phase commit writes down, and everything expensive about the protocol comes from it: the extra round trip that collects the promises, the locks each store keeps while it is promising, and the window where a store has promised and cannot yet be told what the promise was for.
 
-It is worth being precise about what "distributed" means here, because it is not about how many machines are involved. Two databases on the same physical server are still two resource managers and still need the protocol; ten tables in one database are one transaction and need nothing. What splits a transaction is the number of things that own a commit, not the number of hosts, and this is exactly where the accidental version comes from. A `TransactionScope` around two connections looks like one transaction in the code and is one transaction in a demo; the second connection enlists, the runtime promotes it, and the shape of the thing has changed without anybody deciding.
+It is worth being precise about what "distributed" means here, because it is not about how many machines are involved. Two connections, even to two databases on the same server, are two resource managers and still need the protocol; ten tables reached over one connection are one transaction and need nothing. What splits a transaction is the number of things that own a commit, not the number of hosts, and this is exactly where the accidental version comes from. A `TransactionScope` around two connections looks like one transaction in the code and is one transaction in a demo; the second connection enlists, the runtime promotes it, and the shape of the thing has changed without anybody deciding.
 
 Which means most of the design work happens before you pick a protocol at all. Some of what looks like a distributed transaction is a store that was split for the wrong reason and belongs back together. Some of it is a write that only needs to be atomic with the message that announces it, which a transactional outbox does with one local transaction and no coordinator. Some of it genuinely spans owners, and then the choice is between holding locks across the network for the length of the decision, or committing each part as you go and undoing the finished ones when a later one fails. The first is two-phase commit and buys the guarantee that nobody ever observes the half-state. The second is a saga and accepts that somebody will.
 

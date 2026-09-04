@@ -19,21 +19,17 @@ related:
     slug: rebalancing
   - label: Database Index
     slug: database-index
-  - label: Ordering
-    slug: ordering
   - label: Replication
     slug: replication
   - label: Replication Lag
     slug: replication-lag
   - label: Load Balancer
     slug: load-balancer
-  - label: Event Stream
-    slug: event-stream
 references:
   - title: "Data partitioning guidance"
     url: https://learn.microsoft.com/en-us/azure/architecture/best-practices/data-partitioning
   - title: "Partitioning and horizontal scaling in Azure Cosmos DB"
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning
   - title: "Sharding pattern"
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding
 ---

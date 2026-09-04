@@ -4,7 +4,7 @@ summary: "MassTransit is an application framework that sits on top of a message 
 category: "Messaging and event processing"
 tags: ["queue"]
 related:
-  - label: Web-Queue-Worker
+  - label: Web Queue Worker
     slug: web-queue-worker
   - label: Work Queue
     slug: work-queue
@@ -24,7 +24,7 @@ related:
     slug: rabbitmq
 references:
   - title: MassTransit concepts
-    url: https://masstransit.io/documentation/concepts
+    url: https://masstransit.massient.com/concepts
 ---
 
 ## When to use
@@ -39,7 +39,7 @@ references:
 - The framework decides the broker topology, and not knowing its conventions makes the broker console unreadable. MassTransit routes by message type: publishing an `OrderPlaced` creates an exchange or a topic named after that type, and every consumer of it gets a queue bound to that name. The entities in the portal will not match anything you typed, so learn the naming rules before an incident is the first time you look.
 - The abstraction hides brokers from each other, not their differences from you. Service Bus sessions, partition keys, RabbitMQ exchange types and per-transport quotas are still there, and reaching them means transport-specific configuration that quietly ties the code to one broker. Portability is real for the ordinary path and a claim worth testing for anything else.
 - A consumer can still be called twice, and the framework does not change that. Retries, redelivery and a broker's at-least-once delivery all mean the same handler may see the same message again, so a consumer whose side effects are external needs the usual defence: a message id, a record of what has already been processed, or a transactional outbox on the producing side.
-- Major versions have moved a lot, and samples age badly. Configuration APIs, the outbox and the scheduling story all changed shape across releases, and licensing terms have changed for newer versions too. Pin a version, read that version's documentation, and treat a blog post from two majors ago as a hint rather than as instructions.
+- Major versions have moved a lot, and samples age badly. Configuration APIs, the outbox and the scheduling story all changed shape across releases, and the licence changed with them: v8 stays open source under Apache 2.0, while v9, released in 2026, ships under a commercial licence. Pin a version, read that version's documentation, and treat a blog post from two majors ago as a hint rather than as instructions.
 
 ## In .NET
 
@@ -56,11 +56,15 @@ builder.Services.AddMassTransit(x =>
 
         cfg.ReceiveEndpoint("order-processing", e =>
         {
-            // Fast attempts for a transient blip...
-            e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(2)));
-            // ...and a scheduled return to the queue for a dependency that is down.
+            // Filters nest in registration order, outermost first, so the scheduled
+            // return to the queue is declared before the retries it wraps. On
+            // RabbitMQ this filter needs the delayed-exchange plug-in; without it,
+            // UseQueueBasedDelayedRedelivery does the same job with a TTL and a
+            // dead-letter exchange.
             e.UseDelayedRedelivery(r => r.Intervals(
                 TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(10)));
+            // Fast attempts for a transient blip run inside that.
+            e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(2)));
 
             e.ConfigureConsumer<OrderPlacedConsumer>(context);
         });

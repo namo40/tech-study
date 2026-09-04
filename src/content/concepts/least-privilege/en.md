@@ -53,10 +53,17 @@ az role assignment create --assignee $ORDERS_CLIENT_ID \
 Inside an API the same principle applies to what a caller may do once it is in. Policies keyed on a claim keep the decision in one place and keep the endpoints readable, so a new permission is a policy rather than a scattering of `if` statements.
 
 ```csharp
+// `scp` arrives as one space-separated string, so an exact claim match would
+// refuse a token that was granted both scopes.
+static bool HasScope(ClaimsPrincipal user, string scope) =>
+    (user.FindFirstValue("scp") ?? "").Split(' ').Contains(scope);
+
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("orders:read", policy => policy.RequireClaim("scp", "Orders.Read"));
-    options.AddPolicy("orders:write", policy => policy.RequireClaim("scp", "Orders.Write"));
+    options.AddPolicy("orders:read", policy =>
+        policy.RequireAssertion(context => HasScope(context.User, "Orders.Read")));
+    options.AddPolicy("orders:write", policy =>
+        policy.RequireAssertion(context => HasScope(context.User, "Orders.Write")));
 });
 
 app.MapGet("/orders/{id}", GetOrder).RequireAuthorization("orders:read");

@@ -11,7 +11,7 @@ steps:
   - title: "Persist it"
     text: "The current state is a row in the store, so a restart resumes exactly where it stopped. And time is an event too: a submitted order nobody pays for expires when its timer fires."
   - title: "Long-running"
-    text: "A process that waits days for an approval, retries a flaky step and survives restarts is a state machine with a durable history. A workflow engine replays that history to rebuild the state, so the code reads like a straight line even though it ran in pieces over days."
+    text: "A process that waits for an approval, retries a flaky step and survives restarts is a state machine with a durable history. A workflow engine replays that history to rebuild the state, so the code reads like a straight line."
 related:
   - label: Durable Workflow
     slug: durable-workflow
@@ -41,7 +41,7 @@ references:
   - title: "Stateless, a state machine library for .NET"
     url: https://github.com/dotnet-state-machine/stateless
   - title: "Durable Functions overview"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview
+    url: https://learn.microsoft.com/en-us/azure/durable-task/durable-functions/durable-functions-overview
   - title: "Dapr Workflow overview"
     url: https://docs.dapr.io/developing-applications/building-blocks/workflow/workflow-overview/
 ---
@@ -93,4 +93,4 @@ await db.SaveChangesAsync(ct);   // the state is a column; timers are rows with 
 
 `CanFire` is the whole point of the table: asking whether an event is legal costs nothing and never depends on reading the handler that would run it.
 
-For a process that runs for days, hand the machine to an engine that keeps the history itself. Azure Durable Functions, the Temporal .NET SDK and Dapr Workflow all rebuild an instance's state by replaying what has already happened to it, which is what lets an orchestration be written as ordinary sequential code that awaits a timer or an external event and picks up again on a different machine. Where the steps belong to different services rather than to one process, join them with a saga instead, and let a MassTransit state machine hold the coordination.
+For a process that runs for days, hand the machine to an engine that keeps the history itself. Azure Durable Functions, the Temporal .NET SDK and Dapr Workflow all rebuild an instance's state by replaying what has already happened to it, which is what lets an orchestration be written as ordinary sequential code that awaits a timer or an external event and picks up again on a different machine. Where the steps belong to different services rather than to one process, join them with a saga instead — a MassTransit state machine is the usual .NET shape — and let it hold the coordination.

@@ -11,7 +11,7 @@ steps:
   - title: "Two mistakes"
     text: "Blocking with .Result keeps the thread busy doing nothing, and in a single-threaded context the continuation has nowhere to run: deadlock. An async void method returns nothing to await, so its exception has nowhere to go. Use async all the way down, and return a Task."
   - title: "Cancellation and errors ride the same path"
-    text: "Pass the token all the way to the I/O, and cancelling stops the work instead of abandoning it. Whether it is a cancellation or a failure, awaiting the Task rethrows it right at the await, where a normal catch can handle it."
+    text: "Pass the token all the way to the I/O, and cancelling stops the work instead of abandoning it. Whether it is a cancellation or a failure, awaiting the Task rethrows it right at the await; here the failure lands in the Caller's catch."
 related:
   - label: Asynchronous I/O
     slug: asynchronous-io
@@ -56,7 +56,7 @@ CPU-bound work is a different problem. `await` does not make a computation faste
 - Pass a `CancellationToken` through every layer down to the I/O itself. A token that stops at the top of the stack cancels nothing; it just stops you waiting for work that carries on. In ASP.NET Core the token to pass is `HttpContext.RequestAborted`.
 - `ConfigureAwait(false)` belongs in library code, where you cannot know what context the caller is on. It changes nothing in ASP.NET Core, which has no synchronization context.
 - Fire-and-forget loses both the exception and the lifetime. A Task nobody holds can be abandoned mid-flight when the host shuts down, and its failure is never seen. Use a background service or a durable queue.
-- An async method that never awaits still allocates its state machine and still warns you at compile time. Either await something or make it synchronous.
+- An async method that never awaits runs synchronously to completion, still returns a Task, and still warns you at compile time (CS1998). Either await something or make it synchronous.
 
 ## In .NET
 
@@ -71,10 +71,11 @@ var b = await pricing.GetAsync(id, ct);
 var aTask = catalog.GetAsync(id, ct);
 var bTask = pricing.GetAsync(id, ct);
 await Task.WhenAll(aTask, bTask);
-var (item, price) = (aTask.Result, bTask.Result);   // safe here: both are already complete
+var item = await aTask;                             // already complete, so these
+var price = await bTask;                            // awaits do not yield
 ```
 
-Reading `.Result` after `WhenAll` is safe because both Tasks have already completed, so nothing blocks. Reading it on a Task that has not completed is the mistake the third step of the scene is about.
+Awaiting a Task that has already completed takes the value synchronously, so the second pair of awaits costs nothing. Prefer `await` even there: `.Result` on a Task that has not completed is the mistake the third step of the scene is about, and even on one that has, it wraps a failure in an `AggregateException` on the way out.
 
 ```csharp
 // Wrong: blocks a pool thread and can deadlock in a single-threaded context.

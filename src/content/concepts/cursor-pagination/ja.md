@@ -31,7 +31,7 @@ references:
   - title: RESTful web API design
     url: https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design
   - title: Pagination in Azure Cosmos DB
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/query/pagination
+    url: https://learn.microsoft.com/en-us/cosmos-db/query/pagination
 ---
 
 cursor は数ではなく行で作ったしおりです。「4 ページ目をください」ではなく「最後に見た行の次をください」と言うと、データベースはそれを `WHERE key > @after ORDER BY key LIMIT 20` に訳します。並べ替え列にインデックスがあり比較が範囲なので、エンジンはその位置へまっすぐシークして二十行を読みます。ページの手前の行を作り出さないため、その分を払いません。2 ページ目でも 2000 ページ目でも費用は同じで、実行計画の形も同じです。この平らさが cursor を選ぶ一つ目の理由であり、深さに上限のないエンドポイントではこれだけで結論が出ます。

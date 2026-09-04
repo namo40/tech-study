@@ -10,9 +10,9 @@ steps:
   - title: "It keeps coming back because the system keeps its promise"
     text: "A message that is never acknowledged must be redelivered — that is what at-least-once means. Exactly-once holds only inside narrow boundaries; out here, redelivery is the guarantee, and a handler that cannot cope is the bug."
   - title: "Move the failure aside, and let time do the retrying"
-    text: "The bad message goes to a delay queue; the main line flows again immediately. When the timer fires it rejoins at the back, fails again, and earns a longer delay. Backoff is not mercy for the message — it is protection for everyone behind it."
+    text: "The bad message goes to the retry queue, a delay; the main line flows again immediately. When the timer fires it rejoins at the back, fails again, and earns a longer delay. Backoff is not mercy for the message; it protects everyone behind it."
   - title: "A retry budget is what makes the drawer possible"
-    text: "After the last allowed attempt, the message moves to the dead-letter queue — with its history attached — and an alert fires. Isolation is not disposal: it is the moment retrying stops and investigation starts, while the line behind flows as if nothing happened."
+    text: "After the eighth attempt, the message moves to the dead-letter queue — with its history attached — and an alert fires. Isolation is not disposal: it is the moment retrying stops and investigation starts, while the line behind flows on."
 related:
   - label: Dead Letter Queue
     slug: dead-letter-queue
@@ -26,7 +26,7 @@ related:
     slug: retry
   - label: Idempotent Consumer
     slug: idempotent-consumer
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
   - label: Competing Consumers
     slug: competing-consumers
@@ -60,7 +60,7 @@ The common thread is that the outcome does not depend on when you try. That is w
 
 - Separate poison from transient before you retry anything. A timeout is worth another attempt; a deserialization error is not. Retrying poison harder is pure waste, so classify the exception and let the two kinds take different paths.
 - Immediate redelivery is the default in most brokers, and it is the worst possible policy for a message that always fails. It maximises the damage: the consumer spends all of its time on the one message it can never finish, and everything behind it waits. Always put a delay between attempts.
-- Cap the attempts and keep the count with the message, not in consumer memory. A count held in the process is lost on restart and invisible to the other replicas, which is why brokers carry a delivery count on the message itself.
+- Cap the attempts and keep the count with the message, not in consumer memory. A count held in the process is lost on restart and invisible to the other replicas, which is why some brokers carry a delivery count on the message itself: Service Bus has `DeliveryCount` and RabbitMQ quorum queues have `x-delivery-count`, while a classic queue only flags `redelivered` and Kafka counts nothing at all.
 - If you implement the delay by scheduling a copy of the message, the copy is a new message and its delivery count starts again. Carry your own attempt number in a header, or the budget will never be spent.
 - A dead-letter queue with nobody watching it is a landfill. It needs an alert on the first message, an owner, and a documented way to replay a message once the cause is fixed.
 - Order guarantees make all of this harder. In a partitioned stream or a session, the poison message cannot be skipped without skipping everything behind it for that key, because moving it aside is exactly what per-key order forbids. Either accept the pause, or decide up front that a message that has spent its budget is dropped from the sequence and the gap is recorded.
@@ -113,7 +113,14 @@ processor.ProcessMessageAsync += async args =>
             return;
         }
 
-        var retry = new ServiceBusMessage(args.Message);
+        var retry = new ServiceBusMessage(args.Message)
+        {
+            // A new id: duplicate detection covers scheduled messages, so a copy
+            // carrying the original MessageId would be accepted and then dropped
+            // while the original is completed below.
+            MessageId = Guid.NewGuid().ToString(),
+        };
+        retry.ApplicationProperties["original-message-id"] = args.Message.MessageId;
         retry.ApplicationProperties["attempt"] = attempt + 1;
         var delay = TimeSpan.FromSeconds(5 * Math.Pow(3, attempt - 1));   // 5s, 15s, 45s, ...
         await sender.ScheduleMessageAsync(retry, DateTimeOffset.UtcNow.Add(delay), token);
@@ -125,6 +132,6 @@ static bool IsPermanent(Exception ex) =>
     ex is JsonException or ValidationException or ArgumentException;
 ```
 
-`IsPermanent` is the whole design in one method, and it is worth more care than the retry policy around it. Everything it returns `true` for is dead-lettered on the first failure, which costs one attempt instead of five; everything else gets the delay ladder. Abandoning the message instead of scheduling a copy is simpler and keeps the broker's delivery count, but it hands the message straight back, which is the immediate redelivery the second step of the scene is about, so it is only reasonable when the lock duration is long enough to act as the delay.
+`IsPermanent` is the whole design in one method, and it is worth more care than the retry policy around it. Everything it returns `true` for is dead-lettered on the first failure, which costs one attempt instead of five; everything else gets the delay ladder. Abandoning the message instead of scheduling a copy is simpler and keeps the broker's delivery count, but it hands the message straight back with no delay at all, which is the immediate redelivery the second step of the scene is about. Returning without settling anything does buy a delay, because the message stays invisible until its lock expires, but the wait is capped at the lock duration's five-minute maximum and each expiry costs a delivery count, so it is a way of stalling rather than a backoff ladder.
 
 On the other side, read the dead-letter queue like a queue and not like a log. `ServiceBusReceiver` opens it with `SubQueue.DeadLetter`, and each message carries `DeadLetterReason` and `DeadLetterErrorDescription` alongside the original body and headers. An alert on the message count, a page that shows the reasons, and a button that re-sends a message to the main queue once the bug is fixed are what turn the drawer into a workflow rather than a place messages go to be forgotten.

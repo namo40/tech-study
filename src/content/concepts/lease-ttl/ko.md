@@ -30,8 +30,6 @@ references:
     url: https://kubernetes.io/docs/concepts/architecture/leases/
   - title: Leader Election pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/leader-election
-  - title: BackgroundService Class
-    url: https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice
 ---
 
 장면의 두 번째 단계는 링이 비었다가 다시 차는 장면인데, 눈여겨볼 것은 그동안 그림의 다른 어떤 것도 변하지 않는다는 점입니다. 리더는 자기가 살아 있음을 증명하려고 무언가를 하고 있지 않습니다. 그냥 내버려 두면 0에 닿을 카운트다운을 다시 채워 넣을 뿐이고, 자리는 그 카운트다운이 버티는 동안만 그의 것입니다. 이것이 정의의 전부입니다. 임차 TTL은 요청 하나에 걸린 타임아웃도 아니고, 헬스 체크 간격도 아니고, 재시도 예산도 아닙니다. 조용해진 보유자를 저장소가 계속 믿어 주는 시간의 길이입니다.

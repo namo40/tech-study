@@ -8,7 +8,7 @@ sceneStep: 3
 related:
   - label: Resource-based Authorization
     slug: resource-based-authorization
-  - label: Role-based Access Control
+  - label: Role-Based Access Control
     slug: role-based-access-control
   - label: Default Deny
     slug: default-deny
@@ -18,7 +18,7 @@ related:
     slug: claims
   - label: Least Privilege
     slug: least-privilege
-  - label: Attribute-based Access Control
+  - label: Attribute-Based Access Control
     slug: attribute-based-access-control
   - label: Authentication
     slug: authentication
@@ -28,7 +28,7 @@ references:
   - title: "Policy-based authorization in ASP.NET Core"
     url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/policies
   - title: "Resource-based authorization in ASP.NET Core"
-    url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/resourcebased
+    url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/resource-based
 ---
 
 The third step of the scene is the one where the argument stops being about whether roles are a mistake. An `admin` card goes up in the Check, a badge appears on one caller, and a request that ownership would have refused walks through. That is what admin means, and drawing it as a rule card in the same stack as the owner rule is the point: the role did not vanish when the resource check arrived, and it did not win either. It took one line in the list, above the ownership rule, saying exactly one thing.

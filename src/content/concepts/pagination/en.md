@@ -6,9 +6,9 @@ tags: ["database", "latency"]
 scene: pagination
 steps:
   - title: "Nobody needs the whole table — and no phone can hold it"
-    text: "One query returns fifty thousand rows: the payload balloons, memory swells, and the user reads twenty. Pagination is the deal every list makes: hand out slices, keep a position, and fetch the next slice when asked. The only real question is how you remember the position."
+    text: "One query returns the whole table: the payload balloons, memory swells, and the user reads twenty. Pagination is the deal every list makes: hand out slices, keep a position, and fetch the next when asked. The question is how you remember it."
   - title: "Offset counts from the top — and the top moves"
-    text: "\"Page 3\" means \"skip 40 rows\", so the database walks past everything it skips, and deep pages get slower the deeper you go. Worse: a row inserted while you read shifts every position after it — page 4 repeats what page 3 showed, or skips what nobody saw. The bookmark was a number, and the book changed."
+    text: "\"Page 3\" means \"skip 40 rows\": the database walks past everything it skips, and deep pages get slower. Worse: a row inserted while you read shifts every position after it, so page 4 repeats page 3. The bookmark was a number; the book changed."
   - title: "A cursor remembers the row, not the count"
     text: "\"After key 40\" seeks straight to the position by index and reads the next twenty — same cost on page two and page two thousand. Rows inserted above change nothing, because the bookmark is the row you actually saw. The trade: you can go next, but you cannot jump to page 57 — a cursor is a place, not an address."
   - title: "Choose by the promise the list makes"
@@ -40,7 +40,7 @@ references:
   - title: RESTful web API design
     url: https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design
   - title: Pagination in Azure Cosmos DB
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/query/pagination
+    url: https://learn.microsoft.com/en-us/cosmos-db/query/pagination
 ---
 
 ## When to use
@@ -80,12 +80,13 @@ var next = await db.Orders
     .Take(PageSize)
     .ToListAsync(ct);
 
-// A non-unique sort column needs the key alongside it. Tuple comparison
-// keeps that a single seek rather than a chain of ORs.
+// A non-unique sort column needs the key alongside it. SQL can compare the
+// two columns as one row value; EF Core has no LINQ translation for that, so
+// the OR chain is the form to write here.
 var byDate = await db.Orders
     .AsNoTracking()
-    .Where(o => ValueTuple.Create(o.CreatedAt, o.Id)
-        > ValueTuple.Create(afterCreatedAt, afterId))
+    .Where(o => o.CreatedAt > afterCreatedAt
+        || (o.CreatedAt == afterCreatedAt && o.Id > afterId))
     .OrderBy(o => o.CreatedAt).ThenBy(o => o.Id)
     .Take(PageSize)
     .ToListAsync(ct);

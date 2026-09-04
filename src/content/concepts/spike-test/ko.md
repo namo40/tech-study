@@ -21,7 +21,7 @@ references:
   - title: Load and stress testing ASP.NET Core
     url: https://learn.microsoft.com/en-us/aspnet/core/test/load-tests?view=aspnetcore-10.0
   - title: Horizontal Pod Autoscaler
-    url: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+    url: https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/
 ---
 
 램프는 얌전하지만 실제 트래픽은 그렇지 않습니다. Spike Test는 평상시 부하에서 몇 배로 곧장 뛰어올라 그대로 유지합니다. 캠페인 메일이 나갈 때, 캐시를 비웠을 때, 서버 절반이 나머지 절반으로 넘어올 때 벌어지는 일이 그렇습니다. 가질 만한 숫자는 새 수준에서의 정상 상태가 아닙니다. 그건 이미 Load Test가 쟀습니다. 중요한 것은 그 사이 몇 분이 얼마를 치르는가입니다.

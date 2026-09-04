@@ -27,7 +27,7 @@ references:
   - title: "OAuth 2.0 Token Introspection (RFC 7662)"
     url: https://www.rfc-editor.org/rfc/rfc7662
   - title: Refresh tokens in the Microsoft identity platform
-    url: https://learn.microsoft.com/en-us/entra/identity-platform/access-tokens
+    url: https://learn.microsoft.com/en-us/entra/identity-platform/refresh-tokens
 ---
 
 장면의 네 번째 단계는 앞의 셋에는 필요 없던 관문을 하나 더합니다. 그것이 처음부터 거기 있는 대신 나중에 더해져야 한다는 사실이 이 주제의 전부입니다. 다른 관문들은 토큰을 읽습니다. 서명은 키와, 만료는 시계와, audience는 설정에 적힌 문자열과 대조됩니다. 어느 것도 누구에게 무엇을 묻지 않습니다. 폐기 검사는 그렇게 작동할 수 없습니다. "이 토큰은 회수되었다"는 토큰이 담고 있는 사실이 아니고 앞으로도 아닐 것이기 때문입니다. 그것은 토큰이 이미 세상에 나간 뒤에 누군가 기록한 사실이며, API가 그것을 아는 유일한 방법은 가서 확인하는 것입니다.

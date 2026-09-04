@@ -6,7 +6,7 @@ tags: ["queue"]
 related:
   - label: Work Queue
     slug: work-queue
-  - label: Web-Queue-Worker
+  - label: Web Queue Worker
     slug: web-queue-worker
   - label: Competing Consumers
     slug: competing-consumers
@@ -64,7 +64,7 @@ processor.ProcessMessageAsync += async args =>
         await handler.HandleAsync(args.Message.Body.ToObjectFromJson<OrderPlaced>(), args.CancellationToken);
         await args.CompleteMessageAsync(args.Message);
     }
-    catch (TransientException)
+    catch (Exception ex) when (ex is TimeoutException or ServiceBusException { IsTransient: true })
     {
         // Back to the queue now; the delivery count goes up, and at
         // MaxDeliveryCount the broker dead-letters it without asking.
@@ -72,10 +72,14 @@ processor.ProcessMessageAsync += async args =>
     }
 };
 
-processor.ProcessErrorAsync += args => logger.LogError(args.Exception, "{Source}", args.ErrorSource);
+processor.ProcessErrorAsync += args =>
+{
+    logger.LogError(args.Exception, "{Source}", args.ErrorSource);
+    return Task.CompletedTask;
+};
 await processor.StartProcessingAsync();
 ```
 
-- The Azure Functions Service Bus trigger is the same model with the pump hidden. The binding runs the function per message and settles it by the return value, which is convenient until you need a lock renewal or a manual abandon; from that point the processor above is the honest shape.
+- The Azure Functions Service Bus trigger is the same model with the pump hidden, and it can still be driven by hand. The binding settles the message by the return value; take a `ServiceBusMessageActions` parameter with `AutoCompleteMessages = false` on the trigger and you settle it yourself with `CompleteMessageAsync`, `AbandonMessageAsync` or `DeadLetterMessageAsync`, while `maxAutoRenewDuration` in host.json is the lock renewal. The processor above is the honest shape when sessions, prefetch or concurrency have to be held in code.
 - Read the dead-letter queue as an ordinary entity. It is addressed by setting `SubQueue.DeadLetter` on a receiver, each message carries `DeadLetterReason` and `DeadLetterErrorDescription`, and resubmitting means sending a copy back to the main entity so the delivery count starts again.
-- Scheduled messages and duplicate detection are broker features worth knowing before you rebuild them. `ScheduleMessageAsync` delivers a message at a future time without a timer in your process, and duplicate detection discards a repeat of the same `MessageId` inside a configured window, which covers a publisher's retry but not a consumer's second delivery.
+- Scheduled messages and duplicate detection are broker features worth knowing before you rebuild them. `ScheduleMessageAsync` delivers a message at a future time without a timer in your process, and duplicate detection discards a repeat of the same `MessageId` inside a configured window, which defaults to ten minutes and can run from twenty seconds to seven days. That covers a publisher's retry but not a consumer's second delivery, and because scheduled messages are checked too, a retry copy or a dead-letter resubmit that keeps the original `MessageId` is reported as sent and then dropped while the window is still open.

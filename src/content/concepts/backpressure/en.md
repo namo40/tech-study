@@ -10,9 +10,9 @@ steps:
   - title: "The queue absorbs the spike — for a while"
     text: "Input triples; the consumer keeps its steady pace, and downstream never feels the burst. But a queue only buys time. While input stays above output the depth only grows, and with it, every item's wait."
   - title: "A full buffer pushes back"
-    text: "The bounded queue refuses to pretend: at capacity, the producer waits. That wait travels upstream — fewer producers admitted at once — until input matches what can actually be done. Backpressure is the system telling itself the truth."
+    text: "The bounded queue refuses to pretend: at capacity, the producer waits. That wait travels upstream — the admits limit steps down, fewer items in flight — until input matches what can be done. Backpressure is the system telling itself the truth."
   - title: "Or make the drain faster"
-    text: "The consumer batches: many small items, one trip each way. Output doubles, the same spike replays, and the depth barely moves. Fix the rates, not the buffer — a bigger queue is just a longer lie."
+    text: "The consumer batches: many small items, one trip each way. Output doubles, a burst at the same rate replays, and the depth barely moves. Fix the rates, not the buffer — a bigger queue is just a longer lie."
 related:
   - label: Queue-Based Load Leveling
     slug: queue-based-load-leveling
@@ -20,7 +20,7 @@ related:
     slug: bounded-concurrency
   - label: Batching
     slug: batching
-  - label: Web-Queue-Worker
+  - label: Web Queue Worker
     slug: web-queue-worker
   - label: Work Queue
     slug: work-queue
@@ -92,18 +92,25 @@ await foreach (var item in channel.Reader.ReadAllAsync(token))
 
 `Channel.CreateUnbounded` is the same code with the limit deleted, and it is the version that fails in production: `WriteAsync` always completes, the producer never learns anything, and the queue becomes the place the overload is stored rather than the place it is signalled. If you find yourself reaching for it because the bounded one blocks, that block is the information you were asking for.
 
-The other two `FullMode` values do not block. `DropOldest` and `DropNewest` keep the writer moving and throw work away instead, which is the right choice for a feed where the latest value supersedes the earlier ones, and the wrong choice for anything you promised to process. `DropWrite` fails the write outright, which is the closest thing to a 503 the channel has.
+The other three `FullMode` values do not block. `DropOldest` and `DropNewest` keep the writer moving and throw work away instead, which is the right choice for a feed where the latest value supersedes the earlier ones, and the wrong choice for anything you promised to process. `DropWrite` discards the item being written and reports success to the writer: `TryWrite` returns `true`, `WriteAsync` completes, and the only signal is the `itemDropped` callback on `Channel.CreateBounded`. Nothing in the channel refuses a write the way a 503 refuses a request, so if the producer has to be told, stay in `Wait` mode and let `TryWrite` return false, or put a timeout on `WriteAsync`.
 
 The concurrency limit in the scene is a semaphore. It bounds how much work can be in flight at the source, which is what keeps the push-back from stopping at the first thing that has a buffer.
 
 ```csharp
-// At most eight items outstanding, whatever the source offers.
+// At most eight items outstanding, whatever the source offers. The permit is
+// taken before the item is queued and given back only once the consumer is
+// done with it; releasing it after WriteAsync would bound the writers instead,
+// which the bounded channel already does.
 var admits = new SemaphoreSlim(initialCount: 8, maxCount: 8);
 
+// Producer.
 await admits.WaitAsync(token);
+await channel.Writer.WriteAsync(item, token);
+
+// Consumer.
 try
 {
-    await channel.Writer.WriteAsync(item, token);
+    await handler.HandleAsync(item, token);
 }
 finally
 {

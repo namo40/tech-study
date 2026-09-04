@@ -27,8 +27,8 @@ related:
 references:
   - title: SemaphoreSlim Class
     url: https://learn.microsoft.com/en-us/dotnet/api/system.threading.semaphoreslim
-  - title: Async in depth
-    url: https://learn.microsoft.com/en-us/dotnet/standard/async-in-depth
+  - title: Asynchronous programming scenarios
+    url: https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-scenarios
   - title: The managed thread pool
     url: https://learn.microsoft.com/en-us/dotnet/standard/threading/the-managed-thread-pool
 ---

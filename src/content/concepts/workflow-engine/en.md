@@ -5,9 +5,9 @@ category: "Scheduled work and workflows"
 scene: workflow-engine
 steps:
   - title: "The schedule wakes it; the record keeps it"
-    text: "At 02:00 the engine starts an instance and runs step one. What matters is the line written to the history when the step completes — the engine's memory is a record, not a process."
+    text: "At 02:00 the engine starts an instance, runs step one, writes its line, and moves on to step two. What matters is that line in the history — the engine's memory is a record, not a process."
   - title: "It dies mid-step and continues anyway"
-    text: "The engine crashes, restarts, and replays its history: finished steps are skipped, the interrupted one resumes. Nothing ran twice, because progress lived in the record — not in the process that died."
+    text: "The engine crashes, restarts, and replays its history: finished steps are skipped and the interrupted one is run again from the start. Step one did not run twice, because progress lived in the record — not in the process that died."
   - title: "A failed step is retried, not a failed workflow"
     text: "Step three fails; the engine backs off and runs that one step again — attempt two succeeds. Retrying is safe exactly when each step can run twice without harm; that is the contract every step signs."
   - title: "Waiting is a step too"
@@ -35,9 +35,9 @@ related:
     slug: transactional-outbox
 references:
   - title: "Durable Functions overview"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview
+    url: https://learn.microsoft.com/en-us/azure/durable-task/durable-functions/durable-functions-overview
   - title: "Durable Functions orchestrations"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-orchestrations
+    url: https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-orchestrations
   - title: "Background tasks with hosted services in ASP.NET Core"
     url: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/host/hosted-services
 ---
@@ -54,7 +54,7 @@ references:
 
 - Every step must be safe to run twice, and the engine assumes it in two separate places. A crash between doing the work and recording it will re-run the step on resume, and a retry after a failure will re-run it too. Anything with an outside effect needs a key the far end can deduplicate on, or a check-then-act that is cheap to repeat. A step that charges a card with neither will charge it twice, and no amount of engine configuration will fix that.
 - Orchestration code has to be deterministic. Most engines rebuild an instance's position by replaying the orchestrator against the history, which makes `DateTime.UtcNow`, `Guid.NewGuid()`, `Random` and direct I/O inside the orchestrator bugs rather than shortcuts: they answer differently on the replay than they did the first time, and the engine loses its place. The framework hands you deterministic replacements for all of them. Everything else belongs in the steps.
-- Versioning a definition while instances are in flight is the hard operational problem, and there is no general solution to it. An instance that started under version 1 replays against version 1's history; insert a step into the middle of the definition and deploy, and the replay meets a history that no longer matches the code. The usual answers are to version the definition explicitly and let old instances finish on the old one, or to hold the deploy until the in-flight population drains. Pick one before the first release, not during the first incident.
+- Versioning a definition while instances are in flight is the hard operational problem, and no engine makes the decision for you: they give you a version marker to branch on, and you still have to choose when the old path can go. An instance that started under version 1 replays against version 1's history; insert a step into the middle of the definition and deploy, and the replay meets a history that no longer matches the code. The usual answers are to version the definition explicitly and let old instances finish on the old one, or to hold the deploy until the in-flight population drains. Pick one before the first release, not during the first incident.
 - Timers and external events have to be durable. `Task.Delay(TimeSpan.FromDays(2))` is not a two day wait, it is a two day wait that any deployment cancels, and an in-memory completion source is worse. If the wait matters, it lives in the same store the history does.
 - The store is not free. Every step writes rows, and an orchestration with a loop in it writes a lot of them. Decide early what a completed instance costs to keep, how long you keep it, and what the purge looks like — a history table nobody prunes becomes the largest table in the database, and it becomes that quietly.
 - Keep business rules out of the orchestrator. Its job is to say what runs next, and it will be replayed many times over an instance's life. Validation, computation and policy belong in the steps, where they run once, fail honestly, and can be tested without a runtime underneath them.
@@ -120,7 +120,7 @@ public static async Task ProvisionLicence([ActivityTrigger] Account account)
 }
 ```
 
-Starting an instance is a client call, and the instance id is worth choosing rather than generating. Give it a name derived from the thing it is about and the engine will refuse to start a second one for the same order, which is the cheapest deduplication you will ever get.
+Starting an instance is a client call, and the instance id is worth choosing rather than generating. Give it a name derived from the thing it is about and the engine will refuse to start a second one while the first is still running, which is the cheapest deduplication you will ever get — though once an instance has finished the id is free again, so at most once per order needs a status check in front of the call.
 
 ```csharp
 await client.ScheduleNewOrchestrationInstanceAsync(
@@ -184,10 +184,19 @@ async Task AdvanceAsync(WorkflowInstance instance, CancellationToken token)
 
     try
     {
-        await steps[next].RunAsync(instance, token);
-        db.Steps.Add(new StepRecord { InstanceId = instance.Id, Step = next, At = DateTimeOffset.UtcNow });
-        instance.Position = next + 1;
-        instance.WakeAt = null;
+        // A step returns null when it is done, or the deadline it is parked
+        // until. Parking records nothing: it is still the current step.
+        var parkedUntil = await steps[next].RunAsync(instance, token);
+        if (parkedUntil is { } until)
+        {
+            instance.WakeAt = until;
+        }
+        else
+        {
+            db.Steps.Add(new StepRecord { InstanceId = instance.Id, Step = next, At = DateTimeOffset.UtcNow });
+            instance.Position = next + 1;
+            instance.WakeAt = null;
+        }
     }
     catch (Exception ex) when (ex is not OperationCanceledException)
     {
@@ -201,6 +210,6 @@ async Task AdvanceAsync(WorkflowInstance instance, CancellationToken token)
 }
 ```
 
-`WakeAt` is doing two jobs, and both of them are the reason this survives a restart: it is the backoff for a failed step, and it is the durable timer for a step that is a wait. A step that waits for a person sets `WakeAt` to the escalation deadline and returns without recording anything; the webhook that carries the answer writes the step record and clears `WakeAt`, and the next sweep picks the instance up exactly where the record says it is.
+`WakeAt` is doing two jobs, and both of them are the reason this survives a restart: it is the backoff for a failed step, and it is the durable timer for a step that is a wait. A step that waits for a person returns the escalation deadline instead of finishing, so nothing is recorded and `WakeAt` becomes that timer; the webhook that carries the answer writes the step record and clears `WakeAt`, and the next sweep picks the instance up exactly where the record says it is. Run one replica of this sweep, or take a lease on the instance as you claim it: the composite key stops a step being *recorded* twice, not two workers *running* it at once.
 
 If all you need is the first half — something at 02:00, reliably, with a history of runs and a retry policy — Hangfire and Quartz.NET both do that without asking you to model the workflow at all. `IHostedService` with a `PeriodicTimer` is enough for a single instance; the moment there are two, you need either a scheduler that takes a lock or a leader election in front of the timer, or the job runs twice a night and nobody notices until it matters.

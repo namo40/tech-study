@@ -12,7 +12,7 @@ related:
     slug: role-based-access-control
   - label: Policy
     slug: policy
-  - label: Resource-Based Authorization
+  - label: Resource-based Authorization
     slug: resource-based-authorization
   - label: Default Deny
     slug: default-deny

@@ -40,6 +40,8 @@ related:
   - label: Transactional Outbox
     slug: transactional-outbox
 references:
+  - title: "Domain-Driven Design Reference"
+    url: https://www.domainlanguage.com/ddd/reference/
   - title: "Design a DDD-oriented microservice"
     url: https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice
   - title: "Using domain analysis to model microservices"

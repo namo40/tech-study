@@ -6,7 +6,7 @@ tags: ["queue"]
 scene: web-queue-worker
 sceneStep: 2
 related:
-  - label: Web-Queue-Worker
+  - label: Web Queue Worker
     slug: web-queue-worker
   - label: Background Job
     slug: background-job

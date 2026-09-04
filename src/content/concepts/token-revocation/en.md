@@ -28,7 +28,7 @@ references:
   - title: "OAuth 2.0 Token Introspection (RFC 7662)"
     url: https://www.rfc-editor.org/rfc/rfc7662
   - title: Refresh tokens in the Microsoft identity platform
-    url: https://learn.microsoft.com/en-us/entra/identity-platform/access-tokens
+    url: https://learn.microsoft.com/en-us/entra/identity-platform/refresh-tokens
 ---
 
 The fourth step of the scene adds a gate the first three did not need, and the reason it has to be added rather than simply being there is the whole subject. The other gates read the token: the signature is checked against a key, the expiry against a clock, the audience against a string in configuration. None of them asks anyone anything. A revocation check cannot work that way, because "this token has been withdrawn" is not a fact the token carries and never will be. It is a fact somebody recorded after the token was already in the world, and the only way the API learns it is by going and looking.

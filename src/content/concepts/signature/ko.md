@@ -30,12 +30,12 @@ related:
   - label: Authentication
     slug: authentication
 references:
-  - title: Configure cryptographic key auto-rotation in Azure Key Vault
-    url: https://learn.microsoft.com/en-us/azure/key-vault/keys/how-to-configure-key-rotation
-  - title: Key management in ASP.NET Core
-    url: https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/implementation/key-management?view=aspnetcore-10.0
-  - title: Rotation tutorial for resources with two sets of credentials
-    url: https://learn.microsoft.com/en-us/azure/key-vault/secrets/tutorial-rotation-dual
+  - title: "JSON Web Signature (JWS) (RFC 7515)"
+    url: https://www.rfc-editor.org/rfc/rfc7515
+  - title: "JSON Web Key (JWK) (RFC 7517)"
+    url: https://www.rfc-editor.org/rfc/rfc7517
+  - title: JSON Web Token Best Current Practices (RFC 8725)
+    url: https://www.rfc-editor.org/rfc/rfc8725
 ---
 
 서명은 암호화가 아닙니다. 서명된 토큰의 페이로드는 보통 그것을 가진 사람이면 누구나 읽을 수 있습니다. 서명이 더해 주는 것은 다른 누구도 할 수 없는 주장입니다. 특정 키가 정확히 이 바이트들을 만들었고, 그 뒤로 한 글자도 바뀌지 않았다는 주장입니다. 페이로드에서 문자 하나만 고쳐도 검증은 실패합니다. 서명이 페이로드 위에서 계산됐는데 이제 둘이 맞지 않기 때문입니다. 증명하는 것은 그것뿐이고, 그것만으로도 내가 통제하지 못하는 네트워크 너머로 신원을 실어 나르기에 충분합니다. 위조할 수 없는 주장은 믿어야만 하는 통로보다 값이 나갑니다.

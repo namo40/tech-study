@@ -6,9 +6,9 @@ tags: ["kubernetes"]
 scene: secret-injection
 steps:
   - title: "A secret baked into the image goes everywhere the image goes"
-    text: "The ghost shows a credential sealed into a layer: every pull copies it, every cache keeps it, and no later push takes it back — rotating it means rebuilding the world. Injection flips the premise: the artifact carries no secret at all, and delivery happens at start, to exactly one running thing."
+    text: "The ghost shows a credential sealed into a layer: every pull copies it, every cache keeps it, and rotating it means rebuilding the world. Injection flips the premise: the artifact carries no secret; the platform delivers it to one running pod."
   - title: "Environment variables are the easiest road — and they leak accordingly"
-    text: "The platform fills the slot before the process wakes; every runtime can read it, no library required. But the environment travels: child processes inherit it, crash dumps carry it, diagnostic pages print it. And the value is frozen at start — rotation means restart. Fine for the low-stakes; know what you signed."
+    text: "The platform fills the slot as the pod comes up; every runtime can read it, no library required. But the environment travels: children inherit it, dumps carry it, diagnostic pages print it. The value is frozen at start: rotation means restart."
   - title: "From a store to a file: managed in one place, narrowed by a list"
     text: "The secret lives in a store that knows its versions, and arrives as a mounted file only in the pods on the access list — the deny is the feature. One place to rotate, one place to audit, one list that says who may read. The file also skips the environment's leaks: nothing inherits it, dumps do not carry it."
   - title: "Rotation flows along the delivery path"
@@ -53,7 +53,7 @@ references:
 ## Cautions
 
 - Environment variables leak sideways, and the leaks are all boring. Child processes inherit the whole environment, so anything you shell out to gets the value. Crash dumps capture it. Diagnostic endpoints and error pages that print configuration print it. Process listings on some platforms expose it. None of this is exotic; it is just what an environment is for. Keep high-value secrets in mounted files or fetch them at start through a client, and reserve the environment for values whose disclosure would be annoying rather than serious.
-- A mounted secret updates in place, but the application has to notice. The file changes under a running process; nothing reopens it for you. Either watch the file and reload, or accept next-read semantics and make sure the next read happens before the old value stops working. An app that reads its secret once into a static field at startup has turned a rotating file back into a frozen environment variable.
+- A mounted secret updates in place under conditions, and the application still has to notice. It does not update at all when the volume is mounted with `subPath`, and where it does the change arrives no faster than the kubelet's sync period, so rotation is eventual rather than immediate; a CSI Secrets Store mount rotates only if rotation was switched on when the driver was installed. Then comes the application's half: the file changes under a running process, and nothing reopens it for you. Either watch the file and reload, or accept next-read semantics and make sure the next read happens before the old value stops working. An app that reads its secret once into a static field at startup has turned a rotating file back into a frozen environment variable.
 - Base64 in a manifest is encoding, not encryption. It exists so that binary values survive a text format, and it protects nothing at all — treat a manifest containing one exactly as you would treat the plaintext. Enable encryption at rest for the store, gate reads with RBAC, and keep the manifest out of version control unless it has been sealed or encrypted by something whose key lives elsewhere.
 - Scope the access list per workload. A store that every pod in the cluster may read is a baked secret with more steps: the blast radius of one compromised workload is again everything. One list per secret, naming the workloads that need it, is the entire difference between a store and a shared drive — and it is worth reviewing the list the way you would review a role assignment.
 - Never log the value; log the version. Every incident review wants to know which version a workload was holding, and that question is answerable without ever putting the secret in a log line, a trace attribute, a metric label or an exception message. Redaction filters are a second line of defence, not a first: the value should not reach the logging call.
@@ -75,7 +75,7 @@ var connection = builder.Configuration.GetConnectionString("Orders")
     ?? throw new InvalidOperationException("no connection string was injected");
 ```
 
-`AddKeyPerFile` is the mounted-file path: each file in the directory is one key and its contents are the value, which is exactly the shape a Kubernetes secret volume or a CSI driver produces. `reloadOnChange` is what makes the fourth step of the scene work — the file is replaced where it stands and configuration picks it up.
+`AddKeyPerFile` is the mounted-file path: each file in the directory is one key and its contents are the value, which is exactly the shape a Kubernetes secret volume or a CSI driver produces. `reloadOnChange` is what makes the fourth step of the scene work — the file is replaced where it stands and configuration picks it up — provided the mount is one that updates at all.
 
 Reading a rotating value through `IOptionsMonitor<T>` means the current value is always the current value, without the application knowing that anything rotated.
 

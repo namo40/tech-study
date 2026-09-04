@@ -29,7 +29,7 @@ references:
   - title: Consumer acknowledgements and publisher confirms
     url: https://www.rabbitmq.com/docs/confirms
   - title: MassTransit exceptions, retries and redelivery
-    url: https://masstransit.io/documentation/concepts/exceptions
+    url: https://masstransit.massient.com/concepts/exceptions
 ---
 
 장면의 첫 번째 단계는 같은 메시지가 소비자에게 세 번 가는 모습을 보여 줍니다. 시스템이 오작동하는 것처럼 읽히기 쉽지만 사실은 정반대입니다. 브로커는 약속을 지키는 중입니다. 최소 한 번은 누군가 끝냈다고 확인해 줄 때까지 메시지를 전달하겠다는 뜻이고, 죽을 수도 있는 소비자를 상대로 그 약속을 지키는 유일한 방법은 확인이 오지 않을 때 메시지를 다시 내주는 것입니다. 올라가는 전달 횟수는 보장이 사람들 앞에서 일하는 모습입니다.

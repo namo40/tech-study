@@ -6,13 +6,13 @@ tags: ["database"]
 scene: database-connection-pool
 steps:
   - title: "Opening is slow"
-    text: "A new connection means a TCP handshake, TLS, and a login. The pool pays that once and keeps the connection open."
+    text: "A new connection means a TCP handshake, TLS, and a login. The pool pays that once per connection and keeps it open."
   - title: "Reuse"
     text: "Every request borrows an open connection and returns it. Two connections serve the whole stream, and the database never sees a new login."
   - title: "Exhausted"
     text: "When every connection is busy, new requests wait in line. The pool's maximum is a concurrency budget for the database, and waiting past the timeout fails."
   - title: "Open late, release early"
-    text: "A connection held while the app does other work is a connection nobody else can use. Borrow it for the query, return it at once, and the same four serve far more."
+    text: "A connection held while the app does other work is a connection nobody else can use: the held slot sits idle while the others do all the work. Borrow it for the query, return it at once."
 related:
   - label: ADO.NET Connection Pooling
     slug: ado-net-connection-pooling
@@ -22,6 +22,8 @@ related:
     slug: maximum-pool-size
   - label: Connection Lifetime
     slug: connection-lifetime
+  - label: Idle Timeout
+    slug: idle-timeout
   - label: Connection Timeout
     slug: connection-timeout
   - label: Pool Exhaustion

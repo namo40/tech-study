@@ -29,7 +29,7 @@ references:
   - title: Scaling with Event Hubs
     url: https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-scalability
   - title: Partitioning and horizontal scaling in Azure Cosmos DB
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning
   - title: Sharding pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding
 ---

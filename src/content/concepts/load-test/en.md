@@ -10,7 +10,7 @@ steps:
   - title: "The knee"
     text: "Past about 300 users, more load adds no throughput, only queueing: p95 climbs to 540 ms and timeouts begin. The dependency meters say what saturated first. The connection pool is full with 180 requests waiting for one while the CPU is at 60%, so the pool is the thing to fix or size."
   - title: "Sustainable, then soak"
-    text: "Back off to the highest load that still meets the objective. Here that is 890 requests a second at a p95 of 180 ms, and that number, not the peak of 1,060, is the capacity. Then hold it for hours: the heap climbs from 40% to 70% over a two hour soak, which is a leak no short test would have shown."
+    text: "Back off to the highest load that still meets the objective. Here that is 890 requests a second at a p95 of 180 ms, and that number, not the peak of 1,060, is the capacity. Then hold it: the heap climbs 40% to 65%, a leak no short test shows."
   - title: "Make it real"
     text: "One hot id makes every request a cache hit, and the same service reports 1,121 requests a second at a p95 of 24 ms. With ten thousand ids and a 60% hit ratio it reports 886 and 189 ms. Read the load with a fixed arrival rate too, because users who politely wait let a slow server throttle its own test."
 related:
@@ -30,7 +30,7 @@ related:
     slug: slo
   - label: Database Connection Pool
     slug: database-connection-pool
-  - label: ThreadPool Starvation
+  - label: Thread Pool Starvation
     slug: threadpool-starvation
   - label: Rate Limiter
     slug: rate-limiter
@@ -42,7 +42,7 @@ references:
   - title: dotnet-counters
     url: https://learn.microsoft.com/en-us/dotnet/core/diagnostics/dotnet-counters
   - title: NBomber documentation
-    url: https://nbomber.com/docs/
+    url: https://nbomber.com/docs/getting-started/overview/
 ---
 
 ## When to use
@@ -88,7 +88,7 @@ NBomberRunner.RegisterScenarios(scenario).Run();
 ```text
 # While it runs, watch the server, not only the client:
 dotnet-counters monitor --process-id <pid> \
-  System.Runtime Microsoft.AspNetCore.Hosting Microsoft.Data.SqlClient.EventSource
+  --counters System.Runtime,Microsoft.AspNetCore.Hosting,Microsoft.Data.SqlClient.EventSource
 ```
 
-`Simulation.Inject` is the open model: it injects a fixed rate whatever the service does with it, so a slowdown shows up as a growing queue and rising latency rather than as a quietly smaller test. External tools such as k6 follow the same three rules, and the last one is the one most often skipped: client-side numbers alone cannot tell you which server-side resource saturated, so collect counters from the service and its dependencies for the whole run.
+`Simulation.Inject` is the open model: it injects a fixed rate whatever the service does with it, so a slowdown shows up as a growing queue and rising latency rather than as a quietly smaller test. The three rules the scenario above encodes hold whichever tool you use, k6 included: keep the arrival rate open, spread the load over realistic ids rather than one hot key, and drive it with a production-like client. The rule most often skipped is a fourth one, and it is outside the client altogether: client-side numbers alone cannot tell you which server-side resource saturated, so collect counters from the service and its dependencies for the whole run.

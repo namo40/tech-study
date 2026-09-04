@@ -59,23 +59,34 @@ references:
 - Set the TTL longer than the work's p99, renew well inside it, and stop working the moment a renewal fails. A renewal that fails means the lease may already be gone, so the correct response is to abandon the work, not to try harder.
 - Measure acquisition failures, renewal failures, and hold time. A lock held for minutes is a design smell: it means the critical section grew to include an HTTP call, a queue send, or a report render that should have happened outside it.
 - Do not use the lock service's clock as a source of truth. Redis expiry, your process clock, and the resource's clock all drift, and the whole point of the fencing token is that correctness stops depending on any of them.
+- A single Redis primary with asynchronous replicas can hand the key out twice across a failover, because the acquisition may not have reached the replica that gets promoted. That is what the Redlock discussion is about, and fencing is what makes it survivable rather than fatal.
 - For leader election in Kubernetes use the Lease object rather than building your own. Assume a brief overlap when leadership changes, because the old leader can still be running when the new one starts.
 
 ## In .NET
 
-A lease over Redis is three operations: take the key only if it does not exist, renew it only while we still own it, and release it only if it is still ours. The compare-and-set in each of the last two is what stops one instance from renewing or deleting a lease that has already moved on.
+A lease over Redis is three operations: take the key only if it does not exist, renew it only while we still own it, and release it only if it is still ours. Each one runs as a single script, so the check and the write cannot come apart — which is what stops one instance from renewing or deleting a lease that has already moved on, and what keeps the fencing token in step with the grants.
 
 ```csharp
 public sealed record Lease(string Key, string Owner, long Token, TimeSpan Ttl);
 
 public sealed class RedisLease(IDatabase redis)
 {
+    // Take the key and mint the token in one script, so the tokens increase in
+    // acquisition order. An INCR outside the script can hand a lower token to
+    // the instance that ends up acquiring later.
+    private const string AcquireScript = """
+        if redis.call('exists', KEYS[1]) == 1 then return nil end
+        local token = redis.call('incr', KEYS[2])
+        redis.call('set', KEYS[1], ARGV[1] .. ':' .. token, 'PX', ARGV[2])
+        return token
+        """;
+
     public async Task<Lease?> TryAcquireAsync(string key, TimeSpan ttl)
     {
-        var token = await redis.StringIncrementAsync($"{key}:fence");        // monotonic fencing token
         var owner = Guid.NewGuid().ToString("N");
-        var ok = await redis.StringSetAsync(key, $"{owner}:{token}", ttl, When.NotExists);
-        return ok ? new Lease(key, owner, token, ttl) : null;
+        var result = await redis.ScriptEvaluateAsync(AcquireScript,
+            [key, $"{key}:fence"], [owner, (long)ttl.TotalMilliseconds]);
+        return result.IsNull ? null : new Lease(key, owner, (long)result, ttl);
     }
 
     // Renew only if we still own it (compare-and-set in Lua).
@@ -95,6 +106,7 @@ public sealed class RedisLease(IDatabase redis)
 
 // The resource side: refuse anything older than the highest token seen.
 // UPDATE reports SET body = @body, last_token = @token WHERE id = @id AND last_token < @token;
+// Give last_token a default of 0, or the first write compares against NULL and never lands.
 ```
 
 The last line is the only part that makes the lock safe, and it is the part that is usually missing. If the resource cannot hold a token column, it cannot fence, and the best the lock can do is make collisions rare rather than impossible.

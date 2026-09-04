@@ -35,7 +35,7 @@ references:
 
 - The provider order is the priority rule, and it deserves to be written down. Whoever debugs the surprising value at 2am needs to know that an environment variable beats the JSON file and that the command line beats both, and reading it out of `Program.cs` under pressure is not the same as having it documented.
 - Secrets do not belong in `appsettings.json`, in any environment. That file is committed, copied into images and pasted into issues; put the value in a secret store or inject it as an environment variable at deploy time, and keep the configuration key in the file with no value attached to it.
-- A binding that fails is silent by default. A misspelled key, a section that moved or a string where a number belongs leaves the property at its default, and the application starts happily with a zero timeout. Annotate the options class and call `ValidateDataAnnotations().ValidateOnStart()` so the failure is a startup crash with a key name in it.
+- A key that is not there binds silently. A misspelled key or a section that moved leaves the property at its default, and the application starts happily with a zero timeout. A value the binder cannot convert is the loud case and throws instead, so it is the absent key rather than the wrong type that gets past you. Annotate the options class and call `ValidateDataAnnotations().ValidateOnStart()` so the failure is a startup crash with a key name in it.
 - The environment-variable separator for a nested key is a double underscore. `Logging:LogLevel:Default` is set as `Logging__LogLevel__Default`, because a colon is not portable across shells and platforms; the colon form works inside the JSON and the code, not in the variable name.
 ## In .NET
 

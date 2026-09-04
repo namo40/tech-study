@@ -27,7 +27,7 @@ related:
     slug: eventual-consistency
 references:
   - title: "Flexible automatic failover policy for an availability group"
-    url: https://learn.microsoft.com/en-us/sql/database-engine/availability-groups/windows/flexible-automatic-failover-policy-availability-group
+    url: https://learn.microsoft.com/en-us/sql/database-engine/availability-groups/windows/configure-flexible-automatic-failover-policy
   - title: "Windows Server Failover Clustering with SQL Server"
     url: https://learn.microsoft.com/en-us/sql/sql-server/failover-clusters/windows/windows-server-failover-clustering-wsfc-with-sql-server
   - title: "Health Endpoint Monitoring pattern"

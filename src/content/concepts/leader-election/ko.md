@@ -21,6 +21,10 @@ related:
     slug: fencing-token
   - label: Lease TTL
     slug: lease-ttl
+  - label: Lease Renewal
+    slug: lease-renewal
+  - label: Kubernetes Lease
+    slug: kubernetes-lease
   - label: Split Brain
     slug: split-brain
   - label: Singleton Worker

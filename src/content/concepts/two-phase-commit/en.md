@@ -6,13 +6,13 @@ tags: ["database", "consistency"]
 scene: two-phase-commit
 steps:
   - title: "Two stores, one promise"
-    text: "The order and the payment must both happen or neither. Commit them separately and there is a moment where one store said yes and the other said no — and that half-state is exactly what the customer sees. Someone has to make two databases act as one."
+    text: "The order and the payment must both happen or neither. Commit them separately and there is a moment where one store said yes and the other no — the half-state the customer would be left with. Someone has to make two databases act as one."
   - title: "First, collect a promise from everyone"
     text: "Prepare asks each store: can you commit this, and will you hold it ready? Each one validates, takes its locks, votes yes. Two of two — and still, nothing is committed. A promise is not the deed; it is the right to demand the deed."
   - title: "Everyone commits, or no one does"
     text: "With every vote in hand the coordinator says commit, and both stores flip together. And when one store votes no, the same machinery runs the other way: abort everywhere, locks released, nothing half-done. The customer sees a failure — but never a lie."
   - title: "The price of the promise is the wait"
-    text: "Prepared means locked — and when the coordinator dies at that moment, both stores hold their locks and wait, blocking everyone behind them, because breaking the promise alone would break atomicity. This in-doubt window is why modern systems often prefer sagas and outboxes: not because 2PC is wrong, but because this wait is what it costs."
+    text: "Prepared means locked — and when the coordinator dies at that moment, both stores hold their locks and wait, and anything that needs those rows waits with them. This in-doubt window is why modern systems often prefer sagas and outboxes."
 related:
   - label: Distributed Transaction
     slug: distributed-transaction
@@ -69,16 +69,16 @@ using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
 await using (var orders = new SqlConnection(ordersConnectionString))
 {
-    await orders.OpenAsync();          // still a local transaction here
-    await orders.ExecuteAsync(InsertOrder, order);
+    await orders.OpenAsync(ct);        // still a local transaction here
+    await orders.ExecuteAsync(new CommandDefinition(InsertOrder, order, cancellationToken: ct));
 }
 
 await using (var payments = new SqlConnection(paymentsConnectionString))
 {
     // A second durable resource enlists, and this is the promotion: from here
     // on there is a coordinator, a prepare round, and locks held across both.
-    await payments.OpenAsync();
-    await payments.ExecuteAsync(InsertCharge, charge);
+    await payments.OpenAsync(ct);
+    await payments.ExecuteAsync(new CommandDefinition(InsertCharge, charge, cancellationToken: ct));
 }
 
 scope.Complete();                       // the vote to commit, not the commit
@@ -98,20 +98,23 @@ If both writes live in the same database, none of this is needed and none of it 
 
 ```csharp
 await using var connection = new SqlConnection(connectionString);
-await connection.OpenAsync();
-await using var tx = await connection.BeginTransactionAsync();
+await connection.OpenAsync(ct);
+await using var tx = await connection.BeginTransactionAsync(ct);
 
-await connection.ExecuteAsync(InsertOrder, order, tx);
-await connection.ExecuteAsync(InsertOutboxMessage, message, tx);
+await connection.ExecuteAsync(new CommandDefinition(InsertOrder, order, tx, cancellationToken: ct));
+await connection.ExecuteAsync(new CommandDefinition(InsertOutboxMessage, message, tx, cancellationToken: ct));
 
-await tx.CommitAsync();
+await tx.CommitAsync(ct);
 ```
 
 That second statement is the modern answer to most of what people want two-phase commit for. The message that tells the other service what happened is written in the same local transaction as the change itself, so the two cannot disagree; a separate process reads the outbox and publishes it afterwards. Nothing is held across a network call, and the far side becomes eventually consistent rather than atomic — which is the honest trade, and the one to make deliberately.
 
 ```csharp
 // The far side does the other half: a step that can run twice without harm,
-// because at-least-once delivery is what the outbox buys you.
+// because at-least-once delivery is what the outbox buys you. The check is an
+// optimisation and not the guard — it is not atomic with the charge — so the
+// row `ChargeAsync` writes sits behind a unique index on `Charges.OrderId`,
+// and the order id is sent as the payment provider's idempotency key.
 public async Task HandleAsync(OrderPlaced message, CancellationToken token)
 {
     if (await db.Charges.AnyAsync(c => c.OrderId == message.OrderId, token)) return;

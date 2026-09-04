@@ -25,13 +25,13 @@ references:
     url: https://www.rfc-editor.org/info/rfc9700/
   - title: "The OAuth 2.0 Authorization Framework (RFC 6749)"
     url: https://www.rfc-editor.org/rfc/rfc6749
-  - title: OAuth 2.0 for Browser-Based Apps
-    url: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-browser-based-apps
+  - title: "OAuth 2.0 for Browser-Based Applications (RFC 10017)"
+    url: https://www.rfc-editor.org/rfc/rfc10017
 ---
 
 Short access tokens create a problem the fourth step of the scene walks through: the token dies while the user is still working. The API answers 401, and something has to produce a new token without interrupting anyone. Sending the browser back to the authorization server would work, but it would happen every few minutes and it would drag the user through a redirect each time. The refresh token exists so that the app can do it alone, on the back channel, with no user interaction and no browser involved.
 
-That makes it the most valuable thing the app holds. An access token is a few minutes of limited permission; a refresh token is the ability to keep minting access tokens for as long as the grant lives. So it is treated differently at every point. It is never put in a URL, never handed to a browser, and never sent to an API, and it is stored where the app stores secrets: the server-side session, a token store, or the platform keychain on a mobile device.
+That makes it the most valuable thing the app holds. An access token is a few minutes of limited permission; a refresh token is the ability to keep minting access tokens for as long as the grant lives. So it is treated differently at every point. It is never put in a URL and never sent to an API, and it is stored where the app stores secrets: the server-side session, a token store, or the platform keychain on a mobile device. It is not handed to a browser either, unless the client is a browser app that cannot avoid holding one — and then it is short-lived, non-extendable, and rotated on every use.
 
 Rotation is what makes it survivable if it does leak. Every redemption returns a new refresh token and invalidates the one that was used, so a stolen copy is only good until the legitimate app refreshes next. Better, it turns theft into something the server can detect. Two parties holding the same refresh token means one of them will eventually present a token that has already been rotated away, and that is not a normal event: a client that follows the protocol never replays a spent one. The server's answer is to revoke the whole family, every token descended from that original grant, which ends both sessions and forces a real login. That is the last thing the scene shows, and it is why the app's own refresh token goes dark along with the copy.
 

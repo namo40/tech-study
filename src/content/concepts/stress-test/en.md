@@ -22,7 +22,7 @@ references:
   - title: Load and stress testing ASP.NET Core
     url: https://learn.microsoft.com/en-us/aspnet/core/test/load-tests?view=aspnetcore-10.0
   - title: NBomber documentation
-    url: https://nbomber.com/docs/
+    url: https://nbomber.com/docs/getting-started/overview/
 ---
 
 A stress test starts where a load test stops. Past the knee, extra load buys no extra throughput, so all of it turns into queueing: latency climbs, the client timeout starts cutting requests off, and whichever resource saturated first decides the shape of the failure. The point is not to find a bigger number. It is to see the failure before a real traffic event shows it to you.

@@ -15,6 +15,10 @@ related:
     slug: minimal-apis
   - label: Middleware Pipeline
     slug: middleware-pipeline
+  - label: Modular Monolith
+    slug: modular-monolith
+  - label: Domain-Driven Design
+    slug: domain-driven-design
 references:
   - title: "Vertical Slice Architecture"
     url: https://www.jimmybogard.com/vertical-slice-architecture/

@@ -50,10 +50,10 @@ for (var attempt = 0; attempt < 3; attempt++)
         await db.SaveChangesAsync(ct);
         break;
     }
-    catch (DbUpdateConcurrencyException ex)
+    catch (DbUpdateConcurrencyException)
     {
-        // Reload the current row, then let the loop reapply `delta` to it.
-        await ex.Entries.Single().ReloadAsync(ct);
+        // Nothing was written. Drop the stale tracking so the loop's FindAsync
+        // reads the current row and reapplies `delta` to that one.
         db.ChangeTracker.Clear();
     }
 }

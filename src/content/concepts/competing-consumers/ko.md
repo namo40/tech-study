@@ -15,7 +15,7 @@ steps:
 related:
   - label: Work Queue
     slug: work-queue
-  - label: Web-Queue-Worker
+  - label: Web Queue Worker
     slug: web-queue-worker
   - label: Consumer Acknowledgement
     slug: consumer-acknowledgement
@@ -37,7 +37,7 @@ references:
   - title: RabbitMQ reliability guide
     url: https://www.rabbitmq.com/docs/reliability
   - title: MassTransit consumers
-    url: https://masstransit.io/documentation/concepts/consumers
+    url: https://masstransit.massient.com/concepts/consumers
 ---
 
 ## 언제 쓰나

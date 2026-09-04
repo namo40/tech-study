@@ -23,8 +23,8 @@ related:
   - label: Zero-Downtime Deployment
     slug: zero-downtime-deployment
 references:
-  - title: "Kubernetes: pod lifecycle"
-    url: https://kubernetes.io/docs/concepts/services-networking/service/
+  - title: "Kubernetes: EndpointSlices"
+    url: https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/
   - title: "Kubernetes: pod termination"
     url: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/
   - title: "ASP.NET Core: host shutdown"

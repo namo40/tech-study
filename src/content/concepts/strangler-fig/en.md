@@ -10,9 +10,9 @@ steps:
   - title: "Move one capability"
     text: "Rebuild customers in the new system, flip its route, leave everything else alone. Where the new code still needs old data, an anti-corruption layer translates instead of leaking the legacy model."
   - title: "Flip gradually"
-    text: "Send a tenth of the orders traffic to the new code, then half, then all. A failure means flipping the route back, not rolling back a deployment."
+    text: "Send a tenth of the orders traffic to the new code, then half. When it fails, flip the route back — not the deployment — fix it, then send all of it."
   - title: "Until nothing is left"
-    text: "Reports moves last, the data with it, and the old system is retired behind a router whose rows all say new. Finish the migration; a half-strangled system is the worst of both."
+    text: "Reports moves last, and the translation layer thins out with it, until the old system is retired behind a router whose rows all say new. Finish the migration; a half-strangled system is the worst of both."
 related:
   - label: Anti-Corruption Layer
     slug: anti-corruption-layer

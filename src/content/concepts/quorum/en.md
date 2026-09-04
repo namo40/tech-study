@@ -27,8 +27,8 @@ related:
   - label: Eventual Consistency
     slug: eventual-consistency
 references:
-  - title: "Configure and manage quorum (Failover Clustering)"
-    url: https://learn.microsoft.com/en-us/windows-server/failover-clustering/manage-cluster-quorum
+  - title: "Understand cluster and pool quorum"
+    url: https://learn.microsoft.com/en-us/windows-server/storage/storage-spaces/quorum
   - title: "Windows Server Failover Clustering with SQL Server"
     url: https://learn.microsoft.com/en-us/sql/sql-server/failover-clusters/windows/windows-server-failover-clustering-wsfc-with-sql-server
   - title: "Overview of Always On availability groups"
@@ -45,4 +45,4 @@ This is why quorum members are counted rather than ranked, and why the count wan
 
 The price is stated plainly by the same arithmetic. A system that requires a majority stops when it cannot get one. Lose two of three and you have not merely lost capacity, you have lost the ability to decide anything at all, including the ability to decide who should take over. That is availability traded away for the guarantee of never having two primaries, and it is worth saying out loud before an incident rather than during one, because a cluster that has correctly refused to act looks identical to a cluster that is broken, and the person paged at three in the morning will not enjoy discovering the difference from first principles.
 
-Two practical points follow. The votes must fail independently: three members in the same rack, on the same hypervisor, or behind the same power feed are one failure wearing three costumes, and the majority they form is imaginary. And the vote is only ever about liveness, never about data. Deciding that A is gone is a different question from deciding which surviving replica is furthest ahead and should therefore be promoted, and a design that answers the first and forgets the second will happily promote the machine with the shortest history it could have chosen.
+Two practical points follow. The votes must fail independently: three members in the same rack, on the same hypervisor, or behind the same power feed are one failure wearing three costumes, and the majority they form is imaginary. And in a plain failover cluster the vote is about liveness only. Deciding that A is gone is a different question from deciding which surviving replica is furthest ahead and should therefore be promoted; consensus protocols fold that second check into the election itself, and so does the SQL Server Pacemaker agent, which only promotes the replica holding the highest sequence number. A design that has neither will happily promote the machine with the shortest history it could have chosen.

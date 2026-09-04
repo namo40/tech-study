@@ -31,7 +31,7 @@ references:
   - title: "Implement background tasks in microservices with IHostedService"
     url: https://learn.microsoft.com/en-us/dotnet/architecture/microservices/multi-container-microservice-net-applications/background-tasks-with-ihostedservice
   - title: "Durable Functions overview"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview
+    url: https://learn.microsoft.com/en-us/azure/durable-task/durable-functions/durable-functions-overview
 ---
 
 Three things distinguish a long-running process from work that merely takes a while. It waits for something outside itself, so its duration is not decided by how fast the code is. It spans deployments, so no version of the code owns it from beginning to end. And it is longer than any reasonable timeout, so nothing upstream can be holding a connection open for the answer.

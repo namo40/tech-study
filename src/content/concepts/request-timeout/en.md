@@ -8,9 +8,9 @@ steps:
   - title: "No timeout"
     text: "The dependency hangs, so the call hangs, and so does every thread and connection behind it. The user gives up after five seconds; the server is still waiting."
   - title: "Several ceilings"
-    text: "Connecting, one attempt, and the whole request are three different limits. Set each one, and a slow answer becomes a fast error while the thread goes back to work."
+    text: "Connecting, one attempt, and the whole request are three different limits. Connect and attempt fire here; the total caps the whole request, and a slow answer becomes a fast error while the thread goes back to work."
   - title: "Pass the remaining budget down"
-    text: "One request, 800 ms. The database took 300, so the next call gets 500, not a fresh timeout of its own. Budgets that add up instead of nesting blow the deadline."
+    text: "One request, 800 ms. The database took 300, so the next call gets 500, not a fresh timeout of its own. Run the same pair with a fresh 500 ms ceiling on the second call and it lands 300 ms past the deadline."
   - title: "Cancel what you stopped waiting for"
     text: "A timeout without cancellation leaves the dependency doing ghost work for nobody. Flow the cancellation token all the way down, so the cut is real."
 related:
@@ -56,6 +56,7 @@ references:
 - Pass a `CancellationToken` into every async call. A timeout that does not cancel only moves the waste from the caller to the dependency.
 - Too short a timeout fails healthy calls under ordinary variance. Start from the p99 of a healthy dependency and add headroom.
 - "No timeout" is a decision as much as any number is. Most clients ship with one, so find out what it actually is before you rely on it.
+- The request timeouts middleware does not fire while a debugger is attached, the same as Kestrel's own timeouts. Test it without one, or the conclusion "our timeout does not work" will be about the debugger.
 
 ## In .NET
 

@@ -31,7 +31,7 @@ references:
   - title: "Implement background tasks in microservices with IHostedService"
     url: https://learn.microsoft.com/en-us/dotnet/architecture/microservices/multi-container-microservice-net-applications/background-tasks-with-ihostedservice
   - title: "Durable Functions overview"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview
+    url: https://learn.microsoft.com/en-us/azure/durable-task/durable-functions/durable-functions-overview
 ---
 
 ただ時間がかかる仕事と長時間実行プロセスを分けるものが 3 つあります。自分の外にある何かを待つので、かかる時間はコードの速さでは決まりません。配置換えをまたいで生きるので、コードのどの版も最初から最後まで所有できません。そして常識的なタイムアウトのどれよりも長いので、上流の誰も答えを待って接続を開いたままにはできません。

@@ -16,10 +16,10 @@ related:
     slug: hedging
 references:
   - title: Built-in metrics in ASP.NET Core
-    url: https://learn.microsoft.com/en-us/dotnet/core/diagnostics/built-in-metrics-aspnetcore
+    url: https://learn.microsoft.com/en-us/aspnet/core/metrics/built-in
 ---
 
-p95 is the usual alerting threshold because it sits between the two things you want from a number, sensitivity and stability. p99 reacts to a handful of requests and jitters along with them; p50 barely reacts at all. p95 moves when a real fraction of the traffic has slowed down, and it moves before p99 does.
+p95 is the usual alerting threshold because it sits between the two things you want from a number, sensitivity and stability. p99 reacts to a handful of requests and jitters along with them; p50 barely reacts at all. p95 moves only when a real fraction of the traffic has slowed down, which is why it is steadier than p99.
 
 It is also the number a hedge is normally configured from. Wait about p95 before sending a second copy and nineteen calls in twenty are never duplicated, which is what keeps the extra load small enough for the trade to be worth making.
 

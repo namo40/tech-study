@@ -12,7 +12,7 @@ steps:
   - title: "Orchestration"
     text: "A saga coordinator sends each command, records the state, and on failure issues the compensations itself. You can see where every order is; you also depend on the coordinator being there."
   - title: "The pivot"
-    text: "Some steps cannot be undone: a captured payment, a sent email. Mark that step as the pivot; before it, compensate backwards, after it, retry forwards until the rest succeeds. Every step must be safe to repeat."
+    text: "Some steps cannot be undone, or you decide not to undo them: a sent email, a captured payment you will not refund. Mark that step as the pivot; before it compensate backwards, after it retry forwards. Every step must be safe to repeat."
 related:
   - label: Choreography
     slug: choreography
@@ -40,7 +40,7 @@ references:
   - title: Compensating Transaction pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/compensating-transaction
   - title: MassTransit sagas
-    url: https://masstransit.io/documentation/patterns/saga
+    url: https://masstransit.massient.com/concepts/saga-state-machines
 ---
 
 ## When to use
@@ -52,7 +52,7 @@ references:
 ## Cautions
 
 - Compensation is not rollback. Other readers may already have seen the intermediate state, so the domain has to be designed for it: reserved rather than shipped, pending rather than delivered.
-- Identify the pivot explicitly. Before it, compensate backwards; after it, only retry forwards, because a captured payment or a sent email has no undo.
+- Identify the pivot explicitly, and put it as late in the order as you can. Before it, compensate backwards; after it, only retry forwards, because a sent email, or a captured payment you have chosen not to refund, has no undo.
 - Every step and every compensation must be safe to run twice, keyed by the saga id, because messages are delivered at least once.
 - Persist the saga state when a coordinator runs the flow, and make the event flow observable when the services run it between themselves. A saga you cannot see is a saga you cannot repair.
 - Use an outbox so that committing the local transaction and publishing the event cannot come apart. A step that commits without publishing leaves a saga stuck halfway with nothing to react to.
@@ -72,32 +72,51 @@ public sealed class OrderState : SagaStateMachineInstance
 
 public sealed class OrderSaga : MassTransitStateMachine<OrderState>
 {
+    public State Reserving { get; private set; } = null!;
+    public State Charging { get; private set; } = null!;
     public State Paid { get; private set; } = null!;
-    public State Reserved { get; private set; } = null!;
     public State Cancelled { get; private set; } = null!;
 
     public Event<OrderSubmitted> Submitted { get; private set; } = null!;
-    public Event<PaymentCompleted> PaymentDone { get; private set; } = null!;
     public Event<StockReserved> StockDone { get; private set; } = null!;
     public Event<ReservationFailed> StockFailed { get; private set; } = null!;
+    public Event<PaymentCompleted> PaymentDone { get; private set; } = null!;
+    public Event<PaymentDeclined> PaymentRefused { get; private set; } = null!;
+    public Event<ConfirmationFailed> ConfirmFailed { get; private set; } = null!;
 
     public OrderSaga()
     {
         InstanceState(x => x.CurrentState);
 
+        // A Send with no address resolves through the endpoint conventions, so
+        // EndpointConvention.Map<ReserveStock>(new Uri("queue:inventory")) has to
+        // have run at startup; otherwise use the Send(Uri, ...) overload.
         Initially(When(Submitted)
-            .Send(ctx => new ChargePayment(ctx.Saga.CorrelationId))
-            .TransitionTo(Paid));                               // the pivot: money is taken
+            .Send(ctx => new ReserveStock(ctx.Saga.CorrelationId))
+            .TransitionTo(Reserving));
 
-        During(Paid, When(PaymentDone)
-            .Send(ctx => new ReserveStock(ctx.Saga.CorrelationId)));
+        // The reversible step goes first, so a failure here costs nothing.
+        During(Reserving,
+            When(StockDone).Send(ctx => new ChargePayment(ctx.Saga.CorrelationId)).TransitionTo(Charging),
+            When(StockFailed).TransitionTo(Cancelled));
 
+        // Still before the pivot: a declined card is compensated by giving the
+        // reservation back, and the saga ends without owing anyone anything.
+        During(Charging,
+            When(PaymentRefused)
+                .Send(ctx => new ReleaseStock(ctx.Saga.CorrelationId))
+                .TransitionTo(Cancelled),
+            When(PaymentDone)
+                .TransitionTo(Paid)                             // the pivot: money is taken
+                .Send(ctx => new ConfirmOrder(ctx.Saga.CorrelationId)));
+
+        // Past the pivot there is nothing left to compensate, so the only branch
+        // is forward: retry inside a budget, then hand it to a person.
         During(Paid,
-            When(StockDone).Send(ctx => new ConfirmOrder(ctx.Saga.CorrelationId)).TransitionTo(Reserved),
-            When(StockFailed)
-                .IfElse(ctx => ctx.Message.Transient && ctx.Saga.Attempts++ < 3,
-                    retry => retry.Send(ctx => new ReserveStock(ctx.Saga.CorrelationId)),   // forward, past the pivot
-                    give => give.Send(ctx => new RefundPayment(ctx.Saga.CorrelationId)).TransitionTo(Cancelled)));
+            When(ConfirmFailed)
+                .IfElse(ctx => ctx.Saga.Attempts++ < 3,
+                    retry => retry.Send(ctx => new ConfirmOrder(ctx.Saga.CorrelationId)),
+                    give => give.Publish(ctx => new OrderNeedsAttention(ctx.Saga.CorrelationId))));
     }
 }
 ```

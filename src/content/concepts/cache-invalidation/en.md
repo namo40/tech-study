@@ -8,7 +8,7 @@ steps:
   - title: "Time alone"
     text: "With only a TTL, every instance keeps serving the old value until it expires. Stale for up to one full TTL."
   - title: "Invalidate on write"
-    text: "The writer publishes a delete for the key and every instance drops its copy. Only the time the message spends travelling is left as a window."
+    text: "The writer publishes an invalidate for the key and every instance drops its copy. Only the time the message spends travelling is left as a window."
   - title: "The race"
     text: "A read misses, a write lands and invalidates an already-empty slot, then the slow read stores the old value. Keep TTLs short so this self-heals."
   - title: "Change the key"
@@ -66,7 +66,8 @@ public async Task UpdateAsync(User user, CancellationToken ct)
 {
     await repository.SaveAsync(user, ct);
     await cache.RemoveAsync($"user:{user.Id}", ct);
-    await cache.RemoveByTagAsync($"tenant:{user.TenantId}", ct);
+    // A narrow tag: the lists and fragments this one user appears in, nothing wider.
+    await cache.RemoveByTagAsync($"user:{user.Id}", ct);
 }
 
 // 2. Versioned key: bump the version, never delete.
@@ -75,10 +76,10 @@ public async ValueTask<Catalog> GetCatalogAsync(CancellationToken ct)
     var version = await versions.GetAsync("catalog", ct);
     return await cache.GetOrCreateAsync(
         $"catalog@{version}",
-        token => catalogRepository.LoadAsync(token),
+        async token => await catalogRepository.LoadAsync(token),
         new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(10) },
         cancellationToken: ct);
 }
 ```
 
-Propagation between instances needs a backplane such as Redis Pub/Sub, or an `IDistributedCache` acting as the second level. Keep `LocalCacheExpiration` short so the in-process copy cannot outlive the window by much.
+An `IDistributedCache` second level makes the *next miss* on other instances see the removal, but their in-process copies live on until `LocalCacheExpiration`, and `HybridCache` has no built-in backplane. If you need the removal to travel faster than that, publish the key on Redis Pub/Sub yourself and call `RemoveAsync` locally on every instance that hears it. Either way, keep `LocalCacheExpiration` short so the in-process copy cannot outlive the window by much.

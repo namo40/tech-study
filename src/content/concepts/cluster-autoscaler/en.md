@@ -30,7 +30,7 @@ related:
     slug: throughput
 references:
   - title: "Kubernetes: cluster autoscaling"
-    url: https://kubernetes.io/docs/concepts/cluster-administration/cluster-autoscaling/
+    url: https://kubernetes.io/docs/concepts/cluster-administration/node-autoscaling/
   - title: "Cluster Autoscaler"
     url: https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
   - title: "Use the cluster autoscaler in Azure Kubernetes Service"

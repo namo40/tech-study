@@ -23,9 +23,9 @@ references:
   - title: Saga distributed transactions pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/saga
   - title: MassTransit sagas
-    url: https://masstransit.io/documentation/patterns/saga
+    url: https://masstransit.massient.com/concepts/saga-state-machines
   - title: Durable Functions overview
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview
+    url: https://learn.microsoft.com/en-us/azure/durable-task/durable-functions/durable-functions-overview
 ---
 
 順序はコーディネーターが握ります。Payment に `Charge` を送り、答えを待ち、saga はいま `Paid` だと書き、Inventory に `Reserve` を送る、という具合です。サービス同士は互いを購読せず、コマンドを受けて答えるだけになるので、Choreography のときより単純でいられます。次に何が来るかも、失敗したとき誰に伝えるかも知らなくてよいからです。

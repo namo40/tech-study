@@ -17,7 +17,7 @@ related:
     slug: work-queue
   - label: Retry
     slug: retry
-  - label: Web-Queue-Worker
+  - label: Web Queue Worker
     slug: web-queue-worker
 references:
   - title: RabbitMQ consumer acknowledgements and publisher confirms

@@ -31,7 +31,7 @@ references:
   - title: "Implement background tasks in microservices with IHostedService"
     url: https://learn.microsoft.com/en-us/dotnet/architecture/microservices/multi-container-microservice-net-applications/background-tasks-with-ihostedservice
   - title: "Durable Functions overview"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview
+    url: https://learn.microsoft.com/en-us/azure/durable-task/durable-functions/durable-functions-overview
 ---
 
 그냥 오래 걸리는 작업과 장기 실행 프로세스를 가르는 것은 세 가지입니다. 자기 바깥의 무언가를 기다리므로 걸리는 시간이 코드의 속도로 정해지지 않습니다. 배포를 가로질러 살아 있으므로 코드의 어느 한 버전도 처음부터 끝까지 그것을 소유하지 못합니다. 그리고 어떤 합리적인 타임아웃보다도 길므로, 상류의 누구도 답을 기다리며 연결을 붙들고 있을 수 없습니다.

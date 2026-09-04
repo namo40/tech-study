@@ -28,7 +28,7 @@ references:
   - title: Distributed caching in ASP.NET Core
     url: https://learn.microsoft.com/en-us/aspnet/core/performance/caching/distributed?view=aspnetcore-10.0
   - title: StackExchange.Redis
-    url: https://stackexchange.github.io/StackExchange.Redis/
+    url: https://seredis.dev/
 ---
 
 ## When to use
@@ -57,9 +57,9 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "checkout:";
 });
 
-// Registered after the distributed cache, HybridCache picks it up as L2.
+// With an IDistributedCache registered, in any order, HybridCache uses it as L2.
 builder.Services.AddHybridCache();
 ```
 
-- Session and data-protection storage attach the same way. `AddStackExchangeRedisCache` plus `AddSession` moves session state off the instance, and the same connection can hold the Data Protection key ring, which is the second thing a scaled-out application usually needs to share.
+- Session and data-protection storage attach the same way. `AddStackExchangeRedisCache` plus `AddSession` moves session state off the instance, and the same Redis can hold the Data Protection key ring, which is the second thing a scaled-out application usually needs to share. They share the multiplexer only if you make them: `AddStackExchangeRedisCache` builds its own unless you hand it a singleton through `ConnectionMultiplexerFactory`, and `PersistKeysToStackExchangeRedis` takes an `IConnectionMultiplexer` of its own.
 - Managed offerings change the operational story, not the API. Azure Managed Redis handles patching, failover and TLS, so the application still speaks the same protocol through the same client, and the work moves to sizing, the eviction policy and deciding whether persistence is wanted at all.

@@ -24,6 +24,8 @@ related:
 references:
   - title: "Implement value objects"
     url: https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/implement-value-objects
+  - title: "Complex types in EF Core"
+    url: https://learn.microsoft.com/en-us/ef/core/modeling/complex-types
   - title: "Owned entity types in EF Core"
     url: https://learn.microsoft.com/en-us/ef/core/modeling/owned-entities
   - title: "Value conversions in EF Core"

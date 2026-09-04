@@ -25,7 +25,7 @@ related:
     slug: cache-aside
 references:
   - title: Modeling data in Azure Cosmos DB
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/modeling-data
+    url: https://learn.microsoft.com/en-us/azure/cosmos-db/modeling-data
   - title: Materialized View pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/materialized-view
   - title: Sharding pattern

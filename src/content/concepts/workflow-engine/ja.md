@@ -35,9 +35,9 @@ related:
     slug: transactional-outbox
 references:
   - title: "Durable Functions overview"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview
+    url: https://learn.microsoft.com/en-us/azure/durable-task/durable-functions/durable-functions-overview
   - title: "Durable Functions orchestrations"
-    url: https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-orchestrations
+    url: https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-orchestrations
   - title: "Background tasks with hosted services in ASP.NET Core"
     url: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/host/hosted-services
 ---

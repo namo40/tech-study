@@ -8,7 +8,7 @@ steps:
   - title: "Flip the goal over and it becomes a budget"
     text: "99.9% promised means 0.1% allowed — forty-three minutes of failure a month, funded in advance. Perfection was never the target: the unspent budget is risk you are allowed to take."
   - title: "The SLI measures; the SLO promises; the budget is the gap"
-    text: "A bad hour arrives, the measured good-rate dips, and every minute below target burns budget at eight times the calm pace. The incident ends — the spending stays spent. Thirty-eight percent of the month's failure is already gone."
+    text: "A bad stretch arrives, the measured good-rate dips, and every minute below target burns budget at eight times the break-even pace. The incident ends — the spending stays spent. Thirty-eight percent of the month's failure is already gone."
   - title: "The budget makes the decision so people don't have to"
     text: "At 62% remaining, shipping is fine — that is what the margin is for. At 8%, the gate freezes: features wait, reliability work goes first. Nobody argues about how safe is safe enough; the number already answered."
   - title: "The month ends; the budget refills; the history doesn't"
@@ -20,6 +20,8 @@ related:
     slug: sli
   - label: p95
     slug: p95
+  - label: p99
+    slug: p99
   - label: Tail Latency
     slug: tail-latency
   - label: Health Check
@@ -28,10 +30,6 @@ related:
     slug: load-test
   - label: Capacity Test
     slug: capacity-test
-  - label: Distributed Tracing
-    slug: distributed-tracing
-  - label: Sampling
-    slug: sampling
   - label: Rollback
     slug: rollback
   - label: Canary Release
@@ -60,7 +58,7 @@ An error budget is not a monitoring feature. It is what you get for free the mom
 
 - The SLI has to measure what the user feels. A success rate computed from your own server logs cannot see a request that never arrived, a DNS failure, a load balancer returning 503 before your code runs, or a 200 that took nine seconds. Measure at the edge — the ingress, the CDN, the client — or accept that your budget is a measure of the part of the system that was working.
 - A 100% SLO is a zero budget and a permanent freeze. It sounds like ambition and it is arithmetic: if nothing is allowed to fail, every deployment is a violation, and the honest response is to stop deploying. Whenever somebody asks for "no downtime", the useful question is which number below 100% they mean, because they do mean one.
-- Burn-rate alerts need at least two windows or they page on noise. A single short window catches every blip; a single long one notices the outage after it is over. The standard shape is a fast pair (a high multiple over an hour, confirmed over five minutes) that wakes somebody, and a slow pair (a low multiple over a day, confirmed over hours) that files a ticket. One window is a pager nobody trusts inside a week.
+- Burn-rate alerts need at least two windows or they page on noise. Burn rate is the multiple of the pace that would spend exactly the budget over exactly the window, so 1 is on plan, and 14 means a month's allowance is gone in about two days. A single short window catches every blip; a single long one notices the outage after it is over. The standard shape is a fast pair (a high multiple over an hour, confirmed over five minutes) that wakes somebody, and a slow pair (a low multiple over a day, confirmed over hours) that files a ticket. One window is a pager nobody trusts inside a week.
 - A freeze that gets overridden every time is a dashboard, not a policy. The budget only makes decisions if the people who outrank the gate agreed in advance to be bound by it, and that agreement has to be made while the budget is full and nothing is on fire. Write down who may override it and what that costs; an exception process is fine, an unremarked habit is not.
 - The period boundary refills the budget and explains nothing. A month that ended at 4% remaining and a month that ended at 4% remaining for a completely different reason look identical on the first of the next month, and the reset will quietly bury both. The review before the reset is the part that matters: what spent it, whether the target was right, and whether the system or the promise should change.
 - Watch the size of the budget as well as the burn. 99.9% over thirty days is 43 minutes, and over one day it is 86 seconds. Teams routinely promise a monthly figure and then reason about it weekly, which is the same promise with a quarter of the room. Say the window out loud whenever you say the target, because the two together are the budget and neither alone is.
@@ -71,11 +69,18 @@ An error budget is not a monitoring feature. It is what you get for free the mom
 - Compute the SLI from the same telemetry you already emit. ASP.NET Core's built-in `http.server.request.duration` metric carries the status code and the route as tags, so the good-rate is a ratio over one counter rather than a new pipeline. Decide what "good" means once — this excludes 4xx, because a client sending a malformed request is not the service failing — and keep that definition next to the SLO.
 
 ```csharp
-// The SLI: the share of served requests that were good, by route.
+// The metric the SLI is computed from: served requests, tagged with status and route.
 // 5xx is the service failing; 4xx is the caller, and does not spend budget.
 builder.Services.AddOpenTelemetry().WithMetrics(metrics => metrics
     .AddAspNetCoreInstrumentation()
-    .AddPrometheusExporter());
+    .AddOtlpExporter());
+```
+
+The SLI itself is a query over that metric rather than a line of C#, and it belongs written down next to the target it is compared against. In PromQL, the good share over the window is:
+
+```text
+sum(rate(http_server_request_duration_seconds_count{http_response_status_code!~"5.."}[30d]))
+  / sum(rate(http_server_request_duration_seconds_count[30d]))
 ```
 
 - Put the target and the window in configuration, not in a query. The budget is `1 - SLO` over a stated window, and every alert threshold is a multiple of it, so writing the target once means the alerts move when the promise does.

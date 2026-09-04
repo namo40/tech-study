@@ -11,24 +11,14 @@ related:
     slug: pipelining
   - label: Keep-Alive
     slug: keep-alive
+  - label: HttpClient Connection Pool
+    slug: httpclient-connection-pool
   - label: HTTP/2
     slug: http-2
-  - label: gRPC
-    slug: grpc
   - label: Streaming
     slug: streaming
   - label: Tail Latency
     slug: tail-latency
-  - label: Request Timeout
-    slug: request-timeout
-  - label: Connection Timeout
-    slug: connection-timeout
-  - label: Database Connection Pool
-    slug: database-connection-pool
-  - label: I/O Completion Port
-    slug: io-completion-port
-  - label: SemaphoreSlim
-    slug: semaphoreslim
 references:
   - title: "Evolution of HTTP"
     url: https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Evolution_of_HTTP

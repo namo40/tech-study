@@ -8,7 +8,7 @@ sceneStep: 3
 related:
   - label: Database Index
     slug: database-index
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
   - label: N+1 Query
     slug: n-plus-1-query
@@ -41,4 +41,4 @@ What you get for it is the one thing application code cannot build for itself. T
 
 So the right shape in code is not to look before you leap. It is to insert and let the failure be the answer. `SaveChangesAsync` throws `DbUpdateException`; underneath it is a provider error with a number that says "unique violation" specifically — 2601 or 2627 on SQL Server, `23505` on PostgreSQL — and that is the signal to return `409 Conflict`, or to load the row that already exists and carry on with it. Catching every `DbUpdateException` alike is the common mistake: a foreign key violation and a timeout arrive wearing the same coat, and swallowing them as "already there" hides real bugs. Match on the inner exception, not on the outer one.
 
-Three details are worth knowing before you declare one. `NULL` is not equal to itself, so on most databases several rows may hold `NULL` in a unique column — if that is not what you want, the column should not be nullable. Uniqueness across more than one column is a different rule from uniqueness on each of them, so `HasIndex(x => new { x.TenantId, x.Email }).IsUnique()` says one email per tenant and nothing about emails globally. And the comparison is the column's, not yours: whether `Ann@example.com` collides with `ann@example.com` is decided by the collation, so normalise the value on the way in rather than hoping. If rows are soft-deleted, add a filter (`HasFilter("[DeletedAt] IS NULL")`) so a deleted row does not keep its value reserved forever.
+Three details are worth knowing before you declare one. `NULL` is not equal to itself, so PostgreSQL, MySQL and SQLite let several rows hold `NULL` in a unique column, while SQL Server treats two `NULL`s as equal and allows exactly one — on SQL Server a filtered unique index (`HasFilter("[Email] IS NOT NULL")`) is how you get the other behaviour, and if neither is what you want the column should not be nullable. Uniqueness across more than one column is a different rule from uniqueness on each of them, so `HasIndex(x => new { x.TenantId, x.Email }).IsUnique()` says one email per tenant and nothing about emails globally. And the comparison is the column's, not yours: whether `Ann@example.com` collides with `ann@example.com` is decided by the collation, so normalise the value on the way in rather than hoping. If rows are soft-deleted, add a filter (`HasFilter("[DeletedAt] IS NULL")`) so a deleted row does not keep its value reserved forever.

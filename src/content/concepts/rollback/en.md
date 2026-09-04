@@ -12,7 +12,7 @@ steps:
   - title: "The code goes back; the data stays forward"
     text: "While the bad release ran, it wrote records in its new shape, and they do not roll back with the pointer. The old code now faces data from the future. This is why schema changes ship compatible-first: neighbouring revisions must read each other's writes, or the return road is closed exactly when you need it."
   - title: "When the world already changed, fix forward"
-    text: "Some damage is not in your process: the email went out, the charge posted, the webhook fired. Rolling the code back cannot unsend any of it, so the fix is a corrected release moving forward plus compensation for what escaped. Roll back when the code is wrong and forward when the world is; knowing which you are in is the skill."
+    text: "Some damage is not in your process: the email had already gone out, the charge had already posted. Rolling the code back cannot unsend either, so the fix is a corrected release moving forward, plus a compensation no rollback draws back."
 related:
   - label: Blue-Green Deployment
     slug: blue-green-deployment
@@ -98,6 +98,6 @@ protected override void Down(MigrationBuilder migrationBuilder)
 }
 ```
 
-`dotnet ef database update <PreviousMigration>` runs that script, and it is a separate decision from `kubectl rollout undo`. Do the code first. Then look at what the bad revision wrote, and decide about the schema with that in front of you.
+`dotnet ef database update <PreviousMigration>` performs the same revert directly — the script is what you review, or hand to a DBA to run — and it is a separate decision from `kubectl rollout undo`. Do the code first. Then look at what the bad revision wrote, and decide about the schema with that in front of you.
 
 The rest is arranging for the road to exist. Gate the rollout on a real readiness probe so a broken release never takes the whole fleet; keep feature flags in front of behaviour changes so the fast path is turning a switch off; and put an alert on the metric that would make you decide, so the decision arrives at the same time as the error rate rather than ten minutes later.

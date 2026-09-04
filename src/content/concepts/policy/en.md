@@ -10,7 +10,7 @@ related:
     slug: authorization
   - label: Role-Based Access Control
     slug: role-based-access-control
-  - label: Resource-Based Authorization
+  - label: Resource-based Authorization
     slug: resource-based-authorization
   - label: Attribute-Based Access Control
     slug: attribute-based-access-control
@@ -26,7 +26,7 @@ references:
   - title: "Policy-based authorization in ASP.NET Core"
     url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/policies
   - title: "Resource-based authorization in ASP.NET Core"
-    url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/resourcebased
+    url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/resource-based
   - title: "Introduction to authorization in ASP.NET Core"
     url: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/introduction
 ---

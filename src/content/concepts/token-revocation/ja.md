@@ -27,7 +27,7 @@ references:
   - title: "OAuth 2.0 Token Introspection (RFC 7662)"
     url: https://www.rfc-editor.org/rfc/rfc7662
   - title: Refresh tokens in the Microsoft identity platform
-    url: https://learn.microsoft.com/en-us/entra/identity-platform/access-tokens
+    url: https://learn.microsoft.com/en-us/entra/identity-platform/refresh-tokens
 ---
 
 シーンの第四段階は、前の三つには必要のなかったゲートを一つ足します。それが最初からそこにあるのではなく、あとから足されなければならないという事実こそが、この話題のすべてです。ほかのゲートはトークンを読みます。署名は鍵と、有効期限は時計と、audience は設定に書かれた文字列と突き合わされます。どれも誰にも何も尋ねません。失効の確認はそのようには働けません。「このトークンは回収された」はトークンが運んでいる事実ではありませんし、これからもそうはなりません。それはトークンがすでに世に出たあとで誰かが記録した事実であり、API がそれを知る唯一の方法は、見に行くことです。

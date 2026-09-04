@@ -37,12 +37,12 @@ references:
 
 - The container default is an ephemeral ring, and nothing warns you. With no configured persistence the keys go to a directory inside the writable layer or to memory, so they are lost on every restart and never shared between replicas. The application starts, logs a warning nobody reads, and works perfectly on the developer's single machine.
 - The ring storage is itself a top-grade secret. Keys sitting unencrypted in a blob container are the whole authentication system in one file, so persistence and protection are two separate decisions: store the ring somewhere durable and shared, then encrypt it at rest with a key management service so that reading the blob is not the same as holding the keys.
-- Data Protection is for transient payloads, not for archival encryption. Keys expire and are eventually removed, and anything encrypted with a key that has aged out becomes unreadable along with it. A field that must still be decryptable in three years belongs in a purpose-built encryption scheme with a key lifecycle you own.
-- Rotation happens on its own, and old keys stay for a reason. The default lifetime is ninety days, after which a fresh key becomes the one used for new payloads, while previous keys remain in the ring so existing cookies keep working until they expire. Deleting old keys to tidy up is what turns a routine rotation into a mass sign-out.
+- Data Protection is for transient payloads, not for archival encryption. Expired keys stay in the ring and still unprotect, so what makes an old payload unreadable is a revoked key, a deleted key file, a lost ring or a changed application name — and none of those happens on a schedule you can plan around. A field that must still be decryptable in three years belongs in a purpose-built encryption scheme with a key lifecycle you own.
+- Rotation happens on its own, and old keys stay for a reason. The default lifetime is ninety days, and the replacement is written a couple of days before the current key expires and only activates when it does, which is what gives every replica time to see it; previous keys remain in the ring so existing cookies keep working until they expire. Deleting old keys to tidy up is what turns a routine rotation into a mass sign-out.
 
 ## In .NET
 
-- Persist the ring outside the instance and encrypt it where it lands. These two calls are the production configuration in full, and the application name is what lets a second application read the same payloads.
+- Persist the ring outside the instance and encrypt it where it lands. These two calls are the production configuration in full — they come from `Azure.Extensions.AspNetCore.DataProtection.Blobs` and `Azure.Extensions.AspNetCore.DataProtection.Keys` — and the application name is what lets a second application read the same payloads.
 
 ```csharp
 builder.Services.AddDataProtection()
@@ -56,4 +56,4 @@ builder.Services.AddDataProtection()
 
 - Choose the storage that matches where the application runs. `PersistKeysToFileSystem` over a shared volume is the on-premises answer, blob storage is the cloud one, and a Redis or database-backed store fits when one already exists; what matters is that the location outlives the instance and is visible to all of them.
 - `SetApplicationName` is a deliberate coupling, not boilerplate. Leaving it unset derives the name from the content root path, which changes between a local run and a container, and two applications that need to share payloads will silently fail to until both are given the same string.
-- `SetDefaultKeyLifetime` changes the rotation interval and nothing else. Shortening it produces keys more often and leaves the expired ones available for decryption exactly as before, so the safe knob for a stricter policy is the lifetime rather than any attempt to remove keys by hand.
+- `SetDefaultKeyLifetime` changes the rotation interval and nothing else. Shortening it produces keys more often and leaves the expired ones available for decryption exactly as before, and it will not go below seven days, so the safe knob for a stricter policy is the lifetime rather than any attempt to remove keys by hand.

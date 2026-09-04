@@ -1,6 +1,6 @@
 ---
 title: "Scheduled Job"
-summary: "Work that starts because the clock said so rather than because somebody asked. The schedule owns when it fires; something else has to own whether it finished."
+summary: "A scheduled job is work that starts because the clock said so rather than because somebody asked. The schedule owns when it fires; something else has to own whether it finished."
 category: "Scheduled work and workflows"
 scene: workflow-engine
 sceneStep: 1
@@ -23,7 +23,7 @@ related:
     slug: distributed-lock
   - label: Competing Consumers
     slug: competing-consumers
-  - label: Web-Queue-Worker
+  - label: Web Queue Worker
     slug: web-queue-worker
 references:
   - title: "Timer trigger for Azure Functions"
@@ -38,7 +38,7 @@ The first step of the scene has two boxes in it and they are doing two entirely 
 
 A schedule is a trigger, not a supervisor. It answers exactly one question — is it time — and it answers it by wall clock. It does not know whether the last run finished, whether it finished successfully, whether it is still running, or what it got through before it stopped. If you want any of those answers, something on the other side of the lane has to be keeping them, which is why the `history` card sits in the Engine box and not in the Schedule box.
 
-Which means the two hard questions about a scheduled job are both about overlap. What happens if the run at 02:00 is still going at 03:00, when the next one fires? A schedule with no answer starts a second one, and now two processes are working the same rows. The usual fixes are a concurrency guard that makes the second fire a no-op, a lease the run holds for its duration, or a definition that is safe to run twice at once. Pick one deliberately; the default in most schedulers is "start it anyway".
+Which means the two hard questions about a scheduled job are both about overlap. What happens if the run at 02:00 is still going at 03:00, when the next one fires? A schedule with no answer starts a second one, and now two processes are working the same rows. The usual fixes are a concurrency guard that makes the second fire a no-op, a lease the run holds for its duration, or a definition that is safe to run twice at once. Pick one deliberately; the default in most schedulers is "start it anyway" — cron, Quartz without `[DisallowConcurrentExecution]`, Hangfire — while the Azure Functions timer trigger is the exception and runs as a singleton that will not fire again while an invocation is outstanding.
 
 And what happens when the scheduled hour passes while nobody is running? A deployment, a rolling restart, a node that was cordoned for twenty minutes at exactly the wrong time. Some schedulers fire late, some skip the occurrence entirely, and the difference between the two is a settlement that ran and a settlement that silently did not. Find out which one yours does before you need to know, and decide whether a missed occurrence should be caught up or written off.
 

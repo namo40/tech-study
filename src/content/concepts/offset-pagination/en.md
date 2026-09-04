@@ -24,7 +24,7 @@ related:
     slug: prepared-statement
   - label: Database Migration
     slug: database-migration
-  - label: Idempotency-Key
+  - label: Idempotency Key
     slug: idempotency-key
 references:
   - title: Pagination (EF Core)
@@ -35,7 +35,7 @@ references:
     url: https://learn.microsoft.com/en-us/ef/core/performance/efficient-querying
 ---
 
-`OFFSET 5000 FETCH NEXT 20` reads as "skip five thousand and give me twenty", and the word "skip" is doing a lot of hiding. A database cannot skip a row it has not produced. To know which row is the five thousand and first in a given order, it has to walk the order from the beginning, count five thousand rows, throw every one of them away, and only then start collecting. The twenty rows you asked for are cheap. The five thousand you did not ask for are the whole bill, and it is the one part of the query that grows every time the reader clicks "next".
+`OFFSET 5000 ROWS FETCH NEXT 20 ROWS ONLY` in SQL Server, `OFFSET 5000 LIMIT 20` in PostgreSQL, reads as "skip five thousand and give me twenty", and the word "skip" is doing a lot of hiding. A database cannot skip a row it has not produced. To know which row is the five thousand and first in a given order, it has to walk the order from the beginning, count five thousand rows, throw every one of them away, and only then start collecting. The twenty rows you asked for are cheap. The five thousand you did not ask for are the whole bill, and it is the one part of the query that grows every time the reader clicks "next".
 
 That is why offset pagination is fine and then suddenly is not. Page one is free, page ten is unnoticeable, and page five hundred is a query that touches five thousand and twenty rows to return twenty. Nothing in the code changed between those pages, and nothing in the plan did either, which is what makes the problem so easy to miss in development: a test table with four hundred rows can never reach the depth where the cost lives. The symptom in production is an endpoint whose p99 is fine and whose p999 is terrible, and the slow requests all have a large `page` parameter.
 

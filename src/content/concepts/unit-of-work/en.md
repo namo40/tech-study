@@ -8,7 +8,7 @@ sceneStep: 2
 related:
   - label: Change Tracking
     slug: change-tracking
-  - label: Transaction
+  - label: Local Transaction
     slug: local-transaction
   - label: Repository
     slug: repository

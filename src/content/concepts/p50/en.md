@@ -19,7 +19,7 @@ references:
     url: https://learn.microsoft.com/en-us/dotnet/core/diagnostics/metrics-instrumentation
 ---
 
-The median is what the mean pretends to be. One request of 400 ms in a sample of twenty pulls the mean up by 18 ms and leaves the median exactly where it was, which is why a dashboard built on averages can look calm while a tenth of the traffic is unhappy.
+The median is what the mean pretends to be. One request of 400 ms in a sample of twenty pulls the mean up by 18 ms and leaves the median exactly where it was, which is why a dashboard built on averages can look calm while one request in twenty is unhappy.
 
 p50 is the right number for capacity and for the shape of the normal path, because it tells you what the code costs when nothing unusual happens. When p50 moves, something changed for everybody: a query plan, a release, a machine that is now doing more work than it used to.
 

@@ -23,7 +23,7 @@ related:
     slug: distributed-lock
   - label: Competing Consumers
     slug: competing-consumers
-  - label: Web-Queue-Worker
+  - label: Web Queue Worker
     slug: web-queue-worker
 references:
   - title: "Timer trigger for Azure Functions"

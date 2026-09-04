@@ -5,7 +5,7 @@ category: "메시징과 이벤트 처리"
 related:
   - label: Work Queue
     slug: work-queue
-  - label: Web-Queue-Worker
+  - label: Web Queue Worker
     slug: web-queue-worker
   - label: Competing Consumers
     slug: competing-consumers

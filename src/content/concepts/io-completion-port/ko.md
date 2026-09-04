@@ -34,8 +34,8 @@ related:
 references:
   - title: The managed thread pool
     url: https://learn.microsoft.com/en-us/dotnet/standard/threading/the-managed-thread-pool
-  - title: Async in depth
-    url: https://learn.microsoft.com/en-us/dotnet/standard/async-in-depth
+  - title: Asynchronous programming scenarios
+    url: https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-scenarios
   - title: I/O Completion Ports
     url: https://learn.microsoft.com/en-us/windows/win32/fileio/i-o-completion-ports
 ---

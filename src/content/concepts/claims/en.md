@@ -4,7 +4,7 @@ summary: "Claims are the key-value statements a token makes about who it is for,
 category: "Authentication and authorization"
 tags: ["oauth"]
 scene: bearer-token
-sceneStep: 3
+sceneStep: 2
 related:
   - label: Bearer Token
     slug: bearer-token
@@ -41,4 +41,4 @@ Everything else is a design decision with a bill attached. Claims travel on ever
 
 The other trap is staleness, and it is the same trade the whole format makes. A claim is a statement about the moment the token was minted, frozen for the token's lifetime. Remove someone from a group and their current token still says they are in it, until it expires. That is not a bug to work around with a lookup on every call, because a lookup on every call is the stateless design thrown away; it is a lifetime to choose deliberately, short enough that the stale window is one you can live with.
 
-In .NET the whole of this arrives as a `ClaimsPrincipal` on `HttpContext.User`, and the individual statements come back through `User.FindFirst("scope")` or `User.FindFirstValue(ClaimTypes.NameIdentifier)`. Two details save time. The framework maps some short JWT claim names onto long WS-Federation URIs by default, so `sub` arrives as `nameidentifier` unless you clear `DefaultInboundClaimTypeMap`, and a name you expected to find missing is almost always this. And authorization belongs in a policy rather than in an `if`: a policy that requires a scope, or a claim with a given value, keeps the rule in one place and out of every handler that depends on it.
+In .NET the whole of this arrives as a `ClaimsPrincipal` on `HttpContext.User`, and the individual statements come back through `User.FindFirst("scope")` or `User.FindFirstValue(ClaimTypes.NameIdentifier)`. Two details save time. The framework maps some short JWT claim names onto long WS-Federation URIs by default, so `sub` arrives as `nameidentifier` unless you set `MapInboundClaims = false` on the handler options — `JwtBearerOptions` for an API, `OpenIdConnectOptions` for a sign-in, both defaulting to true — and a name you expected to find missing is almost always this. And authorization belongs in a policy rather than in an `if`: a policy that requires a scope, or a claim with a given value, keeps the rule in one place and out of every handler that depends on it.

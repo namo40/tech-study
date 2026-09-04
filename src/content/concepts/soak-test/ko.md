@@ -11,7 +11,7 @@ related:
     slug: capacity-test
   - label: Database Connection Pool
     slug: database-connection-pool
-  - label: ThreadPool Starvation
+  - label: Thread Pool Starvation
     slug: threadpool-starvation
   - label: Garbage Collection
     slug: garbage-collection

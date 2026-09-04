@@ -12,7 +12,7 @@ steps:
   - title: "Crash and resume"
     text: "A crashed subscriber loses nothing but time. B checkpoints its position, dies, and misses two events — which wait in the log, not in B's memory. On restart it resumes from the checkpoint and drains the backlog. The log is the safety net; the checkpoint is where you land on it."
   - title: "A new subscriber, and retention"
-    text: "A new subscriber chooses its beginning. C joins months later and replays history from the start — the same events, again, because the log kept them. But retention is the fine print: the log keeps a window, not forever. Outside that window, not even a brand-new subscriber can look."
+    text: "A new subscriber chooses its beginning. C joins months later and replays history from the start — the same events, again, because the log kept them. As C reads, the window closes behind it: events 1 and 2 age out. Join later and they are gone."
 related:
   - label: Competing Consumers
     slug: competing-consumers
@@ -55,7 +55,7 @@ references:
 ## Cautions
 
 - Publish-subscribe multiplies delivery, not understanding. Every subscriber still needs its own retries, its own dead-letter queue and its own tolerance for a message it has already seen; fan-out means the same bug now runs N times.
-- A subscription nobody drains grows forever. On Service Bus the subscription's backlog counts against the namespace quota until it fills; on Event Hubs a consumer that falls behind the retention window silently loses the events it never read. Alert on lag, not just on errors.
+- A subscription nobody drains grows forever. On Service Bus the subscription's backlog counts against the topic's size quota, which is 1 to 5 GB on Standard and 80 GB partitioned or on Premium, and once the topic is full new sends are rejected; on Event Hubs a consumer that falls behind the retention window silently loses the events it never read. Alert on lag, not just on errors.
 - Ordering is per-partition at best, and only if one consumer owns the partition. Across a topic there is no global order, so a handler that assumes "created before updated" needs a partition key, a Service Bus session, or a version on the event.
 - Delivery is at-least-once. The same copy can arrive twice after a crash between the work and the checkpoint, so a handler has to be safe to run again.
 - Filters are not free. Service Bus SQL filters are evaluated per subscription per message, and a topic with dozens of overlapping rules turns a cheap fan-out into a per-message rules engine. Prefer correlation filters where the match is an equality test.
@@ -82,11 +82,14 @@ processor.ProcessMessageAsync += async args =>
 {
     var placed = args.Message.Body.ToObjectFromJson<OrderPlaced>();
 
-    // At-least-once: this copy may have arrived before.
-    if (await processed.TryMarkAsync(args.Message.MessageId, args.CancellationToken))
-    {
-        await inventory.ReserveAsync(placed, args.CancellationToken);
-    }
+    // At-least-once: this copy may have arrived before. The id and the
+    // reservation are written by one transaction, so a failure inside
+    // ReserveAsync rolls the claim back with it rather than leaving the
+    // redelivery to recognise the id and skip work that never happened.
+    await processed.RunOnceAsync(
+        args.Message.MessageId,
+        ct => inventory.ReserveAsync(placed, ct),
+        args.CancellationToken);
 
     await args.CompleteMessageAsync(args.Message, args.CancellationToken);
 };
@@ -114,6 +117,13 @@ processor.ProcessEventAsync += async args =>
     {
         await args.UpdateCheckpointAsync(args.CancellationToken);
     }
+};
+
+// Both handlers are required: StartProcessingAsync throws without an error one.
+processor.ProcessErrorAsync += args =>
+{
+    logger.LogError(args.Exception, "{Operation} on partition {Partition}", args.Operation, args.PartitionId);
+    return Task.CompletedTask;
 };
 ```
 

@@ -18,6 +18,8 @@ related:
     slug: replication
   - label: Replication Lag
     slug: replication-lag
+  - label: RPO
+    slug: rpo
   - label: Primary-Replica
     slug: primary-replica
   - label: Heartbeat
@@ -36,7 +38,7 @@ related:
     slug: eventual-consistency
 references:
   - title: "Auto-failover groups (Azure SQL Database)"
-    url: https://learn.microsoft.com/en-us/azure/azure-sql/database/auto-failover-group-sql-db
+    url: https://learn.microsoft.com/en-us/azure/azure-sql/database/failover-group-sql-db
   - title: "Overview of Always On availability groups"
     url: https://learn.microsoft.com/en-us/sql/database-engine/availability-groups/windows/overview-of-always-on-availability-groups-sql-server
   - title: "Failover and load balancing (Npgsql)"
@@ -70,7 +72,7 @@ The database side is configuration; the application side is a connection string 
 var connection =
     "Host=db-a.example.com,db-b.example.com;Database=orders;" +
     "Target Session Attributes=primary;" +
-    "Timeout=5;Cancellation Timeout=2";
+    "Timeout=5;Cancellation Timeout=2000";   // seconds, then milliseconds
 
 builder.Services.AddDbContext<OrdersDbContext>(options =>
     options.UseNpgsql(connection, npgsql =>

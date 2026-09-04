@@ -16,6 +16,8 @@ related:
   - label: Repository
     slug: repository
 references:
+  - title: "The Onion Architecture: part 1"
+    url: https://jeffreypalermo.com/2008/07/the-onion-architecture-part-1/
   - title: "Common web application architectures"
     url: https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures
 ---

@@ -6,13 +6,13 @@ tags: []
 scene: cross-site-scripting
 steps:
   - title: "In the reader's browser, with the reader's power"
-    text: "The ghost stores a comment that carries a script and renders it untouched, and the page runs it as every reader, with every reader's cookies and session. The author typed it once; the site serves it to everyone. It is the confusion SQL injection had: text from a user, executed as code — by the browser."
+    text: "The ghost stores a comment carrying a script and renders it untouched: the page runs it in whichever reader opens it, with that reader's cookies and session. Same confusion as SQL injection: text from a user, executed as code by the browser."
   - title: "Encoded, the same characters become display"
     text: "The comment in the store is unchanged; on the way out, the markup characters become their harmless spellings, and the page shows the script as text instead of running it. Encode at output, not at storage: the original stays intact, ready to be encoded differently for each place it appears. It was demoted, not filtered."
   - title: "The destination decides the encoding"
-    text: "HTML body, attribute, URL — each context has its own escape rules, and the wrong set leaves a gap: body-encoding inside an unquoted attribute still breaks out. The question at every output is not \"did we encode?\" but \"encoded for where it lands?\" Templating engines answer that correctly by default, which is their value."
+    text: "HTML body, attribute, URL — each context has its own escape rules, and the wrong set leaves a gap: body-encoding inside an attribute still breaks out. The question at every output is not \"did we encode?\" but \"encoded for where it lands?\""
   - title: "Lock the escape hatches; hang a second net"
-    text: "Every template engine has a raw-output door for \"trusted\" HTML. Keep it shut unless the value is provably yours: one raw call undoes every encoder upstream. Below it hangs the policy net, a browser told which scripts are legitimate refusing the injected ones. Encoding is the defense; the net catches the day the door opens."
+    text: "Every template engine has a raw-output door for \"trusted\" HTML. Keep it shut unless the value is provably yours: one raw call undoes every encoder upstream. Below it hangs the policy net, and it catches whatever still slips through."
 related:
   - label: SQL Injection
     slug: sql-injection
@@ -63,7 +63,7 @@ There is no situation in which you decide against these defenses. What varies is
 
 ## In .NET
 
-- Razor HTML-encodes `@value` on the way out, everywhere, without being asked. `@Html.Raw(value)` is the one construct that does not, so treat every occurrence of it as a review checkpoint. A repository-wide search for `Html.Raw` is a two-minute audit worth running before every release.
+- Razor HTML-encodes `@value` on the way out, everywhere, without being asked. `@Html.Raw(value)` and any `IHtmlContent` or `HtmlString` you assemble by hand are the constructs that do not, so treat every occurrence as a review checkpoint. A repository-wide search for `Html.Raw` and `HtmlString` is a two-minute audit worth running before every release.
 - The three encoders live in `System.Text.Encodings.Web`: `HtmlEncoder`, `UrlEncoder` and `JavaScriptEncoder`. They are not interchangeable, and picking the wrong one is exactly the mistake the third step of the scene is about.
 
 ```csharp
@@ -74,13 +74,14 @@ var query = UrlEncoder.Default.Encode(searchTerm);   // inside a URL
 var script = JavaScriptEncoder.Default.Encode(name); // inside a script literal
 ```
 
-- Send a policy from middleware so every response carries it, and start in report-only mode.
+- Send a policy from middleware so every response carries it, and start in report-only mode. Name a `report-uri` as well: without one a violation only reaches the reader's own console, so there is nothing for you to read. The endpoint behind it has to do nothing more than accept a POST of JSON and record the body.
 
 ```csharp
 app.Use(async (context, next) =>
 {
     context.Response.Headers["Content-Security-Policy-Report-Only"] =
-        "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'";
+        "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; " +
+        "report-uri /csp-reports";   // without this, nothing is reported anywhere
     await next();
 });
 ```

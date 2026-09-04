@@ -23,6 +23,10 @@ related:
     slug: linearizability
   - label: Consistent Prefix
     slug: consistent-prefix
+  - label: Bounded Staleness
+    slug: bounded-staleness
+  - label: Session Consistency
+    slug: session-consistency
   - label: Replication
     slug: replication
   - label: Replication Lag

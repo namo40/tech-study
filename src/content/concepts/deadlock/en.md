@@ -49,7 +49,7 @@ references:
 
 ## Cautions
 
-- Lock order is the fix that scales. Update rows and tables in the same order in every code path, for example sorted by primary key, and a cycle cannot form no matter how many writers there are.
+- Lock order is the fix that scales. Update rows and tables in the same order in every code path, for example sorted by primary key, and a cycle between those code paths cannot form no matter how many writers there are.
 - Keep transactions short, and never hold one across an HTTP call, a message send, or user think time. Every second a lock is held is a second another transaction can arrive and start a cycle.
 - Prefer optimistic concurrency for read-modify-write on a single aggregate; prefer short pessimistic locks when conflicts are frequent enough that retrying would be more expensive than waiting.
 - A deadlock retry has to re-run the whole unit of work. The victim was rolled back completely, so replaying only the statement that failed writes into a transaction that no longer exists.
@@ -94,4 +94,4 @@ catch (DbUpdateConcurrencyException ex)
 }
 ```
 
-On SQL Server, turning on `READ_COMMITTED_SNAPSHOT` removes about half the deadlocks a typical application sees, because readers stop blocking writers and take a row version instead of a shared lock. Collect the deadlock graphs themselves with Extended Events, so the two code paths that collided are a fact rather than a theory.
+On SQL Server, turning on `READ_COMMITTED_SNAPSHOT` removes the reader-writer deadlocks, which are a large share of what a typical application sees, because readers stop blocking writers and take a row version instead of a shared lock. Two writers can still deadlock on each other, so the lock order still matters. Collect the deadlock graphs themselves with Extended Events, so the two code paths that collided are a fact rather than a theory.

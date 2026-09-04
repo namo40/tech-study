@@ -23,7 +23,7 @@ references:
   - title: "Kubernetes: quality of service for pods"
     url: https://kubernetes.io/docs/concepts/workloads/pods/pod-qos/
   - title: "Run .NET applications in containers"
-    url: https://learn.microsoft.com/en-us/dotnet/core/docs/containers/
+    url: https://learn.microsoft.com/en-us/dotnet/core/docker/introduction
 ---
 
 장면의 네 번째 단계에 나오는 request는 컨테이너에게 약속된 바닥값입니다. limit은 컨테이너가 붙들리는 천장이고, 둘은 같은 컨테이너의 같은 블록에 적히기 때문에 그만큼 쉽게 헷갈립니다. request는 스케줄러가 잡아 두는 것이고, limit은 런타임이 강제하는 것입니다.

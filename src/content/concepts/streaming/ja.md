@@ -3,7 +3,6 @@ title: "Streaming"
 summary: "ストリーミングとは、作る側が作り終える前に受け取る側が答えを見はじめることです。バッファーを流れに取り替える取引なので、メモリのかかり方と最初のバイトが届く時点が変わり、その結果として取り消しとバックプレッシャーが必ず面倒を見るべき 2 つになります。"
 category: "エッジ、ルーティングとサービスネットワーク"
 scene: multiplexing
-sceneStep: 4
 related:
   - label: Multiplexing
     slug: multiplexing

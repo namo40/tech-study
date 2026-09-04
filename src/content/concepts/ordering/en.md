@@ -57,7 +57,7 @@ Ordering is less a feature you turn on than a question you have to answer before
 ## Cautions
 
 - Global FIFO and parallel consumers are a contradiction, not a tuning problem. One queue drained by four workers has no order at all, and no setting recovers it; the only way to have both is to make the promise smaller than the whole stream.
-- Retries and dead-letter queues break order silently. A message that fails, waits, and comes back has been overtaken by everything that arrived while it waited — so per-key order needs per-key error handling: stop the key, not just the message. A partition that keeps delivering after a poisoned event has already lost the property you were paying for.
+- Retries and dead-letter queues break order silently, though not where you would expect. A session or a partition hands a failed message back in the same place, so the retries themselves cost order nothing; what breaks it is the end of the retry budget, when the broker sets that message aside and carries on with the rest of the lane. A dead letter put back later arrives with a new sequence number rather than in its old place, so the order it lost is not recoverable. Per-key order therefore needs per-key error handling: decide up front whether that key pauses, records the gap, or goes to a person.
 - Timestamps are not order. Producer clocks skew, and two events stamped a millisecond apart may have been emitted in the other order entirely. The sequence inside one partition is the only order the system actually knows; a timestamp is a hint about when, not a statement about after.
 - A hot key pins throughput. The celebrity account, the one warehouse, the single busy tenant: all of its events are, by construction, on one partition with one consumer, so the ceiling for that key is one consumer's speed no matter how many you run.
 - Consumers must be single-threaded per key. Handing a partition's events to a thread pool re-parallelizes them and gives back exactly the problem the partition was there to solve. If you need concurrency inside a consumer, serialize per key — one channel, one worker, one key — rather than per batch.
@@ -83,15 +83,30 @@ var processor = client.CreateSessionProcessor("ledger", new ServiceBusSessionPro
 processor.ProcessMessageAsync += async args =>
 {
     var entry = args.Message.Body.ToObjectFromJson<LedgerEntry>();
-    await ledger.ApplyAsync(args.SessionId, entry, args.CancellationToken);
-    await args.CompleteMessageAsync(args.Message, args.CancellationToken);
+    try
+    {
+        await ledger.ApplyAsync(args.SessionId, entry, args.CancellationToken);
+        await args.CompleteMessageAsync(args.Message, args.CancellationToken);
+    }
+    catch (Exception ex) when (args.Message.DeliveryCount >= 5)
+    {
+        // A session hands a failed message back in the same place, so the retries
+        // cost order nothing. What breaks it is the end of the budget: the broker
+        // dead-letters the message and carries on with the rest of the session.
+        // Record the gap in the session state before that happens.
+        await args.SetSessionStateAsync(
+            new BinaryData($"poisoned at {args.Message.SequenceNumber}"), args.CancellationToken);
+        await args.DeadLetterMessageAsync(
+            args.Message, "SessionPoisoned", ex.Message, args.CancellationToken);
+    }
 };
 
-// A failure inside a session has to stop that session, or the next message
-// overtakes the one that failed and the order is gone without a trace.
-processor.ProcessErrorAsync += async args =>
+// The error handler only sees faults in the pump itself, which is why the
+// decision about a session belongs above, next to the message that failed.
+processor.ProcessErrorAsync += args =>
 {
-    logger.LogError(args.Exception, "ledger session");
+    logger.LogError(args.Exception, "ledger pump: {Source}", args.ErrorSource);
+    return Task.CompletedTask;
 };
 
 await processor.StartProcessingAsync();
@@ -118,17 +133,19 @@ batch.TryAdd(new EventData(payload));
 await producer.SendAsync(batch);
 ```
 
-Two things about the consuming side are worth being precise about. `ProcessEventAsync` is invoked for one partition at a time, so as long as the handler is `await`-ed to completion the partition stays ordered — but the moment you fire work off without awaiting it, or hand the event to a background queue, the guarantee is gone and nothing will tell you. And a checkpoint is per partition, so it records how far *that lane* has been processed; a partition that skips a failed event and checkpoints past it has silently converted an ordering guarantee into a best effort.
+Two things about the consuming side are worth being precise about. `ProcessEventAsync` is invoked one event at a time within a partition, with different partitions running concurrently, so as long as the handler is `await`-ed to completion that partition stays ordered — but the moment you fire work off without awaiting it, or hand the event to a background queue, the guarantee is gone and nothing will tell you. And a checkpoint is per partition, so it records how far *that lane* has been processed; a partition that skips a failed event and checkpoints past it has silently converted an ordering guarantee into a best effort.
 
 In process, the same shape is a `Channel` per key: a dictionary of channels, one reader task each, and a router that picks the channel by key. It is the smallest honest model of the whole page — the router is the partitioner, the channel is the partition, the single reader is the promise, and a key that gets most of the traffic makes exactly one of the readers the bottleneck.
 
 ```csharp
 // One channel per key, one reader per channel. Concurrency across keys,
 // strict order inside a key.
-private readonly ConcurrentDictionary<string, Channel<LedgerEntry>> lanes = new();
+private readonly ConcurrentDictionary<string, Lazy<Channel<LedgerEntry>>> lanes = new();
 
 private ChannelWriter<LedgerEntry> LaneFor(string key) =>
-    lanes.GetOrAdd(key, k =>
+    // GetOrAdd may run its factory more than once for the same key and throw the
+    // loser away, so the reader task starts inside a Lazy that runs exactly once.
+    lanes.GetOrAdd(key, k => new Lazy<Channel<LedgerEntry>>(() =>
     {
         var channel = Channel.CreateBounded<LedgerEntry>(new BoundedChannelOptions(256)
         {
@@ -137,5 +154,5 @@ private ChannelWriter<LedgerEntry> LaneFor(string key) =>
         });
         _ = Task.Run(() => DrainAsync(k, channel.Reader));
         return channel;
-    }).Writer;
+    })).Value.Writer;
 ```

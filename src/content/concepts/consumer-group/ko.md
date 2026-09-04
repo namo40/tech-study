@@ -21,9 +21,9 @@ related:
     slug: work-queue
 references:
   - title: Kafka consumer group protocol
-    url: https://kafka.apache.org/documentation/#intro_consumers
+    url: https://kafka.apache.org/documentation/#consumer_rebalance_protocol
   - title: Confluent consumer group basics
-    url: https://developer.confluent.io/courses/apache-kafka/consumer-group-protocol/
+    url: https://developer.confluent.io/courses/architecture/consumer-group-protocol/
   - title: Competing Consumers pattern
     url: https://learn.microsoft.com/en-us/azure/architecture/patterns/competing-consumers
 ---
