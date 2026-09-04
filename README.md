@@ -87,7 +87,7 @@ English is the canonical language, and Korean and Japanese are translated from i
 
 ## Accessibility and motion
 
-Scenes start playing when the page loads. When the reader prefers reduced motion, the player waits on the first frame instead, and moving between steps jumps to the start of the step and stays paused. The current step is shown as a title card on the stage, so the explanation and the diagram stay together. Captions are page text rather than drawings, states are labelled as well as coloured, and results are marked with a check or a cross so colour is never the only signal.
+Scenes start playing when the page loads. When the reader prefers reduced motion, the player waits on the first frame instead, and moving between steps jumps to the start of the step and stays paused. The current step is shown as a caption card beside the stage on a wide screen and above it on a narrow one, so the explanation and the diagram stay together without either covering the other. Captions are page text rather than drawings, states are labelled as well as coloured, and results are marked with a check or a cross so colour is never the only signal.
 
 ## License
 

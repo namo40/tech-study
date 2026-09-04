@@ -936,10 +936,9 @@ kbd {
 /*
  * Scene player.
  *
- * One centred column at every viewport: the stage, the controls under it, and
- * the keyboard hint under those. `--stage-width` is derived from the capped
- * stage height so the column, the controls, and the hint all line up with the
- * 9:16 canvas.
+ * Below 48rem one centred column: the step card, the stage, the controls, and
+ * the keyboard hint. `--stage-width` is derived from the capped stage height so
+ * the card, the controls, and the hint all line up with the 9:16 canvas.
  */
 .player {
   --stage-width: min(100%, 22rem);
@@ -956,17 +955,9 @@ kbd {
   border-radius: var(--radius-lg);
 }
 
-.stage-wrap {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  width: var(--stage-width);
-}
-
 .stage-frame {
   aspect-ratio: 9 / 16;
-  width: 100%;
+  width: var(--stage-width);
   max-height: 76vh;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -977,14 +968,10 @@ kbd {
 
 /* Step title card */
 .step-cards {
-  width: 100%;
+  width: var(--stage-width);
 }
 
-/*
- * Sized so a three or four sentence Korean or Japanese step fits the band the
- * stage keeps empty at the top. The narrow variant uses the same type as the
- * overlay so the two read alike.
- */
+/* A boxed card above the stage, since here it has the column to itself. */
 .step-card {
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--border);
@@ -1122,24 +1109,68 @@ kbd {
 
 @media (min-width: 48rem) {
   /*
-   * Wide enough for the card to read as a title slate drawn straight onto the
-   * stage. The SVG keeps its top band empty, so the card needs no surface of
-   * its own: the frame's border and rounded corners stay visible through it,
-   * and it never intercepts a pointer.
+   * Wide enough for two columns: the caption pane and, beside it, the 9:16
+   * stage with its controls under it. The pair is centred as one block.
+   *
+   * The card used to be overlaid on the band the SVG keeps empty at its top,
+   * which read well but bounded the caption by a band of 140..210 px depending
+   * on the window height. Measured in a browser, nine in ten cards spilled over
+   * the diagram at every window 900 px tall or shorter: the band grows with the
+   * viewport height while the text wraps on the card width, so a laptop had the
+   * least room and the same caption to fit. Beside the stage the caption shares
+   * no bound with the drawing — a long one only makes its own column taller.
    */
-  .step-cards {
-    position: absolute;
-    inset-block-start: 0;
-    inset-inline: 0;
-    z-index: 1;
-    pointer-events: none;
+  .player {
+    display: grid;
+    grid-template-columns: minmax(0, 32rem) var(--stage-width);
+    grid-template-areas:
+      'caption stage'
+      '.       controls'
+      '.       hint';
+    align-items: start;
+    justify-content: center;
+    column-gap: var(--space-6);
+    row-gap: var(--space-4);
   }
 
+  .step-cards {
+    grid-area: caption;
+    /* The grid track owns the width here; `--stage-width` is the stage's. */
+    width: auto;
+  }
+
+  .stage-frame {
+    grid-area: stage;
+  }
+
+  .controls {
+    grid-area: controls;
+  }
+
+  .player__hint {
+    grid-area: hint;
+  }
+
+  /*
+   * Out on the page the card needs no surface of its own: the accent rule and
+   * the kicker are enough to read it as the slate of the frame next to it. The
+   * room the column gives back goes into the type, which the band could not
+   * afford.
+   */
   .step-card {
-    padding: var(--space-5) var(--space-5) 0;
+    padding: 0;
     border: none;
     border-radius: 0;
     background: none;
+  }
+
+  .step-card__title {
+    font-size: var(--text-lg);
+  }
+
+  .step-card__text {
+    font-size: var(--text-sm);
+    line-height: 1.6;
   }
 
   /* Short accent rule, so the text reads as a slate rather than floating. */

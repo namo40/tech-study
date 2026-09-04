@@ -42,23 +42,24 @@ const totalLabel = `0:00 / ${totalMinutes}:${String(totalSeconds).padStart(2, '0
       role="group"
       aria-label={t(locale, 'player.region')}
     >
-      <div class="stage-wrap">
-        {/*
-          The card sits over the top of the stage on wide screens and above it
-          on narrow ones, so long text never covers the diagram.
-        */}
-        <div class="step-cards" role="status" aria-live="polite">
-          {steps.map((step, index) => (
-            <div class="step-card" data-caption={index} hidden={index !== initialStep}>
-              <p class="step-card__kicker">{t(locale, 'player.step', { n: index + 1 })}</p>
-              <h2 class="step-card__title">{step.title}</h2>
-              <p class="step-card__text">{step.text}</p>
-            </div>
-          ))}
-        </div>
-
-        <div class="stage-frame" data-stage set:html={asset.markup} />
+      {/*
+        The card is a caption pane beside the stage from 48rem up and sits above
+        it on a narrow screen. Either way it is outside the stage, so a caption
+        of any length only makes its own column taller and can never cover the
+        diagram. It comes first in the document so the reading order matches the
+        wide layout, where it is the left-hand column.
+      */}
+      <div class="step-cards" role="status" aria-live="polite">
+        {steps.map((step, index) => (
+          <div class="step-card" data-caption={index} hidden={index !== initialStep}>
+            <p class="step-card__kicker">{t(locale, 'player.step', { n: index + 1 })}</p>
+            <h2 class="step-card__title">{step.title}</h2>
+            <p class="step-card__text">{step.text}</p>
+          </div>
+        ))}
       </div>
+
+      <div class="stage-frame" data-stage set:html={asset.markup} />
 
       <div class="controls">
         <input
