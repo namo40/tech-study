@@ -1,5 +1,5 @@
 /**
- * Static stage markup for the Resource-based Authorization scene.
+ * Static stage markup for the Resource-Based Authorization scene.
  *
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Three bands, arranged around the one

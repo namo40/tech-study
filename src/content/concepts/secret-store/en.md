@@ -2,7 +2,7 @@
 title: "Secret Store"
 summary: "A secret store is the one place a credential lives: it knows the value's versions, it holds the list of workloads allowed to read it, and it records who did. Delivery from it is a mount or a fetch at start, which makes it the origin of every rotation."
 category: "Containers and orchestration"
-tags: ["kubernetes", "oauth"]
+tags: ["kubernetes"]
 scene: secret-injection
 sceneStep: 3
 related:

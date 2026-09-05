@@ -1,5 +1,5 @@
 ---
-title: "Resource-based Authorization"
+title: "Resource-Based Authorization"
 summary: "Resource-based authorization은 리소스를 손에 들고 판정합니다. \"이 사용자가 문서를 수정할 수 있는가\"가 아니라 \"이 사용자가 이 문서를 수정할 수 있는가\"를 묻습니다. 소유와 상태는 대상 위에 있고, 역할은 거친 바깥 문으로 남으며, 어느 규칙도 된다고 하지 않으면 답은 거부입니다."
 category: "인증과 인가"
 scene: resource-based-authorization

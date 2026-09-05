@@ -5,7 +5,7 @@ category: "인증과 인가"
 scene: resource-based-authorization
 sceneStep: 4
 related:
-  - label: Resource-based Authorization
+  - label: Resource-Based Authorization
     slug: resource-based-authorization
   - label: Role
     slug: role

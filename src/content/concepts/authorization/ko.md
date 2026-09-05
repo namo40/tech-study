@@ -23,7 +23,7 @@ related:
     slug: least-privilege
   - label: Default Deny
     slug: default-deny
-  - label: Resource-based Authorization
+  - label: Resource-Based Authorization
     slug: resource-based-authorization
   - label: Attribute-Based Access Control
     slug: attribute-based-access-control
@@ -120,7 +120,7 @@ static async Task<IResult> CreateRevision(
 }
 ```
 
-규칙의 표기를 하나로 두기 위해 요구 사항을 이름 붙은 정책으로 등록하고, 핸들러는 싱글턴으로 추가합니다. 여기서 싱글턴이 안전한 이유는 핸들러가 아무 의존성도 받지 않기 때문입니다. `DbContext`처럼 scoped인 것을 주입받는 핸들러는 scoped로 등록해야 하며, Resource-based Authorization 페이지가 그렇게 합니다.
+규칙의 표기를 하나로 두기 위해 요구 사항을 이름 붙은 정책으로 등록하고, 핸들러는 싱글턴으로 추가합니다. 여기서 싱글턴이 안전한 이유는 핸들러가 아무 의존성도 받지 않기 때문입니다. `DbContext`처럼 scoped인 것을 주입받는 핸들러는 scoped로 등록해야 하며, Resource-Based Authorization 페이지가 그렇게 합니다.
 
 ```csharp
 builder.Services.AddAuthorizationBuilder()

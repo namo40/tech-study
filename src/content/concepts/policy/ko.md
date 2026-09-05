@@ -9,7 +9,7 @@ related:
     slug: authorization
   - label: Role-Based Access Control
     slug: role-based-access-control
-  - label: Resource-based Authorization
+  - label: Resource-Based Authorization
     slug: resource-based-authorization
   - label: Attribute-Based Access Control
     slug: attribute-based-access-control

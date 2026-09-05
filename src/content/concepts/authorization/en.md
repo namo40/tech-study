@@ -24,7 +24,7 @@ related:
     slug: least-privilege
   - label: Default Deny
     slug: default-deny
-  - label: Resource-based Authorization
+  - label: Resource-Based Authorization
     slug: resource-based-authorization
   - label: Attribute-Based Access Control
     slug: attribute-based-access-control
@@ -121,7 +121,7 @@ static async Task<IResult> CreateRevision(
 }
 ```
 
-Register the requirement as a named policy so the rule has one spelling, and add the handler as a singleton — which is safe here because it takes no dependencies. A handler that injects a `DbContext` or anything else scoped has to be registered scoped instead, which is what the Resource-based Authorization page does.
+Register the requirement as a named policy so the rule has one spelling, and add the handler as a singleton — which is safe here because it takes no dependencies. A handler that injects a `DbContext` or anything else scoped has to be registered scoped instead, which is what the Resource-Based Authorization page does.
 
 ```csharp
 builder.Services.AddAuthorizationBuilder()

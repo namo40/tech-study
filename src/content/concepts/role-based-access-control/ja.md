@@ -17,7 +17,7 @@ related:
     slug: least-privilege
   - label: Attribute-Based Access Control
     slug: attribute-based-access-control
-  - label: Resource-based Authorization
+  - label: Resource-Based Authorization
     slug: resource-based-authorization
   - label: Authentication
     slug: authentication

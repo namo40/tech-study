@@ -21,7 +21,7 @@ import { createSceneTimeline, defineScene, finishSceneTimeline } from '../shared
 import type { SceneBuildOptions, SceneCue, SceneInstance, SceneStep } from '../types';
 
 /**
- * Resource-based Authorization scene: a 24 second, four step timeline.
+ * Resource-Based Authorization scene: a 24 second, four step timeline.
  *
  * The same two rules as every other scene: every tween sits at an absolute
  * position, and every discrete change is a zero-duration tween on a `data-*`

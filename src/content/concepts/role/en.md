@@ -6,7 +6,7 @@ tags: ["oauth"]
 scene: resource-based-authorization
 sceneStep: 3
 related:
-  - label: Resource-based Authorization
+  - label: Resource-Based Authorization
     slug: resource-based-authorization
   - label: Role-Based Access Control
     slug: role-based-access-control

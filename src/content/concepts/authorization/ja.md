@@ -23,7 +23,7 @@ related:
     slug: least-privilege
   - label: Default Deny
     slug: default-deny
-  - label: Resource-based Authorization
+  - label: Resource-Based Authorization
     slug: resource-based-authorization
   - label: Attribute-Based Access Control
     slug: attribute-based-access-control
@@ -120,7 +120,7 @@ static async Task<IResult> CreateRevision(
 }
 ```
 
-規則の書き方を 1 つに保つため、要件を名前付きのポリシーとして登録し、ハンドラーはシングルトンとして追加します。ここでは依存関係を持たないので安全です。`DbContext` などスコープ付きのものを注入するハンドラーはスコープ付きで登録する必要があり、Resource-based Authorization のページはそうしています。
+規則の書き方を 1 つに保つため、要件を名前付きのポリシーとして登録し、ハンドラーはシングルトンとして追加します。ここでは依存関係を持たないので安全です。`DbContext` などスコープ付きのものを注入するハンドラーはスコープ付きで登録する必要があり、Resource-Based Authorization のページはそうしています。
 
 ```csharp
 builder.Services.AddAuthorizationBuilder()
