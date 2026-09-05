@@ -107,9 +107,14 @@ interface Command {
 }
 
 /**
- * The six commands. Two items go on the order and it is paid for; two more are
- * added later; and the last one is the correction, which is not an update of
- * anything — it is an event that says one item came off again.
+ * The seven commands. Two items go on the order and it is paid for; three more
+ * are added later; and the last one is the correction, which is not an update
+ * of anything — it is an event that says one item came off again.
+ *
+ * The sixth is placed where it is on purpose: its event is appended after the
+ * snapshot has been taken, so the rebuild that follows has exactly one row left
+ * to read. A snapshot that covered the whole log would be a rebuild that read
+ * nothing, and a rebuild that reads nothing cannot show what a snapshot saves.
  */
 const COMMANDS: Command[] = [
   { at: 0.6, kind: 'add' },
@@ -117,6 +122,7 @@ const COMMANDS: Command[] = [
   { at: 3.9, kind: 'pay' },
   { at: 12.1, kind: 'add' },
   { at: 13.55, kind: 'add' },
+  { at: 14.35, kind: 'add' },
   { at: 20.5, kind: 'remove' },
 ];
 
@@ -150,8 +156,9 @@ interface Rebuild {
  * The three rebuilds. The first is the plain one: empty the aggregate, play the
  * whole log, arrive back where it started. The second stops after two events,
  * holds the state the order was in at `seq 2`, and then finishes. The third is
- * the one the snapshot is for, and it reads nothing at all, because the
- * snapshot already covers every event the log is holding.
+ * the one the snapshot is for: it loads the stored fold and then reads only the
+ * one row the snapshot does not cover, which is the whole saving drawn at the
+ * size the log happens to be.
  */
 const REBUILDS: Rebuild[] = [
   {

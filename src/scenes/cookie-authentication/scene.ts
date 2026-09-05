@@ -49,8 +49,19 @@ import type { SceneBuildOptions, SceneCue, SceneInstance, SceneStep } from '../t
  * only: what the jar holds, and what kind of request this is. It never asks who
  * wrote the page. So a cookie with no `SameSite` rides everything, including a
  * form the attacker's page submits; a cookie marked `Lax` is held back from a
- * cross-site POST but still rides a cross-site top-level GET, which is the door
- * the fourth step has to close with something the attacker cannot read.
+ * cross-site POST but still rides a cross-site top-level GET, which is why the
+ * fourth step puts a second lock behind the first.
+ *
+ * That lock is asked for only of the methods that change something. A POST has
+ * to bring the antiforgery token; a navigation is never asked for one, so the
+ * inbound link the third step promised keeps working goes on working.
+ *
+ * It is also what makes the fourth step's two refusals different answers. A
+ * forged POST arrives with nothing at all — `Lax` held the cookie back — so it
+ * is refused as unauthenticated, and the answer is 401. A submission from the
+ * site's own page, rendered before the token was put in the form, passes every
+ * plate it meets until the token one: it is signed in, and it still cannot show
+ * that the form came from here, so the answer is 400.
  *
  * Gates are evaluated at the instant each plate flips, and the attach decision
  * at the instant the request leaves, which is why a gate added while a request
@@ -78,8 +89,27 @@ interface Send {
   method: Method;
   /** The anonymous sign-in call, which the gate row never sees. */
   login?: boolean;
+  /**
+   * A submission from a page the browser rendered before the token went into
+   * the form. It is the site's own page and the cookie rides it like any other
+   * same-site POST, but it cannot echo a field that was not in the form it came
+   * from — which is the one way a request reaches the token plate having passed
+   * everything before it.
+   */
+  staleForm?: boolean;
 }
 
+/**
+ * Every request the scene is told about.
+ *
+ * The fourth step is four requests on a stage that can only hold four: a
+ * traveller occupies its lane for 1.4 seconds of the six the step has, and the
+ * gate row is one row, so two requests that arrive together overwrite each
+ * other's plates before either can be read. They are, in order: a real
+ * submission with the token, a submission from a stale form without it, and
+ * then the pair the origin check needs — one that passes all four plates and
+ * one that is refused by all four.
+ */
 const SCHEDULE: readonly Send[] = [
   { at: 0.6, tab: 'site', method: 'POST', login: true },
   { at: 2.2, tab: 'site', method: 'GET' },
@@ -90,9 +120,10 @@ const SCHEDULE: readonly Send[] = [
   { at: 13.4, tab: 'evil', method: 'POST' },
   { at: 14.9, tab: 'evil', method: 'GET' },
   { at: 16.2, tab: 'site', method: 'POST' },
-  { at: 19.4, tab: 'site', method: 'POST' },
-  { at: 20.6, tab: 'evil', method: 'GET' },
+  { at: 18.7, tab: 'site', method: 'POST' },
+  { at: 20.4, tab: 'site', method: 'POST', staleForm: true },
   { at: 22.0, tab: 'site', method: 'POST' },
+  { at: 22.4, tab: 'evil', method: 'POST' },
 ];
 
 /** When a page script reaches for the jar, and how long the answer is held. */
@@ -203,13 +234,15 @@ function simulate(): Simulation {
   };
 
   /** One request, from the moment its tab sends it. */
-  const send = ({ at, tab, method, login = false }: Send): void => {
+  const send = ({ at, tab, method, login = false, staleForm = false }: Send): void => {
     const name = tab === 'site' ? 'data-ck-site' : 'data-ck-evil';
     setAttr(at, 'stage', name, method === 'POST' ? 'post' : 'get');
 
-    // What it leaves with is decided here, by the browser, at send time.
+    // What it leaves with is decided here, by the browser, at send time. The
+    // token is not the browser's to attach: it comes back only if the form the
+    // submission came from was rendered with it in it.
     const carries = attaches(tab, method);
-    const echoesToken = tokenInForm && tab === 'site';
+    const echoesToken = tokenInForm && tab === 'site' && !staleForm;
     const arrive = round(at + LEG);
 
     schedule(arrive, () => {
@@ -230,7 +263,10 @@ function simulate(): Simulation {
         return;
       }
 
-      // Each plate answers for itself, in the order a request meets them.
+      // Each plate answers for itself, in the order a request meets them. The
+      // token plate is the one that asks about the method first: an antiforgery
+      // token is required of a request that changes something and of nothing
+      // else, so a top-level navigation passes it without being asked.
       const row = GATES.filter((gate) => live.has(gate));
       let firstFail: Gate | null = null;
       row.forEach((gate, index) => {
@@ -241,7 +277,7 @@ function simulate(): Simulation {
             : gate === 'samesite'
               ? tab === 'site' || method === 'GET'
               : gate === 'token'
-                ? echoesToken
+                ? method !== 'POST' || echoesToken
                 : tab === 'site';
         if (!ok && firstFail === null) firstFail = gate;
         setAttr(flip, `gate-${gate}`, 'data-ck-gate', ok ? 'ok' : 'fail');
@@ -269,10 +305,16 @@ function simulate(): Simulation {
           cue(verdict, 'state');
         }
       } else if (firstFail === 'cookie' || firstFail === 'samesite') {
+        // Once `Lax` is on the cookie a forged POST arrives with nothing to
+        // authenticate it, so the answer is 401 and the plates further down the
+        // row are the locks that would have held if this one had not.
         unauthCount += 1;
         setAttr(verdict, 'stage', 'data-ck-unauth', String(unauthCount));
         cue(verdict, 'success');
       } else {
+        // It got past everything that asks who the caller is and failed on
+        // something that asks where the request came from, so the request is
+        // malformed rather than unauthenticated: 400, not 401.
         badCount += 1;
         setAttr(verdict, 'stage', 'data-ck-bad', String(badCount));
         cue(verdict, 'success');

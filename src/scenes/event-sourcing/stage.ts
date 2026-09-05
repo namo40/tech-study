@@ -118,10 +118,10 @@ const ROWS_Y = 1712;
 // --- what the stage can count to -------------------------------------------
 
 /** Events the log holds by the end, which is how many rows it is drawn with. */
-export const MAX_SEQ = 6;
+export const MAX_SEQ = 7;
 /** Highest reading of the state card, and of the projection's row count. */
-export const MAX_ITEMS = 4;
-export const MAX_ROWS = 6;
+export const MAX_ITEMS = 5;
+export const MAX_ROWS = 7;
 
 /** A lamp is either lit or it is not. */
 export const LAMPS = ['off', 'on'] as const;

@@ -8,7 +8,7 @@ steps:
   - title: "One consumer"
     text: "Messages arrive faster than one consumer can finish them. The queue grows, and so does the time each message waits in it."
   - title: "Competing consumers"
-    text: "Three consumers pull from the same queue. Each message goes to exactly one of them, throughput triples, and — with arrivals easing a little too — the backlog drains."
+    text: "Four consumers pull from the same queue. Each message goes to exactly one of them, throughput quadruples, and the backlog drains while the producer keeps sending at the same pace."
   - title: "At least once"
     text: "A consumer that dies before acknowledging hands its message back to the queue. Someone else finishes it, and sometimes a copy arrives twice: handlers must be safe to repeat, and a message that keeps failing goes to the dead-letter queue."
   - title: "Order per key"

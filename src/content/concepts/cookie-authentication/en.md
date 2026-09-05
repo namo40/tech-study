@@ -11,7 +11,7 @@ steps:
   - title: "SameSite draws the first line"
     text: "Mark the cookie Lax and it stops riding cross-site POSTs; the forged request arrives naked and fails. Top-level navigation still carries it — Strict closes even that door, at the cost of every inbound link starting signed out."
   - title: "The token only your page can echo"
-    text: "The server hides an antiforgery token in the form; a real submission returns cookie and token together, and even a link that still carries the cookie cannot echo it. Layer it with SameSite and an origin check, so no one line has to hold alone."
+    text: "The server hides an antiforgery token in the form; a real submission returns cookie and token together, a stale form that still lacks it gets a 400 of its own, and the forged POST arrives with neither. Layer it with SameSite and an origin check, so no one line has to hold alone."
 related:
   - label: SameSite Cookie
     slug: samesite-cookie

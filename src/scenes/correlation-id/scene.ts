@@ -1,11 +1,11 @@
 import gsap from 'gsap';
 import {
   FAIL_KIND,
-  IDS,
   LANE_Y,
   ROW_COUNT,
   SCENE_DURATION,
   STAGE_STATE,
+  TRACKED_ID,
   WINDOW_ROWS,
   X_GLYPH,
   X_ORDERS_EDGE,
@@ -55,10 +55,12 @@ import type { SceneBuildOptions, SceneCue, SceneInstance, SceneStep } from '../t
  * hop first — which is the whole point of the first step, and why the lines are
  * interleaved without anybody having interleaved them.
  *
- * The window is what makes `matches 9` true twice over. The tail holds twenty
- * lines and shows the last twelve, and the twelve on screen when the filter is
- * applied are exactly the twelve written in steps 2 and 3: nine carrying
- * `7f3a`, three carrying `91c2`. The readout counts rows, not intentions.
+ * Each flow that gets an id gets its own, which is what makes the filter mean
+ * something. The tail holds twenty lines and shows the last twelve, and the
+ * twelve on screen when the filter is applied are exactly the twelve written in
+ * steps 2 and 3: four carrying `7f3a`, three carrying `91c2`, five carrying the
+ * tracked id. The readout counts rows, not intentions, and the five it counts
+ * are one flow's five lines, in the order that flow wrote them.
  */
 
 const ID = 'correlation-id';
@@ -116,15 +118,16 @@ interface FlowPlan {
 /**
  * The five flows. The first two carry no id at all, which is what makes their
  * eight lines unattributable; the next two are the pair that gets one each; the
- * last is the `7f3a` flow whose payment fails, and it waits far longer in the
- * queue because the async gap is what step 3 is about.
+ * last is the tracked flow, whose payment fails, and it waits far longer in the
+ * queue because the async gap is what step 3 is about. No id is ever reused, so
+ * the five lines the filter matches are that one flow's five lines.
  */
 const FLOWS: FlowPlan[] = [
   { at: 0.35, id: null, kind: 'cart', fails: false, dwell: 0.35 },
   { at: 1.35, id: null, kind: 'checkout', fails: true, dwell: 0.35 },
   { at: 6.4, id: '7f3a', kind: 'checkout', fails: false, dwell: 0.35, mints: true },
   { at: 8.2, id: '91c2', kind: 'cart', fails: false, dwell: 0.35, mints: true },
-  { at: 12.6, id: '7f3a', kind: 'checkout', fails: true, dwell: 1.6 },
+  { at: 12.6, id: TRACKED_ID, kind: 'checkout', fails: true, dwell: 1.6 },
 ];
 
 /** The lines each kind of flow writes, in the order it writes them. */
@@ -299,7 +302,7 @@ function simulate(): Simulation {
     setAttr(FILTER_ON, 'stage', 'data-cid-filter', 'on');
     let matches = 0;
     for (let row = 0; row < written; row += 1) {
-      if (rowId[row] === IDS[0]) matches += 1;
+      if (rowId[row] === TRACKED_ID) matches += 1;
       else setAttr(FILTER_ON, `row-${row}`, 'data-cid-dim', 'on');
     }
     setAttr(FILTER_ON, 'stage', 'data-cid-matches', String(matches));
@@ -322,7 +325,7 @@ function simulate(): Simulation {
     setAttr(FILTER_OFF, 'stage', 'data-cid-filter', 'off');
     setAttr(FILTER_OFF, 'stage', 'data-cid-matches', '0');
     for (let row = 0; row < written; row += 1) {
-      if (rowId[row] !== IDS[0]) setAttr(FILTER_OFF, `row-${row}`, 'data-cid-dim', 'off');
+      if (rowId[row] !== TRACKED_ID) setAttr(FILTER_OFF, `row-${row}`, 'data-cid-dim', 'off');
     }
     cue(FILTER_OFF, 'trip');
   });

@@ -102,7 +102,15 @@ interface Ask {
  * the cache has or has room for, so nothing is evicted and the ladder is the
  * only thing that moves. The second asks for one key too many and then asks
  * again for the key that lost its slot. The third asks for the same answer
- * under three spellings. The fourth replays the second against a pinned entry.
+ * under three spellings.
+ *
+ * The fourth is the one that makes the pin mean something. Once the pin is on,
+ * every other resident is read once and the pinned entry is not, so by the time
+ * the pressure arrives the pinned entry is the one that has gone longest
+ * without a reader — the entry LRU would take first. The policy takes the
+ * oldest of the five it is allowed to reach instead, and the reader can check
+ * the counterfactual against the ladder: nothing touched that cell, and it
+ * stayed.
  */
 const ASKS: Ask[] = [
   // Step 1 — two cold reads fill the last two cells, then four reads land in them.
@@ -125,12 +133,15 @@ const ASKS: Ask[] = [
   { at: 15.2, key: 'k5' },
   { at: 16.64, key: 'v-c' },
   { at: 17.14, key: 'k1' },
-  // Step 4 — the same pressure, once, with the hot entry pinned.
-  { at: 18.66, key: 'k3' },
-  { at: 20.1, key: 'k1' },
-  { at: 20.6, key: 'k8' },
-  { at: 21.1, key: 'k1' },
-  { at: 21.6, key: 'k1' },
+  // Step 4 — every cell the pin does not cover is read once, which leaves the
+  // pinned entry the least recently used of the six, and then one more key
+  // arrives with no room for it.
+  { at: 18.66, key: 'k4' },
+  { at: 19.16, key: 'k6' },
+  { at: 19.66, key: 'k7' },
+  { at: 20.16, key: 'k8' },
+  { at: 20.66, key: 'k5' },
+  { at: 21.16, key: 'k3' },
 ];
 
 /** When the cache first has to choose, and says out loud how it will. */
@@ -142,8 +153,8 @@ const COLLAPSE_DELAY = 0.24;
 /** When the hottest entry is taken out of the policy's reach. */
 const PIN_AT = 18.4;
 /** The closing beats: the miss count is held up, and then the stage settles. */
-const CONTRAST_AT = 22.06;
-const SETTLE_AT = 22.4;
+const CONTRAST_AT = 22.66;
+const SETTLE_AT = 23.0;
 
 // --- what one pass over the scene produces ---------------------------------
 

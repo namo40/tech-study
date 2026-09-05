@@ -238,8 +238,17 @@ const WARN_HOLD = 1;
 const LAT_WARN = 1.2;
 const LAT_HOT = 2.4;
 
-/** When each consumer joins. Two arrive with step 2 and two more with step 4. */
-const ONLINE = [0, 6.2, 6.2, 19.8, 19.8];
+/**
+ * When each consumer joins. Three arrive with step 2 and the last with step 4.
+ *
+ * A consumer finishes one message a second — 0.3s to reach it, 0.7s of work —
+ * and the producer sends one every 0.35s throughout the first two steps. Three
+ * consumers would very nearly keep pace with that and the backlog would sit
+ * where it was, which would make the second step a picture of a queue holding
+ * steady rather than one draining. Four is the smallest number that empties it
+ * without the producer having to slow down to help.
+ */
+const ONLINE = [0, 6.2, 6.2, 6.2, 19.8];
 /** The consumer that dies mid-message, when it dies, and when it comes back. */
 const CRASH_CONSUMER = 1;
 const CRASH_AT = 13.25;
@@ -258,8 +267,9 @@ const flow = (from: number, gap: number, count: number, first: number): Arrival[
 const ARRIVALS: Arrival[] = [
   // Step 1: one consumer, and messages faster than it can finish them.
   ...flow(0.95, 0.35, 14, 1),
-  // Step 2: the same queue, drained by three.
-  ...flow(6.1, 0.6, 8, 15),
+  // Step 2: the same queue at the same arrival rate, drained by four. The gap
+  // does not change here, so nothing but the extra consumers empties it.
+  ...flow(6.1, 0.35, 13, 15),
   // Step 3: a shallow queue, a crash, a duplicate, and one message that never works.
   { at: 12.0, label: 'm1' },
   { at: 12.35, label: 'm2' },
@@ -689,11 +699,14 @@ function simulate(): Simulation {
 
   ONLINE.forEach((at, index) => {
     if (at <= 0) return;
+    // Consumers arrive in groups, and a group is one scaling event however many
+    // it brought, so only the first of them says so.
+    const leads = ONLINE.indexOf(at) === index;
     schedule(at, () => {
       const holder = consumers[index];
       if (holder) holder.idleSince = at;
       setConsumer(at, index, 'idle');
-      if (index % 2 === 1) {
+      if (leads) {
         flash(at, 'data-scale', FLASH_HOLD);
         cue(at, 'trip');
       }

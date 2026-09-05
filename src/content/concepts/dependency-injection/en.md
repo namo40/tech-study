@@ -12,7 +12,7 @@ steps:
   - title: "Lifetime is decided at registration"
     text: "Run two requests and count the boxes: the singleton serves both from one instance, scoped makes one per request, transient makes one per injection. Same classes, three growth curves — chosen where the type is registered, not where it is used. Most lifetime bugs are just a mismatch between those two places."
   - title: "The container has a life of its own"
-    text: "It is built once — in a real host before the first request; here the lamp lights late so you can watch the registrations close. Every scope closes taking its instances with it, disposing in reverse order of creation, and so does shutdown."
+    text: "It was built once, before the first request, and the registrations closed with it. Every scope closes taking its instances with it, disposing in reverse order of creation, and so does shutdown."
 related:
   - label: Hexagonal Architecture
     slug: hexagonal-architecture

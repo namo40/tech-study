@@ -151,9 +151,16 @@ export type LineKind = (typeof LINE_KINDS)[number][0];
 /** The line the reader is told is the failure, so the scene names it once. */
 export const FAIL_KIND: LineKind = 'failed';
 
-/** The two ids, and the flow each one belongs to. */
-export const IDS = ['7f3a', '91c2'] as const;
+/** The three ids, one per flow that gets one. */
+export const IDS = ['7f3a', '91c2', 'a4e8'] as const;
 export type IdKey = (typeof IDS)[number];
+
+/**
+ * The id the reader follows: the one the wire chips show riding the header and
+ * the message property, and the one the filter searches for. It belongs to a
+ * single flow, so filtering on it returns that flow's lines and nothing else.
+ */
+export const TRACKED_ID: IdKey = 'a4e8';
 
 const SERVICE_NAMES = ['web', 'orders', 'pay'] as const;
 
@@ -250,7 +257,7 @@ const wireChip = (
       'middle',
       [
         ['plain', plain],
-        ['carry', `${plain}: ${IDS[0]}`],
+        ['carry', `${plain}: ${TRACKED_ID}`],
       ],
       6,
     ),
@@ -307,7 +314,7 @@ const filterChip = chip({
     FILTER_TEXT_X,
     FILTER_TEXT_Y,
     'middle',
-    [['on', `filter&#160;id=${IDS[0]}`]],
+    [['on', `filter&#160;id=${TRACKED_ID}`]],
     6,
   ),
 });

@@ -4134,9 +4134,9 @@
   opacity: 1;
 }
 
-/* A value the primary has already replaced is not wrong yet, so it warns
-   rather than clears. */
-[data-stale-seam="on"] .rl-value-replica .scene-chip-outline {
+/* While the replica is handing back a value its primary has already replaced,
+   the chip holding that value warns rather than clears. */
+[data-stale-mark="on"] .rl-value-replica .scene-chip-outline {
   stroke: var(--state-half);
 }
 
@@ -4176,7 +4176,7 @@
   --flash-color: var(--accent);
 }
 
-[data-stale-seam="on"] .rl-mark--stale,
+[data-stale-mark="on"] .rl-mark--stale,
 [data-replica="promoted"] .rl-mark--promote {
   opacity: 1;
 }
@@ -10931,14 +10931,24 @@
   fill: var(--cpu);
 }
 
+.cid-id-text--a4e8 {
+  fill: var(--state-half);
+}
+
 [data-cid-id="91c2"] .cid-id-bg {
   stroke: var(--cpu);
 }
 
+[data-cid-id="a4e8"] .cid-id-bg {
+  stroke: var(--state-half);
+}
+
 [data-cid-id="7f3a"] .cid-id-bg,
 [data-cid-id="91c2"] .cid-id-bg,
+[data-cid-id="a4e8"] .cid-id-bg,
 [data-cid-id="7f3a"] .cid-id-text--7f3a,
-[data-cid-id="91c2"] .cid-id-text--91c2 {
+[data-cid-id="91c2"] .cid-id-text--91c2,
+[data-cid-id="a4e8"] .cid-id-text--a4e8 {
   opacity: 1;
 }
 
@@ -11096,6 +11106,10 @@
   fill: var(--cpu);
 }
 
+.cid-req[data-cid-flow="a4e8"] .scene-req-dot {
+  fill: var(--state-half);
+}
+
 .cid-req-id {
   font-family: var(--font-mono);
   font-size: 22px;
@@ -11107,6 +11121,10 @@
 
 .cid-req[data-cid-flow="91c2"] .cid-req-id {
   fill: var(--cpu);
+}
+
+.cid-req[data-cid-flow="a4e8"] .cid-req-id {
+  fill: var(--state-half);
 }
 
 /* ---------------------------------------------------------------- */

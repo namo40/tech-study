@@ -10,7 +10,7 @@ steps:
   - title: "The state is a replay"
     text: "Wipe the aggregate and nothing is lost: play the log from the start and the same state grows back, event by event. Stop the replay early and you are looking at the past — the log remembers every version of the truth."
   - title: "When the replay grows long, take a picture"
-    text: "A snapshot stores the state as of one sequence number. The next rebuild starts there and replays only what came after — and here nothing came after, so it reads nothing at all. The log is still the truth, and the snapshot can be thrown away."
+    text: "A snapshot stores the state as of one sequence number. The next rebuild starts there and replays only what came after — one row here, not the whole log. The log is still the truth, and the snapshot can be thrown away."
   - title: "One log, many truths derived from it"
     text: "The same events feed a projection here and an audit trail there — just more replays. And a correction is not an UPDATE: it is one more event appended, and every derived view catches up. The history stays honest because it only ever grows."
 related:

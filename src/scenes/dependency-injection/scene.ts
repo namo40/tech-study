@@ -135,8 +135,14 @@ const ROWS_ON: number[] = [6.5, 6.72, 6.94];
 /** When the three lifetime badges are shown. */
 const BADGES_AT = 12.5;
 
-/** When the container is built and the registrations close. */
-const BUILD_AT = 18.5;
+/**
+ * When the container is built and the registrations close. It sits just after
+ * the last row is written and before the first request leaves, because that is
+ * the order a host does it in: everything is registered, the container is
+ * built, and only then is anything served. Nothing may change a registration
+ * from here on, which the run is checked against.
+ */
+const BUILD_AT = 7.1;
 
 /** The shutdown: the lamp, the last instance released, and the door shut. */
 const SHUTDOWN_AT = 21.0;
