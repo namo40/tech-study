@@ -47,7 +47,7 @@ references:
 
 The test is simple: if you cannot answer the question without looking at the thing being acted on, the check belongs on the resource.
 
-- Ownership. An author edits their own post, a customer cancels their own order, a member leaves their own comment. The role says "author"; the resource says whose. Only the second one keeps A out of B's draft.
+- Ownership. An author edits their own post, a customer cancels their own order, a member edits or deletes their own comment. The role says "author"; the resource says whose. Only the second one keeps A out of B's draft.
 - State. A paid order cannot be edited, a locked document cannot be renamed, a closed ticket cannot be reassigned. The permission depends on a field that only exists once the row is loaded, so no amount of claim-stuffing at login time can decide it.
 - Relationships. A manager reads their own reports' reviews, a teacher grades their own class, a doctor opens the chart of a patient on their service. The edge between the caller and the resource is the permission, and edges live in the database rather than in the token.
 - Tenancy. In a multi-tenant system "same role, different tenant" must fail, and it must fail on the way in rather than by returning an empty list. The tenant id on the resource is the check, and it is the one every multi-tenant incident report wishes had been there.

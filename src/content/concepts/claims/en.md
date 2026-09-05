@@ -31,7 +31,7 @@ references:
     url: https://learn.microsoft.com/en-us/dotnet/api/system.security.claims.claimsprincipal
 ---
 
-The third step of the scene puts every request through the same short row of gates, and each gate is one claim being compared against one thing the API already knows. That is what validation is. It is not the API forming an opinion about the caller; it is four or five equality checks against values in configuration, which is why they are cheap enough to run on every call and local enough to need no network.
+The second step of the scene opens the payload and reads the claims out of it in plain sight: who the token is for, what it allows, when it stops being true. Those same lines are what every request is then measured against, one gate at a time, each gate comparing one claim to one thing the API already knows. That is what validation is. It is not the API forming an opinion about the caller; it is four or five equality checks against values in configuration, which is why they are cheap enough to run on every call and local enough to need no network.
 
 The gates come from the registered claims, and each one answers a different question. `iss` says who minted this, and it is checked against the issuer you decided to trust. `aud` says who it was minted for, and it is checked against this API's own identifier, which is what stops a perfectly valid token for the reporting API from opening the payments one. `exp` says when it stops being true, and `nbf` says when it starts, and both are compared against the clock with a small tolerance for drift. `sub` names the principal, and it is the one you should be storing when you record who did something, because it is stable in a way an email address or a display name is not.
 

@@ -5,7 +5,7 @@ category: "서버 상태 관리"
 scene: sticky-session
 steps:
   - title: "라운드 로빈에 메모리 세션"
-    text: "A가 inst 1에서 로그인합니다. 다음 요청은 A를 본 적 없는 inst 2에 떨어지고, 로그아웃된 것처럼 보입니다. B도 inst 3에서 로그인한 뒤 다음 요청에서 같은 벽에 부딪힙니다."
+    text: "A가 inst 1에서 로그인합니다. 다음 요청은 A를 본 적 없는 inst 2에 떨어지고, 이 앱은 로그인 상태를 세션에 두므로 로그아웃됩니다. B는 inst 3에서 로그인하고, 다음 요청은 inst 1에 떨어져 다시 로그아웃됩니다."
   - title: "Sticky"
     text: "로드 밸런서가 쿠키를 심고 A의 모든 요청을 inst 1로 돌려보냅니다. 동작은 합니다. 대신 바쁜 사용자 하나가 한 인스턴스에 몰리는 동안 다른 인스턴스는 놉니다."
   - title: "인스턴스가 가면 세션도 갑니다"
@@ -42,24 +42,25 @@ references:
 
 ## 언제 쓰나
 
-- 다리로 씁니다. 기존 애플리케이션이 상태를 메모리에 두는데 오늘 당장 여러 인스턴스에서 돌아가야 하고, 구조를 다시 짜는 일은 이번 주에 할 수 있는 일이 아닌 경우입니다.
+- 임시 가교로 씁니다. 기존 애플리케이션이 상태를 메모리에 두는데 오늘 당장 여러 인스턴스에서 돌아가야 하고, 구조를 다시 짜는 일은 이번 주에 할 수 있는 일이 아닌 경우입니다.
 - 최적화로 씁니다. 사용자가 자주 쓰는 데이터가 인스턴스마다 캐시되어 있어서 같은 곳으로 돌려보내면 캐시를 다시 만드는 비용을 아낄 수 있고, 어디에 떨어지든 정확성은 달라지지 않는 경우입니다.
 
 ## 주의점
 
-- stickiness는 내구성이 아닙니다. 축소, 배포, 장애로 그 인스턴스에 묶인 세션은 전부 사라지고, 사용자는 오류가 아니라 로그아웃을 봅니다.
+- stickiness는 내구성이 아닙니다. 축소, 배포, 장애로 그 인스턴스에 묶인 세션은 전부 사라지고, 로그인 상태를 세션에 두는 앱이라면 사용자는 오류가 아니라 로그아웃을 봅니다. 신원이 대신 인증 쿠키에 실리는 ASP.NET Core에서 같은 증상이 난다면 대개 아래의 키 링이 공유되지 않았다는 뜻입니다.
 - 부하는 마침 바쁜 사용자를 들고 있는 인스턴스 쪽으로 기웁니다. 오토스케일링이 용량을 더해도, 라우팅이 이미 그 용량을 쓰지 않기로 정해 둔 상태입니다.
 - ASP.NET Core에서는 세션 상태만 옮겨서는 부족합니다. Data Protection 키 링도 함께 공유해야 하며, 그러지 않으면 한 인스턴스가 발급한 인증 쿠키를 다음 인스턴스가 거부합니다.
-- 게임 방이나 실시간 협업처럼 상태와 계산이 한곳에 있어야 하는 경우에는, stickiness나 무상태를 억지로 밀어붙이기보다 상태를 명시적으로 나누는 파티션 모델을 택합니다.
+- 게임 방이나 실시간 협업처럼 상태와 계산이 한곳에 있어야 하는 경우에는, stickiness나 무상태를 억지로 밀어붙이기보다 명시적인 상태 보유(stateful) 파티션 모델을 택합니다.
 
 ## .NET에서는
 
 ```csharp
 var redis = ConnectionMultiplexer.Connect(builder.Configuration["Redis"]!);
 
-// Session state lives in Redis, so any instance can read it.
+// 세션 상태는 Redis에 있으니 어느 인스턴스든 읽는다. 인스턴스마다 두 번째 연결을
+// 여는 대신, 아래 키 링과 멀티플렉서 하나를 함께 쓴다.
 builder.Services.AddStackExchangeRedisCache(options =>
-    options.Configuration = builder.Configuration["Redis"]);
+    options.ConnectionMultiplexerFactory = () => Task.FromResult<IConnectionMultiplexer>(redis));
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(20);
@@ -67,8 +68,8 @@ builder.Services.AddSession(options =>
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
-// The key ring must be shared as well, or cookies signed on one
-// instance are unreadable on the next.
+// 키 링도 함께 공유해야 한다. 그러지 않으면 한 인스턴스에서 서명한 쿠키를
+// 다음 인스턴스가 읽지 못한다.
 builder.Services.AddDataProtection()
     .PersistKeysToStackExchangeRedis(redis, "shop:data-protection-keys")
     .SetApplicationName("shop");

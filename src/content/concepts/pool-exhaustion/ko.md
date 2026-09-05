@@ -1,7 +1,7 @@
 ---
 title: "Pool Exhaustion"
 summary: "Pool Exhaustion은 모든 연결이 대여 중이라 요청이 줄을 서는 상태입니다. 데이터베이스는 거의 놀고 있는데 애플리케이션이 느려지고 실패하기 시작합니다."
-category: "Pool과 자원 관리"
+category: "Pool과 리소스 관리"
 scene: database-connection-pool
 sceneStep: 3
 related:

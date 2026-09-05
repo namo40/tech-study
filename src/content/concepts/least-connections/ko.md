@@ -54,8 +54,8 @@ builder.Services.AddReverseProxy().LoadFromMemory(
         new ClusterConfig
         {
             ClusterId = "api",
-            // LeastRequests reads the exact in-flight count; PowerOfTwoChoices
-            // samples two destinations and takes the smaller of the two.
+            // LeastRequests는 처리 중인 정확한 수를 읽고, PowerOfTwoChoices는
+            // 목적지 둘을 표본으로 뽑아 그중 작은 쪽을 고릅니다.
             LoadBalancingPolicy = LoadBalancingPolicies.LeastRequests,
             HttpRequest = new ForwarderRequestConfig { ActivityTimeout = TimeSpan.FromSeconds(10) },
             Destinations = new Dictionary<string, DestinationConfig>
@@ -68,4 +68,4 @@ builder.Services.AddReverseProxy().LoadFromMemory(
     ]);
 ```
 
-위의 `ActivityTimeout`은 장식이 아닙니다. least connections는 요청이 언젠가 카운트에서 빠져야 동작하는데, 영원히 매달린 요청은 자리를 영원히 차지합니다. 정책과 타임아웃은 같은 장치를 양쪽 끝에서 본 것입니다. Nginx는 `least_conn`, HAProxy는 `leastconn`이라고 쓰고, Envoy의 기본값은 표본 수를 설정할 수 있는 power of two choices인 `LEAST_REQUEST`입니다.
+위의 `ActivityTimeout`은 장식이 아닙니다. least connections는 요청이 언젠가 카운트에서 빠져야 동작하는데, 영원히 매달린 요청은 자리를 영원히 차지합니다. 정책과 타임아웃은 같은 장치를 양쪽 끝에서 본 것입니다. Nginx는 `least_conn`, HAProxy는 `leastconn`이라고 쓰고, Envoy의 `LEAST_REQUEST`는 표본 수를 설정할 수 있는 power of two choices입니다. 다만 Envoy 클러스터가 정책을 지정하지 않았을 때 받는 기본값은 `ROUND_ROBIN`입니다.

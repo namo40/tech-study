@@ -30,7 +30,7 @@ references:
 
 競合の処理は、捕まえて済ませるコードではなく設計すべき部分です。現在の行を読み直し、この項目にとって「適用し直す」が何を意味するかを決め、もう一度試します。残高なら、適用し直すとは読み直したばかりの値から計算し直すことであり、古い値から出しておいた合計をそのまま書くことではありません。ユーザーが編集した文書なら、何が変わったかを見せて尋ねることが適用し直しにあたる場合もあります。再試行は作業単位の全体をやり直す必要があります。失敗した保存は何も残していないからです。
 
-EF Core ではバージョンは concurrency token であり、`byte[]` に `[Timestamp]` を付けると、データベース自身が維持する SQL Server の `rowversion` に対応付けられます。保存が失敗すると `DbUpdateConcurrencyException` が上がり、負けた項目がそこに入っています。
+EF Core ではバージョンは同時実行トークンであり、`byte[]` に `[Timestamp]` を付けると、データベース自身が維持する SQL Server の `rowversion` に対応付けられます。保存が失敗すると `DbUpdateConcurrencyException` が上がり、負けた項目がそこに入っています。
 
 ```csharp
 public sealed class Account
@@ -49,10 +49,10 @@ for (var attempt = 0; attempt < 3; attempt++)
         await db.SaveChangesAsync(ct);
         break;
     }
-    catch (DbUpdateConcurrencyException ex)
+    catch (DbUpdateConcurrencyException)
     {
-        // Reload the current row, then let the loop reapply `delta` to it.
-        await ex.Entries.Single().ReloadAsync(ct);
+        // 何も書かれていません。古い追跡を捨てて、ループの FindAsync が今の行を
+        // 読み、その行に `delta` を当て直すようにします。
         db.ChangeTracker.Clear();
     }
 }

@@ -5,13 +5,13 @@ category: "プールとリソース管理"
 scene: database-connection-pool
 steps:
   - title: "開くのは遅い"
-    text: "新しい接続には TCP ハンドシェイク、TLS、ログインが伴います。プールはその代価を一度だけ払い、接続を開いたままにします。"
+    text: "新しい接続には TCP ハンドシェイク、TLS、ログインが伴います。プールはその代価を接続 1 本につき一度だけ払い、開いたままにします。"
   - title: "再利用"
     text: "すべてのリクエストが開いた接続を借りて返します。2 本の接続で流れ全体をさばき、データベースは新しいログインを一度も見ません。"
   - title: "枯渇"
-    text: "すべての接続が使用中なら、新しいリクエストは列に並びます。プールの上限はデータベースに対する同時実行の予算で、Timeout を超えて待つと失敗します。"
+    text: "すべての接続が使用中なら、新しいリクエストは列に並びます。プールの上限はデータベースに対する同時実行の予算で、タイムアウトを超えて待つと失敗します。"
   - title: "遅く開き、早く返す"
-    text: "アプリケーションがほかの作業をするあいだ握ったままの接続は、誰も使えない接続です。クエリのあいだだけ借りてすぐ返せば、同じ 4 本でずっと多くをさばけます。"
+    text: "アプリケーションがほかの作業をするあいだ握ったままの接続は、誰も使えない接続です。握られた枠が遊ぶあいだ、残りの枠がすべての仕事をこなします。クエリのあいだだけ借りて、すぐ返します。"
 related:
   - label: ADO.NET Connection Pooling
     slug: ado-net-connection-pooling
@@ -53,20 +53,20 @@ references:
 
 - 遅く開き、早く返します。リクエストが終わるまで、長いトランザクションのあいだ、データベースと関係のない `await` のあいだ、接続を握ったままにしません。
 - `Max Pool Size` はプロセス単位です。既定値 100 のインスタンスが 10 台あれば、200 をさばけるデータベースに対して 1,000 本の接続を開けてしまいます。
-- プールで待った時間は、遅いクエリではなく接続の Timeout として現れます。待ち時間とプール使用率を、それ自体ひとつのメトリクスとして見ます。
+- プールで待った時間は、遅いクエリではなく接続のタイムアウトとして現れます。待ち時間とプール使用率を、それ自体 1 つのメトリクスとして見ます。
 - 大文字小文字やオプションの順序だけが違う接続文字列は、別々のプールを作ります。
 
 ## .NET では
 
 ```csharp
-// Pool per connection string, per process. Size it from the database's budget.
+// プールは接続文字列ごと、プロセスごとです。大きさはデータベースの予算から決めます。
 const string Cs =
     "Server=db;Database=shop;User Id=app;Password=...;" +
     "Min Pool Size=2;Max Pool Size=20;Connect Timeout=5;Connection Lifetime=300";
 
 public async Task<Order?> FindAsync(int id, CancellationToken ct)
 {
-    // Open late: the connection is borrowed here...
+    // 遅く開きます。接続を借りるのはここで...
     await using var connection = new SqlConnection(Cs);
     await connection.OpenAsync(ct);
 
@@ -76,7 +76,7 @@ public async Task<Order?> FindAsync(int id, CancellationToken ct)
 
     await using var reader = await command.ExecuteReaderAsync(ct);
     return await reader.ReadAsync(ct) ? new Order(reader.GetInt32(0), reader.GetDecimal(1)) : null;
-    // ...and returned to the pool here, when the using block ends.
+    // ...using ブロックが終わるここで、プールに返します。
 }
 ```
 

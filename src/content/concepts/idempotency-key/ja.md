@@ -9,7 +9,7 @@ steps:
   - title: "キーを覚える"
     text: "クライアントは再試行のたびに同じキーを送ります。サーバーは最初にキーと結果を保存しておき、再試行には決済に触れずその応答をそのまま返します。"
   - title: "同時に 2 つ"
-    text: "ダブルクリックで同じキーが 2 回送られます。先に来たほうがキーを確保し、2 つ目は結果を待つか、409 を受けて問い直します。どちらでも課金は 1 回です。"
+    text: "ダブルクリックで同じキーが 2 回送られます。先に来たほうがキーを確保し、2 つ目は結果を待つか、409 を受けて問い直せます。どちらでも、キー 1 つに課金は 1 回です。"
   - title: "範囲と寿命"
     text: "キーは 1 つのクライアントと 1 つのリクエスト本文に属します。同じキーに別の本文は拒否されます。キーは期限切れになるのでストアは小さく保たれ、古いキーは新しいリクエストとして再利用できます。"
 related:
@@ -50,6 +50,7 @@ references:
 - リクエストの指紋をキーと一緒に保存し、同じキーに別の本文が来たら拒否します。これがないと、キーは見当違いの応答を受け取る経路になります。
 - 作業を始める前にキーを原子的に確保します。一意制約や条件付き INSERT を使わないと、同時に届いた 2 つのリクエストが検査を並んで通り抜け、どちらも進んでしまいます。
 - キーの寿命は現実的な再試行を覆う長さ (数時間から 1 日程度) にし、文書に書いておきます。短すぎれば遅れて来た再試行がもう一度課金し、無期限ならストアは増え続けます。
+- 最初の試みが失敗したら何を残すかを決めます。キーを確保したあとで作業が例外を投げたなら、確保を解放するか失敗を保存しておかないと、キーが期限切れになるまで再試行のたびに 409 が返ります。
 - そもそも繰り返しても結果が変わらない設計 (冪等な設計) を優先します。クライアントが決めた id で送る `PUT` や、カート 1 つに注文 1 つといった業務上の一意制約がそれにあたります。キーは、それ自体では繰り返しが安全にならない操作のための手段です。
 
 ## .NET では
@@ -66,24 +67,38 @@ public sealed class IdempotencyFilter(IIdempotencyStore store) : IEndpointFilter
             return Results.BadRequest(new { error = "Idempotency-Key header is required" });
 
         var client = http.User.FindFirstValue("sub") ?? "anonymous";
-        var fingerprint = await RequestFingerprint.ComputeAsync(http.Request);
 
-        // Claim the key atomically: unique (client, key) row. Returns the existing row on conflict.
+        // 指紋の計算には本文を読む必要があり、エンドポイントもそれをバインドする必要があります。
+        http.Request.EnableBuffering();
+        var fingerprint = await RequestFingerprint.ComputeAsync(http.Request);
+        http.Request.Body.Position = 0;
+
+        // キーを原子的に確保します。(client, key) が一意な行で、衝突したら既存の行を返します。
         var claim = await store.TryClaimAsync(client, key!, fingerprint, TimeSpan.FromHours(24), http.RequestAborted);
         switch (claim.State)
         {
-            case ClaimState.Done:       return Results.Json(claim.Response, statusCode: claim.StatusCode); // replay
+            case ClaimState.Done:       return Results.Json(claim.Response, statusCode: claim.StatusCode); // 再生
             case ClaimState.InProgress: return Results.StatusCode(StatusCodes.Status409Conflict);
             case ClaimState.Mismatch:   return Results.UnprocessableEntity(new { error = "Key reused with a different request" });
         }
 
-        var result = await next(context);                       // first time: do the work
-        await store.CompleteAsync(client, key!, result, http.RequestAborted);
-        return result;
+        try
+        {
+            var result = await next(context);                   // 初回: 作業を行います
+            // CompleteAsync は結果を実行して本文とステータスコードを取り出し、両方を保存します。
+            await store.CompleteAsync(client, key!, result, http.RequestAborted);
+            return result;
+        }
+        catch
+        {
+            // 何も記録されていないので、InProgress のまま残さずにキーを手放します。
+            await store.ReleaseAsync(client, key!, http.RequestAborted);
+            throw;
+        }
     }
 }
 
 app.MapPost("/payments", CreatePayment).AddEndpointFilter<IdempotencyFilter>();
 ```
 
-保証が実際に生まれるのは `TryClaimAsync` なので、これは 1 回の原子的な操作でなければなりません。`(client, key)` に一意制約を張ったテーブルへ `INSERT` し、衝突したら既存の行を返す。あるいは Redis の `SET NX` で有効期限を同じ呼び出しに含める。保存するときは応答本文とステータスコードをキーと一緒に入れます。再生した応答が最初の応答と区別できてはいけないからです。指紋も一緒に入れます。同じキーに別の本文が来るのは再試行ではなく、呼び出す側のバグだからです。
+保証が実際に生まれるのは `TryClaimAsync` なので、これは 1 回の原子的な操作でなければなりません。`(client, key)` に一意制約を張ったテーブルへ `INSERT` して衝突したら既存の行を返すか、Redis の `SET NX` で有効期限を同じ呼び出しに含めるかです。指紋はキーと一緒に保存します。同じキーに別の本文が来るのは再試行ではなく呼び出す側のバグだからで、その指紋を計算するにはリクエスト本文を読む必要があります。ですからバッファリングを有効にしてストリームを巻き戻しておかないと、エンドポイントにはバインドするものが残りません。`CompleteAsync` がもう半分です。`IResult` はそれだけでは本文でもステータスコードでもないので、結果を実行して実際に送られたバイト列とコードを保存しなければなりません。再生した応答が最初の応答と区別できてはいけないからです。

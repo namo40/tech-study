@@ -1,7 +1,7 @@
 ---
 title: "Async/Await"
 summary: "`await`는 메서드가 스레드를 돌려주는 지점입니다. 그 자리에서 I/O가 시작되고, 메서드는 아직 끝나지 않은 Task를 호출자에게 반환하며, 메서드의 나머지는 I/O가 끝날 때 그때 비어 있는 아무 스레드에서 실행되도록 큐에 들어갑니다."
-category: "Pool과 자원 관리"
+category: "Pool과 리소스 관리"
 scene: async-await
 steps:
   - title: "await가 하는 일"
@@ -9,9 +9,9 @@ steps:
   - title: "차례로, 아니면 동시에"
     text: "호출을 하나 기다리고 다음을 기다리면 시간이 더해집니다. 둘을 먼저 시작해 놓고 함께 기다리면 가장 긴 하나만큼 걸립니다. 같은 스레드, 같은 I/O인데 await의 순서만 달라졌습니다."
   - title: "두 가지 실수"
-    text: ".Result로 막으면 스레드가 아무것도 안 하면서 바쁘고, 단일 스레드 컨텍스트에서는 continuation이 실행될 곳이 없어 데드락이 됩니다. async void 메서드는 기다릴 Task를 돌려주지 않아 예외가 갈 곳이 없습니다. 끝까지 async로 가고, Task를 반환하세요."
+    text: ".Result로 막으면 스레드가 아무것도 안 하면서 바쁘고, 단일 스레드 컨텍스트에서는 continuation이 실행될 곳이 없어 데드락이 됩니다. async void 메서드는 기다릴 Task를 돌려주지 않아 예외가 갈 곳이 없습니다. 끝까지 async로 가고, Task를 반환합니다."
   - title: "취소와 오류는 같은 길을 탑니다"
-    text: "토큰을 I/O까지 끝까지 넘기면 취소가 작업을 버려두는 대신 멈추게 합니다. 취소든 실패든 Task를 await하면 바로 그 await 지점에서 다시 던져져, 평범한 catch로 처리할 수 있습니다."
+    text: "토큰을 I/O까지 끝까지 넘기면 취소가 작업을 버려두는 대신 멈추게 합니다. 취소든 실패든 Task를 await하면 바로 그 await 지점에서 다시 던져집니다. 여기서는 실패가 Caller의 catch에 떨어집니다."
 related:
   - label: Asynchronous I/O
     slug: asynchronous-io
@@ -42,7 +42,7 @@ references:
 
 ## 언제 쓰나
 
-- 모든 I/O에 씁니다. 데이터베이스 왕복, HTTP 호출, 파일 읽기, 브로커로 보내는 메시지가 모두 해당합니다. API가 async 메서드를 제공하면 그것을 쓰고, 중간의 어느 계층도 막히지 않도록 호출 사슬 전체를 async로 유지하세요.
+- 모든 I/O에 씁니다. 데이터베이스 왕복, HTTP 호출, 파일 읽기, 브로커로 보내는 메시지가 모두 해당합니다. API가 async 메서드를 제공하면 그것을 쓰고, 중간의 어느 계층도 막히지 않도록 호출 사슬 전체를 async로 유지합니다.
 - 호출 하나의 지연 시간보다 처리량이 중요한 곳에 씁니다. async는 요청 하나를 더 빠르게 만들지 않습니다. 기다리던 스레드를 다른 사람이 쓸 수 있게 만들 뿐이고, 부하가 걸린 서버를 계속 응답하게 하는 것이 바로 그것입니다.
 - 서로 무관한 호출 여러 개를 동시에 띄울 수 있을 때 씁니다. 함께 시작해 함께 기다리는 것은 대부분의 서비스가 가진 가장 싼 지연 시간 개선책입니다.
 
@@ -50,37 +50,38 @@ CPU를 쓰는 작업은 다른 문제입니다. `await`는 계산을 빠르게 �
 
 ## 주의점
 
-- 요청 경로에서 Task를 막고 기다리지 마세요. `.Result`, `.Wait()`, `GetAwaiter().GetResult()`는 아무것도 하지 않는 풀 스레드를 붙잡고 있고, 돌아갈 스레드가 하나뿐인 컨텍스트에서는 그대로 데드락이 됩니다.
-- 이벤트 핸들러가 아니라면 `async void`를 쓰지 마세요. 기다릴 것을 돌려주지 않으므로 언제 끝났는지도, 무엇을 던졌는지도 아무도 알 수 없고, 처리되지 않은 예외는 프로세스를 내립니다. 대신 `Task`를 반환하세요.
-- 서로 무관한 호출은 먼저 시작해 놓고 `Task.WhenAll`로 함께 기다리세요. 하나씩 차례로 기다리면 이유 없이 대기 시간이 더해집니다.
-- `CancellationToken`은 모든 계층을 지나 I/O 자체까지 넘기세요. 스택 위쪽에서 멈추는 토큰은 아무것도 취소하지 못합니다. 계속 돌아가는 작업을 기다리기만 그만둘 뿐입니다. ASP.NET Core에서 넘길 토큰은 `HttpContext.RequestAborted`입니다.
+- 요청 경로에서 Task를 막고 기다리지 않습니다. `.Result`, `.Wait()`, `GetAwaiter().GetResult()`는 아무것도 하지 않는 풀 스레드를 붙잡고 있고, 돌아갈 스레드가 하나뿐인 컨텍스트에서는 그대로 데드락이 됩니다.
+- 이벤트 핸들러가 아니라면 `async void`를 쓰지 않습니다. 기다릴 것을 돌려주지 않으므로 언제 끝났는지도, 무엇을 던졌는지도 아무도 알 수 없고, 처리되지 않은 예외는 프로세스를 내립니다. 대신 `Task`를 반환합니다.
+- 서로 무관한 호출은 먼저 시작해 놓고 `Task.WhenAll`로 함께 기다립니다. 하나씩 차례로 기다리면 이유 없이 대기 시간이 더해집니다.
+- `CancellationToken`은 모든 계층을 지나 I/O 자체까지 넘깁니다. 스택 위쪽에서 멈추는 토큰은 아무것도 취소하지 못합니다. 계속 돌아가는 작업을 기다리기만 그만둘 뿐입니다. ASP.NET Core에서 넘길 토큰은 `HttpContext.RequestAborted`입니다.
 - `ConfigureAwait(false)`는 호출자가 어떤 컨텍스트에 있는지 알 수 없는 라이브러리 코드에 씁니다. 동기화 컨텍스트가 없는 ASP.NET Core에서는 아무 차이도 만들지 않습니다.
-- 던져 놓고 잊는 방식은 예외와 수명을 함께 잃습니다. 아무도 붙잡고 있지 않은 Task는 호스트가 종료될 때 도중에 버려질 수 있고, 실패해도 아무도 보지 못합니다. 백그라운드 서비스나 내구성 있는 큐를 쓰세요.
-- 아무것도 await하지 않는 async 메서드도 상태 머신은 그대로 만들고, 컴파일 시점에 경고를 냅니다. 무언가를 await하든지 동기 메서드로 바꾸든지 하세요.
+- 던져 놓고 잊는 방식은 예외와 수명을 함께 잃습니다. 아무도 붙잡고 있지 않은 Task는 호스트가 종료될 때 도중에 버려질 수 있고, 실패해도 아무도 보지 못합니다. 백그라운드 서비스나 내구성 있는 큐를 씁니다.
+- 아무것도 await하지 않는 async 메서드는 끝까지 동기로 실행되고, 그래도 Task를 반환하며, 컴파일 시점에 경고(CS1998)를 냅니다. 무언가를 await하든지 동기 메서드로 바꾸든지 합니다.
 
 ## .NET에서는
 
 아래 두 모양의 차이는 await의 순서뿐인데, 두 호출을 모두 하는 요청마다 300 ms의 값어치가 있습니다.
 
 ```csharp
-// Sequential: 600 ms.
+// 순차: 600 ms.
 var a = await catalog.GetAsync(id, ct);
 var b = await pricing.GetAsync(id, ct);
 
-// Concurrent: 300 ms. Start both, then await both.
+// 동시: 300 ms. 둘 다 시작한 뒤에 둘 다 await합니다.
 var aTask = catalog.GetAsync(id, ct);
 var bTask = pricing.GetAsync(id, ct);
 await Task.WhenAll(aTask, bTask);
-var (item, price) = (aTask.Result, bTask.Result);   // safe here: both are already complete
+var item = await aTask;                             // 이미 끝나 있으므로 이 await들은
+var price = await bTask;                            // 양보하지 않습니다
 ```
 
-`WhenAll` 뒤에서 `.Result`를 읽는 것은 안전합니다. 두 Task가 이미 완료되어 아무것도 막히지 않기 때문입니다. 완료되지 않은 Task에서 읽는 것이 장면 3단계가 다루는 실수입니다.
+이미 완료된 Task를 await하면 값을 동기적으로 가져오므로, 두 번째 await 쌍은 비용이 들지 않습니다. 그 자리에서도 `await`를 씁니다. 완료되지 않은 Task에 `.Result`를 쓰는 것이 장면의 3단계가 다루는 실수이고, 완료된 Task라 해도 `.Result`는 실패를 `AggregateException`으로 감싸서 내보냅니다.
 
 ```csharp
-// Wrong: blocks a pool thread and can deadlock in a single-threaded context.
+// 잘못된 예: 풀 스레드를 막고, 단일 스레드 컨텍스트에서는 데드락이 됩니다.
 var blocked = catalog.GetAsync(id, ct).Result;
 
-// Wrong: nothing to await, exceptions are lost.
+// 잘못된 예: await할 것이 없어 예외가 사라집니다.
 async void Fire() => await catalog.GetAsync(id, ct);
 ```
 
@@ -91,8 +92,8 @@ try
 {
     var item = await catalog.GetAsync(id, http.RequestAborted);
 }
-catch (OperationCanceledException) { /* client went away */ }
-catch (HttpRequestException ex)    { /* dependency failed */ }
+catch (OperationCanceledException) { /* 클라이언트가 떠남 */ }
+catch (HttpRequestException ex)    { /* 의존 대상이 실패함 */ }
 ```
 
-`ValueTask`는 대개 동기적으로 완료되는 hot path에서, 측정한 뒤에만 꺼내 쓸 만합니다. 일반적으로 더 빠르라고 있는 것이 아니라 할당 하나를 피하려고 있는 것입니다. 또한 정확히 한 번만 await해야 하므로, 저장해 두는 값이 아니라 바로 소비하는 값으로 다루세요.
+`ValueTask`는 대개 동기적으로 완료되는 핫 패스(hot path)에서, 측정한 뒤에만 꺼내 쓸 만합니다. 일반적으로 더 빠르라고 있는 것이 아니라 할당 하나를 피하려고 있는 것입니다. 또한 정확히 한 번만 await해야 하므로, 저장해 두는 값이 아니라 바로 소비하는 값으로 다룹니다.

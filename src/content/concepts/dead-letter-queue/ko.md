@@ -1,6 +1,6 @@
 ---
 title: "Dead Letter Queue"
-summary: "dead-letter queue는 브로커가 너무 여러 번 전달을 시도한 메시지를 옆으로 치워 두는 자리입니다. 독 메시지 하나가 처리량을 갉아먹는 대신 사람을 기다리게 되고, 잃는 것은 없습니다. 이력을 단 채 세워 둔 것뿐입니다."
+summary: "데드 레터 큐는 브로커가 너무 여러 번 전달을 시도한 메시지를 옆으로 치워 두는 자리입니다. 독 메시지 하나가 처리량을 갉아먹는 대신 사람을 기다리게 되고, 잃는 것은 없습니다. 이력을 단 채 세워 둔 것뿐입니다."
 category: "메시징과 이벤트 처리"
 scene: dead-letter-queue
 steps:
@@ -9,9 +9,9 @@ steps:
   - title: "한도는 자비입니다"
     text: "세 번째 실패에서 브로커는 고집을 멈춥니다. 메시지는 이력을 단 채 옆길로 옮겨지고, 소비자는 풀려납니다. 독이 줄을 떠나는 순간 처리량이 제자리로 돌아옵니다. 잃은 것은 없습니다. 세워 둔 것입니다."
   - title: "거기 놓인 것들이 이유를 말해 줍니다"
-    text: "끝내 해석되지 않는 메시지, 재시도가 바닥난 메시지, 누가 닿기 전에 만료된 메시지가 저마다 이유를 달고 도착합니다. dead-letter queue는 쓰레기통이 아니라 이름표가 붙은 선반입니다."
+    text: "재시도가 바닥난 메시지 둘(하나는 금방, 하나는 느리게 실패한 것)과 누가 닿기 전에 만료된 메시지 하나가 저마다 이유를 달고 도착합니다. 데드 레터 큐는 쓰레기통이 아니라 이름표가 붙은 선반입니다."
   - title: "깊이는 경보이고, 재투입이 수리입니다"
-    text: "선반을 지켜봅니다. 늘어나는 개수는 지금 상류의 무언가가 잘못됐다는 뜻입니다. 원인을 고치고, 다시 돌 수 있는 것은 재투입하고, 정말 죽은 것은 기록을 남기고 일부러 버립니다. 썩게 두지 않습니다."
+    text: "선반을 지켜봅니다. 내려가지 않는 개수는 지금 상류의 무언가가 잘못됐다는 뜻입니다. 원인을 고치고, 다시 돌 수 있는 것은 재투입하고, 정말 죽은 것은 기록을 남기고 일부러 버립니다. 썩게 두지 않습니다."
 related:
   - label: Competing Consumers
     slug: competing-consumers
@@ -46,24 +46,24 @@ references:
 
 - 재시도가 있는 큐라면 전부 필요합니다. 없으면 결말은 둘뿐입니다. 독 메시지가 일감 앞에서 영원히 돌거나, 브로커가 조용히 버리거나입니다. 선반을 두는 편이 둘 다보다 낫습니다.
 - 재시도로는 절대 고쳐지지 않는 이유로 실패하는 메시지. 역직렬화되지 않는 본문, 누군가 지워 버린 행을 가리키는 참조, 이 소비자가 본 적 없는 계약 버전이 그렇습니다.
-- 기한이 있는 일감. 너무 오래 기다린 메시지는 늦게 실행하는 대신 옆으로 치워 두는 편이 낫습니다. TTL과 dead-letter 처리는 같은 장치를 양쪽에서 본 것입니다.
-- 그러지 않으면 무엇이 실패했는지 알아내려고 로그를 뒤져야 하는 모든 파이프라인. dead-letter queue는 "어젯밤에 뭔가 잘못됐다"를 셀 수 있고 걸러 볼 수 있고 다시 돌릴 수 있는 목록으로 바꿔 줍니다.
+- 기한이 있는 일감. 너무 오래 기다린 메시지는 늦게 실행하는 대신 옆으로 치워 두는 편이 낫습니다. TTL과 데드 레터 처리는 같은 장치를 양쪽에서 본 것입니다.
+- 그러지 않으면 무엇이 실패했는지 알아내려고 로그를 뒤져야 하는 모든 파이프라인. 데드 레터 큐는 "어젯밤에 뭔가 잘못됐다"를 셀 수 있고 걸러 볼 수 있고 다시 돌릴 수 있는 목록으로 바꿔 줍니다.
 
 ## 주의점
 
-- 전달 한도는 진짜 거래입니다. 크게 잡으면 절대 성공하지 못할 메시지에 소비자가 처리량을 태우고, 작게 잡으면 느린 의존 하나 때문에 멀쩡한 일감 한 묶음이 통째로 dead-letter로 갑니다. 한도는 백오프와 짝지어 둡니다. 그래야 재시도가 1초 안에 다 소모되지 않고 넓게 퍼집니다.
-- 아무도 보지 않는 dead-letter queue는 단계만 늘어난 조용한 유실입니다. 깊이와 가장 오래된 메시지의 나이에 경보를 걸고, 둘 다 디버그 출력이 아니라 일급 신호로 다룹니다. 개수가 늘고 있다면 지금 상류의 무언가가 망가졌다는 뜻입니다.
+- 전달 한도는 진짜 거래입니다. 크게 잡으면 절대 성공하지 못할 메시지에 소비자가 처리량을 태우고, 작게 잡으면 느린 의존 하나 때문에 멀쩡한 일감 한 묶음이 통째로 데드 레터로 갑니다. 한도는 백오프와 짝지어 둡니다. 그래야 재시도가 1초 안에 다 소모되지 않고 넓게 퍼집니다.
+- 아무도 보지 않는 데드 레터 큐는 단계만 늘어난 조용한 유실입니다. 깊이와 가장 오래된 메시지의 나이에 경보를 걸고, 둘 다 디버그 출력이 아니라 일급 신호로 다룹니다. 개수가 늘고 있다면 지금 상류의 무언가가 망가졌다는 뜻입니다.
 - 재투입은 설계상 중복입니다. 그 메시지는 앞선 시도에서 이미 일부 효과를 남겼을 수 있습니다. 같은 메시지를 두 번 받아도 결과가 달라지지 않는 소비자여야 재생을 안전하게 제공할 수 있고, 보통은 메시지 id와 이미 처리한 것의 기록이 그 조건입니다.
-- 각 메시지가 왜 dead-letter로 갔는지 기록하고, 왜 버렸는지도 기록합니다. 이유가 선반의 가치 전부이며, 메모 없는 폐기는 그냥 사라진 메시지와 구분되지 않습니다.
+- 각 메시지가 왜 데드 레터로 갔는지 기록하고, 왜 버렸는지도 기록합니다. 이유가 선반의 가치 전부이며, 메모 없는 폐기는 그냥 사라진 메시지와 구분되지 않습니다.
 - 재생 전에 원인을 고칩니다. 망가진 그 의존으로 다시 넣으면 선반만 또 채워지고, 두 번째 이력이 첫 번째 이력까지 읽기 어렵게 만듭니다.
-- dead-letter queue도 다른 큐와 같아서 자기 할당량과 자기 만료가 있습니다. 차도록 놔두면 더는 받지 않고, 그때는 실패 기록마저 정말로 사라집니다.
+- 이것은 다른 큐와 똑같은 큐가 아니고, 어느 브로커를 쓰느냐에 따라 "차도록 놔두는" 대가도 달라집니다. Service Bus의 데드 레터 큐는 부모 엔티티와 따로 만들거나 지우거나 크기를 잡을 수 없고, 그 안에서는 TTL이 적용되지 않으며, 아무도 치워 주지 않고, 거기 쌓인 것이 부모의 크기 할당량에 산입됩니다. 그래서 아무도 비우지 않는 선반이 본 큐가 새 전송을 거부하게 만듭니다. RabbitMQ는 대신 dead letter exchange를 거쳐 평범한 큐로 보내므로, 그 큐의 길이 한도와 TTL과 그 큐 자신의 데드 레터 대상을 모두 직접 정합니다.
 
 ## .NET에서는
 
-Azure Service Bus는 모든 큐와 구독에 dead-letter 하위 큐를 기본으로 붙여 줍니다. `MaxDeliveryCount`가 브로커 스스로 메시지를 그쪽으로 옮기는 시점을 정하고, `DeadLetterMessageAsync`는 재시도가 소용없다는 것을 이미 알 수 있을 때 소비자가 바로 옮기게 해 줍니다.
+Azure Service Bus는 모든 큐와 구독에 데드 레터 하위 큐를 기본으로 붙여 줍니다. `MaxDeliveryCount`가 브로커 스스로 메시지를 그쪽으로 옮기는 시점을 정하고, `DeadLetterMessageAsync`는 재시도가 소용없다는 것을 이미 알 수 있을 때 소비자가 바로 옮기게 해 줍니다.
 
 ```csharp
-// Entity setup: three deliveries, then the broker sets the message aside itself.
+// 엔티티 설정: 전달 세 번, 그다음은 브로커가 알아서 메시지를 옆으로 치웁니다.
 await admin.CreateQueueAsync(new CreateQueueOptions("orders")
 {
     MaxDeliveryCount = 3,
@@ -80,15 +80,15 @@ processor.ProcessMessageAsync += async args =>
     }
     catch (JsonException ex)
     {
-        // A retry cannot fix a payload that does not parse: shelve it now, with the reason.
+        // 파싱되지 않는 페이로드는 재시도로 고칠 수 없습니다. 이유를 달아 지금 선반에 올립니다.
         await args.DeadLetterMessageAsync(args.Message, "DeserializationFailed", ex.Message);
         return;
     }
 
-    await handler.HandleAsync(order, args.CancellationToken);   // throwing here just abandons the lock
+    await handler.HandleAsync(order, args.CancellationToken);   // 여기서 던지면 잠금을 놓아 버릴 뿐입니다
 };
 
-// Reading the shelf, and putting a message back once the cause is fixed.
+// 선반을 읽고, 원인을 고친 뒤 메시지를 되돌립니다.
 var dead = client.CreateReceiver("orders", new ServiceBusReceiverOptions
 {
     SubQueue = SubQueue.DeadLetter,
@@ -96,14 +96,22 @@ var dead = client.CreateReceiver("orders", new ServiceBusReceiverOptions
 
 await foreach (var message in dead.ReceiveMessagesAsync())
 {
-    var reason = message.DeadLetterReason;               // MaxDeliveryCountExceeded, TTLExpired, or yours
+    var reason = message.DeadLetterReason;               // MaxDeliveryCountExceeded, TTLExpiredException, 또는 직접 적은 이유
     var detail = message.DeadLetterErrorDescription;
 
-    if (!CanRunAgain(reason)) { await dead.CompleteMessageAsync(message); continue; }   // discarded, on purpose
+    if (!CanRunAgain(reason)) { await dead.CompleteMessageAsync(message); continue; }   // 의도적으로 버립니다
 
-    await sender.SendMessageAsync(new ServiceBusMessage(message)); // resubmit: a fresh delivery count
+    var resubmit = new ServiceBusMessage(message)
+    {
+        // 새 id를 씁니다. 중복 감지가 원래 id의 사본을 받아들인 뒤
+        // 조용히 버려 버리기 때문입니다.
+        MessageId = Guid.NewGuid().ToString(),
+    };
+    resubmit.ApplicationProperties["original-message-id"] = message.MessageId;
+
+    await sender.SendMessageAsync(resubmit);              // 재투입: 전달 횟수를 새로 시작합니다
     await dead.CompleteMessageAsync(message);
 }
 ```
 
-알아 둘 것이 두 가지 있습니다. `DeadLetterMessageAsync`는 이유와 설명을 받고, 그 값들은 메시지에 `DeadLetterReason`과 `DeadLetterErrorDescription`으로 도착합니다. 분류할 수 있는 선반과 하나씩 열어 봐야 하는 더미의 차이가 여기서 갈립니다. 그리고 재투입은 새 메시지입니다. `new ServiceBusMessage(message)`로 옛 메시지를 복사하면 본문과 애플리케이션 속성이 그대로 따라오고 직접 붙인 `MessageId`도 함께 오므로, 그 값으로 중복을 걸러 내는 소비자는 반복을 알아봅니다. RabbitMQ는 같은 일을 다르게 짭니다. 큐의 `x-dead-letter-exchange` 인자에 이름을 적은 dead letter exchange를 쓰고, 그 exchange가 보내는 큐는 평범한 큐입니다. 그래서 거기서는 재생이 그냥 또 한 번의 발행입니다.
+알아 둘 것이 두 가지 있습니다. `DeadLetterMessageAsync`는 이유와 설명을 받고, 그 값들은 메시지에 `DeadLetterReason`과 `DeadLetterErrorDescription`으로 도착합니다. 분류할 수 있는 선반과 하나씩 열어 봐야 하는 더미의 차이가 여기서 갈립니다. 그리고 재투입은 새 메시지입니다. `new ServiceBusMessage(message)`로 옛 메시지를 복사하면 본문과 애플리케이션 속성이 그대로 따라오지만, `MessageId`까지 함께 유지하는 것은 중복 감지가 켜진 엔티티에서는 함정입니다. 창이 열려 있는 동안(기본 10분, 길게는 7일) 사본은 보냈다고 보고된 뒤 버려지고, 원본은 이미 선반에서 완료된 뒤이기 때문입니다. 사본에는 새 id를 주고 옛 id는 애플리케이션 속성에 실어, 중복은 그 값으로 걸러 냅니다. 세션이 켜진 엔티티에서는 사본이 새 시퀀스 번호까지 받으므로 원래 자리가 아니라 세션 끝에 다시 합류합니다. RabbitMQ는 같은 일을 다르게 짭니다. 큐의 `x-dead-letter-exchange` 인자에 이름을 적은 dead letter exchange를 쓰고, 그 exchange가 보내는 큐는 평범한 큐입니다. 그래서 거기서는 재생이 그냥 또 한 번의 발행입니다.

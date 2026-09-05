@@ -1,6 +1,6 @@
 ---
 title: "Hedging"
-summary: "Hedging은 느린 호출의 두 번째 사본을 잠시 기다렸다가 다른 복제본으로 보내고, 먼저 돌아온 답을 씁니다."
+summary: "Hedging은 느린 호출의 두 번째 사본을 잠시 기다렸다가 다른 레플리카로 보내고, 먼저 돌아온 답을 씁니다."
 category: "요구사항과 품질 속성"
 scene: tail-latency
 sceneStep: 3

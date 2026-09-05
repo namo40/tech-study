@@ -36,27 +36,28 @@ references:
 ## 주의점
 
 - 이것은 진단 도구이지 APM이 아닙니다. 붙어 있는 동안 카운터를 표본으로 떠서 보여 줄 뿐이고, 이력을 저장하지도 임계값으로 경보를 울리지도 서비스 사이를 이어 주지도 세션이 끝난 뒤까지 남지도 않습니다. 추세와 경보와 보존은 여전히 백엔드를 갖춘 OpenTelemetry 같은 메트릭 파이프라인의 일입니다. 이 도구를 그 대신 쓰면 다음번에도 누군가 우연히 들여다볼 때까지 아무도 알아채지 못합니다.
-- 붙으려면 프로세스의 진단 포트에 접근할 수 있어야 하고, 컨테이너에서 걸리는 부분이 바로 그것입니다. 도구는 IPC 채널로 대상과 이야기하므로 같은 프로세스 네임스페이스와 같은 임시 디렉터리를 봐야 합니다. 쿠버네티스에서는 프로세스 네임스페이스를 공유하는 임시 디버그 컨테이너를 쓰거나 사이드카와 볼륨을 공유한다는 뜻이고, 다른 파드에 도구만 설치해 두면 아무것도 찾지 못합니다.
-- 기본 갱신 주기가 1초라서 짧은 스파이크는 표본 두 개 사이로 빠질 수 있습니다. 200밀리초짜리 멈춤은 표에 아예 안 나타날 수 있고, 1초로 평균 낸 비율은 그 안의 폭증을 감춥니다. 짧은 것을 쫓을 때는 간격을 줄이고, 질문이 수준이 아니라 개별 이벤트에 대한 것이라면 추적 도구로 옮겨 갑니다.
-- 카운터 이름은 정확해야 하고, 짐작으로 치면 한 세션을 날립니다. 공급자와 카운터 이름은 well-known counters 문서가 정본이고, 그럴듯하지만 틀린 이름을 치면 오류가 아니라 빈 열이 나옵니다. 런타임 쪽은 `System.Runtime`이 쥐고, 요청률과 큐 지표는 `Microsoft.AspNetCore.Hosting`이 쥐며, 무엇을 쓸 수 있는지는 도구의 `list` 명령이 나열해 줍니다.
+- 붙으려면 프로세스의 진단 포트에 접근할 수 있어야 하고, 컨테이너에서 걸리는 부분이 바로 그것입니다. 도구는 IPC 채널로 대상과 이야기하므로 같은 프로세스 네임스페이스와 같은 임시 디렉터리를 봐야 합니다. Kubernetes에서는 프로세스 네임스페이스를 공유하는 임시 디버그 컨테이너를 쓰거나 사이드카와 볼륨을 공유한다는 뜻이고, 다른 파드에 도구만 설치해 두면 아무것도 찾지 못합니다.
+- 갱신 주기는 정수 초이고 기본값이 1초인데, 그 1초가 하한이기도 합니다. 200밀리초짜리 멈춤은 표에 아예 안 나타날 수 있고, 1초로 평균 낸 비율은 그 안의 폭증을 감춥니다. 1초 아래로 내릴 설정은 없으므로, 수준이 아니라 개별 이벤트를 묻는 질문은 `dotnet-trace`의 몫입니다.
+- 카운터 이름은 정확해야 하고, 짐작으로 치면 한 세션을 날립니다. 도구의 명령은 `collect`, `monitor`, `ps` 셋뿐이고 어느 것도 이름을 나열해 주지 않으므로, 공급자와 카운터 이름은 내장 메트릭 문서와 well-known EventCounters 문서에서 가져와야 합니다. 그럴듯하지만 틀린 이름을 치면 오류가 아니라 빈 열이 나옵니다. 런타임 쪽은 `System.Runtime`이 쥐고 요청 수와 요청률은 `Microsoft.AspNetCore.Hosting`이 쥐며, 큐 길이인 `request-queue-length`와 `connection-queue-length`는 또 다른 공급자인 `Microsoft-AspNetCore-Server-Kestrel`에 있습니다.
 
 ## .NET에서는
 
-- 애플리케이션에는 아무것도 설치하지 않습니다. `dotnet tool install --global dotnet-counters`로 도구를 한 번 설치하고, 프로세스를 찾고, 기본 묶음을 그대로 받는 대신 원하는 공급자와 카운터를 직접 지목합니다.
+- 애플리케이션에는 아무것도 설치하지 않습니다. .NET 10 SDK에서는 `dnx dotnet-counters ...`가 도구를 내려받아 한 세션만 실행해 주므로 이미 그 기계에 있을 때 가장 짧은 길이고, 자주 꺼내 쓴다면 `dotnet tool install --global dotnet-counters`로 설치해 둡니다. 그다음 프로세스를 찾고, 기본 묶음을 그대로 받는 대신 원하는 공급자와 카운터를 직접 지목합니다.
 
 ```bash
-# List the processes the tool can attach to.
-dotnet-counters ps
+# 도구가 붙을 수 있는 프로세스를 나열한다.
+dnx dotnet-counters ps
 
-# Watch the runtime and the ASP.NET Core host side by side, twice a second.
-dotnet-counters monitor --process-id 1428 --refresh-interval 0.5 \
-  --counters System.Runtime[gc-heap-size,alloc-rate,threadpool-queue-length,exception-count],Microsoft.AspNetCore.Hosting[requests-per-second,current-requests]
+# 런타임과 ASP.NET Core 호스트를 1초마다 나란히 본다.
+dnx dotnet-counters monitor --process-id 1428 --refresh-interval 1 \
+  --counters System.Runtime[dotnet.gc.pause.time,dotnet.gc.heap.total_allocated,dotnet.thread_pool.queue.length,dotnet.exceptions],Microsoft.AspNetCore.Hosting
 
-# Same counters, written to a file for the twenty minutes the slowdown lasts.
-dotnet-counters collect --process-id 1428 --format csv --output slowdown.csv \
+# 같은 카운터를, 느려짐이 이어지는 20분 동안 파일에 쓴다.
+dnx dotnet-counters collect --process-id 1428 --format csv --output slowdown.csv \
   --counters System.Runtime,Microsoft.AspNetCore.Hosting
 ```
 
-- 위의 두 공급자는 서로 다른 질문에 답합니다. `System.Runtime`은 런타임이 자기 자신에게 무엇을 하고 있는지를 말해 주고, `Microsoft.AspNetCore.Hosting`은 애플리케이션이 무엇을 하라고 요구받고 있는지를 말해 줍니다. 요청률은 평평한데 큐 길이만 오르는 것과 둘이 함께 오르는 것은 아주 다른 이야기입니다.
+- 이름은 대상의 버전에 달려 있고, 빈 열이 나오는 가장 흔한 이유가 이것입니다. .NET 9 이상 프로세스에 붙으면 도구는 `System.Runtime` `Meter`의 이름(`dotnet.gc.pause.time`, `dotnet.gc.collections`, `dotnet.gc.last_collection.heap.size`, `dotnet.thread_pool.queue.length`, `dotnet.exceptions`)을 보여 주고, 애플리케이션이 .NET 8 이하일 때만 하이픈이 붙은 옛 EventCounter 이름(`time-in-gc`, `gc-heap-size`, `threadpool-queue-length`, `exception-count`)으로 물러납니다. 잘못된 체계로 적은 대괄호 목록은 오류가 아니라 그냥 빈 표입니다.
+- 위의 두 공급자는 서로 다른 질문에 답합니다. `System.Runtime`은 런타임이 자기 자신에게 무엇을 하고 있는지를 말해 주고, `Microsoft.AspNetCore.Hosting`은 애플리케이션이 무엇을 하라고 요구받고 있는지를 말해 줍니다. 요청률은 평평한데 스레드 풀 큐 길이만 오르는 것과 둘이 함께 오르는 것은 아주 다른 이야기입니다.
 - 우리가 만든 `Meter` 계측도 여기에 나옵니다. `System.Diagnostics.Metrics`로 만든 카운터나 히스토그램은 미터 이름으로 지목하므로, `--counters MyCompany.Orders`라고 쓰면 도메인 지표가 런타임 지표와 같은 표에 놓입니다. 백엔드에서 찾아 헤매기 전에 계측이 실제로 기록되고 있는지 빠르게 확인하는 방법입니다.
 - `--counters`는 공급자 이름만 받기도 하고 대괄호 목록을 붙인 공급자를 받기도 합니다. 공급자만 쓰면 그 기본 묶음이 나오고, 시작점으로는 괜찮습니다. 정작 궁금한 것이 숫자 세 개일 때 표를 읽을 수 있게 유지해 주는 쪽은 대괄호로 좁히는 방법입니다.

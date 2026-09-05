@@ -7,11 +7,11 @@ steps:
   - title: "タイムアウトがないと"
     text: "依存先が止まれば呼び出しも止まり、その後ろのスレッドと接続も止まります。ユーザーは 5 秒で諦めますが、サーバーはまだ待っています。"
   - title: "上限は 1 つではない"
-    text: "接続、1 回の試行、リクエスト全体は、それぞれ別の 3 つの制限です。それぞれを決めておけば、遅い応答は速いエラーになり、スレッドは仕事に戻ります。"
+    text: "接続、1 回の試行、リクエスト全体は、それぞれ別の 3 つの制限です。ここでは接続と試行の上限が発動し、全体の上限がリクエスト全体を抑えます。遅い応答は速いエラーになり、スレッドは仕事に戻ります。"
   - title: "残りの予算を下に渡す"
-    text: "リクエスト 1 件に 800 ms。データベースが 300 を使ったので、次の呼び出しは自分専用の新しいタイムアウトではなく、残りの 500 をもらいます。予算が入れ子にならずに足し算されると、deadline を超えます。"
+    text: "リクエスト 1 件に 800 ms。データベースが 300 を使ったので、次は新しいタイムアウトではなく残りの 500 をもらいます。2 番目に新しい 500 ms を与えて走らせると、deadline を 300 ms 過ぎます。"
   - title: "待つのをやめた仕事は取り消す"
-    text: "取り消しのないタイムアウトは、依存先に誰も受け取らない ghost work を残します。CancellationToken を最後まで流してこそ、打ち切りが本物になります。"
+    text: "取り消しのないタイムアウトは、依存先に誰のためでもない幽霊のような仕事を残します。CancellationToken を最後まで流してこそ、打ち切りが本物になります。"
 related:
   - label: Timeout
     slug: timeout
@@ -51,31 +51,32 @@ references:
 ## 注意点
 
 - 接続タイムアウト、試行ごとのタイムアウト、リクエスト全体のタイムアウト、アイドルタイムアウトは、それぞれ別の 4 つの設定です。どれか 1 つが他を兼ねると決めつけず、呼び出しごとに必要なものを設定します。
-- タイムアウトはリトライ方針ではありません。その呼び出しを再試行してよいか、するならどの予算の中でするかは別に決めます。
+- タイムアウトは再試行ポリシーではありません。その呼び出しを再試行してよいか、するならどの予算の中でするかは別に決めます。
 - すべての非同期呼び出しに `CancellationToken` を渡します。取り消さないタイムアウトは、無駄を呼び出し側から依存先へ移すだけです。
 - 短すぎるタイムアウトは、ごく普通のばらつきだけで健全な呼び出しを失敗させます。正常な依存先の p99 から始めて、余裕を足します。
 - 「タイムアウトなし」も、数値を決めるのと同じく 1 つの決定です。多くのクライアントには既定値があるので、頼る前にその値が実際にいくつなのかを確認します。
+- リクエストタイムアウトのミドルウェアは、Kestrel 自身のタイムアウトと同じく、デバッガーが接続されているあいだは発動しません。デバッガーなしで試してください。さもないと「うちのタイムアウトは効かない」という結論は、デバッガーについての結論になります。
 
 ## .NET では
 
 リクエスト全体に deadline を 1 つ置き、その下のすべての呼び出しは自分専用の新しい上限ではなく残りの予算で縛ります。
 
 ```csharp
-// One deadline for the whole request (ASP.NET Core request timeouts middleware).
+// リクエスト全体に deadline を 1 つ (ASP.NET Core のリクエストタイムアウトのミドルウェア)。
 builder.Services.AddRequestTimeouts(options =>
     options.DefaultPolicy = new RequestTimeoutPolicy { Timeout = TimeSpan.FromMilliseconds(800) });
 app.UseRequestTimeouts();
 
 app.MapGet("/checkout/{id:int}", async (int id, ShopDbContext db, HttpClient pricing, HttpContext http) =>
 {
-    var ct = http.RequestAborted;                        // cancelled on timeout or client disconnect
+    var ct = http.RequestAborted;                        // タイムアウトかクライアントの切断で取り消される
     var started = Stopwatch.GetTimestamp();
 
-    var order = await db.Orders.FindAsync([id], ct);     // token flows into the database call
+    var order = await db.Orders.FindAsync([id], ct);     // トークンがデータベースの呼び出しまで流れる
 
     var left = TimeSpan.FromMilliseconds(800) - Stopwatch.GetElapsedTime(started);
     using var pricingCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-    pricingCts.CancelAfter(left);                        // what is left, not a fresh 800
+    pricingCts.CancelAfter(left);                        // 新しい 800 ではなく、残りの予算
 
     var price = await pricing.GetFromJsonAsync<Price>($"/prices/{order!.Sku}", pricingCts.Token);
     return Results.Ok(new { order.Id, price });

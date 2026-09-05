@@ -1,6 +1,6 @@
 ---
 title: "Value Object"
-summary: "내용으로 같음이 정의되는 불변 객체입니다. id도 이력도 repository도 없습니다. 고치는 대신 새 값으로 교체하고, 그것을 실어 나르는 엔티티의 칼럼으로 저장됩니다."
+summary: "내용으로 같음이 정의되는 불변 객체입니다. id도 이력도 repository도 없습니다. 고치는 대신 새 값으로 교체하고, 그것을 실어 나르는 엔티티의 컬럼으로 저장됩니다."
 category: ".NET 데이터 접근"
 scene: repository
 sceneStep: 4
@@ -32,7 +32,7 @@ references:
     url: https://learn.microsoft.com/en-us/ef/core/modeling/value-conversions
 ---
 
-장면의 4단계는 `10 USD` 칩 두 개를 판에 올리고 `same` 판정을 냅니다. 이어서 누군가 하나를 고치려 하는데, 칩이 수정되는 대신 버려지고 그 자리에 여전히 `10 USD`를 든 새 칩이 나타나며, 판정은 그대로 `same`입니다. 이 두 비트가 정의의 전부입니다. 같음은 내용이고, 변경은 교체입니다.
+장면의 4단계는 `10 USD` 칩 두 개를 판에 올리고 `same` 판정을 냅니다. 이어서 누군가 하나를 고치려 하는데, 칩이 수정되는 대신 버려지고 그 자리에 여전히 `10 USD`를 든 새 칩이 나타나며, 판정은 그대로 `same`입니다. 이 두 장면이 정의의 전부입니다. 같음은 내용이고, 변경은 교체입니다.
 
 차이를 체감하는 가장 쉬운 길은 반대쪽이 왜 이상한지 물어보는 것입니다. 10달러 두 개는 "우연히 같은 값을 가진 서로 다른 10달러 둘"이 아닙니다. 어느 쪽이 어느 쪽인지에 대한 사실 자체가 없습니다. 값에는 그것이 무엇인지 말고는 아무것도 없기 때문입니다. 특정한 10달러의 이력을 묻는 것은 범주 착오이지만, 특정한 고객의 이력을 묻는 것은 그렇지 않습니다. 값 객체에 id가 없는 이유가 이것입니다. id가 가리킬 대상이 애초에 없습니다.
 
@@ -51,22 +51,22 @@ public readonly record struct Money(decimal Amount, string Currency)
 
     public Money Add(Money other) =>
         other.Currency == Currency
-            ? this with { Amount = Amount + other.Amount }   // a new value, not a change
+            ? this with { Amount = Amount + other.Amount }   // 변경이 아니라 새 값입니다
             : throw new InvalidOperationException("mixed currencies");
 }
 ```
 
-저장도 같은 규칙을 따릅니다. 신원이 없으니 값을 걸어 둘 자리가 없고, 그래서 그것을 실어 나르는 엔티티의 일부로 저장됩니다. `OwnsOne`은 소유자 테이블의 칼럼들로 넣어 주며, `Money` 테이블도 없고 그것만 따로 불러올 방법도 없습니다. "repository가 없다"를 모델링으로 옮기면 이 모습입니다.
+저장도 같은 규칙을 따릅니다. 신원이 없으니 값을 걸어 둘 자리가 없고, 그래서 그것을 실어 나르는 엔티티의 일부로 저장됩니다. `ComplexProperty`가 소유자 테이블의 컬럼들로 넣어 주며, `Money` 테이블도 없고 그것만 따로 불러올 방법도 없습니다. "repository가 없다"를 모델링으로 옮기면 이 모습입니다. 이웃한 도구인 `OwnsOne`은 소유 *엔티티*를 매핑합니다. 키가 있고, 그 자체로 추적되며, 참조 타입이어야 하므로 `readonly record struct`는 소유 타입이 될 수 없습니다.
 
 ```csharp
 model.Entity<Order>(order =>
 {
-    order.OwnsOne(o => o.Total);      // Total_Amount, Total_Currency on Orders
-    order.OwnsMany(o => o.Lines);     // lines have no life outside the order
+    order.ComplexProperty(o => o.Total);   // Orders의 Total_Amount, Total_Currency
+    order.OwnsMany(o => o.Lines);          // 라인은 주문 밖에서는 생명이 없습니다
 });
 ```
 
-값이 정말 칼럼 하나라면 소유 타입보다 값 변환이 가볍습니다. 도메인은 타입을 지키고 데이터베이스는 원시 값을 지킵니다.
+값이 정말 컬럼 하나라면 복합 타입보다 값 변환이 가볍습니다. 도메인은 타입을 지키고 데이터베이스는 원시 값을 지킵니다.
 
 ```csharp
 model.Entity<Customer>()
@@ -74,4 +74,4 @@ model.Entity<Customer>()
      .HasConversion(email => email.Value, text => EmailAddress.Of(text));
 ```
 
-두 가지는 챙겨 두면 좋습니다. 첫째, EF Core는 소유된 값을 소유자를 통해 추적하므로 새 인스턴스를 통째로 대입하는 것(`order.Total = order.Total.Add(line.Amount)`)이 곧 갱신입니다. 바꿀 것도 따로 저장할 것도 없습니다. 둘째, `record`는 값에는 옳고 엔티티에는 그릅니다. 두 페이지의 경계가 정확히 거기입니다. 엔티티에 구조적 동등성을 주면 오늘 이름이 같은 서로 다른 두 고객이 같은 고객이 되고, 이사한 뒤의 같은 고객은 남남이 됩니다.
+두 가지는 챙겨 두면 좋습니다. 첫째, EF Core는 값을 소유자를 통해 추적하므로 새 인스턴스를 통째로 대입하는 것(`order.Total = order.Total.Add(line.Amount)`)이 곧 갱신입니다. 바꿀 것도 따로 저장할 것도 없습니다. 둘째, `record`는 값에는 옳고 엔티티에는 그릅니다. 두 페이지의 경계가 정확히 거기입니다. 엔티티에 구조적 동등성을 주면 오늘 이름이 같은 서로 다른 두 고객이 같은 고객이 되고, 이사한 뒤의 같은 고객은 남남이 됩니다.

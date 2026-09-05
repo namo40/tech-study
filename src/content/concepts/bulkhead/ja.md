@@ -11,7 +11,7 @@ steps:
   - title: "Bulkhead"
     text: "隔壁がプールを分けます。B は相変わらず自分の 3 スロットを埋め、それ以上は素早く失敗しますが、B の障害は B 側にとどまります。A は流れ続けます。"
   - title: "タイムアウトがスロットを戻します"
-    text: "止まった呼び出しがスロットを永久に握っていてはいけません。区画ごとに Timeout を組み合わせ、その依存先の予算に合わせて大きさを決めれば、B はほかの誰にも気づかれずに回復します。"
+    text: "止まった呼び出しがスロットを永久に握っていてはいけません。その区画にタイムアウトを組み合わせ、その依存先の予算に合わせて大きさを決めれば、B はほかの誰にも気づかれずに回復します。"
 related:
   - label: Concurrency Limiter
     slug: concurrency-limiter
@@ -48,7 +48,7 @@ references:
 
 ## 注意点
 
-- Timeout のない Bulkhead は問題を先送りするだけです。止まった呼び出しは Timeout が解放するまでスロットを握り続けます。
+- タイムアウトのない Bulkhead は問題を先送りするだけです。止まった呼び出しはタイムアウトが解放するまでスロットを握り続けます。
 - 区画を小さくしすぎると、平常時に容量を無駄にします。実際に測った同時実行数から始め、余裕を足します。
 - スロットは HTTP 呼び出しだけではありません。スレッドプール、データベース接続プール、キューにも同じ分離が必要です。
 - 区画が埋まったら素早く失敗させ、その拒否をメトリクスに出します。埋まった区画は開いた Circuit Breaker と同じく、早い段階の警告です。
@@ -63,8 +63,8 @@ builder.Services
         client.BaseAddress = new Uri("https://search.internal"))
     .AddResilienceHandler("search-bulkhead", pipeline =>
     {
-        // Search gets its own compartment: 20 calls in flight,
-        // 10 waiting, everything beyond that fails fast.
+        // 検索は自分の区画を持ちます。同時に 20 呼び出し、待ちが 10、
+        // それを超えたものは素早く失敗します。
         pipeline.AddConcurrencyLimiter(permitLimit: 20, queueLimit: 10);
         pipeline.AddTimeout(TimeSpan.FromSeconds(2));
     });
@@ -79,4 +79,4 @@ builder.Services
     });
 ```
 
-`SemaphoreSlim` を使えば、外向きの呼び出しだけでなく任意のコード区間にも同じ区画を設けられます。より強い分離はプロセス、コンテナ、データベースプールを分けることで得られ、1 つのプロセス内の制限だけではそこまで届きません。
+`SemaphoreSlim` を使えば、外向きの呼び出しだけでなく任意のコード区間にも同じ区画を設けられます。より強い分離はプロセス、コンテナー、データベースプールを分けることで得られ、1 つのプロセス内の制限だけではそこまで届きません。

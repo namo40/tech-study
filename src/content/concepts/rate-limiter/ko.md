@@ -9,9 +9,9 @@ steps:
   - title: "버스트"
     text: "가득 찬 버킷은 크기만큼의 버스트를 받아 줍니다. 버킷이 비면 그 뒤의 요청은 모두를 느리게 만드는 대신 429로 거부됩니다."
   - title: "Retry-After"
-    text: "429 응답에는 언제 다시 오면 되는지가 담깁니다. 이를 지키는 클라이언트는 리필 뒤에 돌아오고, 버스트는 고른 흐름으로 바뀝니다."
+    text: "429 응답에는 언제 다시 오면 되는지가 담깁니다. 이를 지키는 클라이언트는 리필 뒤에 돌아오고, 이번에는 통과합니다."
   - title: "파티션"
-    text: "제한은 클라이언트, 테넌트, 엔드포인트 같은 키별로 둡니다. 시끄러운 호출자 하나는 자기 버킷만 비웁니다. 인스턴스가 여럿이면 버킷을 공유 저장소에 둡니다."
+    text: "제한은 클라이언트, 테넌트, 엔드포인트 같은 키별로 둡니다. 시끄러운 호출자 하나는 자기 버킷만 비우고, 나머지는 각자의 토큰을 그대로 지킵니다."
 related:
   - label: Token Bucket
     slug: token-bucket
@@ -84,9 +84,12 @@ builder.Services.AddRateLimiter(options =>
 });
 
 var app = builder.Build();
+app.UseAuthentication();   // 이것이 없으면 User가 비어 모든 호출자가 버킷 하나를 나눠 씁니다
 app.UseRateLimiter();
 app.MapGet("/orders", () => Results.Ok())
    .RequireRateLimiting("per-client");
 ```
 
-`System.Threading.RateLimiting`에는 fixed window, sliding window, token bucket, concurrency limiter가 모두 들어 있습니다. 인스턴스가 여럿일 때는 제한을 그 앞단이나 공유 상태에 두어야 하므로, 프로세스마다 두는 limiter 대신 API gateway나 Redis 기반 limiter를 씁니다.
+`User`에서 뽑는 키는 인증이 끝난 뒤에야 존재하므로 `UseRateLimiter`는 `UseAuthentication` 뒤에 둡니다. `UseRouting`을 직접 호출하는 앱이라면 그 뒤이기도 한데, 정책이 엔드포인트마다 붙기 때문입니다. 그 시점에도 익명인 호출자는 모두 `"anonymous"` 버킷 하나를 나눠 쓰므로, 클라이언트 IP나 API 키처럼 그들이 실제로 가진 것으로 나눕니다.
+
+`System.Threading.RateLimiting`에는 Fixed Window, Sliding Window, Token Bucket, Concurrency Limiter가 모두 들어 있습니다. 인스턴스가 여럿일 때는 제한을 그 앞단이나 공유 상태에 두어야 하므로, 프로세스마다 두는 limiter 대신 API gateway나 Redis 기반 limiter를 씁니다.

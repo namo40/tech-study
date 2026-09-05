@@ -35,8 +35,8 @@ references:
 
 - 막힘은 사라진 것이 아니라 한 층 아래로 내려갔습니다. 모든 스트림은 TCP 연결 하나를 타고, TCP는 바이트를 순서대로 올려 주며, 세그먼트 하나가 유실되면 재전송될 때까지 모든 스트림이 멈춥니다. 깨끗한 데이터센터 회선에서는 보이지 않지만, 손실이 잦은 모바일 회선에서는 HTTP/1.1 연결 여러 개보다 느려질 수도 있습니다. HTTP/3이 존재하고 QUIC 위에서 도는 이유가 정확히 이것이고, head-of-line-blocking 페이지가 그 과정을 짚어 줍니다.
 - 협상이 핸드셰이크 안에서 일어나기 때문에 실무에서 HTTP/2는 곧 TLS입니다. ALPN이 TLS `ClientHello` 단계에서 `h2`를 알리고 서버가 그것을 고르므로 왕복이 더 들지 않습니다. 평문 `h2c`는 명세에 있지만 주요 브라우저 중 구현한 곳이 없고 RFC 9113은 `Upgrade`를 통한 경로를 폐기했습니다. 그래서 평범한 `http://` 엔드포인트는 협상 없이 HTTP/2를 쓰도록 양쪽 모두에 설정을 넣어야 합니다.
-- 서버 푸시는 죽은 기능이니 그 위에 무엇을 얹지 마세요. 초기 명세에 있었지만 매번 캐시와 부딪쳤고 캐시를 이길 만큼 안정적으로 이득을 내지 못했습니다. 브라우저는 지원을 걷어냈고 Kestrel은 애초에 구현하지 않았습니다. 푸시가 겨누던 문제에 남은 답은 `103` 응답에 실리는 early hints입니다.
-- 흐름 제어 창은 하나가 아니라 둘이고 둘 다 기본값이 낮습니다. 스트림마다 창이 있고 연결에도 따로 창이 있으며 명세상 각각 64 KiB에서 시작합니다. 둘 중 하나라도 바닥나면 보내는 쪽은 상대가 `WINDOW_UPDATE`를 보낼 때까지 멈춥니다. 이것을 체감하는 트래픽은 큰 업로드와 오래 열려 있는 서버 스트림입니다. 부하 중에 천장을 발견하지 말고 창을 의식적으로 올려 두는 것이 답입니다.
+- 서버 푸시는 죽은 기능이니 그 위에 무엇을 얹지 않습니다. 초기 명세에 있었지만 매번 캐시와 부딪쳤고 캐시를 이길 만큼 안정적으로 이득을 내지 못했습니다. 브라우저는 지원을 걷어냈고 Kestrel은 애초에 구현하지 않았습니다. 푸시가 겨누던 문제에 남은 답은 `103` 응답에 실리는 early hints입니다.
+- 흐름 제어 창은 하나가 아니라 둘이고 둘 다 기본값이 낮습니다. 스트림마다 창이 있고 연결에도 따로 창이 있으며 명세상 각각 65,535바이트(64 KiB에 조금 못 미치는 값)에서 시작합니다. 둘 중 하나라도 바닥나면 보내는 쪽은 상대가 `WINDOW_UPDATE`를 보낼 때까지 멈춥니다. 이것을 체감하는 트래픽은 큰 업로드와 오래 열려 있는 서버 스트림입니다. 부하 중에 천장을 발견하지 말고 창을 의식적으로 올려 두는 것이 답입니다.
 
 ## .NET에서는
 
@@ -46,19 +46,20 @@ references:
 ```csharp
 var handler = new SocketsHttpHandler
 {
-    // Without this, one client holds one HTTP/2 connection per endpoint and
-    // queues once the peer's stream limit is reached.
+    // 이것이 없으면 클라이언트 하나가 엔드포인트마다 HTTP/2 연결 하나만 쥐고,
+    // 상대의 스트림 한도에 닿는 순간 줄을 세웁니다.
     EnableMultipleHttp2Connections = true,
 };
 
 var client = new HttpClient(handler)
 {
     DefaultRequestVersion = HttpVersion.Version20,
-    // RequestVersionOrHigher silently falls back to HTTP/1.1; RequestVersionExact
-    // turns a failed negotiation into an exception instead of a quiet downgrade.
+    // 기본값인 RequestVersionOrLower는 조용히 HTTP/1.1로 내려갑니다.
+    // RequestVersionExact(또는 RequestVersionOrHigher)는 협상 실패를
+    // 조용한 다운그레이드 대신 예외로 만듭니다.
     DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact,
 };
 ```
 
-- 알아 둘 한도 값은 `options.Limits.Http2`에 있습니다. `MaxStreamsPerConnection`은 기본값이 100이고 넓게 뻗는 클라이언트가 가장 먼저 부딪치는 숫자입니다. `InitialConnectionWindowSize`와 `InitialStreamWindowSize`는 기본값이 각각 128 KiB와 96 KiB이고, `HeaderTableSize`는 서버가 연결마다 유지하는 HPACK 동적 표의 크기를 제한합니다.
-- TLS를 엣지에서 끊고 클러스터 안에서 도는 gRPC 서비스라면 평문 엔드포인트에 `HttpProtocols.Http2`를 명시합니다. 거기에는 프로토콜을 합의해 줄 ALPN이 없으므로 엔드포인트에 직접 알려 줘야 하고, 그쪽으로 부르는 클라이언트에 `RequestVersionExact`가 필요한 이유도 같습니다.
+- 알아 둘 한도 값은 `options.Limits.Http2`에 있습니다. `MaxStreamsPerConnection`은 기본값이 100이고 팬아웃(fan-out)하는 클라이언트가 가장 먼저 부딪치는 숫자입니다. `InitialConnectionWindowSize`와 `InitialStreamWindowSize`는 기본값이 각각 1 MiB와 768 KiB이고, `HeaderTableSize`는 서버가 연결마다 유지하는 HPACK 동적 표의 크기를 제한합니다.
+- 엣지에서 TLS를 종료하고 클러스터 안에서 도는 gRPC 서비스라면 평문 엔드포인트에 `HttpProtocols.Http2`를 명시합니다. 거기에는 프로토콜을 합의해 줄 ALPN이 없으므로 엔드포인트에 직접 알려 줘야 하고, 그쪽으로 부르는 클라이언트에 `RequestVersionExact`가 필요한 이유도 같습니다.

@@ -48,8 +48,8 @@ references:
 
 ## いつ使うか
 
-- プロセス境界を越えるリクエストすべてに使います。gateway からサービスへ、サービスからサービスへ、キューを経て worker へ、といった経路です。1 つのログファイルが話の全体を持てなくなった時点から、それを組み立て直す仕事が tracing です。
-- レイテンシーの調査に使います。waterfall は「どのホップか」に数秒で答えますが、ログファイル 3 つと共通のタイムスタンプでは半日かかり、しかも精度が出ません。
+- プロセス境界を越えるリクエストすべてに使います。gateway からサービスへ、サービスからサービスへ、キューを経て worker へ、といった経路です。1 つのログファイルが話の全体を持てなくなった時点から、それを組み立て直す仕事がトレーシングです。
+- レイテンシの調査に使います。waterfall は「どのホップか」に数秒で答えますが、ログファイル 3 つと共通のタイムスタンプでは半日かかり、しかも精度が出ません。
 - 呼び出し連鎖をまたぐエラーの原因特定に使います。失敗を報告したサービスが失敗を起こしたサービスであることはまれです。
 - 依存関係の地図とサービスレベル目標を作るときに使います。どちらもすでに記録している span からそのまま得られるので、専用の計装は要りません。
 
@@ -64,7 +64,7 @@ references:
 
 ## .NET では
 
-.NET は tracing を基底クラスライブラリに置いています。`System.Diagnostics` の `Activity` と `ActivitySource` が API で、OpenTelemetry はその上に載る構成とエクスポートの層です。そのため BCL しか参照しないライブラリも、そのまま trace に現れます。
+.NET はトレーシングを基底クラスライブラリに置いています。`System.Diagnostics` の `Activity` と `ActivitySource` が API で、OpenTelemetry はその上に載る構成とエクスポートの層です。そのため BCL しか参照しないライブラリも、そのまま trace に現れます。
 
 ```csharp
 builder.Services.AddOpenTelemetry()
@@ -75,19 +75,21 @@ builder.Services.AddOpenTelemetry()
         .AddSource("Shop.Orders")
         .AddOtlpExporter());
 
-// A custom span inside the built-in request span.
+// 組み込みのリクエスト span の中に置く独自の span。
 private static readonly ActivitySource Source = new("Shop.Orders");
 
 public async Task PlaceAsync(Order order, CancellationToken ct)
 {
-    using var activity = Source.StartActivity("place order");
+    using var activity = Source.StartActivity("place order", ActivityKind.Producer);
     activity?.SetTag("order.id", order.Id);
     Baggage.SetBaggage("tenant", order.TenantId);
 
-    // Carry the context on the message so the consumer continues the same trace.
+    // コンシューマーが同じ trace を続けられるよう、コンテキストをメッセージに載せる。
+    // 誰も聞いていないときは StartActivity が null を返すので、ここで参照をたどってはいけない。
+    var spanContext = activity?.Context ?? Activity.Current?.Context ?? default;
     var headers = new Dictionary<string, string>();
     Propagators.DefaultTextMapPropagator.Inject(
-        new PropagationContext(activity!.Context, Baggage.Current), headers,
+        new PropagationContext(spanContext, Baggage.Current), headers,
         (carrier, key, value) => carrier[key] = value);
     await bus.PublishAsync(new OrderPlaced(order.Id), headers, ct);
 }
@@ -97,4 +99,4 @@ public async Task PlaceAsync(Order order, CancellationToken ct)
 
 メッセージを受け取る側では `Propagators.DefaultTextMapPropagator.Extract` でヘッダーを読み戻し、`ActivityKind.Consumer` で activity を開始します。その処理がキューに入れたリクエストから本当に切り離されているなら、取り出したコンテキストは親ではなく link として渡してください。MassTransit や Azure Service Bus SDK のようなライブラリは inject と extract を自分で行うので、残る仕事は独自のエンベロープ形式でヘッダーを飲み込まないことだけです。
 
-サンプリングはエクスポーターの設定の隣で決めます。`SetSampler(new TraceIdRatioBasedSampler(0.1))` はプロセス内で行う head サンプリングで、エラーと外れ値を残すという判断は OpenTelemetry Collector の tail サンプリングプロセッサーが担う場所です。trace の全体を見たのはコレクターだけだからです。
+サンプリングはエクスポーターの設定の隣で決めます。`SetSampler(new ParentBasedSampler(new TraceIdRatioBasedSampler(0.1)))` がプロセス内で行う head サンプリングで、親に従う外側の包みが、根ではないサービスに呼び出し元の決定を振り直させないためのものです。エラーと外れ値を残すという判断は OpenTelemetry Collector の tail サンプリングプロセッサーが担う場所です。trace の全体を見たのはコレクターだけだからです。

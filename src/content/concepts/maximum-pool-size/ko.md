@@ -1,7 +1,7 @@
 ---
 title: "Maximum Pool Size"
 summary: "Maximum Pool Size는 한 프로세스가 하나의 연결 문자열로 열 수 있는 연결 수를 제한합니다. 데이터베이스의 전체 예산을 인스턴스마다 나눠 주는 방법입니다."
-category: "Pool과 자원 관리"
+category: "Pool과 리소스 관리"
 scene: database-connection-pool
 sceneStep: 3
 related:

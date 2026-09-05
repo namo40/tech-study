@@ -1,17 +1,17 @@
 ---
 title: "Database Connection Pool"
 summary: "Connection Pool은 열어 둔 데이터베이스 연결 몇 개를 빌려주어 요청이 느린 핸드셰이크를 건너뛰게 합니다. 풀의 크기는 곧 동시성 예산입니다. 모든 연결이 사용 중이면 다음 요청은 기다리고, 너무 오래 기다리면 실패합니다."
-category: "Pool과 자원 관리"
+category: "Pool과 리소스 관리"
 scene: database-connection-pool
 steps:
   - title: "여는 것은 느립니다"
-    text: "새 연결에는 TCP 핸드셰이크, TLS, 로그인이 따릅니다. 풀은 그 비용을 한 번만 치르고 연결을 열어 둡니다."
+    text: "새 연결에는 TCP 핸드셰이크, TLS, 로그인이 따릅니다. 풀은 그 비용을 연결마다 한 번만 치르고 그 연결을 열어 둡니다."
   - title: "재사용"
     text: "모든 요청이 열린 연결을 빌려 쓰고 돌려줍니다. 연결 둘이 흐름 전체를 감당하고, 데이터베이스는 새 로그인을 한 번도 보지 않습니다."
   - title: "고갈"
     text: "모든 연결이 사용 중이면 새 요청은 줄을 섭니다. 풀의 최대치는 데이터베이스에 대한 동시성 예산이고, Timeout을 넘겨 기다리면 실패합니다."
   - title: "늦게 열고 빨리 돌려줍니다"
-    text: "애플리케이션이 다른 일을 하는 동안 쥐고 있는 연결은 아무도 못 쓰는 연결입니다. 쿼리 동안만 빌리고 곧바로 돌려주면 같은 넷으로 훨씬 많이 처리합니다."
+    text: "애플리케이션이 다른 일을 하는 동안 쥐고 있는 연결은 아무도 못 쓰는 연결입니다. 쥐고 있는 슬롯은 놀고, 나머지가 일을 다 합니다. 쿼리 동안만 빌리고 곧바로 돌려줍니다."
 related:
   - label: ADO.NET Connection Pooling
     slug: ado-net-connection-pooling
@@ -59,14 +59,14 @@ references:
 ## .NET에서는
 
 ```csharp
-// Pool per connection string, per process. Size it from the database's budget.
+// 연결 문자열마다, 프로세스마다 풀 하나. 크기는 데이터베이스의 예산에서 정합니다.
 const string Cs =
     "Server=db;Database=shop;User Id=app;Password=...;" +
     "Min Pool Size=2;Max Pool Size=20;Connect Timeout=5;Connection Lifetime=300";
 
 public async Task<Order?> FindAsync(int id, CancellationToken ct)
 {
-    // Open late: the connection is borrowed here...
+    // 늦게 엽니다. 연결은 여기서 빌려 옵니다...
     await using var connection = new SqlConnection(Cs);
     await connection.OpenAsync(ct);
 
@@ -76,7 +76,7 @@ public async Task<Order?> FindAsync(int id, CancellationToken ct)
 
     await using var reader = await command.ExecuteReaderAsync(ct);
     return await reader.ReadAsync(ct) ? new Order(reader.GetInt32(0), reader.GetDecimal(1)) : null;
-    // ...and returned to the pool here, when the using block ends.
+    // ...그리고 using 블록이 끝나는 여기서 풀로 돌아갑니다.
 }
 ```
 

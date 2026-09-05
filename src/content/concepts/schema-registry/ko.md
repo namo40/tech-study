@@ -36,11 +36,11 @@ references:
 - 레지스트리는 검사기이지 거버넌스가 아닙니다. 변경이 기계적으로 호환된다는 것은 알려 주지만, 새로 넣은 필드가 다른 네 팀이 생각하는 그 의미인지는 알려 주지 못하고, 누가 subject를 진화시켜도 되는지도 정해 주지 않습니다. 소유와 검토와 이름 규칙은 여전히 사람의 결정이고, 주인 없는 레지스트리는 아무도 지우기 무서워하는 subject의 무덤이 됩니다.
 - 호환성 모드가 업그레이드 순서를 결정하므로 의식적으로 고릅니다. `BACKWARD`에서는 새 스키마가 옛 데이터를 읽을 수 있으므로 소비자를 먼저 올리고, 그 뒤로 소비자가 두 모양을 다 다루는 동안 생산자가 따라옵니다. `FORWARD`에서는 옛 소비자가 새 데이터를 읽을 수 있으므로 생산자가 먼저 가도 됩니다. 순서를 반대로 배포하면 그 모드가 지켜 주던 규칙을 스스로 깨는 것이고, 운영 문서에 적어 둘 것도 바로 이 모드입니다.
 - 이제 레지스트리가 발행 경로 위에 있고, 레지스트리의 장애가 곧 우리 장애입니다. 생산자와 소비자가 id로 스키마를 되찾으므로 그 조회를 다른 원격 의존성과 똑같이 다룹니다. 스키마 id는 불변이니 해석한 스키마를 프로세스가 사는 동안 캐시해 두고, 시작 시점에 레지스트리가 닿지 않으면 즉시 실패할지 캐시 사본으로 돌지를 미리 정해 둡니다.
-- 고른 형식이 앞으로 함께 살아갈 진화 규칙을 정합니다. Avro는 기본값과 별칭을 추적해서 해석 규칙이 가장 정밀하고, protobuf는 필드 번호를 정체성으로 삼고 재사용을 금지하며, JSON 스키마는 가장 읽기 좋고 가장 헐겁습니다. 실무에서 이것은 되돌리기 어려운 선택이니 팀의 익숙함만으로 고르지 말고 호환성 모드를 함께 보고 정하세요.
+- 고른 형식이 앞으로 함께 살아갈 진화 규칙을 정합니다. Avro는 기본값과 별칭을 추적해서 해석 규칙이 가장 정밀하고, protobuf는 필드 번호를 정체성으로 삼고 재사용을 금지하며, JSON Schema는 가장 읽기 좋고 가장 헐겁습니다. 실무에서 이것은 되돌리기 어려운 선택이니 팀의 익숙함만으로 고르지 말고 호환성 모드를 함께 보고 정합니다.
 
 ## .NET에서는
 
-- Azure에서는 레지스트리가 Event Hubs 옆에 있고, 레지스트리와 이야기하는 쪽은 직렬화기입니다. `Azure.Data.SchemaRegistry`와 Avro 직렬화기가 스키마를 등록하거나 되찾아 주고 id를 메시지 속성에 넣어 주므로, 발행하는 코드는 계속 타입이 있는 객체를 보냅니다.
+- Azure에서는 레지스트리가 Event Hubs 옆에 있고, 레지스트리와 이야기하는 쪽은 직렬화기입니다. `Azure.Data.SchemaRegistry`와 `Microsoft.Azure.Data.SchemaRegistry.ApacheAvro`의 Avro 직렬화기가 스키마를 등록하거나 되찾아 주고 id를 메시지 속성에 넣어 주므로, 발행하는 코드는 계속 타입이 있는 객체를 보냅니다.
 
 ```csharp
 var registry = new SchemaRegistryClient(
@@ -49,11 +49,13 @@ var registry = new SchemaRegistryClient(
 var serializer = new SchemaRegistryAvroSerializer(
     registry,
     groupName: "orders",
-    // Registering from the producer is convenient in development and usually
-    // wrong in production: schema changes should be a reviewed deployment.
+    // 프로듀서에서 등록하는 것은 개발 중에는 편하지만 운영에서는 대개
+    // 잘못된 선택입니다. 스키마 변경은 검토를 거친 배포여야 합니다.
     new SchemaRegistryAvroSerializerOptions { AutoRegisterSchemas = false });
 
-var message = (EventData)await serializer.SerializeAsync<EventData, OrderPlaced>(
+// OrderPlaced는 avrogen이 스키마에서 만들어 낸 클래스라 ISpecificRecord를
+// 구현합니다. GenericRecord도 여기서 동작하지만 평범한 POCO는 안 됩니다.
+EventData message = await serializer.SerializeAsync<EventData, OrderPlaced>(
     new OrderPlaced { Id = id, Total = total });
 await producer.SendAsync(new[] { message });
 ```

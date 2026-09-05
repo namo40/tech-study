@@ -9,7 +9,7 @@ steps:
   - title: "고르지 않은 일"
     text: "라운드 로빈은 Server 2가 아직 느린 요청 셋을 붙들고 있다는 것을 모르고 계속 보냅니다. least connections는 처리 중인 수를 보고 여유 있는 곳으로 다음 요청을 보냅니다."
   - title: "헬스 체크"
-    text: "probe가 두 번 실패하면 서버를 순환에서 빼고, 두 번 성공하면 되돌립니다. 고장과 두 번째 probe 사이에는 요청 몇 개가 여전히 실패하므로 probe 주기가 중요합니다."
+    text: "probe가 두 번 실패하면 서버를 순환에서 빼고, 두 번 성공하면 되돌립니다. 고장과 두 번째 probe 사이에는 요청 둘이 여전히 실패하므로 probe 주기가 중요합니다."
   - title: "스케일아웃"
     text: "새 서버는 probe를 통과하면 합류하고, 캐시와 JIT가 데워지는 동안 받는 트래픽 비율이 서서히 늘어납니다. 어느 서버든 어느 요청이든 답할 수 있어야 가능한 일이라, 한 서버에만 있는 상태가 없어야 합니다."
 related:
@@ -91,7 +91,7 @@ YARP는 직접 만드는 대신 설정하는 리버스 프록시입니다. 클�
 나머지 절반은 애플리케이션 쪽에 있고, 빠뜨리기 쉬운 쪽도 이쪽입니다. 앱이 필요로 하는 의존성까지 답하는 readiness probe와, 앱이 실제 상대를 알 수 있게 해 주는 forwarded 헤더입니다.
 
 ```csharp
-// The app side: a readiness probe that checks what the app needs to serve traffic.
+// 앱 쪽: 트래픽을 받는 데 앱이 필요로 하는 것을 확인하는 readiness probe.
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("shop")!, tags: ["ready"]);
 builder.Services.Configure<ForwardedHeadersOptions>(o =>
@@ -102,4 +102,4 @@ app.UseForwardedHeaders();
 app.MapHealthChecks("/healthz/ready", new HealthCheckOptions { Predicate = c => c.Tags.Contains("ready") });
 ```
 
-`LeastRequests`가 YARP의 least connections이고, 임계치 2의 `ConsecutiveFailures`는 장면이 그리는 규칙 그대로입니다. probe 한 번 실패는 잡음이고, 연속 두 번은 판단입니다. Azure Load Balancer나 Application Gateway 같은 클라우드 로드 밸런서도, Kubernetes의 Service나 Ingress도 같은 세 조각으로 설정합니다. 목적지를 고르는 정책, 목적지 목록을 정하는 헬스 체크, 그리고 뒤에 있는 앱이 원래 요청을 볼 수 있게 하는 포워딩 헤더입니다.
+`LeastRequests`가 YARP의 least connections이고, 임계치 2의 `ConsecutiveFailures`(YARP 기본값이지만 분명히 보이도록 위에 적어 두었습니다)는 장면이 그리는 규칙의 실패 쪽 절반입니다. probe 한 번 실패는 잡음이고, 연속 두 번은 판단입니다. 되돌아오는 쪽은 YARP가 장면보다 단순합니다. 첫 probe가 성공하면 바로 목적지를 다시 정상으로 표시하기 때문입니다. 장면처럼 성공 횟수에 임계치를 두는 것은 YARP가 아니라 Kubernetes의 `successThreshold` 같은 설정입니다. Application Gateway나 Kubernetes Ingress 같은 L7 로드 밸런서는 같은 세 조각으로 설정합니다. 목적지를 고르는 정책, 목적지 목록을 정하는 헬스 체크, 그리고 뒤에 있는 앱이 원래 요청을 볼 수 있게 하는 forwarded 헤더입니다. Azure Load Balancer나 Kubernetes Service 같은 L4 로드 밸런서에는 앞의 둘만 있습니다. Service라면 두 번째는 자체 probe가 아니라 파드의 readiness입니다. 요청을 읽지 않으므로 헤더를 더할 곳이 없기 때문입니다.

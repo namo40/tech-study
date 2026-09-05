@@ -48,7 +48,7 @@ references:
 
 ## 注意点
 
-- 規模が大きくなっても効く手はロック順序です。すべてのコードパスで行とテーブルを同じ順序で (たとえば主キー順で) 更新すれば、書き手がいくら増えても循環は生まれません。
+- 規模が大きくなっても効く手はロック順序です。すべてのコードパスで行とテーブルを同じ順序で (たとえば主キー順で) 更新すれば、書き手がいくら増えても、それらのコードパスのあいだで循環は生まれません。
 - トランザクションは短く保ち、HTTP 呼び出しやメッセージ送信、ユーザーが考えている時間をまたいで開いたままにしません。ロックを握っている 1 秒は、別のトランザクションが到着して循環を始められる 1 秒でもあります。
 - 集約 1 つを読んで書き換えて書き戻す処理なら楽観的同時実行制御が向き、競合が頻繁で再試行のほうが待つより高くつくなら短い悲観的ロックが向きます。
 - デッドロックの再試行は作業単位の全体をやり直す必要があります。犠牲になったトランザクションは丸ごとロールバックされているので、失敗した文だけを送り直すと、もう存在しないトランザクションに書き込むことになります。
@@ -59,14 +59,14 @@ references:
 EF Core では 3 つがほとんどの仕事をします。行を一貫した順序で触ること、実行戦略で作業単位の全体を再試行すること、そしてロックで防ぐはずだった競合を `rowversion` 列に検出させることです。
 
 ```csharp
-// 1. Consistent order: touch rows sorted by key, in every code path.
+// 1. 一貫した順序。どのコードパスでも、キーで並べた順に行を触ります。
 foreach (var id in ids.Order())
 {
     var account = await db.Accounts.FindAsync([id], ct);
     account!.Balance += delta;
 }
 
-// 2. Retry the whole unit of work on transient failures, including deadlocks (SQL Server error 1205).
+// 2. デッドロック (SQL Server のエラー 1205) を含む一時的な失敗では、作業単位の全体を再試行します。
 builder.Services.AddDbContext<BankDbContext>(o =>
     o.UseSqlServer(cs, sql => sql.EnableRetryOnFailure(maxRetryCount: 3)));
 
@@ -78,7 +78,7 @@ await strategy.ExecuteAsync(async () =>
     await tx.CommitAsync(ct);
 });
 
-// 3. Optimistic concurrency: no lock across the think time, conflict detected at SaveChanges.
+// 3. 楽観的同時実行制御。考えている時間をまたぐロックはなく、競合は SaveChanges で検出されます。
 public sealed class Account
 {
     public int Id { get; set; }
@@ -89,8 +89,8 @@ public sealed class Account
 try { await db.SaveChangesAsync(ct); }
 catch (DbUpdateConcurrencyException ex)
 {
-    await ex.Entries.Single().ReloadAsync(ct);   // reload, reapply the change, retry
+    await ex.Entries.Single().ReloadAsync(ct);   // 読み直し、変更を当て直し、再試行
 }
 ```
 
-SQL Server で `READ_COMMITTED_SNAPSHOT` を有効にすると、ふつうのアプリケーションが遭遇するデッドロックの半分ほどが消えます。読み取りが共有ロックではなく行バージョンを取るようになり、書き込みを妨げなくなるからです。デッドロックグラフそのものは Extended Events で収集しておき、どの 2 つのコードパスが衝突したのかを推測ではなく事実として押さえます。
+SQL Server で `READ_COMMITTED_SNAPSHOT` を有効にすると、読み手と書き手のあいだのデッドロックが消えます。ふつうのアプリケーションが遭遇するデッドロックの大きな部分がこれで、読み取りが共有ロックではなく行バージョンを取るようになり、書き込みを妨げなくなるからです。書き手どうしのデッドロックは残るので、ロック順序は引き続き重要です。デッドロックグラフそのものは Extended Events で収集しておき、どの 2 つのコードパスが衝突したのかを推測ではなく事実として押さえます。

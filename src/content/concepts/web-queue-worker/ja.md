@@ -9,7 +9,7 @@ steps:
   - title: "受け取り、答え、あとで処理する"
     text: "Web 層はジョブをキューに入れ、数ミリ秒で 202 を返します。ワーカーがそれを取り、自分のペースで実行します。クライアントは知りたいときに結果を尋ねます。いまは pending、少しあとには done です。"
   - title: "負荷の平準化"
-    text: "12 件のリクエストが一度に届きます。素早い 202 が 12 個と、12 段のキューができ、ワーカーはこなせる速度で消化していきます。キューの手前は何ひとつ遅くなりませんでした。"
+    text: "12 件のリクエストが一度に届きます。素早い 202 が 12 個と、すでに 2 件が動いている 10 段のキューができ、ワーカーはこなせる速度で消化していきます。キューの手前は何 1 つ遅くなりませんでした。"
   - title: "Web ではなくワーカーを増やす"
     text: "ワーカーを 2 つ足すと、6 段のキューを一度に 4 件ずつ処理できます。2 回失敗したジョブは、再試行を延々と回す代わりに dead-letter queue に送ります。ハンドラーが何度実行されても安全でなければならない理由がここにあります。"
 related:
@@ -61,18 +61,21 @@ references:
 ## .NET では
 
 ```csharp
-// Web: accept the job, answer 202, and hand back a status URL.
-app.MapPost("/exports", async (ExportRequest request, IJobQueue queue) =>
+// ジョブは自分の試行回数を持ち、最初の実行が 1 回目です。
+public sealed record ExportJob(Guid Id, Guid ReportId, int Attempt = 1);
+
+// Web 層。ジョブを受け取り、202 を返し、状態を見る URL を渡します。
+app.MapPost("/exports", async (ExportRequest request, IJobQueue queue, CancellationToken ct) =>
 {
     var jobId = Guid.NewGuid();
-    await queue.EnqueueAsync(new ExportJob(jobId, request.ReportId));
+    await queue.EnqueueAsync(new ExportJob(jobId, request.ReportId), ct);
     return Results.Accepted($"/exports/{jobId}");
 });
 
-app.MapGet("/exports/{jobId:guid}", async (Guid jobId, IJobStatus status) =>
-    await status.FindAsync(jobId) is { } job ? Results.Ok(job) : Results.NotFound());
+app.MapGet("/exports/{jobId:guid}", async (Guid jobId, IJobStatus status, CancellationToken ct) =>
+    await status.FindAsync(jobId, ct) is { } job ? Results.Ok(job) : Results.NotFound());
 
-// Worker: a separate deployable that drains the queue.
+// ワーカー。キューを消化する、別のデプロイ単位です。
 public sealed class ExportWorker(IJobQueue queue, IJobStatus status, ILogger<ExportWorker> log)
     : BackgroundService
 {
@@ -80,13 +83,13 @@ public sealed class ExportWorker(IJobQueue queue, IJobStatus status, ILogger<Exp
     {
         await foreach (var job in queue.ReadAllAsync(ct))
         {
-            if (await status.IsDoneAsync(job.Id, ct)) continue;   // already done
+            if (await status.IsDoneAsync(job.Id, ct)) continue;   // すでに完了
             try
             {
                 await RunExportAsync(job, ct);
                 await status.MarkDoneAsync(job.Id, ct);
             }
-            catch (Exception ex) when (job.Attempt < 3)
+            catch (Exception ex) when (job.Attempt < 2)   // 2 回目の失敗で dead-letter へ
             {
                 log.LogWarning(ex, "Export {JobId} failed, attempt {Attempt}", job.Id, job.Attempt);
                 await queue.RequeueAsync(job with { Attempt = job.Attempt + 1 }, ct);

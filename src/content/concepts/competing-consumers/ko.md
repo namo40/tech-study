@@ -7,9 +7,9 @@ steps:
   - title: "소비자 하나"
     text: "메시지가 소비자 하나가 처리하는 속도보다 빨리 도착합니다. 큐가 쌓이고, 메시지가 큐에서 기다리는 시간도 함께 늘어납니다."
   - title: "경쟁 소비자"
-    text: "소비자 셋이 같은 큐에서 가져갑니다. 각 메시지는 그중 정확히 하나에게만 가고, 밀린 메시지는 세 배 빨리 줄어듭니다."
+    text: "소비자 셋이 같은 큐에서 가져갑니다. 각 메시지는 그중 정확히 하나에게만 가고, 처리량은 세 배가 되며, 도착도 조금 뜸해진 덕에 밀린 메시지가 빠져나갑니다."
   - title: "최소 한 번"
-    text: "ack하기 전에 죽은 소비자는 메시지를 큐에 돌려줍니다. 다른 소비자가 마무리하고, 때로는 사본이 두 번 도착합니다. 핸들러는 반복해도 결과가 같아야 하고, 계속 실패하는 메시지는 dead-letter queue로 보냅니다."
+    text: "ack하기 전에 죽은 소비자는 메시지를 큐에 돌려줍니다. 다른 소비자가 마무리하고, 때로는 사본이 두 번 도착합니다. 핸들러는 반복해도 결과가 같아야 하고, 계속 실패하는 메시지는 데드 레터 큐로 보냅니다."
   - title: "키 단위의 순서"
     text: "경쟁 소비자는 전체 순서를 포기합니다. 한 고객이나 한 주문 안에서 순서가 중요하면 그 키로 나누어, 그 키는 한 소비자가 차례대로 처리하고 나머지는 병렬로 돌게 합니다."
 related:
@@ -50,7 +50,7 @@ references:
 
 - 전달은 정확히 한 번이 아니라 최소 한 번입니다. 메시지 id로 중복을 걸러 내거나, 두 번 실행돼도 작업이 두 번 일어나지 않는 핸들러를 씁니다.
 - ack는 작업과 그 부수 효과가 저장된 뒤에 보냅니다. 먼저 보내면 죽었을 때 메시지가 재전달되는 대신 그냥 사라집니다.
-- 재시도 횟수를 정해 두고, 계속 실패하는 메시지는 dead-letter queue로 보냅니다. 재처리 절차도 함께 적어 둡니다. 그러지 않으면 그 메시지는 돌아올 때마다 소비자를 하나씩 물고 늘어집니다.
+- 재시도 횟수를 정해 두고, 계속 실패하는 메시지는 데드 레터 큐로 보냅니다. 재처리 절차도 함께 적어 둡니다. 그러지 않으면 그 메시지는 돌아올 때마다 소비자를 하나씩 물고 늘어집니다.
 - 소비자가 둘 이상이 되는 순간 전체 순서는 사라집니다. 한 고객이나 한 주문 안에서 순서가 중요하다면 그 키로 나눕니다. Kafka 파티션, Azure Service Bus 세션, RabbitMQ consistent-hash exchange가 그 수단입니다.
 - prefetch를 조정합니다. prefetch를 크게 잡으면 놀고 있는 소비자가 가져갈 수 있었던 메시지가 한 소비자의 버퍼에 쌓이고, 그 소비자가 죽으면 버퍼에 있던 것이 전부 재전달됩니다.
 - 병목이 다른 곳으로 옮겨 가면 소비자를 늘려도 더는 나아지지 않습니다. 작은 커넥션 풀 하나에 소비자 다섯을 붙이면, 앞에 대기줄이 하나 더 생긴 소비자 하나와 다를 바 없습니다.
@@ -68,11 +68,11 @@ builder.Services.AddMassTransit(x =>
         cfg.Host("rabbitmq");
         cfg.ReceiveEndpoint("orders", e =>
         {
-            e.PrefetchCount = 1;                 // one in flight per consumer
+            e.PrefetchCount = 1;                 // 소비자마다 동시에 하나씩
             e.ConcurrentMessageLimit = 1;
             e.UseMessageRetry(r => r.Exponential(3, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(2)));
             e.ConfigureConsumer<OrderPlacedConsumer>(context);
-            // After the retries are exhausted MassTransit moves the message to orders_error (the dead-letter queue).
+            // 재시도를 다 쓰고 나면 MassTransit이 메시지를 orders_error(데드 레터 큐)로 옮깁니다.
         });
     });
 });
@@ -83,12 +83,21 @@ public sealed class OrderPlacedConsumer(IProcessedMessages processed, IOrderProj
     public async Task Consume(ConsumeContext<OrderPlaced> context)
     {
         var messageId = context.MessageId ?? throw new InvalidOperationException("MessageId is required");
-        if (!await processed.TryMarkAsync(messageId, context.CancellationToken)) return;   // duplicate: skip
 
-        await projector.ApplyAsync(context.Message, context.CancellationToken);
-        // Returning without an exception acknowledges the message.
+        // 트랜잭션 하나가 유일 제약 위에 메시지 id를 넣고
+        // projection을 씁니다. id를 먼저 표시하고 나중에 적용하는 것이
+        // 메시지를 잃는 방식입니다. ApplyAsync가 던지면 프로세스 안의 재시도가
+        // 이미 기록된 id를 발견하고 건너뛴 뒤 예외 없이 반환하며,
+        // 그것은 한 번도 쓰이지 않은 projection을 확인 응답한 셈이 됩니다.
+        var claimed = await processed.RunOnceAsync(
+            messageId,
+            ct => projector.ApplyAsync(context.Message, ct),
+            context.CancellationToken);
+
+        if (!claimed) return;   // 중복: 유일 제약이 삽입을 거절했습니다
+        // 예외 없이 반환하면 메시지를 확인 응답한 것이 됩니다.
     }
 }
 ```
 
-`PrefetchCount`와 `ConcurrentMessageLimit`은 인스턴스 하나가 동시에 들고 있는 작업의 양을 정합니다. 둘 다 1로 두고 시작하는 것이 정직한 출발점입니다. 작업이 기다리는 곳을 큐 한 군데로 유지해 주기 때문입니다. 재시도 정책은 소비자 프로세스 안에서 돌기 때문에 일시적인 실패에 브로커를 한 번 더 다녀올 필요가 없고, 정책이 소진되면 MassTransit이 메시지를 계속 돌리는 대신 `orders_error`로 옮깁니다. 그다음 확장은 배포의 문제가 됩니다. 같은 서비스의 복제본을 늘리고, 각 복제본이 같은 `orders` 큐에 붙으면 됩니다. 한 키 안에서 순서가 중요하다면 경쟁 소비자는 그대로 두고 라우팅만 바꿉니다. consistent-hash exchange, Service Bus 세션, Kafka 파티션 키 가운데 하나를 쓰면 그 키는 한 소비자에게 모이고 나머지는 여전히 병렬로 돕니다.
+`PrefetchCount`와 `ConcurrentMessageLimit`은 인스턴스 하나가 동시에 들고 있는 작업의 양을 정합니다. 둘 다 1로 두고 시작하는 것이 정직한 출발점입니다. 작업이 기다리는 곳을 큐 한 군데로 유지해 주기 때문입니다. 재시도 정책은 소비자 프로세스 안에서 돌기 때문에 일시적인 실패에 브로커를 한 번 더 다녀올 필요가 없고, 정책이 소진되면 MassTransit이 메시지를 계속 돌리는 대신 `orders_error`로 옮깁니다. 그다음 확장은 배포의 문제가 됩니다. 같은 서비스의 레플리카를 늘리고, 각 레플리카가 같은 `orders` 큐에 붙으면 됩니다. 한 키 안에서 순서가 중요하다면 경쟁 소비자는 그대로 두고 라우팅만 바꿉니다. consistent-hash exchange, Service Bus 세션, Kafka 파티션 키 가운데 하나를 쓰면 그 키는 한 소비자에게 모이고 나머지는 여전히 병렬로 돕니다.

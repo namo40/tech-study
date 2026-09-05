@@ -1,15 +1,15 @@
 ---
 title: "Load Test"
-summary: "Load Test は現実的なトラフィックをシステムに流し込み、最初にどこがたわむかを見る作業です。求める数字は最大スループットではなく、遅延とエラーがまだ目標を満たす最大の負荷です。"
+summary: "Load Test は現実的なトラフィックをシステムに流し込み、最初にどこがたわむかを見る作業です。求める数字は最大スループットではなく、レイテンシとエラーがまだ目標を満たす最大の負荷です。"
 category: "テストと検証"
 scene: load-test
 steps:
   - title: "ランプ"
-    text: "まずウォームアップし、負荷を段階的に上げて各段階を維持します。仮想ユーザー 100 でサービスは毎秒 475 件を処理し、p95 は 40 ms、エラーはありません。スループットが直線で上がり遅延が平らなあいだは、まだシステムはボトルネックではありません。"
+    text: "まずウォームアップし、負荷を段階的に上げて各段階を維持します。仮想ユーザー 100 でサービスは毎秒 475 件を処理し、p95 は 40 ms、エラーはありません。スループットが直線で上がりレイテンシが平らなあいだは、まだシステムはボトルネックではありません。"
   - title: "膝"
     text: "ユーザー 300 あたりを過ぎると、負荷を増やしてもスループットは増えず、待ち行列だけが増えます。p95 は 540 ms まで上がり、timeout が始まります。依存関係のメーターが、何が最初に飽和したかを教えてくれます。CPU は 60% なのにコネクションプールは満杯で 180 件が接続を待っており、直すか大きさを決めるべきはプールです。"
   - title: "持続可能な点、それから soak"
-    text: "目標をなお満たす最大の負荷まで下げます。ここでは p95 180 ms で毎秒 890 件であり、ピークの 1,060 ではなくその数字が容量です。それから何時間も維持します。2 時間の soak でヒープは 40% から 70% まで上がりますが、短いテストなら見えなかったリークです。"
+    text: "目標をなお満たす最大の負荷まで下げます。ここでは p95 180 ms で毎秒 890 件であり、ピークの 1,060 ではなくその数字が容量です。それから維持します。ヒープは 40% から 65% へ上がり、短いテストでは見えないリークです。"
   - title: "現実に近づける"
     text: "ホットな id が 1 つだけだと、すべてのリクエストがキャッシュヒットになり、同じサービスが毎秒 1,121 件、p95 24 ms と報告します。id を 1 万件にして命中率が 60% になると 886 件、189 ms です。固定の到着率でも測りましょう。行儀よく待つユーザーは、遅いサーバーが自分のテストを自ら絞るのを許してしまいます。"
 related:
@@ -62,13 +62,13 @@ references:
 ## .NET では
 
 ```csharp
-// An open-model scenario: a fixed arrival rate, realistic ids, production-like client.
+// open モデルのシナリオ: 固定の到着率、現実的な id、本番に近いクライアント。
 var http = new HttpClient(new SocketsHttpHandler { PooledConnectionLifetime = TimeSpan.FromMinutes(2) })
 {
     BaseAddress = new Uri("https://shop.internal"),
     DefaultRequestVersion = HttpVersion.Version20,
 };
-var ids = await File.ReadAllLinesAsync("order-ids.txt");   // 10k real ids, not one hot key
+var ids = await File.ReadAllLinesAsync("order-ids.txt");   // ホットなキー 1 つではなく、実在する id を 1 万件
 
 var scenario = Scenario.Create("get_order", async ctx =>
     {
@@ -85,9 +85,9 @@ NBomberRunner.RegisterScenarios(scenario).Run();
 ```
 
 ```text
-# While it runs, watch the server, not only the client:
+# テスト中はクライアントだけでなくサーバーも見る:
 dotnet-counters monitor --process-id <pid> \
-  System.Runtime Microsoft.AspNetCore.Hosting Microsoft.Data.SqlClient.EventSource
+  --counters System.Runtime,Microsoft.AspNetCore.Hosting,Microsoft.Data.SqlClient.EventSource
 ```
 
-`Simulation.Inject` が open model です。サービスがどう反応しようと決まった速度で入れ続けるため、遅さは静かに縮んだテストではなく、伸びるキューと上がる遅延として現れます。k6 のような外部ツールも同じ 3 つの原則に従います。そのうち最も抜けやすいのが最後の原則で、クライアント側の数値だけではサーバーのどのリソースが飽和したかは分からないため、テストが走るあいだサービスとその依存関係のカウンターを一緒に集める必要があります。
+`Simulation.Inject` が open model です。サービスがどう反応しようと決まった速度で入れ続けるため、遅さは静かに縮んだテストではなく、伸びるキューと上がるレイテンシとして現れます。上のシナリオが体現する 3 つの原則は、k6 を含めどのツールを使っても変わりません。到着率は open に保つ、ホットなキー 1 つではなく現実的な id に負荷を散らす、本番に近いクライアントで駆動する、の 3 つです。最も抜けやすいのは 4 つ目の原則で、クライアントの外にあります。クライアント側の数値だけではサーバーのどのリソースが飽和したかは分からないため、テストが走るあいだサービスとその依存関係のカウンターを集め続けます。

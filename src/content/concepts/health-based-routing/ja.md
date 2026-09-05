@@ -52,7 +52,7 @@ references:
 ロードバランサー側の半分は連続失敗のポリシーを使うアクティブチェック、アプリケーション側の半分は依存関係まで答える readiness エンドポイントです。どちらか片方だけでは役に立ちません。
 
 ```csharp
-// The balancer: probe /healthz/ready once a second, two strikes and out.
+// ロードバランサー側。/healthz/ready を 1 秒に 1 回 probe し、2 回続けて失敗したら外します。
 builder.Services.AddReverseProxy().LoadFromMemory(
     routes: [new RouteConfig { RouteId = "api", ClusterId = "api", Match = new RouteMatch { Path = "/{**catch-all}" } }],
     clusters:
@@ -89,7 +89,7 @@ builder.Services.AddReverseProxy().LoadFromMemory(
 ```
 
 ```csharp
-// The application: liveness says nothing about dependencies, readiness says everything.
+// アプリケーション側。liveness は依存関係について何も言わず、readiness はすべてを言います。
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("shop")!, tags: ["ready"]);
 

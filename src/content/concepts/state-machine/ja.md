@@ -1,6 +1,6 @@
 ---
 title: "State Machine"
-summary: "状態機械は、あるものが取りうる状態と、その間を動かすイベントに名前を付けて表にしたものです。表にないことは起こりえず、現在の状態は保存して再開でき、長く走るプロセスは待ち、期限切れになり、一歩ずつ再試行する機械になります。"
+summary: "ステートマシンは、あるものが取りうる状態と、その間を動かすイベントに名前を付けて表にしたものです。表にないことは起こりえず、現在の状態は保存して再開でき、長く走るプロセスは待ち、期限切れになり、一歩ずつ再試行する機械になります。"
 category: "スケジュールされた作業とワークフロー"
 scene: state-machine
 steps:
@@ -11,7 +11,7 @@ steps:
   - title: "保存する"
     text: "現在の状態はストアの 1 行なので、再起動しても止まったまさにその場所から続きます。時間もイベントです。誰も支払わない提出済みの注文は、タイマーが鳴ると期限切れになります。"
   - title: "長く走るプロセス"
-    text: "承認を何日も待ち、不安定なステップを再試行し、再起動に耐えるプロセスは、耐久性のある history を持つ状態機械です。ワークフローエンジンはその history を再生して状態を組み立て直すので、コードは何日にもわたって断片的に実行されても一本の線のように読めます。"
+    text: "承認を待ち、不安定なステップを再試行し、再起動に耐えるプロセスは、永続的な history を持つステートマシンです。ワークフローエンジンはその history を再生して状態を組み立て直すので、コードは 1 本の線のように読めます。"
 related:
   - label: Durable Workflow
     slug: durable-workflow
@@ -56,11 +56,11 @@ references:
 ## 注意点
 
 - 状態とイベントを先に決めます。表がそのまま仕様です。ある遷移がないことはバグではなく決定であり、ある遷移と同じくらい簡単に指し示せるべきです。
-- 状態と待機中のタイマーをいっしょに保存します。再起動は書き残されたものから組み立て直すべきで、メモリに残ったもので推測してはいけません。`Timer` オブジェクトの中にしかない期限は、そのプロセスとともに消えます。
+- 状態と待機中のタイマーをいっしょに保存します。再起動は書き残されたものから組み立て直すべきで、メモリーに残ったもので推測してはいけません。`Timer` オブジェクトの中にしかない期限は、そのプロセスとともに消えます。
 - 遷移は繰り返しても安全でなければなりません。同じイベントが 2 回届いても機械が 2 回動いてはいけません。イベント id で重複を除くか、ハンドラーが離れようとしている状態を確認するようにします。
 - 状態の数に注意します。状態 7 つにイベント 4 つなら表ですが、状態 40 にイベント 30 では誰も読まない図です。集約ごとに機械を分けるか、変わる部分をデータに引き上げてください。
 - インスタンスが動いている最中にワークフローのコードを変えるにはバージョン管理が必要です。history を再生して状態を組み立てるエンジンは、古い history を新しいコードに流し直すので、すでに起きたことの形が新しいコードにも理解できるまま残っている必要があります。
-- 規模で道具を選びます。プロセス内のライフサイクルにはライブラリ、サービスをまたぐステップにはサガ、何日も待ちと再試行が続くプロセスにはワークフローエンジンです。
+- 規模でツールを選びます。プロセス内のライフサイクルにはライブラリ、サービスをまたぐステップには saga、何日も待ちと再試行が続くプロセスにはワークフローエンジンです。
 
 ## .NET では
 
@@ -76,21 +76,21 @@ machine.Configure(OrderState.Draft)
     .Permit(OrderTrigger.Submit, OrderState.Submitted);
 
 machine.Configure(OrderState.Submitted)
-    .PermitIf(OrderTrigger.Pay, OrderState.Paid, () => payments.IsConfirmed(order.Id))   // guard
+    .PermitIf(OrderTrigger.Pay, OrderState.Paid, () => payments.IsConfirmed(order.Id))   // 条件
     .Permit(OrderTrigger.Cancel, OrderState.Cancelled)
     .Permit(OrderTrigger.Timeout, OrderState.Expired);
 
 machine.Configure(OrderState.Paid)
-    .OnEntryAsync(() => mail.SendReceiptAsync(order.Id))                                  // action
+    .OnEntryAsync(() => mail.SendReceiptAsync(order.Id))                                  // 動作
     .Permit(OrderTrigger.Ship, OrderState.Shipped)
     .Permit(OrderTrigger.Cancel, OrderState.Cancelled);
 
 machine.Configure(OrderState.Shipped).Permit(OrderTrigger.Deliver, OrderState.Delivered);
 
 if (machine.CanFire(OrderTrigger.Ship)) await machine.FireAsync(OrderTrigger.Ship);
-await db.SaveChangesAsync(ct);   // the state is a column; timers are rows with a due time
+await db.SaveChangesAsync(ct);   // 状態は列、タイマーは期限を持つ行
 ```
 
 `CanFire` こそ表を置く理由そのものです。あるイベントが許されるかを尋ねるのに費用はかからず、その答えは実際に走るはずのハンドラーを読むことに依存しません。
 
-何日も続くプロセスなら、history を自分で保持するエンジンに機械を預けます。Azure Durable Functions、Temporal .NET SDK、Dapr Workflow はいずれも、インスタンスにすでに起きたことを再生して状態を組み立て直します。だからこそオーケストレーションを、タイマーや外部イベントを await する普通の逐次コードとして書きながら、別のマシンで続きを実行できます。ステップが 1 つのプロセスではなく複数のサービスにまたがるなら、サガでつなぎ、調整は MassTransit の状態機械に任せてください。
+何日も続くプロセスなら、history を自分で保持するエンジンに機械を預けます。Azure Durable Functions、Temporal .NET SDK、Dapr Workflow はいずれも、インスタンスにすでに起きたことを再生して状態を組み立て直します。だからこそオーケストレーションを、タイマーや外部イベントを await する普通の逐次コードとして書きながら、別のマシンで続きを実行できます。ステップが 1 つのプロセスではなく複数のサービスにまたがるなら、代わりに saga でつなぎ（.NET では MassTransit のステートマシンがその定番の形です）、調整はその saga に持たせてください。

@@ -1,17 +1,17 @@
 ---
 title: "Middleware Pipeline"
-summary: "Middleware Pipeline은 각 구성 요소가 들어오는 요청을 한 번, 나가는 응답을 역순으로 한 번 보는 사슬입니다. 어느 것이든 사슬을 끊을 수 있고, 그 순서가 곧 애플리케이션 가장자리의 설계입니다."
+summary: "Middleware Pipeline은 각 구성 요소가 들어오는 요청을 한 번, 나가는 응답을 역순으로 한 번 보는 사슬입니다. 어느 것이든 사슬을 끊을 수 있고, 그 순서가 곧 애플리케이션 엣지의 설계입니다."
 category: ".NET 런타임과 호스팅"
 scene: middleware-pipeline
 steps:
   - title: "들어갔다가 나옵니다"
-    text: "요청은 모든 미들웨어를 차례로 지나 Endpoint에 닿고, 응답은 같은 미들웨어를 역순으로 거슬러 올라옵니다. 각 미들웨어는 자기 아래 전부를 감쌉니다."
+    text: "요청은 모든 미들웨어를 차례로 지나 엔드포인트에 닿고, 응답은 같은 미들웨어를 역순으로 거슬러 올라옵니다. 각 미들웨어는 자기 아래 전부를 감쌉니다."
   - title: "단락"
-    text: "미들웨어는 다음을 부르지 않고 직접 응답할 수 있습니다. Authentication의 401이나 Static files가 바로 돌려주는 파일이 그렇습니다. 그 아래 층은 전혀 실행되지 않습니다."
+    text: "미들웨어는 다음을 부르지 않고 직접 응답할 수 있습니다. 엔드포인트가 사용자를 요구할 때 Authorization이 내는 401이나 Static files가 바로 돌려주는 파일이 그렇습니다. 그 아래 층은 전혀 실행되지 않습니다."
   - title: "예외는 거슬러 올라옵니다"
-    text: "Endpoint에서 던진 예외는 모든 미들웨어를 거꾸로 타고 올라옵니다. 가장 바깥 것만 그것을 제대로 된 500으로 바꿀 수 있으므로, 예외 처리기는 맨 앞에 둡니다."
+    text: "엔드포인트에서 던진 예외는 모든 미들웨어를 거꾸로 타고 올라옵니다. 가장 바깥 것만 그것을 제대로 된 500으로 바꿀 수 있으므로, 예외 핸들러는 맨 앞에 둡니다."
   - title: "순서가 곧 설계입니다"
-    text: "같은 미들웨어라도 순서가 다르면 다른 애플리케이션입니다. 예외 처리기는 맨 앞, 값싼 보호는 비싼 작업보다 앞, Authentication은 Authorization보다 앞, Endpoint는 맨 뒤입니다."
+    text: "같은 미들웨어라도 순서가 다르면 다른 애플리케이션입니다. 예외 핸들러는 맨 앞, 값싼 보호는 비싼 작업보다 앞입니다. rate limiter를 Authentication 위로 올리면 넷 중 둘은 Authentication 전에 429로 거절됩니다."
 related:
   - label: Endpoint Routing
     slug: endpoint-routing
@@ -43,7 +43,7 @@ references:
 ## 언제 쓰나
 
 - 모든 요청이나 모든 응답을 반드시 봐야 하는 일. 오류 처리, HTTPS 리디렉션, 정적 파일, 라우팅, CORS, Authentication, Authorization, rate limiting, 압축, 로깅이 그렇습니다.
-- 엔드포인트마다 되풀이해서는 안 되는 공통 관심사
+- 엔드포인트마다 되풀이해서는 안 되는 횡단 관심사
 
 ## 주의점
 
@@ -55,6 +55,11 @@ references:
 ## .NET에서는
 
 ```csharp
+// 인자 없는 UseExceptionHandler()는 problem-details 서비스에 위임합니다.
+// 이 등록이 없으면, 그리고 경로나 핸들러를 넘기지도 않으면,
+// 호스트는 첫 실패가 아니라 시작 시점에 던집니다.
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -65,13 +70,22 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// A middleware sees the request on the way in and the response on the way out.
+// 미들웨어는 들어가는 길의 요청과 나오는 길의 응답을 봅니다.
 app.Use(async (context, next) =>
 {
     var started = Stopwatch.GetTimestamp();
-    await next(context);                       // everything below runs here
-    var elapsed = Stopwatch.GetElapsedTime(started);
-    context.Response.Headers["X-Elapsed-Ms"] = elapsed.TotalMilliseconds.ToString("F0");
+
+    // 응답이 시작된 뒤에는 헤더가 읽기 전용이므로, next가 반환한 뒤에
+    // 헤더를 설정하면 던집니다. 대신 등록해 둡니다. 이것은 헤더를 아직 쓸 수
+    // 있는 마지막 순간에 돕니다.
+    context.Response.OnStarting(() =>
+    {
+        var elapsed = Stopwatch.GetElapsedTime(started);
+        context.Response.Headers["X-Elapsed-Ms"] = elapsed.TotalMilliseconds.ToString("F0");
+        return Task.CompletedTask;
+    });
+
+    await next(context);                       // 아래의 모든 것이 여기서 돕니다
 });
 
 app.MapGet("/orders/{id:int}", (int id) => Results.Ok(new { id }))

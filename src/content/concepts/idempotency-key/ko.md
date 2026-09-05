@@ -9,7 +9,7 @@ steps:
   - title: "키를 기억합니다"
     text: "클라이언트는 재시도마다 같은 키를 보냅니다. 서버는 처음에 키와 결과를 저장해 두고, 재시도에는 결제를 건드리지 않고 그 응답을 그대로 돌려줍니다."
   - title: "동시에 둘"
-    text: "더블 클릭이 같은 키를 두 번 보냅니다. 먼저 온 쪽이 키를 차지하고, 둘째는 결과를 기다리거나 409를 받고 다시 묻습니다. 어느 쪽이든 결제는 한 번입니다."
+    text: "더블 클릭이 같은 키를 두 번 보냅니다. 먼저 온 쪽이 키를 차지하고, 둘째는 결과를 기다리거나 409를 받고 다시 물을 수 있습니다. 어느 쪽이든 키 하나에 결제는 한 번입니다."
   - title: "범위와 수명"
     text: "키는 클라이언트 하나와 요청 본문 하나에 속합니다. 같은 키에 다른 본문은 거부됩니다. 키는 만료되므로 저장소는 작게 유지되고, 오래된 키는 새 요청으로 다시 쓸 수 있습니다."
 related:
@@ -40,9 +40,9 @@ references:
 
 ## 언제 쓰나
 
-- 무언가를 만들거나 돈을 옮기는 POST마다. 결제, 주문, 메시지 발송, 자원 생성이 모두 해당합니다.
-- 타임아웃이나 유실된 응답에 재시도하는 클라이언트마다. 그러니까 사실상 모든 클라이언트입니다.
-- 버튼을 두 번 누르거나, 멈춘 것처럼 보이는 화면을 새로고침해서 같은 의도를 두 번 보낼 수 있는 곳이라면 어디든.
+- 무언가를 만들거나 돈을 옮기는 POST라면 어디든 씁니다. 결제, 주문, 메시지 발송, 리소스 생성이 모두 해당합니다.
+- 타임아웃이나 유실된 응답에 재시도하는 클라이언트라면 어디든 씁니다. 그러니까 사실상 모든 클라이언트입니다.
+- 버튼을 두 번 누르거나, 멈춘 것처럼 보이는 화면을 새로고침해서 같은 의도를 두 번 보낼 수 있는 곳이라면 어디든 씁니다.
 
 ## 주의점
 
@@ -50,6 +50,7 @@ references:
 - 요청의 지문을 키와 함께 저장하고, 같은 키에 다른 본문이 오면 거부합니다. 이것이 없으면 키는 엉뚱한 응답을 돌려받는 통로가 됩니다.
 - 작업을 시작하기 전에 키를 원자적으로 선점합니다. 고유 제약이나 조건부 INSERT를 쓰지 않으면, 동시에 도착한 두 요청이 검사를 나란히 통과해 둘 다 진행됩니다.
 - 키의 수명은 현실적인 재시도를 덮을 만큼, 몇 시간에서 하루 정도로 잡고 문서에 적어 둡니다. 너무 짧으면 늦게 온 재시도가 다시 결제하고, 무한이면 저장소가 계속 커집니다.
+- 첫 시도가 실패하면 무엇이 남는지를 정해 둡니다. 키를 선점한 뒤에 작업이 예외를 던지면 선점을 풀거나 실패를 저장해야 합니다. 그러지 않으면 키가 만료될 때까지 모든 재시도가 409를 받습니다.
 - 애초에 반복해도 결과가 같은 성질(idempotency)을 갖는 설계를 우선합니다. 클라이언트가 정한 id로 보내는 `PUT`이나, 장바구니 하나에 주문 하나 같은 업무 규칙상의 고유 제약이 그렇습니다. 키는 그 자체로는 반복이 안전해지지 않는 작업에 쓰는 수단입니다.
 
 ## .NET에서는
@@ -66,24 +67,38 @@ public sealed class IdempotencyFilter(IIdempotencyStore store) : IEndpointFilter
             return Results.BadRequest(new { error = "Idempotency-Key header is required" });
 
         var client = http.User.FindFirstValue("sub") ?? "anonymous";
-        var fingerprint = await RequestFingerprint.ComputeAsync(http.Request);
 
-        // Claim the key atomically: unique (client, key) row. Returns the existing row on conflict.
+        // 지문은 본문을 읽어야 하고, 엔드포인트도 여전히 본문을 바인딩해야 합니다.
+        http.Request.EnableBuffering();
+        var fingerprint = await RequestFingerprint.ComputeAsync(http.Request);
+        http.Request.Body.Position = 0;
+
+        // 키를 원자적으로 선점합니다. (client, key)에 고유 제약이 걸린 행이고, 충돌하면 기존 행을 돌려줍니다.
         var claim = await store.TryClaimAsync(client, key!, fingerprint, TimeSpan.FromHours(24), http.RequestAborted);
         switch (claim.State)
         {
-            case ClaimState.Done:       return Results.Json(claim.Response, statusCode: claim.StatusCode); // replay
+            case ClaimState.Done:       return Results.Json(claim.Response, statusCode: claim.StatusCode); // 재생
             case ClaimState.InProgress: return Results.StatusCode(StatusCodes.Status409Conflict);
             case ClaimState.Mismatch:   return Results.UnprocessableEntity(new { error = "Key reused with a different request" });
         }
 
-        var result = await next(context);                       // first time: do the work
-        await store.CompleteAsync(client, key!, result, http.RequestAborted);
-        return result;
+        try
+        {
+            var result = await next(context);                   // 처음이면 실제로 작업합니다
+            // CompleteAsync는 결과를 실행해 본문과 상태 코드를 잡아내고 둘 다 저장합니다.
+            await store.CompleteAsync(client, key!, result, http.RequestAborted);
+            return result;
+        }
+        catch
+        {
+            // 기록된 것이 없으므로 키를 InProgress로 남기는 대신 놓아줍니다.
+            await store.ReleaseAsync(client, key!, http.RequestAborted);
+            throw;
+        }
     }
 }
 
 app.MapPost("/payments", CreatePayment).AddEndpointFilter<IdempotencyFilter>();
 ```
 
-보장이 실제로 만들어지는 곳은 `TryClaimAsync`이므로, 이것은 반드시 한 번의 원자적 연산이어야 합니다. `(client, key)`에 고유 제약이 걸린 테이블에 `INSERT`하고 충돌하면 기존 행을 돌려주거나, Redis `SET NX`에 만료를 같은 호출로 함께 지정하는 식입니다. 저장할 때는 응답 본문과 상태 코드를 키와 함께 넣습니다. 다시 재생한 응답이 처음 응답과 구별되지 않아야 하기 때문입니다. 지문도 함께 넣습니다. 같은 키에 다른 본문이 오는 것은 재시도가 아니라 호출하는 쪽의 버그이기 때문입니다.
+보장이 실제로 만들어지는 곳은 `TryClaimAsync`이므로, 이것은 반드시 한 번의 원자적 연산이어야 합니다. `(client, key)`에 고유 제약이 걸린 테이블에 `INSERT`하고 충돌하면 기존 행을 돌려주거나, Redis `SET NX`에 만료를 같은 호출로 함께 지정하는 식입니다. 지문은 키와 함께 저장합니다. 같은 키에 다른 본문이 오는 것은 재시도가 아니라 호출하는 쪽의 버그이기 때문입니다. 그리고 그 지문을 계산하려면 요청 본문을 읽어야 하므로 버퍼링을 켜고 스트림을 되감아야 합니다. 그러지 않으면 엔드포인트가 바인딩할 것이 남지 않습니다. 나머지 절반은 `CompleteAsync`입니다. `IResult`는 그 자체로는 본문도 상태 코드도 아니므로, 결과를 실행해서 실제로 보낸 바이트와 코드를 저장해야 합니다. 다시 재생한 응답이 처음 응답과 구별되지 않아야 하기 때문입니다.

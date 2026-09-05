@@ -5,13 +5,13 @@ category: ".NET ランタイムとホスティング"
 scene: middleware-pipeline
 steps:
   - title: "入って、出る"
-    text: "リクエストはすべてのミドルウェアを順に通って Endpoint に届き、レスポンスは同じミドルウェアを逆順にさかのぼります。各ミドルウェアは自分より下のすべてを包みます。"
+    text: "リクエストはすべてのミドルウェアを順に通ってエンドポイントに届き、レスポンスは同じミドルウェアを逆順にさかのぼります。各ミドルウェアは自分より下のすべてを包みます。"
   - title: "ショートサーキット"
-    text: "ミドルウェアは次を呼ばずに自分で応答できます。Authentication の 401 や、Static files がそのまま返すファイルがそうです。その下の層はまったく実行されません。"
+    text: "ミドルウェアは次を呼ばずに自分で応答できます。エンドポイントがユーザーを要求するときの Authorization の 401 や、Static files がそのまま返すファイルがそうです。その下の層はまったく実行されません。"
   - title: "例外はさかのぼる"
-    text: "Endpoint で投げられた例外は、すべてのミドルウェアを逆向きに上っていきます。いちばん外側のものだけがそれを適切な 500 に変えられるので、例外ハンドラーは先頭に置きます。"
+    text: "エンドポイントで投げられた例外は、すべてのミドルウェアを逆向きに上っていきます。いちばん外側のものだけがそれを適切な 500 に変えられるので、例外ハンドラーは先頭に置きます。"
   - title: "順序が設計そのもの"
-    text: "同じミドルウェアでも順序が違えば別のアプリケーションです。例外ハンドラーは先頭、安価な保護は高価な処理より前、Authentication は Authorization より前、Endpoint は最後です。"
+    text: "同じミドルウェアでも順序が違えば別のアプリケーションです。例外ハンドラーは先頭、安価な保護は高価な処理より前です。レート制限を Authentication の上に移すと、4 件のうち 2 件はその前に 429 で拒否されます。"
 related:
   - label: Endpoint Routing
     slug: endpoint-routing
@@ -55,6 +55,11 @@ references:
 ## .NET では
 
 ```csharp
+// 引数なしの UseExceptionHandler() は problem-details のサービスに委ねます。
+// この登録がなく、パスもハンドラーも渡されていなければ、ホストは最初の失敗の
+// ときではなく起動の時点で例外を投げます。
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -65,13 +70,22 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// A middleware sees the request on the way in and the response on the way out.
+// ミドルウェアは、入ってくるリクエストと出ていくレスポンスの両方を見ます。
 app.Use(async (context, next) =>
 {
     var started = Stopwatch.GetTimestamp();
-    await next(context);                       // everything below runs here
-    var elapsed = Stopwatch.GetElapsedTime(started);
-    context.Response.Headers["X-Elapsed-Ms"] = elapsed.TotalMilliseconds.ToString("F0");
+
+    // レスポンスが始まるとヘッダーは読み取り専用になるので、next が返ったあとに
+    // 設定すると例外になります。代わりに登録します。これはヘッダーがまだ書ける
+    // 最後の瞬間に走ります。
+    context.Response.OnStarting(() =>
+    {
+        var elapsed = Stopwatch.GetElapsedTime(started);
+        context.Response.Headers["X-Elapsed-Ms"] = elapsed.TotalMilliseconds.ToString("F0");
+        return Task.CompletedTask;
+    });
+
+    await next(context);                       // この下のすべてがここで走ります
 });
 
 app.MapGet("/orders/{id:int}", (int id) => Results.Ok(new { id }))

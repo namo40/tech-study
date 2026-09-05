@@ -7,11 +7,11 @@ steps:
   - title: "N+1"
     text: "クエリ 1 つで一覧を読み、そのあとコードが行ごとに customer を 1 件ずつ別に問い合わせます。注文 5 件で往復 6 回です。"
   - title: "N に比例して増える"
-    text: "同じコードが行 20 件では往復 21 回になります。開発用データはこれが見えるほど行が多くなく、本番データは多いのです。"
+    text: "同じコードが行 20 件では往復 21 回になり、時間のバーは端からはみ出します。開発用データはこれが見えるほど行が多くなく、本番データは多いのです。"
   - title: "Include"
     text: "関連する行を同じクエリで一緒に要求すると、データベースが JOIN でまとめてくれます。往復 1 回ですべてのデータです。コレクションを複数 Include するときは直積の爆発に注意します。"
   - title: "必要なものだけ読む"
-    text: "Select で射影して使う列だけをやり取りするか、検索を 1 つの IN クエリにまとめます。そしてクエリログを読みましょう。往復を隠す ORM こそが本当の問題です。"
+    text: "Select でプロジェクションして使う列だけをやり取りするか、検索を 1 つの IN クエリにまとめます。そしてクエリログを読みましょう。往復を隠す ORM こそが本当の問題です。"
 related:
   - label: Entity Framework Core
     slug: entity-framework-core
@@ -50,28 +50,28 @@ references:
 
 ## 注意点
 
-- `Include` も無料ではありません。コレクションを複数 Include すると行が掛け算になり直積の爆発が起きるので、`AsSplitQuery` を使うか射影で代えます。
-- 遅延読み込みのプロキシは、ナビゲーションプロパティに触れるたびにクエリを出します。明示的な読み込みを選び、費用を払うコードでその費用が見えるようにします。
-- 読み取り専用のエンドポイントには `Select` の射影がたいてい最良の答えです。列が少なく、変更追跡がなく、クエリは 1 つです。
+- `Include` も無料ではありません。コレクションを複数 Include すると行が掛け算になり直積の爆発が起きるので、`AsSplitQuery` を使うかプロジェクションで代えます。
+- 遅延読み込みのプロキシは、ナビゲーションプロパティに触れるたびにクエリを出します。先行読み込みかプロジェクションを選び、どうしても必要になってから読み込むしかないなら明示的に読み込んで、費用を払うコードの中でそのクエリが見えるようにします。
+- 読み取り専用のエンドポイントには `Select` のプロジェクションがたいてい最良の答えです。列が少なく、変更追跡がなく、クエリは 1 つです。
 - テストでクエリをログに残して数を数え、一覧のエンドポイントではその数を表明します。
 
 ## .NET では
 
 ```csharp
-// N+1: one query for the list, then one per row.
+// N+1 です。一覧に 1 本、そのあと行ごとに 1 本ずつ。
 var orders = await db.Orders.ToListAsync(ct);
 foreach (var order in orders)
 {
-    var customer = await db.Customers.FindAsync([order.CustomerId], ct); // a round trip per order
+    var customer = await db.Customers.FindAsync([order.CustomerId], ct); // 注文ごとに往復 1 回
     Console.WriteLine($"{order.Id}: {customer!.Name}");
 }
 
-// Include: one query with a JOIN.
-var orders = await db.Orders
+// Include。JOIN を含むクエリ 1 本です。
+var withCustomers = await db.Orders
     .Include(o => o.Customer)
     .ToListAsync(ct);
 
-// Select: only the columns you need, no tracking, one query.
+// Select。必要な列だけ、追跡なし、クエリ 1 本です。
 var rows = await db.Orders
     .Select(o => new { o.Id, o.Total, Customer = o.Customer.Name })
     .ToListAsync(ct);
