@@ -1,0 +1,401 @@
+/* ---------------------------------------------------------------- */
+/* Transactional Outbox stage                                        */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Almost everything the reader counts on this stage is a stack of text on one
+ * spot with a single variant revealed. The base rule below is the load bearing
+ * half: without it a state nobody wrote would print the whole stack on top of
+ * itself, which is invisible in a DOM snapshot and obvious on screen.
+ */
+.ob-code,
+.ob-seq,
+.ob-id,
+.ob-state,
+.ob-msg,
+.ob-orders,
+.ob-pending,
+.ob-published,
+.ob-dups {
+  opacity: 0;
+}
+
+/* The Service: the request it is holding, and the code it is running. */
+.ob-req-chip {
+  opacity: 0;
+}
+
+[data-ob-req="on"] .ob-req-chip {
+  opacity: 1;
+}
+
+.ob-req-text {
+  fill: var(--fg);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.ob-code {
+  fill: var(--fg);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+[data-ob-code="split"] .ob-code--split,
+[data-ob-code="tx"] .ob-code--tx {
+  opacity: 1;
+}
+
+/* The publish that is not inside the transaction, dimmed once there is one. */
+.ob-direct {
+  opacity: 1;
+}
+
+[data-ob-code="tx"] .ob-direct {
+  opacity: 0.18;
+}
+
+.ob-direct-link {
+  stroke-dasharray: 16 12;
+}
+
+/* The frame one commit covers, and what that commit did. */
+.ob-frame {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+  stroke-dasharray: 16 12;
+  opacity: 0;
+}
+
+[data-ob-frame="on"] .ob-frame,
+[data-ob-frame="commit"] .ob-frame,
+[data-ob-frame="fail"] .ob-frame {
+  opacity: 1;
+}
+
+[data-ob-frame="commit"] .ob-frame {
+  stroke: var(--state-closed);
+  stroke-dasharray: none;
+  stroke-width: 6;
+}
+
+[data-ob-frame="fail"] .ob-frame {
+  stroke: var(--state-open);
+  stroke-dasharray: none;
+  stroke-width: 6;
+}
+
+/* The two readouts the tables carry as their own names. */
+.ob-orders,
+.ob-pending {
+  fill: var(--fg-soft);
+  font-size: 26px;
+}
+
+/* One row of `orders`: texture, because no order on this stage has a name. */
+.ob-bar {
+  fill: var(--request);
+  stroke: var(--request);
+  stroke-width: 2;
+}
+
+.ob-bar[data-ob-bar="off"] {
+  opacity: 0;
+}
+
+.ob-bar[data-ob-bar="try"] {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-dasharray: 10 8;
+  opacity: 1;
+}
+
+.ob-bar[data-ob-bar="on"] {
+  opacity: 1;
+}
+
+/* One row of `outbox`: a sequence, an id, and where it has got to. */
+.ob-row[data-ob-row="none"] {
+  opacity: 0;
+}
+
+.ob-row-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.ob-row[data-ob-row="try"] .ob-row-bg {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-dasharray: 10 8;
+}
+
+.ob-row[data-ob-row="pending"] .ob-row-bg {
+  stroke: var(--state-half);
+}
+
+.ob-row[data-ob-row="sent"] .ob-row-bg {
+  stroke: var(--state-closed);
+}
+
+.ob-seq,
+.ob-id {
+  fill: var(--fg);
+  font-size: 22px;
+}
+
+.ob-state {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.ob-state--pending {
+  fill: var(--state-half);
+}
+
+.ob-state--sent {
+  fill: var(--state-closed);
+}
+
+.ob-row[data-ob-row="pending"] .ob-state--pending,
+.ob-row[data-ob-row="sent"] .ob-state--sent {
+  opacity: 1;
+}
+
+/* The log a change data capture pipeline reads instead of the table. */
+.ob-log-bg {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.ob-log-tick {
+  fill: var(--muted);
+  opacity: 0.5;
+}
+
+[data-ob-cdc="on"] .ob-log-tick {
+  fill: var(--state-half);
+  opacity: 1;
+}
+
+/* The relay: the lane it polls on, the hatch when it dies, its other self. */
+[data-ob-cdc="on"] .ob-poll-link {
+  opacity: 0.2;
+}
+
+.ob-hatch-line {
+  stroke: var(--state-open);
+}
+
+.ob-relay-hatch,
+.ob-broker-hatch {
+  fill: url(#ob-hatch);
+  stroke: var(--state-open);
+  stroke-width: 4;
+  opacity: 0;
+}
+
+/*
+ * The hatch says the box is not answering, and the badge next to it says so in
+ * words. It is held well under full strength on purpose: the box still has to
+ * be readable while it is down, and the badge is the part that carries the
+ * meaning.
+ */
+[data-ob-relay="down"] .ob-relay-hatch,
+[data-ob-broker="down"] .ob-broker-hatch {
+  opacity: 0.5;
+}
+
+.ob-cdc-chip {
+  opacity: 0;
+}
+
+[data-ob-cdc="on"] .ob-cdc-chip {
+  opacity: 1;
+}
+
+.ob-cdc-chip-bg {
+  stroke: var(--state-half);
+}
+
+.ob-cdc-text {
+  fill: var(--state-half);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.ob-cdc-lane {
+  opacity: 0;
+}
+
+[data-ob-cdc="on"] .ob-cdc-lane {
+  opacity: 1;
+}
+
+.ob-cdc-link {
+  stroke: var(--state-half);
+}
+
+/* The broker: whether it is answering, what it is holding, who is reading. */
+.ob-down-chip {
+  opacity: 0;
+}
+
+[data-ob-broker="down"] .ob-down-chip {
+  opacity: 1;
+}
+
+.ob-down-chip-bg {
+  stroke: var(--state-open);
+}
+
+.ob-down-text {
+  fill: var(--state-open);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.ob-slot {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.ob-slot-group[data-ob-slot="held"] .ob-slot {
+  fill: var(--surface);
+  stroke: var(--state-closed);
+  stroke-dasharray: none;
+}
+
+.ob-slot-group[data-ob-slot="ghost"] .ob-slot {
+  fill: url(#ob-hatch);
+  stroke: var(--state-open);
+  stroke-dasharray: none;
+}
+
+.ob-msg {
+  fill: var(--fg);
+  font-size: 22px;
+}
+
+.ob-tick {
+  fill: var(--muted);
+  opacity: 0.25;
+}
+
+[data-ob-drain="on"] .ob-tick {
+  fill: var(--state-closed);
+  opacity: 1;
+}
+
+/* What the broker has taken, and what it has taken more than once. */
+.ob-published,
+.ob-dups {
+  fill: var(--fg-soft);
+  font-size: 28px;
+}
+
+.ob-once {
+  fill: var(--state-half);
+  font-size: 26px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-ob-once="on"] .ob-once {
+  opacity: 1;
+}
+
+/* What travels: a write, and a message on its way to the broker. */
+.ob-write {
+  fill: var(--request);
+}
+
+.ob-ship-id {
+  fill: var(--fg);
+}
+
+/* The sequence number a row carries, and the id that goes with it. */
+[data-ob-seq="1"] .ob-seq--1,
+[data-ob-seq="2"] .ob-seq--2,
+[data-ob-seq="3"] .ob-seq--3,
+[data-ob-seq="4"] .ob-seq--4,
+[data-ob-seq="5"] .ob-seq--5,
+[data-ob-seq="6"] .ob-seq--6,
+[data-ob-seq="7"] .ob-seq--7,
+[data-ob-seq="8"] .ob-seq--8 {
+  opacity: 1;
+}
+
+/* The same number, spelled as the id the broker sees. */
+[data-ob-seq="1"] .ob-id--1,
+[data-ob-seq="2"] .ob-id--2,
+[data-ob-seq="3"] .ob-id--3,
+[data-ob-seq="4"] .ob-id--4,
+[data-ob-seq="5"] .ob-id--5,
+[data-ob-seq="6"] .ob-id--6,
+[data-ob-seq="7"] .ob-id--7,
+[data-ob-seq="8"] .ob-id--8 {
+  opacity: 1;
+}
+
+/* The message one queue slot is holding. */
+[data-ob-msg="1"] .ob-msg--1,
+[data-ob-msg="2"] .ob-msg--2,
+[data-ob-msg="3"] .ob-msg--3,
+[data-ob-msg="4"] .ob-msg--4,
+[data-ob-msg="5"] .ob-msg--5,
+[data-ob-msg="6"] .ob-msg--6,
+[data-ob-msg="7"] .ob-msg--7,
+[data-ob-msg="8"] .ob-msg--8 {
+  opacity: 1;
+}
+
+/* How many orders the table holds. */
+[data-ob-orders="0"] .ob-orders--0,
+[data-ob-orders="1"] .ob-orders--1,
+[data-ob-orders="2"] .ob-orders--2,
+[data-ob-orders="3"] .ob-orders--3,
+[data-ob-orders="4"] .ob-orders--4,
+[data-ob-orders="5"] .ob-orders--5,
+[data-ob-orders="6"] .ob-orders--6,
+[data-ob-orders="7"] .ob-orders--7,
+[data-ob-orders="8"] .ob-orders--8,
+[data-ob-orders="9"] .ob-orders--9 {
+  opacity: 1;
+}
+
+/* How many outbox rows are still waiting to go out. */
+[data-ob-pending="0"] .ob-pending--0,
+[data-ob-pending="1"] .ob-pending--1,
+[data-ob-pending="2"] .ob-pending--2,
+[data-ob-pending="3"] .ob-pending--3,
+[data-ob-pending="4"] .ob-pending--4,
+[data-ob-pending="5"] .ob-pending--5,
+[data-ob-pending="6"] .ob-pending--6,
+[data-ob-pending="7"] .ob-pending--7 {
+  opacity: 1;
+}
+
+/* How many messages have been marked sent, and how many went twice. */
+[data-ob-published="0"] .ob-published--0,
+[data-ob-published="1"] .ob-published--1,
+[data-ob-published="2"] .ob-published--2,
+[data-ob-published="3"] .ob-published--3,
+[data-ob-published="4"] .ob-published--4,
+[data-ob-published="5"] .ob-published--5,
+[data-ob-published="6"] .ob-published--6,
+[data-ob-published="7"] .ob-published--7,
+[data-ob-published="8"] .ob-published--8 {
+  opacity: 1;
+}
+
+[data-ob-dups="0"] .ob-dups--0,
+[data-ob-dups="1"] .ob-dups--1,
+[data-ob-dups="2"] .ob-dups--2 {
+  opacity: 1;
+}

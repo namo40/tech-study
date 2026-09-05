@@ -1,0 +1,255 @@
+/* ---------------------------------------------------------------- */
+/* Sticky Session stage                                              */
+/* ---------------------------------------------------------------- */
+
+/* Users. A user and the requests they send share one colour, so a lane can be
+   followed without reading a single label. */
+.ss-user-dot {
+  fill: var(--request);
+}
+
+.ss-user--b .ss-user-dot {
+  fill: var(--state-half);
+}
+
+.ss-user-text {
+  fill: var(--bg);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+/* The cookie a user is holding: outlined while the instance it names still has
+   the session, dashed and grey once that instance has stopped holding it. */
+.ss-cookie {
+  opacity: 0;
+}
+
+.ss-user[data-cookie="fresh"] .ss-cookie,
+.ss-user[data-cookie="stale"] .ss-cookie {
+  opacity: 1;
+}
+
+.ss-cookie-bg {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 3;
+}
+
+.ss-cookie-text {
+  fill: var(--state-closed);
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.ss-user[data-cookie="stale"] .ss-cookie-bg {
+  stroke: var(--muted);
+  stroke-dasharray: 7 6;
+}
+
+.ss-user[data-cookie="stale"] .ss-cookie-text {
+  fill: var(--muted);
+}
+
+/* The affinity switch, which is the one setting the whole scene turns on. */
+.ss-affinity {
+  --flash-color: var(--fg-soft);
+
+  font-size: 26px;
+}
+
+[data-affinity="on"] .ss-affinity {
+  --flash-color: var(--accent);
+}
+
+[data-affinity="off"] .ss-affinity--off,
+[data-affinity="on"] .ss-affinity--on,
+[data-affinity="optional"] .ss-affinity--optional {
+  opacity: 1;
+}
+
+/* The cookie map: which instance each user will be sent back to. The instance
+   name is a stack of variants, so scrubbing never interpolates a name. */
+.ss-map {
+  opacity: 0;
+}
+
+[data-affinity="on"] .ss-map {
+  opacity: 1;
+}
+
+.ss-map-label {
+  font-size: 22px;
+}
+
+.ss-pin-chip {
+  fill: var(--request);
+}
+
+.ss-pin--b .ss-pin-chip {
+  fill: var(--state-half);
+}
+
+.ss-pin-letter {
+  fill: var(--bg);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.ss-pin-arrow {
+  fill: var(--fg-soft);
+  font-size: 26px;
+}
+
+.ss-pin-target {
+  fill: var(--fg);
+  font-size: 26px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.ss-pin[data-pin="1"] .ss-pin-target--1,
+.ss-pin[data-pin="2"] .ss-pin-target--2,
+.ss-pin[data-pin="3"] .ss-pin-target--3 {
+  opacity: 1;
+}
+
+/* Instances. A rollout leaves the box dashed and faded; a meter that has taken
+   too much of one user's traffic outlines it in the failure colour. */
+.ss-inst-label {
+  fill: var(--fg-soft);
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.ss-inst[data-inst-state="down"] .ss-inst-box {
+  stroke-dasharray: 16 14;
+  opacity: 0.45;
+}
+
+.ss-inst[data-load-state="hot"] .ss-inst-box {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+.ss-deploy {
+  --flash-color: var(--state-half);
+
+  font-size: 24px;
+}
+
+.ss-inst[data-inst-state="down"] .ss-deploy {
+  opacity: 1;
+}
+
+/* The session slot: an outline until the instance has seen someone, then the
+   letter of whoever it is holding, in that user's colour. */
+.ss-slot {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 9 8;
+}
+
+.ss-inst[data-session="a"] .ss-slot {
+  fill: var(--request);
+  stroke: var(--request);
+  stroke-dasharray: none;
+}
+
+.ss-inst[data-session="b"] .ss-slot {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+  stroke-dasharray: none;
+}
+
+.ss-slot-text {
+  fill: var(--bg);
+  font-size: 34px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.ss-inst[data-session="a"] .ss-slot-text--a,
+.ss-inst[data-session="b"] .ss-slot-text--b {
+  opacity: 1;
+}
+
+/* A rejection outlines the slot the request was hoping to find itself in. The
+   label itself is drawn above the box, because a slot already holding someone
+   else is exactly when a rejection happens and the two must not overlap. */
+.ss-inst[data-miss="on"] .ss-slot {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+.ss-no-session {
+  --flash-color: var(--state-open);
+
+  font-size: 22px;
+}
+
+.ss-inst[data-miss="on"] .ss-no-session {
+  opacity: 1;
+}
+
+/* The load meter, and the row labels that name it and the slot above it. */
+.ss-load-fill {
+  --fill-color: var(--state-closed);
+}
+
+.ss-inst[data-load-state="hot"] .ss-load-fill {
+  --fill-color: var(--state-open);
+}
+
+.ss-row-label {
+  font-size: 22px;
+}
+
+/* The shared store, and the lookup an instance makes against it. */
+.ss-lookup {
+  stroke: var(--accent);
+  stroke-width: 4;
+  stroke-dasharray: 9 8;
+  opacity: 0;
+}
+
+.ss-inst[data-lookup="on"] .ss-lookup {
+  opacity: 1;
+}
+
+.ss-store {
+  opacity: 0;
+}
+
+[data-store="on"] .ss-store {
+  opacity: 1;
+}
+
+.ss-store-title {
+  fill: var(--fg);
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.ss-store-entry {
+  opacity: 0;
+}
+
+[data-store-a="on"] .ss-store-entry--a,
+[data-store-b="on"] .ss-store-entry--b {
+  opacity: 1;
+}
+
+.ss-store-chip {
+  fill: var(--request);
+}
+
+.ss-store-entry--b .ss-store-chip {
+  fill: var(--state-half);
+}
+
+.ss-store-text {
+  fill: var(--bg);
+  font-size: 28px;
+  font-weight: 700;
+}

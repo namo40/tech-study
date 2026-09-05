@@ -1,0 +1,429 @@
+/* ---------------------------------------------------------------- */
+/* Memory Pressure stage                                             */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One gauge, and everything else on the stage is a caption for it. The track is
+ * the limit rather than a bar with a limit drawn somewhere inside it, so
+ * "the gauge is full" and "the container is over its limit" are the same
+ * picture; the line on its right edge carries the figure so the reader never
+ * has to be told which end matters.
+ *
+ * Every readout here is a stack of words on one spot with the widget class
+ * hiding all of them, so the state picks the one that shows and nothing
+ * interpolates between two colours. The gauge is the single exception, because
+ * it is a quantity: its width is tweened and its colour is switched, never
+ * blended.
+ *
+ * The colours carry the argument, and there are only three states worth having.
+ * Green is a heap with room to work in. Amber is a heap living near its ceiling
+ * — the regime this page is about, where nothing has failed yet and every
+ * request is already paying for it. Red is the limit reached, and it appears on
+ * the gauge and the container badge at the same instant, because they are the
+ * same event: past the limit there is no error to catch, only a process that is
+ * gone. `restarting` is drawn in violet, the colour this site gives to
+ * something the platform is doing on the side rather than the app doing
+ * anything at all.
+ */
+
+/* The lane carries allocation and nothing else, and it carries nothing at all
+   while there is no process to allocate. The line to the Node is quiet for the
+   whole scene: it says the heap is inside the container, which is why the limit
+   is allowed to kill it, and nothing ever travels down it. */
+[data-mp-container="oomkilled"] .mp-lane,
+[data-mp-container="restarting"] .mp-lane {
+  stroke-dasharray: 16 16;
+  opacity: 0.45;
+}
+
+.mp-inside {
+  stroke-dasharray: 10 18;
+  opacity: 0.35;
+}
+
+/* The App and the Heap are one process, so the App goes with it. */
+[data-mp-container="oomkilled"] .mp-app > .scene-box,
+[data-mp-container="restarting"] .mp-app > .scene-box {
+  stroke: var(--state-open);
+  stroke-dasharray: 14 10;
+}
+
+/* --- the App -------------------------------------------------------- */
+
+.mp-alloc {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 36px;
+}
+
+/* Nothing is being allocated because there is no process to allocate. */
+.mp-alloc--0 {
+  fill: var(--muted);
+}
+
+/* The rate that is three times what the heap can absorb. */
+.mp-alloc--60 {
+  fill: var(--state-half);
+}
+[data-mp-alloc="0"] .mp-alloc--0,
+[data-mp-alloc="15"] .mp-alloc--15,
+[data-mp-alloc="20"] .mp-alloc--20,
+[data-mp-alloc="60"] .mp-alloc--60 {
+  opacity: 1;
+}
+
+/* The chip is there only once the big buffers are rented rather than made. */
+[data-mp-pooled="off"] .mp-chip-pooled {
+  opacity: 0;
+}
+
+.mp-chip-pooled-bg {
+  fill: var(--surface);
+  stroke: var(--state-closed);
+  stroke-width: 3;
+}
+
+.mp-pooled {
+  fill: var(--state-closed);
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+[data-mp-pooled="on"] .mp-pooled--on {
+  opacity: 1;
+}
+
+/* --- the Heap ------------------------------------------------------- */
+
+/* The gauge. Its width is the reading and its colour is the regime; the two
+   are set separately so neither can be inferred from the other. */
+.mp-gauge-track {
+  stroke-width: 3;
+}
+
+.mp-gauge-fill {
+  --fill-color: var(--state-closed);
+}
+
+[data-mp-level="warn"] .mp-gauge-fill {
+  --fill-color: var(--state-half);
+}
+
+[data-mp-level="limit"] .mp-gauge-fill {
+  --fill-color: var(--state-open);
+}
+
+/* The end of the track is the limit, drawn as a line so the gauge has a wall
+   to reach rather than a number to pass. */
+.mp-limit-line {
+  stroke: var(--fg-soft);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+[data-mp-level="warn"] .mp-limit-line {
+  stroke: var(--state-half);
+}
+
+[data-mp-level="limit"] .mp-limit-line {
+  stroke: var(--state-open);
+}
+
+.mp-limit-label {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+[data-mp-level="limit"] .mp-limit-label {
+  fill: var(--state-open);
+}
+
+.mp-used {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 36px;
+}
+
+[data-mp-level="warn"] .mp-used {
+  fill: var(--state-half);
+}
+
+[data-mp-level="limit"] .mp-used {
+  fill: var(--state-open);
+}
+
+/* One reading per eight mebibytes, stacked on one spot. */
+[data-mp-used="0"] .mp-used--0,
+[data-mp-used="1"] .mp-used--1,
+[data-mp-used="2"] .mp-used--2,
+[data-mp-used="3"] .mp-used--3,
+[data-mp-used="4"] .mp-used--4,
+[data-mp-used="5"] .mp-used--5,
+[data-mp-used="6"] .mp-used--6,
+[data-mp-used="7"] .mp-used--7,
+[data-mp-used="8"] .mp-used--8,
+[data-mp-used="9"] .mp-used--9,
+[data-mp-used="10"] .mp-used--10,
+[data-mp-used="11"] .mp-used--11,
+[data-mp-used="12"] .mp-used--12,
+[data-mp-used="13"] .mp-used--13,
+[data-mp-used="14"] .mp-used--14,
+[data-mp-used="15"] .mp-used--15,
+[data-mp-used="16"] .mp-used--16,
+[data-mp-used="17"] .mp-used--17,
+[data-mp-used="18"] .mp-used--18,
+[data-mp-used="19"] .mp-used--19,
+[data-mp-used="20"] .mp-used--20,
+[data-mp-used="21"] .mp-used--21,
+[data-mp-used="22"] .mp-used--22,
+[data-mp-used="23"] .mp-used--23,
+[data-mp-used="24"] .mp-used--24,
+[data-mp-used="25"] .mp-used--25,
+[data-mp-used="26"] .mp-used--26,
+[data-mp-used="27"] .mp-used--27,
+[data-mp-used="28"] .mp-used--28,
+[data-mp-used="29"] .mp-used--29,
+[data-mp-used="30"] .mp-used--30,
+[data-mp-used="31"] .mp-used--31,
+[data-mp-used="32"] .mp-used--32,
+[data-mp-used="33"] .mp-used--33,
+[data-mp-used="34"] .mp-used--34,
+[data-mp-used="35"] .mp-used--35,
+[data-mp-used="36"] .mp-used--36,
+[data-mp-used="37"] .mp-used--37,
+[data-mp-used="38"] .mp-used--38,
+[data-mp-used="39"] .mp-used--39,
+[data-mp-used="40"] .mp-used--40,
+[data-mp-used="41"] .mp-used--41,
+[data-mp-used="42"] .mp-used--42,
+[data-mp-used="43"] .mp-used--43,
+[data-mp-used="44"] .mp-used--44,
+[data-mp-used="45"] .mp-used--45,
+[data-mp-used="46"] .mp-used--46,
+[data-mp-used="47"] .mp-used--47,
+[data-mp-used="48"] .mp-used--48,
+[data-mp-used="49"] .mp-used--49,
+[data-mp-used="50"] .mp-used--50,
+[data-mp-used="51"] .mp-used--51,
+[data-mp-used="52"] .mp-used--52,
+[data-mp-used="53"] .mp-used--53,
+[data-mp-used="54"] .mp-used--54,
+[data-mp-used="55"] .mp-used--55,
+[data-mp-used="56"] .mp-used--56,
+[data-mp-used="57"] .mp-used--57,
+[data-mp-used="58"] .mp-used--58,
+[data-mp-used="59"] .mp-used--59,
+[data-mp-used="60"] .mp-used--60,
+[data-mp-used="61"] .mp-used--61,
+[data-mp-used="62"] .mp-used--62,
+[data-mp-used="63"] .mp-used--63,
+[data-mp-used="64"] .mp-used--64 {
+  opacity: 1;
+}
+
+/* The lamp burns while the collector is stopping the world. Under pressure it
+   is lit more of the time than it is not, which is the whole of step two. */
+/* No process, no collector: the lamp is not off, it is not there. */
+[data-mp-container="oomkilled"] .mp-chip-lamp,
+[data-mp-container="restarting"] .mp-chip-lamp {
+  opacity: 0.35;
+}
+
+.mp-chip-lamp-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+[data-mp-lamp="on"] .mp-chip-lamp-bg {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+}
+
+.mp-lamp {
+  fill: var(--muted);
+  font-size: 32px;
+  letter-spacing: 2px;
+}
+
+.mp-lamp--on {
+  fill: var(--bg);
+}
+[data-mp-lamp="off"] .mp-lamp--off,
+[data-mp-lamp="on"] .mp-lamp--on {
+  opacity: 1;
+}
+
+/* How often it runs, and what one run costs. Both are the collector's own
+   numbers, and both go quiet when there is no collector. */
+.mp-gcrate,
+.mp-pause {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 32px;
+}
+
+[data-mp-level="warn"] .mp-gcrate,
+[data-mp-level="warn"] .mp-pause {
+  fill: var(--state-half);
+}
+
+[data-mp-level="limit"] .mp-gcrate,
+[data-mp-level="limit"] .mp-pause {
+  fill: var(--muted);
+}
+
+[data-mp-gc="0"] .mp-gcrate--0,
+[data-mp-gc="1"] .mp-gcrate--1,
+[data-mp-gc="2"] .mp-gcrate--2,
+[data-mp-gc="3"] .mp-gcrate--3,
+[data-mp-gc="4"] .mp-gcrate--4,
+[data-mp-gc="5"] .mp-gcrate--5,
+[data-mp-gc="6"] .mp-gcrate--6,
+[data-mp-gc="7"] .mp-gcrate--7,
+[data-mp-gc="8"] .mp-gcrate--8,
+[data-mp-gc="9"] .mp-gcrate--9,
+[data-mp-gc="10"] .mp-gcrate--10,
+[data-mp-gc="11"] .mp-gcrate--11,
+[data-mp-gc="12"] .mp-gcrate--12,
+[data-mp-gc="13"] .mp-gcrate--13,
+[data-mp-gc="14"] .mp-gcrate--14,
+[data-mp-gc="15"] .mp-gcrate--15,
+[data-mp-gc="16"] .mp-gcrate--16,
+[data-mp-gc="17"] .mp-gcrate--17,
+[data-mp-gc="18"] .mp-gcrate--18,
+[data-mp-gc="19"] .mp-gcrate--19,
+[data-mp-gc="20"] .mp-gcrate--20,
+[data-mp-gc="21"] .mp-gcrate--21,
+[data-mp-gc="22"] .mp-gcrate--22,
+[data-mp-gc="23"] .mp-gcrate--23,
+[data-mp-gc="24"] .mp-gcrate--24,
+[data-mp-gc="25"] .mp-gcrate--25,
+[data-mp-gc="26"] .mp-gcrate--26,
+[data-mp-gc="27"] .mp-gcrate--27,
+[data-mp-gc="28"] .mp-gcrate--28,
+[data-mp-gc="29"] .mp-gcrate--29,
+[data-mp-gc="30"] .mp-gcrate--30,
+[data-mp-gc="31"] .mp-gcrate--31,
+[data-mp-gc="32"] .mp-gcrate--32,
+[data-mp-gc="33"] .mp-gcrate--33,
+[data-mp-gc="34"] .mp-gcrate--34,
+[data-mp-gc="35"] .mp-gcrate--35,
+[data-mp-gc="36"] .mp-gcrate--36,
+[data-mp-gc="37"] .mp-gcrate--37,
+[data-mp-gc="38"] .mp-gcrate--38,
+[data-mp-gc="39"] .mp-gcrate--39,
+[data-mp-gc="40"] .mp-gcrate--40,
+[data-mp-gc="41"] .mp-gcrate--41,
+[data-mp-gc="42"] .mp-gcrate--42,
+[data-mp-gc="43"] .mp-gcrate--43,
+[data-mp-gc="44"] .mp-gcrate--44,
+[data-mp-gc="45"] .mp-gcrate--45,
+[data-mp-gc="46"] .mp-gcrate--46,
+[data-mp-gc="47"] .mp-gcrate--47,
+[data-mp-gc="48"] .mp-gcrate--48,
+[data-mp-gc="49"] .mp-gcrate--49,
+[data-mp-gc="50"] .mp-gcrate--50,
+[data-mp-gc="51"] .mp-gcrate--51,
+[data-mp-gc="52"] .mp-gcrate--52,
+[data-mp-gc="53"] .mp-gcrate--53,
+[data-mp-gc="54"] .mp-gcrate--54,
+[data-mp-gc="55"] .mp-gcrate--55,
+[data-mp-gc="56"] .mp-gcrate--56,
+[data-mp-gc="57"] .mp-gcrate--57,
+[data-mp-gc="58"] .mp-gcrate--58,
+[data-mp-gc="59"] .mp-gcrate--59,
+[data-mp-gc="60"] .mp-gcrate--60 {
+  opacity: 1;
+}
+
+[data-mp-pause="0"] .mp-pause--0,
+[data-mp-pause="1"] .mp-pause--1,
+[data-mp-pause="2"] .mp-pause--2,
+[data-mp-pause="3"] .mp-pause--3,
+[data-mp-pause="4"] .mp-pause--4,
+[data-mp-pause="5"] .mp-pause--5,
+[data-mp-pause="6"] .mp-pause--6,
+[data-mp-pause="7"] .mp-pause--7,
+[data-mp-pause="8"] .mp-pause--8,
+[data-mp-pause="9"] .mp-pause--9,
+[data-mp-pause="10"] .mp-pause--10,
+[data-mp-pause="11"] .mp-pause--11,
+[data-mp-pause="12"] .mp-pause--12,
+[data-mp-pause="13"] .mp-pause--13,
+[data-mp-pause="14"] .mp-pause--14,
+[data-mp-pause="15"] .mp-pause--15,
+[data-mp-pause="16"] .mp-pause--16,
+[data-mp-pause="17"] .mp-pause--17,
+[data-mp-pause="18"] .mp-pause--18,
+[data-mp-pause="19"] .mp-pause--19,
+[data-mp-pause="20"] .mp-pause--20 {
+  opacity: 1;
+}
+
+/* --- the Node ------------------------------------------------------- */
+
+/* A container that is coming back is half there, and drawn that way. */
+[data-mp-container="restarting"] .mp-chip-badge {
+  opacity: 0.75;
+}
+
+.mp-chip-badge-bg {
+  fill: var(--surface);
+  stroke: var(--state-closed);
+  stroke-width: 3;
+}
+
+[data-mp-container="oomkilled"] .mp-chip-badge-bg {
+  stroke: var(--state-open);
+}
+
+[data-mp-container="restarting"] .mp-chip-badge-bg {
+  stroke: var(--cpu);
+  stroke-dasharray: 14 10;
+}
+
+.mp-badge {
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+.mp-badge--running {
+  fill: var(--state-closed);
+}
+
+.mp-badge--oomkilled {
+  fill: var(--state-open);
+}
+
+.mp-badge--restarting {
+  fill: var(--cpu);
+}
+[data-mp-container="running"] .mp-badge--running,
+[data-mp-container="oomkilled"] .mp-badge--oomkilled,
+[data-mp-container="restarting"] .mp-badge--restarting {
+  opacity: 1;
+}
+
+/* The scar. It is still 1 on the last frame, because a restart is a thing that
+   happened rather than a thing that was fixed. */
+.mp-restarts {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 32px;
+}
+
+.mp-restarts--0 {
+  fill: var(--muted);
+}
+
+.mp-restarts--1,
+.mp-restarts--2 {
+  fill: var(--state-open);
+}
+[data-mp-restarts="0"] .mp-restarts--0,
+[data-mp-restarts="1"] .mp-restarts--1,
+[data-mp-restarts="2"] .mp-restarts--2 {
+  opacity: 1;
+}

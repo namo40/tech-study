@@ -1,0 +1,524 @@
+/* ---------------------------------------------------------------- */
+/* Resource-Based Authorization stage                                */
+/* ---------------------------------------------------------------- */
+
+/*
+ * The moment the thing being acted on becomes an input to the decision.
+ *
+ * The colour argument is small and never the only signal. Blue is ordinary
+ * traffic: a caller, the verb it is asking for, a request on its way down.
+ * Green is a rule that looked at the resource and said yes — the owner card,
+ * the running tally, an edit that landed where it belongs, the settled frame.
+ * Red is the role-only ghost and everything that follows from it: the wrongful
+ * edit, a refusal, and the hollow card an action nobody wrote a rule for falls
+ * through. Amber is the coarse outer gate — the admin badge and the admin card —
+ * because it is neither the fine check nor a refusal, and the third step is
+ * about it finding its place rather than disappearing.
+ *
+ * Shape carries the argument before colour does. A rule card is an action cell
+ * and a condition cell with a link between them. The role-only ghost is the same
+ * card with its condition cell replaced by an empty dashed socket: not a
+ * condition that happens to be blank, but a check with nowhere to put the
+ * document. The unmatched card is a hollow dashed plate with no cells at all,
+ * drawn in the exact place the missing rule will go. A legitimate edit is a
+ * check inside a disc; a wrongful one is a cross inside a dashed ring.
+ *
+ * The owner mark on a document is drawn from the first frame and greyed while
+ * the Check is in role mode, because the fact was always there — nothing was
+ * reading it. It lights when the mode changes, which is the whole scene in one
+ * attribute.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a base
+ * rule hiding all of them, so nothing is interpolated and scrubbing backwards is
+ * exact. There is no continuous quantity on this stage at all.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+.rba-lane {
+  stroke-linecap: round;
+}
+
+.rba-lane--ask {
+  opacity: 0.9;
+}
+
+.rba-lane--write {
+  opacity: 0.85;
+}
+
+/* While the role-only check is up, the way in is the way the damage came. */
+[data-rba-own-rule="ghost"] .rba-lane--ask {
+  stroke: var(--state-open);
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/* A question on its way down is a plain dot; a granted write is a ring, because
+   by then the answer is already known and only the change is still moving. */
+.rba-req--ask .scene-req-dot {
+  fill: var(--request);
+}
+
+.rba-req--write .scene-req-dot {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+/* Whose request it is, carried all the way down and given up for the verdict. */
+.rba-req-tag {
+  fill: var(--surface);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.rba-req--write .rba-req-tag {
+  fill: var(--state-closed);
+}
+
+/* --- the Users ---------------------------------------------------------- */
+
+.rba-user-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.rba-user-name {
+  fill: var(--fg);
+  font-size: 40px;
+  font-weight: 700;
+}
+
+.rba-tag-bg {
+  fill: var(--request);
+  fill-opacity: 0.16;
+  stroke: var(--request);
+  stroke-width: 3;
+}
+
+.rba-tag-a,
+.rba-tag-b {
+  fill: var(--request);
+  font-size: 30px;
+}
+
+[data-rba-act-a="edit"] .rba-tag-a--edit,
+[data-rba-act-a="share"] .rba-tag-a--share,
+[data-rba-act-b="edit"] .rba-tag-b--edit,
+[data-rba-act-b="share"] .rba-tag-b--share {
+  opacity: 1;
+}
+
+/* A verb no rule has heard of is drawn as the odd one out from the moment it
+   appears, so the refusal that follows is read as expected rather than random. */
+[data-rba-act-a="share"] .rba-user--A .rba-tag-bg,
+[data-rba-act-b="share"] .rba-user--B .rba-tag-bg {
+  fill: var(--state-half);
+  fill-opacity: 0.16;
+  stroke: var(--state-half);
+  stroke-dasharray: 10 8;
+}
+
+[data-rba-act-a="share"] .rba-tag-a--share,
+[data-rba-act-b="share"] .rba-tag-b--share {
+  fill: var(--state-half);
+}
+
+/* The coarse outer gate, worn by the caller it was granted to. */
+.rba-badge {
+  opacity: 0;
+}
+
+[data-rba-badge="admin"] .rba-badge {
+  opacity: 1;
+}
+
+.rba-badge-bg {
+  fill: var(--state-half);
+  fill-opacity: 0.2;
+  stroke: var(--state-half);
+  stroke-width: 4;
+}
+
+.rba-badge-text {
+  fill: var(--state-half);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+/* --- the rule cards ----------------------------------------------------- */
+
+/* A card is drawn only once it has been written, and the ghost of the check
+   that never looked at a document is drawn on the same spot as the rule that
+   replaces it. */
+.rba-card,
+.rba-card-plate,
+.rba-cell,
+.rba-cell-text,
+.rba-card-arrow,
+.rba-socket {
+  opacity: 0;
+}
+
+[data-rba-own-rule="ghost"] .rba-card--own,
+[data-rba-own-rule="owner"] .rba-card--own,
+[data-rba-admin-rule="admin"] .rba-card--admin,
+[data-rba-share-rule="unmatched"] .rba-card--share,
+[data-rba-share-rule="share"] .rba-card--share {
+  opacity: 1;
+}
+
+/* A rule that exists gets the solid plate, its verb, and the link to whatever
+   it asks about. */
+[data-rba-own-rule="ghost"] .rba-card--own .rba-card-plate--live,
+[data-rba-own-rule="ghost"] .rba-card--own .rba-cell--act,
+[data-rba-own-rule="ghost"] .rba-card--own .rba-cell-text--act,
+[data-rba-own-rule="ghost"] .rba-card--own .rba-card-arrow,
+[data-rba-own-rule="owner"] .rba-card--own .rba-card-plate--live,
+[data-rba-own-rule="owner"] .rba-card--own .rba-cell--act,
+[data-rba-own-rule="owner"] .rba-card--own .rba-cell-text--act,
+[data-rba-own-rule="owner"] .rba-card--own .rba-card-arrow,
+[data-rba-admin-rule="admin"] .rba-card--admin .rba-card-plate--live,
+[data-rba-admin-rule="admin"] .rba-card--admin .rba-cell--act,
+[data-rba-admin-rule="admin"] .rba-card--admin .rba-cell-text--act,
+[data-rba-admin-rule="admin"] .rba-card--admin .rba-card-arrow,
+[data-rba-share-rule="share"] .rba-card--share .rba-card-plate--live,
+[data-rba-share-rule="share"] .rba-card--share .rba-cell--act,
+[data-rba-share-rule="share"] .rba-card--share .rba-cell-text--act,
+[data-rba-share-rule="share"] .rba-card--share .rba-card-arrow {
+  opacity: 1;
+}
+
+/* The condition cell belongs to a rule that asks something about the resource,
+   which is exactly the three that do and neither of the two that do not. */
+[data-rba-own-rule="owner"] .rba-card--own .rba-cell--cond,
+[data-rba-own-rule="owner"] .rba-card--own .rba-cell-text--cond,
+[data-rba-admin-rule="admin"] .rba-card--admin .rba-cell--cond,
+[data-rba-admin-rule="admin"] .rba-card--admin .rba-cell-text--cond,
+[data-rba-share-rule="share"] .rba-card--share .rba-cell--cond,
+[data-rba-share-rule="share"] .rba-card--share .rba-cell-text--cond {
+  opacity: 1;
+}
+
+/* The role-only check has nowhere to put the document, so the socket is empty
+   and stays empty. That is the defect, drawn as a hole rather than a colour. */
+[data-rba-own-rule="ghost"] .rba-card--own .rba-socket {
+  opacity: 1;
+}
+
+/* An action nobody wrote a rule for falls through a card-shaped hole. */
+[data-rba-share-rule="unmatched"] .rba-card--share .rba-card-plate--hollow {
+  opacity: 1;
+}
+
+.rba-card-plate--live {
+  fill: var(--surface-2);
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+}
+
+.rba-card-plate--hollow {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: 18 12;
+}
+
+.rba-cell {
+  stroke-width: 3;
+}
+
+.rba-cell--act {
+  fill: var(--request);
+  fill-opacity: 0.16;
+  stroke: var(--request);
+}
+
+.rba-cell--cond {
+  fill: var(--state-closed);
+  fill-opacity: 0.16;
+  stroke: var(--state-closed);
+}
+
+.rba-cell-text {
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.rba-cell-text--act {
+  fill: var(--request);
+}
+
+.rba-cell-text--cond {
+  fill: var(--state-closed);
+}
+
+.rba-card-arrow {
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+/* The empty socket where a resource question would go, if there were one. */
+.rba-socket {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-dasharray: 12 10;
+}
+
+/* The role-only check is a hypothetical, so the card it is drawn on wears the
+   warning frame rather than the ordinary one. */
+[data-rba-own-rule="ghost"] .rba-card--own .rba-card-plate--live {
+  stroke: var(--state-open);
+  stroke-dasharray: 18 12;
+}
+
+[data-rba-own-rule="ghost"] .rba-card--own .rba-cell--act {
+  fill: var(--state-open);
+  fill-opacity: 0.14;
+  stroke: var(--state-open);
+}
+
+[data-rba-own-rule="ghost"] .rba-card--own .rba-cell-text--act {
+  fill: var(--state-open);
+}
+
+[data-rba-own-rule="ghost"] .rba-card--own .rba-card-arrow {
+  stroke: var(--state-open);
+  stroke-dasharray: 8 8;
+}
+
+/* The coarse gate written as a rule is amber wherever it appears, so the badge
+   on the caller and the card in the Check read as one thing. */
+[data-rba-admin-rule="admin"] .rba-card--admin .rba-cell--cond {
+  fill: var(--state-half);
+  fill-opacity: 0.18;
+  stroke: var(--state-half);
+}
+
+[data-rba-admin-rule="admin"] .rba-card--admin .rba-cell-text--cond {
+  fill: var(--state-half);
+}
+
+/* The whole Check wears the warning frame while the hypothetical is up. */
+[data-rba-own-rule="ghost"] .rba-check > .scene-box {
+  stroke: var(--state-open);
+  stroke-width: 6;
+  stroke-dasharray: 18 12;
+}
+
+/* --- the verdict -------------------------------------------------------- */
+
+.rba-ok {
+  fill: var(--state-closed);
+  font-family: var(--font-mono);
+  font-size: 40px;
+}
+
+.rba-deny {
+  fill: var(--state-open);
+  font-size: 40px;
+}
+
+[data-rba-verdict="ok"][data-rba-ok="0"] .rba-ok--0,
+[data-rba-verdict="ok"][data-rba-ok="1"] .rba-ok--1,
+[data-rba-verdict="ok"][data-rba-ok="2"] .rba-ok--2,
+[data-rba-verdict="ok"][data-rba-ok="3"] .rba-ok--3,
+[data-rba-verdict="ok"][data-rba-ok="4"] .rba-ok--4,
+[data-rba-verdict="ok"][data-rba-ok="5"] .rba-ok--5,
+[data-rba-verdict="deny"] .rba-deny {
+  opacity: 1;
+}
+
+/* A tally nobody has added to yet is written in the plain colour, because zero
+   grants is not a success. */
+[data-rba-ok="0"] .rba-ok--0 {
+  fill: var(--fg-soft);
+}
+
+.rba-verdict-lamp {
+  fill: var(--state-closed);
+  fill-opacity: 0.35;
+}
+
+[data-rba-ok="0"] .rba-verdict-lamp {
+  fill: var(--muted);
+  fill-opacity: 0.5;
+}
+
+[data-rba-verdict="deny"] .rba-verdict-lamp {
+  fill: var(--state-open);
+  fill-opacity: 1;
+}
+
+/* --- the Docs ----------------------------------------------------------- */
+
+.rba-doc-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.rba-doc-name {
+  fill: var(--fg);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+/* Who owns the document. The fact is drawn from the first frame and greyed
+   while nothing is reading it, which is the whole of the opening step. */
+.rba-own-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+.rba-own {
+  fill: var(--muted);
+  font-size: 28px;
+}
+
+.rba-doc[data-rba-own="A"] .rba-own--A,
+.rba-doc[data-rba-own="B"] .rba-own--B {
+  opacity: 1;
+}
+
+[data-rba-mode="resource"] .rba-own-bg {
+  fill: var(--state-closed);
+  fill-opacity: 0.14;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+}
+
+[data-rba-mode="resource"] .rba-own {
+  fill: var(--state-closed);
+}
+
+/* What the last write left behind: a check inside a disc when it landed where
+   it belongs, a cross inside a dashed ring when it did not. */
+.rba-edit {
+  opacity: 0;
+}
+
+.rba-doc[data-rba-edit="ok"] .rba-edit--ok,
+.rba-doc[data-rba-edit="wrong"] .rba-edit--wrong {
+  opacity: 1;
+}
+
+.rba-edit--ok .rba-edit-bg {
+  fill: var(--state-closed);
+  fill-opacity: 0.9;
+  stroke: none;
+}
+
+.rba-edit--ok .rba-edit-glyph {
+  fill: none;
+  stroke: var(--surface);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.rba-edit--wrong .rba-edit-bg {
+  fill: var(--state-open);
+  fill-opacity: 0.22;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-dasharray: 8 7;
+}
+
+.rba-edit--wrong .rba-edit-glyph {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+/* A document being written to right now, which is how the reader sees which of
+   the two the granted write actually reached. */
+.rba-doc[data-rba-hit="on"] .rba-doc-bg {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+/* A document that has been changed by somebody who does not own it is not a
+   detail on the card; it is the card. */
+.rba-doc[data-rba-edit="wrong"] .rba-doc-bg {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+/* The one write that is both landing and wrong keeps both readings: the alarm
+   colour of the second and the weight of the first. */
+.rba-doc[data-rba-hit="on"][data-rba-edit="wrong"] .rba-doc-bg {
+  stroke-width: 8;
+}
+
+.rba-doc[data-rba-edit="wrong"] .rba-doc-name {
+  fill: var(--state-open);
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The three things a decision that matters asks at once: who, doing what, to
+   which resource. */
+[data-rba-mark="three"] .rba-user-bg,
+[data-rba-mark="three"] .rba-tag-bg,
+[data-rba-mark="three"] .rba-doc-bg {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+/* The resource, held in the hand that is deciding. */
+[data-rba-mark="hand"] .rba-own-bg,
+[data-rba-mark="hand"] .rba-doc-bg {
+  stroke: var(--state-closed);
+  stroke-width: 6;
+}
+
+/* One rule, two answers: the card that asked and the block that replied. */
+[data-rba-mark="answer"] .rba-card--own .rba-card-plate--live,
+[data-rba-mark="answer"] .rba-verdict-lamp {
+  stroke: var(--state-closed);
+  stroke-width: 7;
+}
+
+/* Two layers, answering two different questions. */
+[data-rba-mark="layers"] .rba-badge-bg,
+[data-rba-mark="layers"] .rba-card--admin .rba-card-plate--live {
+  stroke: var(--state-half);
+  stroke-width: 7;
+}
+
+/* Even the exception is one narrow, named verb. */
+[data-rba-mark="narrow"] .rba-card--admin .rba-cell--act {
+  stroke: var(--state-half);
+  stroke-width: 7;
+}
+
+/* Roles did not disappear; the fine check simply took the cases that matter. */
+[data-rba-mark="place"] .rba-badge-bg,
+[data-rba-mark="place"] .rba-card--own .rba-card-plate--live {
+  stroke: var(--request);
+  stroke-width: 7;
+}
+
+/* The default is the safe side, which is the block saying no and the hole the
+   request fell through. */
+[data-rba-mark="safe"] .rba-card--share .rba-card-plate--hollow,
+[data-rba-mark="safe"] .rba-verdict-lamp {
+  stroke: var(--state-open);
+  stroke-width: 7;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: a rule for every verb the callers use, an exception that is
+   named rather than assumed, and a document that only its owner has changed. */
+[data-rba-settled="on"] .rba-check > .scene-box,
+[data-rba-settled="on"] .rba-docs > .scene-box {
+  stroke: var(--state-closed);
+}

@@ -1,0 +1,380 @@
+/* ---------------------------------------------------------------- */
+/* Elasticity stage                                                  */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Three layers that stretch, drawn so that the reader can see they stretch
+ * together: the demand nobody in the cluster owns, the pods that answer it, and
+ * the machines the pods stand on.
+ *
+ * The colour argument is one line long. Green is capacity that fits — a running
+ * pod, a node carrying its share, the reading sitting on its target, the settled
+ * frame. Amber is a reading above the target and everything that follows from
+ * capacity being short of the work: a pod hoarding what it never touches, a pod
+ * with nowhere to stand, a node on its way out. Red is the reading at the top of
+ * its range and the pod starving inside a box that was written too small. Purple
+ * is the vertical axis, which is the only thing in the picture that changes a pod
+ * rather than the number of them. Blue is the demand and the two moments the
+ * scene points at the chain rather than at one link of it. Grey, hollow and
+ * dashed are absence: a capsule position with no pod in it and a machine that is
+ * not in the pool.
+ *
+ * The three states the reader must never confuse are drawn three ways rather
+ * than three colours. A capsule position with nothing in it is a thin dashed
+ * grey outline at a third opacity; a pod that exists but has nowhere to stand is
+ * a full-weight amber dashed outline with nothing inside it; a pod that is
+ * restarting is a purple dashed outline with a purple wash inside it and it
+ * keeps the rectangle it had. The same holds a band lower: a node that is not in
+ * the pool is a thin dashed grey outline with no slots drawn, a node in the pool
+ * with nothing on it is a solid outline with two hollow slots, and a node being
+ * given back is a heavy amber dashed outline. All of it resolves to tokens and
+ * differs in fill pattern as well as hue, so both themes read the same.
+ *
+ * Every value the reader can read is a stack of text elements on one spot,
+ * hidden by a base rule and revealed one at a time by the current `data-*`, so
+ * nothing interpolates and scrubbing backwards is exact in both themes.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+.el-lane--demand {
+  stroke: var(--request);
+}
+
+/* The lower lane carries a scheduling attempt rather than work, so it is drawn
+   in the colour of the thing that decides where a pod stands. */
+.el-lane--schedule {
+  stroke: var(--cpu);
+}
+
+/* The scene points at the chain once, and the lane demand arrives on is the
+   half of it that nobody in the cluster controls. */
+[data-el-mark="follow"] .el-lane--demand {
+  stroke-width: 6;
+}
+
+/* Nothing is on its way anywhere on the settled frame. */
+[data-el-settled="on"] .el-lane {
+  stroke: var(--border);
+}
+
+.el-carry--demand .scene-req-dot {
+  fill: var(--request);
+}
+
+.el-carry--schedule .scene-req-dot {
+  fill: var(--cpu);
+}
+
+/* --- the words ---------------------------------------------------------- */
+
+.el-band {
+  fill: var(--fg);
+  font-size: 40px;
+  font-weight: 700;
+}
+
+.el-word {
+  fill: var(--fg-soft);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.scene-counter.el-cpu,
+.scene-counter.el-pods,
+.scene-counter.el-nodecount {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 34px;
+}
+
+/* --- the Load band ------------------------------------------------------ */
+
+/*
+ * The gauge is one track with one fill per level stacked on it, so the level is
+ * a length rather than a number and the reader never has to read it. Colour
+ * carries the same thing twice: the quiet hours are grey, an ordinary day is
+ * blue, a climb is amber and the peak is red.
+ */
+.el-gauge-track {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.el-gauge {
+  opacity: 0;
+}
+
+.el-gauge--night {
+  --fill-color: var(--muted);
+}
+
+.el-gauge--normal {
+  --fill-color: var(--request);
+}
+
+.el-gauge--rising {
+  --fill-color: var(--state-half);
+}
+
+.el-gauge--peak {
+  --fill-color: var(--state-open);
+}
+
+[data-el-demand="night"] .el-gauge--night,
+[data-el-demand="normal"] .el-gauge--normal,
+[data-el-demand="rising"] .el-gauge--rising,
+[data-el-demand="peak"] .el-gauge--peak {
+  opacity: 1;
+}
+
+[data-el-mark="follow"] .el-load > .scene-box {
+  stroke: var(--accent);
+  stroke-width: 6;
+}
+
+/* --- the readouts ------------------------------------------------------- */
+
+[data-el-cpu="15"] .el-cpu--15,
+[data-el-cpu="25"] .el-cpu--25,
+[data-el-cpu="35"] .el-cpu--35,
+[data-el-cpu="45"] .el-cpu--45,
+[data-el-cpu="55"] .el-cpu--55,
+[data-el-cpu="60"] .el-cpu--60,
+[data-el-cpu="75"] .el-cpu--75,
+[data-el-cpu="100"] .el-cpu--100 {
+  opacity: 1;
+}
+
+/* The reading is the whole argument of the middle band, so it says where it
+   stands: on the target, above it, or at the top of its range. */
+.scene-counter.el-cpu--60 {
+  fill: var(--state-closed);
+}
+
+.scene-counter.el-cpu--75 {
+  fill: var(--state-half);
+}
+
+.scene-counter.el-cpu--100 {
+  fill: var(--state-open);
+}
+
+[data-el-pods="0"] .el-pods--0,
+[data-el-pods="1"] .el-pods--1,
+[data-el-pods="2"] .el-pods--2,
+[data-el-pods="3"] .el-pods--3,
+[data-el-pods="4"] .el-pods--4,
+[data-el-pods="5"] .el-pods--5,
+[data-el-pods="6"] .el-pods--6 {
+  opacity: 1;
+}
+
+[data-el-nodes="0"] .el-nodecount--0,
+[data-el-nodes="1"] .el-nodecount--1,
+[data-el-nodes="2"] .el-nodecount--2,
+[data-el-nodes="3"] .el-nodecount--3 {
+  opacity: 1;
+}
+
+/* --- the pods ----------------------------------------------------------- */
+
+/*
+ * A capsule is four rectangles on one centre and the size attribute picks which
+ * one is drawn, so the box a pod is standing in changes only when the request
+ * behind it does. That is why a pod being re-sized keeps its old rectangle for
+ * the whole restart: the new one arriving is the event.
+ */
+.el-body {
+  opacity: 0;
+  fill: none;
+  stroke-width: 5;
+}
+
+.el-pod[data-el-size="slot"] .el-body--slot,
+.el-pod[data-el-size="small"] .el-body--small,
+.el-pod[data-el-size="std"] .el-body--std,
+.el-pod[data-el-size="large"] .el-body--large {
+  opacity: 1;
+}
+
+/* Nothing in this position. Thin, grey, dashed and faint, so it reads as room
+   for a pod rather than as a pod of any kind. */
+.el-pod[data-el-pod="absent"] .el-body {
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 12 12;
+  stroke-opacity: 0.45;
+}
+
+.el-pod[data-el-pod="running"] .el-body {
+  fill: var(--state-closed);
+  fill-opacity: 0.22;
+  stroke: var(--state-closed);
+}
+
+/* Too small a box for the work in it: the rectangle is short and the rim is the
+   colour of something going wrong rather than something being wasted. */
+.el-pod[data-el-pod="starved"] .el-body {
+  fill: var(--state-open);
+  fill-opacity: 0.24;
+  stroke: var(--state-open);
+}
+
+/* Far more room than it ever touches: the rectangle is tall and the wash inside
+   it is thin, which is the waste drawn as the gap between the two. */
+.el-pod[data-el-pod="oversized"] .el-body {
+  fill: var(--state-half);
+  fill-opacity: 0.12;
+  stroke: var(--state-half);
+}
+
+/* A pod that exists and has nowhere to stand. Full weight, dashed, and empty,
+   because there is nothing running inside it. */
+.el-pod[data-el-pod="pending"] .el-body {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-dasharray: 16 10;
+}
+
+/* Down for the restart the new request costs, still holding its place. */
+.el-pod[data-el-pod="resizing"] .el-body {
+  fill: var(--cpu);
+  fill-opacity: 0.18;
+  stroke: var(--cpu);
+  stroke-width: 6;
+  stroke-dasharray: 12 8;
+}
+
+/*
+ * The two failures of a capacity that cannot move, drawn as a frame around the
+ * row that does not move either. One frame per failure, and never both.
+ */
+.el-fixed {
+  opacity: 0;
+  fill-opacity: 0.05;
+  stroke-dasharray: 20 14;
+  stroke-width: 4;
+}
+
+.el-fixed--peak {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+  stroke-width: 6;
+}
+
+.el-fixed--idle {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+}
+
+[data-el-ghost="peak"] .el-fixed--peak,
+[data-el-ghost="idle"] .el-fixed--idle {
+  opacity: 1;
+}
+
+.el-resize {
+  fill: var(--cpu);
+}
+
+.el-pending {
+  fill: var(--state-half);
+}
+
+/* A word the row says about itself is either said or not; the base rule hides
+   every one of them and the state in force reveals the one that applies. */
+.el-resize--on,
+.el-pending--on,
+.el-drain--on {
+  opacity: 0;
+}
+
+[data-el-resize="on"] .el-resize--on,
+[data-el-pending="on"] .el-pending--on {
+  opacity: 1;
+}
+
+/* --- the nodes ---------------------------------------------------------- */
+
+/*
+ * A cell is a machine and the two squares in it are the pods it can hold, so
+ * `pending` a band above and an empty slot here are the same fact seen from two
+ * sides. A machine that is not in the pool is drawn as its own outline only.
+ */
+.el-node-ghost {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 12 12;
+  opacity: 0;
+}
+
+.el-node-box {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.el-slot {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+  stroke-dasharray: 8 8;
+}
+
+.el-node[data-el-node="absent"] .el-node-ghost {
+  opacity: 0.3;
+}
+
+.el-node[data-el-node="absent"] .el-node-box,
+.el-node[data-el-node="absent"] .el-slot {
+  opacity: 0;
+}
+
+.el-node[data-el-node="active"] .el-slot--1,
+.el-node[data-el-node="full"] .el-slot--1,
+.el-node[data-el-node="full"] .el-slot--2 {
+  fill: var(--state-closed);
+  fill-opacity: 0.3;
+  stroke: var(--state-closed);
+  stroke-dasharray: none;
+}
+
+.el-node[data-el-node="full"] .el-node-box {
+  stroke: var(--state-closed);
+}
+
+/* Empty and on its way out of the pool, which is a different thing from empty
+   and waiting for something to be scheduled on it. */
+.el-node[data-el-node="draining"] .el-node-box {
+  stroke: var(--state-half);
+  stroke-width: 6;
+  stroke-dasharray: 18 12;
+}
+
+.el-node[data-el-node="draining"] .el-slot {
+  opacity: 0.35;
+}
+
+.el-drain {
+  fill: var(--state-half);
+}
+
+[data-el-drain="on"] .el-drain--on {
+  opacity: 1;
+}
+
+[data-el-mark="honest"] .el-nodes > .scene-box {
+  stroke: var(--cpu);
+  stroke-width: 6;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* Three pods, two machines, a reading well under its target and a bill that is
+   the size of the work. */
+[data-el-settled="on"] .el-nodes > .scene-box {
+  stroke: var(--state-closed);
+}

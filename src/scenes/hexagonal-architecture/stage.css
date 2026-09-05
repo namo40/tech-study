@@ -1,0 +1,498 @@
+/* ---------------------------------------------------------------- */
+/* Hexagonal Architecture stage                                      */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One middle, two doors, and the whole difference between a dependency that
+ * points inward and one that points wherever it landed.
+ *
+ * The colour argument is small. Purple is the world with no direction: the wire
+ * that runs from the domain straight past both doors into the Details band, and
+ * the capsule while that wire is attached to it. Red is the damage that wire
+ * carries — the three crack glyphs and the `db` card under them. Amber is the
+ * change out in the world that started it, drawn as the schema notch. Blue is
+ * traffic and the work it causes: a traveller, the domain while it is working, a
+ * detail that has been asked. Green is a fact that has settled: a detail that
+ * answered, `ok n`, and the closing frame.
+ *
+ * Nothing is told apart by colour alone. A socket with nothing in it is a
+ * **hollow dashed slot**; a socketed one is a **filled plate with a tongue drawn
+ * into the adapter beside it**. The domain capsule is a **hollow dashed outline**
+ * while it has no doors, a **filled outline** once it has them, and a **filled
+ * outline with a heavier ring** while it is working. A crack is a **zigzag**, a
+ * schema change is a **notch**, and an answer is the check every scene uses.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a base
+ * rule hiding all of them, so nothing interpolates and scrubbing backwards is
+ * exact: the `ok n` readout, the two socket plates, the three capsule plates and
+ * the two adapter faces. The scene has no continuous quantity at all.
+ */
+
+/* --- the lanes and the wire --------------------------------------------- */
+
+/* A lane is dashed while the door at its end does not exist yet, because in that
+   world there is nothing at the end of it to arrive at. */
+.hex-lane--in,
+.hex-lane--out {
+  stroke-dasharray: 12 10;
+  opacity: 0.4;
+}
+
+[data-hex-in="empty"] .hex-lane--in,
+[data-hex-in="socketed"] .hex-lane--in {
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+/* The lower lane stays dashed until something is in the out socket, because
+   until then the domain has no way to drive anything down it. */
+[data-hex-out="socketed"] .hex-lane--out {
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+/* The wire that skips both doors. It is the one shape that leaves a box, which
+   is what a dependency drawn without a direction actually does. */
+.hex-wire {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-width: 9;
+  stroke-dasharray: 20 14;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+[data-hex-ghost="on"] .hex-wire {
+  opacity: 1;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/* A request coming in through the in port. */
+.hex-req--call .scene-req-dot {
+  fill: var(--request);
+}
+
+/* A call the domain drives out through the out port, drawn hollow because it is
+   written in the domain's words and has not been translated yet. */
+.hex-req--drive .scene-req-dot {
+  fill: none;
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+.hex-tag {
+  fill: var(--fg-soft);
+}
+
+/* --- the bands ---------------------------------------------------------- */
+
+/* The three band titles sit at their left edges, so the lane keep-out column
+   down the middle of the stage stays clear of every word. */
+.hex-title {
+  font-size: 40px;
+}
+
+/* --- the Outside band --------------------------------------------------- */
+
+/* The two actors. Both are always drawn, because the point of the scene is that
+   the same middle serves either one; the one driving right now is filled. */
+.hex-actor-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+[data-hex-actor="web"] .hex-actor--web .hex-actor-bg,
+[data-hex-actor="test"] .hex-actor--test .hex-actor-bg {
+  fill: var(--request);
+  fill-opacity: 0.18;
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+.hex-actor-name {
+  fill: var(--fg-soft);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+[data-hex-actor="web"] .hex-actor--web .hex-actor-name,
+[data-hex-actor="test"] .hex-actor--test .hex-actor-name {
+  fill: var(--request);
+}
+
+/* The outside shaken by the outside: once the crack has run this far, the actor
+   that asked for none of it is carrying it. */
+[data-hex-crack="web"] .hex-actor--web .hex-actor-bg {
+  fill: var(--state-open);
+  fill-opacity: 0.16;
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+[data-hex-crack="web"] .hex-actor--web .hex-actor-name {
+  fill: var(--state-open);
+}
+
+/* The readout. One text per value, and the state picks one, so the number never
+   interpolates and never counts anything the model did not count. */
+.hex-ok {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 28px;
+}
+
+[data-hex-ok="0"] .hex-ok--0,
+[data-hex-ok="1"] .hex-ok--1,
+[data-hex-ok="2"] .hex-ok--2,
+[data-hex-ok="3"] .hex-ok--3,
+[data-hex-ok="4"] .hex-ok--4,
+[data-hex-ok="5"] .hex-ok--5,
+[data-hex-ok="6"] .hex-ok--6 {
+  opacity: 1;
+}
+
+[data-hex-settled="on"] .hex-ok {
+  fill: var(--state-closed);
+}
+
+/* The three drawings of the one rule, put up together in the fourth step. */
+.hex-name {
+  opacity: 0;
+}
+
+[data-hex-names="on"] .hex-name {
+  opacity: 1;
+}
+
+.hex-name-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.hex-name-text {
+  fill: var(--fg-soft);
+  font-size: 28px;
+  font-weight: 600;
+}
+
+/* --- the crack ---------------------------------------------------------- */
+
+/* A zigzag rather than a hue, drawn wherever the wire has already carried the
+   change. The three are cumulative: each state reveals everything the crack has
+   reached and nothing it has not. */
+.hex-crack {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+[data-hex-crack="db"] .hex-crack--db,
+[data-hex-crack="domain"] .hex-crack--db,
+[data-hex-crack="domain"] .hex-crack--domain,
+[data-hex-crack="web"] .hex-crack--db,
+[data-hex-crack="web"] .hex-crack--domain,
+[data-hex-crack="web"] .hex-crack--web {
+  opacity: 1;
+}
+
+/* --- the Core band ------------------------------------------------------ */
+
+/* A socket is two plates on one origin: a hollow dashed slot with nothing in it,
+   and a filled one with a tongue running into the adapter beside it. */
+.hex-socket-plate {
+  opacity: 0;
+}
+
+.hex-socket-plate--empty {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-dasharray: 12 9;
+}
+
+.hex-socket-plate--socketed {
+  fill: var(--request);
+  fill-opacity: 0.16;
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-hex-in="empty"] .hex-socket--in .hex-socket-plate--empty,
+[data-hex-in="socketed"] .hex-socket--in .hex-socket-plate--socketed,
+[data-hex-out="empty"] .hex-socket--out .hex-socket-plate--empty,
+[data-hex-out="socketed"] .hex-socket--out .hex-socket-plate--socketed {
+  opacity: 1;
+}
+
+/* The tongue is the difference between a door and a door with something in it,
+   so it is only ever drawn on a socketed one. */
+.hex-tongue {
+  fill: var(--request);
+  opacity: 0;
+}
+
+[data-hex-in="socketed"] .hex-socket--in .hex-tongue,
+[data-hex-out="socketed"] .hex-socket--out .hex-tongue {
+  opacity: 1;
+}
+
+.hex-socket-word {
+  fill: var(--muted);
+  font-size: 28px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-hex-in="empty"] .hex-socket--in .hex-socket-word,
+[data-hex-in="socketed"] .hex-socket--in .hex-socket-word,
+[data-hex-out="empty"] .hex-socket--out .hex-socket-word,
+[data-hex-out="socketed"] .hex-socket--out .hex-socket-word {
+  opacity: 1;
+}
+
+[data-hex-in="socketed"] .hex-socket--in .hex-socket-word,
+[data-hex-out="socketed"] .hex-socket--out .hex-socket-word {
+  fill: var(--request);
+}
+
+/* An adapter plate. It is not drawn at all until something is plugged in, and
+   the face it turns towards the world is one name out of a stack. */
+.hex-plate {
+  opacity: 0;
+}
+
+[data-hex-top="web"] .hex-plate--top,
+[data-hex-top="test"] .hex-plate--top,
+[data-hex-low="db"] .hex-plate--low,
+[data-hex-low="memory"] .hex-plate--low {
+  opacity: 1;
+}
+
+.hex-plate-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 4;
+}
+
+.hex-plate-word {
+  fill: var(--fg-soft);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.hex-face {
+  fill: var(--fg);
+  font-size: 28px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-hex-top="web"] .hex-face--web,
+[data-hex-top="test"] .hex-face--test,
+[data-hex-low="db"] .hex-face--db,
+[data-hex-low="memory"] .hex-face--memory {
+  opacity: 1;
+}
+
+/* The capsule in the middle. Three plates on one origin: hollow and dashed while
+   it has no doors, filled once it has them, and ringed while it is working. */
+.hex-domain-plate {
+  opacity: 0;
+}
+
+.hex-domain-plate--open {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 5;
+  stroke-dasharray: 16 12;
+}
+
+.hex-domain-plate--ported {
+  fill: var(--surface-2);
+  stroke: var(--fg-soft);
+  stroke-width: 5;
+}
+
+.hex-domain-plate--work {
+  fill: var(--request);
+  fill-opacity: 0.18;
+  stroke: var(--request);
+  stroke-width: 9;
+}
+
+[data-hex-domain="open"] .hex-domain-plate--open,
+[data-hex-domain="ported"] .hex-domain-plate--ported,
+[data-hex-domain="work"] .hex-domain-plate--work {
+  opacity: 1;
+}
+
+/* While the wire is attached, the middle is not a middle: it is wired to a
+   detail, and it is drawn in the colour of the world that did that. */
+[data-hex-ghost="on"] .hex-domain-plate--open {
+  stroke: var(--cpu);
+  stroke-width: 8;
+}
+
+.hex-domain-name {
+  fill: var(--fg-soft);
+  font-size: 44px;
+  font-weight: 700;
+}
+
+[data-hex-domain="work"] .hex-domain-name {
+  fill: var(--request);
+}
+
+[data-hex-crack="domain"] .hex-domain-name,
+[data-hex-crack="web"] .hex-domain-name {
+  fill: var(--state-open);
+}
+
+/* --- the Details band --------------------------------------------------- */
+
+/* A card is a plate and a word. Which one answers is never written down: it is
+   whichever name the lower adapter happens to be showing. */
+.hex-card-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+[data-hex-card="busy"] .hex-card-bg {
+  fill: var(--request);
+  fill-opacity: 0.18;
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-hex-card="answer"] .hex-card-bg {
+  fill: var(--state-closed);
+  fill-opacity: 0.2;
+  stroke: var(--state-closed);
+  stroke-width: 6;
+}
+
+.hex-card-name {
+  fill: var(--fg-soft);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+[data-hex-card="busy"] .hex-card-name {
+  fill: var(--request);
+}
+
+[data-hex-card="answer"] .hex-card-name {
+  fill: var(--state-closed);
+}
+
+/* The store while the wire is attached to it and the crack has reached it. */
+[data-hex-crack="db"] .hex-card--db .hex-card-bg,
+[data-hex-crack="domain"] .hex-card--db .hex-card-bg,
+[data-hex-crack="web"] .hex-card--db .hex-card-bg {
+  fill: var(--state-open);
+  fill-opacity: 0.16;
+  stroke: var(--state-open);
+  stroke-width: 6;
+}
+
+/* Somebody renamed a column. A notch rather than a word, because the fixed
+   labels have no word for it. */
+.hex-schema {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 7;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+[data-hex-schema="on"] .hex-schema {
+  opacity: 1;
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* Nine highlights, nine different things highlighted. Each one rings the thing
+   the caption is talking about at that moment and nothing else. */
+[data-hex-mark="inward"] .hex-lane--in,
+[data-hex-mark="inward"] .hex-lane--out {
+  stroke: var(--accent);
+  stroke-width: 9;
+  opacity: 1;
+}
+
+[data-hex-mark="blind"] .hex-domain-plate--open,
+[data-hex-mark="blind"] .hex-domain-plate--ported,
+[data-hex-mark="blind"] .hex-domain-plate--work {
+  stroke: var(--accent);
+  stroke-width: 11;
+}
+
+[data-hex-mark="out"] .hex-socket--out .hex-socket-plate--empty,
+[data-hex-mark="out"] .hex-socket--out .hex-socket-plate--socketed {
+  stroke: var(--accent);
+  stroke-width: 9;
+  stroke-dasharray: none;
+}
+
+[data-hex-mark="contract"] .hex-socket-plate--empty,
+[data-hex-mark="contract"] .hex-socket-plate--socketed {
+  stroke: var(--accent);
+  stroke-width: 9;
+  stroke-dasharray: none;
+}
+
+[data-hex-mark="inside"] .hex-core > .scene-box {
+  stroke: var(--accent);
+  stroke-width: 7;
+}
+
+[data-hex-mark="swapped"] .hex-plate--low .hex-plate-bg {
+  stroke: var(--accent);
+  stroke-width: 8;
+}
+
+[data-hex-mark="detail"] .hex-details > .scene-box {
+  stroke: var(--accent);
+  stroke-width: 7;
+}
+
+[data-hex-mark="arrows"] .hex-outside > .scene-box,
+[data-hex-mark="arrows"] .hex-details > .scene-box {
+  stroke: var(--accent);
+  stroke-width: 7;
+  stroke-dasharray: 22 14;
+}
+
+[data-hex-mark="family"] .hex-name-bg {
+  stroke: var(--accent);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: every dependency points inward, and the middle has been
+   answering the whole time without ever naming what answered it. */
+[data-hex-settled="on"] .hex-core > .scene-box,
+[data-hex-settled="on"] .hex-outside > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+[data-hex-settled="on"] .hex-domain-plate--ported {
+  stroke: var(--state-closed);
+  stroke-width: 7;
+}
+
+[data-hex-settled="on"] .hex-name-bg {
+  stroke: var(--state-closed);
+  stroke-dasharray: none;
+}

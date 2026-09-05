@@ -1,0 +1,363 @@
+/* ---------------------------------------------------------------- */
+/* Correlation ID stage                                              */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Everything the reader reads on this stage is a stack of text on one spot
+ * with a single variant revealed: the service that wrote a log line, the line
+ * itself, the id chip it carries, the cross a failure ends on, what each wire
+ * chip is carrying, what was typed into the filter, and the matches readout.
+ * The base rule below is the load bearing half. Without it a state nobody
+ * wrote would print the whole stack on top of itself, which is invisible in a
+ * DOM snapshot and unreadable on screen.
+ */
+.cid-wire-text,
+.cid-svc-text,
+.cid-msg,
+.cid-id-text,
+.cid-id-bg,
+.cid-fail,
+.cid-filter-text,
+.cid-matches {
+  opacity: 0;
+}
+
+/* The three services, and the lane that runs through the middle of them. */
+.cid-svc-box {
+  fill: var(--surface);
+}
+
+.cid-lane {
+  stroke: var(--muted);
+}
+
+/*
+ * The queue glyph. It is drawn as a slotted capsule rather than a plain bead,
+ * because what matters about it is that the flow stops being a request there:
+ * the traveller waits inside it, and the leg out is a second leg that starts
+ * from the same point the first one ended on.
+ */
+.cid-glyph-box {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.cid-glyph-slot {
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.cid-glyph-label {
+  fill: var(--muted);
+  font-size: 20px;
+}
+
+/* The service names sit above the lane, so they are sized to clear its keep-out. */
+.cid-svc-title {
+  font-size: 32px;
+}
+
+/* What the id rides on: a header between services, a property across the queue. */
+.cid-wire-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.cid-wire-text {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+[data-cid-header="carry"] .cid-wire-bg--header,
+[data-cid-prop="carry"] .cid-wire-bg--prop {
+  stroke: var(--request);
+}
+
+[data-cid-header="carry"] .cid-wire-text--header--carry,
+[data-cid-prop="carry"] .cid-wire-text--prop--carry {
+  fill: var(--request);
+}
+
+[data-cid-header="plain"] .cid-wire-text--header--plain,
+[data-cid-header="carry"] .cid-wire-text--header--carry,
+[data-cid-prop="plain"] .cid-wire-text--prop--plain,
+[data-cid-prop="carry"] .cid-wire-text--prop--carry {
+  opacity: 1;
+}
+
+/* The Logs pane, and the strip of rows the clip window shows twelve of. */
+.cid-pane-title {
+  fill: var(--fg-soft);
+  font-size: 26px;
+}
+
+.cid-svc-text,
+.cid-msg {
+  fill: var(--fg-soft);
+  font-size: 20px;
+}
+
+.cid-msg {
+  fill: var(--fg);
+}
+
+.cid-fail {
+  fill: var(--state-open);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/*
+ * A row that the filter left out is dimmed rather than removed. It keeps its
+ * place, so the reader can see that the story they are being shown was pulled
+ * out of a stream that still has everything else in it.
+ */
+.cid-row[data-cid-dim="on"] {
+  opacity: 0.28;
+}
+
+/* Which line a row is showing, and the service that wrote it. */
+[data-cid-line="checkout"] .cid-msg--checkout,
+[data-cid-line="create"] .cid-msg--create,
+[data-cid-line="publish"] .cid-msg--publish,
+[data-cid-line="charge"] .cid-msg--charge,
+[data-cid-line="failed"] .cid-msg--failed,
+[data-cid-line="cart"] .cid-msg--cart,
+[data-cid-line="reserve"] .cid-msg--reserve,
+[data-cid-line="authorize"] .cid-msg--authorize {
+  opacity: 1;
+}
+
+[data-cid-line="checkout"] .cid-svc-text--web,
+[data-cid-line="cart"] .cid-svc-text--web,
+[data-cid-line="create"] .cid-svc-text--orders,
+[data-cid-line="publish"] .cid-svc-text--orders,
+[data-cid-line="reserve"] .cid-svc-text--orders,
+[data-cid-line="charge"] .cid-svc-text--pay,
+[data-cid-line="failed"] .cid-svc-text--pay,
+[data-cid-line="authorize"] .cid-svc-text--pay {
+  opacity: 1;
+}
+
+[data-cid-line="failed"] .cid-fail {
+  opacity: 1;
+}
+
+/* The id chip a row carries, which is the only thing that tells two flows apart. */
+.cid-id-bg {
+  fill: none;
+  stroke: var(--request);
+  stroke-width: 3;
+}
+
+.cid-id-text {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.cid-id-text--7f3a {
+  fill: var(--request);
+}
+
+.cid-id-text--91c2 {
+  fill: var(--cpu);
+}
+
+.cid-id-text--a4e8 {
+  fill: var(--state-half);
+}
+
+[data-cid-id="91c2"] .cid-id-bg {
+  stroke: var(--cpu);
+}
+
+[data-cid-id="a4e8"] .cid-id-bg {
+  stroke: var(--state-half);
+}
+
+[data-cid-id="7f3a"] .cid-id-bg,
+[data-cid-id="91c2"] .cid-id-bg,
+[data-cid-id="a4e8"] .cid-id-bg,
+[data-cid-id="7f3a"] .cid-id-text--7f3a,
+[data-cid-id="91c2"] .cid-id-text--91c2,
+[data-cid-id="a4e8"] .cid-id-text--a4e8 {
+  opacity: 1;
+}
+
+/*
+ * How far the tail has scrolled. Nothing about a row changes when the pane
+ * scrolls: the strip moves and the clip window keeps the last twelve rows, so
+ * a line written at 7.4 still says what it said however far the log has run on.
+ */
+[data-cid-scroll="0"] .cid-rows {
+  transform: translateY(0);
+}
+
+[data-cid-scroll="1"] .cid-rows {
+  transform: translateY(-41px);
+}
+
+[data-cid-scroll="2"] .cid-rows {
+  transform: translateY(-82px);
+}
+
+[data-cid-scroll="3"] .cid-rows {
+  transform: translateY(-123px);
+}
+
+[data-cid-scroll="4"] .cid-rows {
+  transform: translateY(-164px);
+}
+
+[data-cid-scroll="5"] .cid-rows {
+  transform: translateY(-205px);
+}
+
+[data-cid-scroll="6"] .cid-rows {
+  transform: translateY(-246px);
+}
+
+[data-cid-scroll="7"] .cid-rows {
+  transform: translateY(-287px);
+}
+
+[data-cid-scroll="8"] .cid-rows {
+  transform: translateY(-328px);
+}
+
+/* The Filter bar: what was searched for, and how much of the log came back. */
+.cid-filter-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 12 8;
+}
+
+[data-cid-filter="on"] .cid-filter-bg {
+  fill: var(--surface);
+  stroke: var(--request);
+  stroke-dasharray: none;
+}
+
+.cid-filter-text {
+  fill: var(--request);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+[data-cid-filter="on"] .cid-filter-text--on {
+  opacity: 1;
+}
+
+.cid-matches {
+  fill: var(--fg-soft);
+  font-size: 30px;
+}
+
+[data-cid-filter="on"] .cid-matches {
+  fill: var(--fg);
+}
+
+[data-cid-matches="0"] .cid-matches--0,
+[data-cid-matches="1"] .cid-matches--1,
+[data-cid-matches="2"] .cid-matches--2,
+[data-cid-matches="3"] .cid-matches--3,
+[data-cid-matches="4"] .cid-matches--4,
+[data-cid-matches="5"] .cid-matches--5,
+[data-cid-matches="6"] .cid-matches--6,
+[data-cid-matches="7"] .cid-matches--7,
+[data-cid-matches="8"] .cid-matches--8,
+[data-cid-matches="9"] .cid-matches--9,
+[data-cid-matches="10"] .cid-matches--10,
+[data-cid-matches="11"] .cid-matches--11,
+[data-cid-matches="12"] .cid-matches--12 {
+  opacity: 1;
+}
+
+/*
+ * What the sampler did. The sampling chip says the rule, and the trace chip
+ * says what the rule cost this particular flow: the cross is on the trace, not
+ * on the log, which is the entire argument of the last step.
+ */
+.cid-sampling,
+.cid-trace {
+  opacity: 0;
+}
+
+[data-cid-sampling="on"] .cid-sampling {
+  opacity: 1;
+}
+
+.cid-sampling-bg,
+.cid-trace-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.cid-sampling-text,
+.cid-trace-text {
+  fill: var(--fg-soft);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.cid-trace-cross {
+  fill: var(--state-open);
+  font-size: 26px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-cid-trace="on"] .cid-trace {
+  opacity: 1;
+}
+
+[data-cid-trace="none"] .cid-trace {
+  opacity: 0.5;
+}
+
+[data-cid-trace="none"] .cid-trace-cross {
+  opacity: 1;
+}
+
+[data-cid-trace="none"] .cid-trace-bg {
+  stroke-dasharray: 12 8;
+}
+
+/* A traveller belongs to one flow for its whole life, so it is coloured once. */
+.cid-req[data-cid-flow="none"] .scene-req-dot {
+  fill: var(--fg-soft);
+}
+
+.cid-req[data-cid-flow="7f3a"] .scene-req-dot {
+  fill: var(--request);
+}
+
+.cid-req[data-cid-flow="91c2"] .scene-req-dot {
+  fill: var(--cpu);
+}
+
+.cid-req[data-cid-flow="a4e8"] .scene-req-dot {
+  fill: var(--state-half);
+}
+
+.cid-req-id {
+  font-family: var(--font-mono);
+  font-size: 22px;
+}
+
+.cid-req[data-cid-flow="7f3a"] .cid-req-id {
+  fill: var(--request);
+}
+
+.cid-req[data-cid-flow="91c2"] .cid-req-id {
+  fill: var(--cpu);
+}
+
+.cid-req[data-cid-flow="a4e8"] .cid-req-id {
+  fill: var(--state-half);
+}

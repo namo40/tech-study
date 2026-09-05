@@ -1,0 +1,551 @@
+/* ---------------------------------------------------------------- */
+/* CAP Theorem stage                                                 */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Two replicas, one wire between them, and the choice the wire forces when it
+ * is cut.
+ *
+ * The colour argument is small. Purple is a change being made: the `write`
+ * chip and the traveller carrying it. Blue is a question and the agreement it
+ * may need: a `read`, the wiring while it is carrying a change or a consult,
+ * and the `A` card, which is the choice that keeps answering. Red is the cut
+ * and what it costs under `C`: the severed wiring, the two-answers plate, the
+ * refusal and the `wait` lamp. Amber is an answer that is not the latest: the
+ * ring it wears, the `stale` lamp, the replica plate that has fallen behind and
+ * the higher of the two meter readings. Green is a fact that has settled: `ok
+ * n`, the `C` card, and the closing frame.
+ *
+ * Nothing is told apart by colour alone. A chip that is lit is a **filled
+ * plate** and one that is not is a **hollow dashed outline**; a whole `link` is
+ * **one unbroken rule**, a cut one is **two stubs with a break drawn between
+ * them**, a replicating one carries **one arrowhead** and a consulting one
+ * **two**; a card that has been chosen is a **filled plate** and one that has
+ * not is **dashed**; a lamp that is lit is **filled** and one that is not is
+ * **hollow and dashed**; a replica that has fallen behind takes a **dashed
+ * outline**; an answer that is not the latest wears a **dashed ring** around
+ * the check every scene uses, and a refusal is that scene's **cross**.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a
+ * base rule hiding all of them, so nothing interpolates and scrubbing backwards
+ * is exact: the readout, the meter, both chips, both value plates, both halves
+ * of the two-answers plate, the wiring, both cards and both lamps. The scene
+ * has no continuous quantity at all.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+.cap-lane--r1,
+.cap-lane--r2 {
+  opacity: 0.7;
+}
+
+/* The verdict lane is dashed until a choice has been made, because until then
+   there is no card for a verdict to be delivered to. */
+.cap-lane--verdict {
+  stroke-dasharray: 12 10;
+  opacity: 0.4;
+}
+
+[data-cap-card="c"] .cap-lane--verdict,
+[data-cap-card="a"] .cap-lane--verdict {
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+.cap-req--write .scene-req-dot {
+  fill: var(--cpu);
+}
+
+.cap-req--read .scene-req-dot {
+  fill: var(--request);
+}
+
+/* A read that must reach agreement before it speaks is drawn hollow, because
+   it is not holding an answer yet. */
+.cap-req--strong .scene-req-dot {
+  fill: none;
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+/* A verdict on its way to the card that names it. Nobody is waiting for it. */
+.cap-req--verdict .scene-req-dot {
+  fill: var(--fg-soft);
+}
+
+.cap-stale-ring {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 9 8;
+  opacity: 0;
+}
+
+[data-cap-answer="stale"] .cap-stale-ring {
+  opacity: 1;
+}
+
+/* --- the bands ---------------------------------------------------------- */
+
+/* The Clients and Choice titles sit at their left edges and the Replicas title
+   on the free column between the two client lanes, so the keep-outs stay
+   clear. */
+.cap-title {
+  font-size: 40px;
+}
+
+/* --- the Clients band --------------------------------------------------- */
+
+/* The readout. One text per value, and the state picks one, so the number
+   never interpolates and never counts anything the model did not count. */
+.cap-ok {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 28px;
+}
+
+[data-cap-ok="0"] .cap-ok--0,
+[data-cap-ok="1"] .cap-ok--1,
+[data-cap-ok="2"] .cap-ok--2,
+[data-cap-ok="3"] .cap-ok--3,
+[data-cap-ok="4"] .cap-ok--4,
+[data-cap-ok="5"] .cap-ok--5,
+[data-cap-ok="6"] .cap-ok--6,
+[data-cap-ok="7"] .cap-ok--7,
+[data-cap-ok="8"] .cap-ok--8 {
+  opacity: 1;
+}
+
+[data-cap-settled="on"] .cap-ok {
+  fill: var(--state-closed);
+}
+
+/* The meter. It shows nothing until a read has been measured, and the higher
+   of its two readings is the one somebody paid for. */
+.cap-ms {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 28px;
+}
+
+[data-cap-ms="90"] .cap-ms--90,
+[data-cap-ms="150"] .cap-ms--150 {
+  opacity: 1;
+}
+
+[data-cap-ms="150"] .cap-ms--150 {
+  fill: var(--state-half);
+}
+
+[data-cap-mark="else"] .cap-ms {
+  fill: var(--accent);
+}
+
+/* The two request chips, lit while a request of that kind is outstanding. */
+.cap-chip-bg {
+  opacity: 0;
+}
+
+.cap-chip-bg--write-off,
+.cap-chip-bg--read-off {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 12 9;
+}
+
+.cap-chip-bg--write-on {
+  fill: var(--cpu);
+  fill-opacity: 0.18;
+  stroke: var(--cpu);
+  stroke-width: 5;
+}
+
+.cap-chip-bg--read-on {
+  fill: var(--request);
+  fill-opacity: 0.16;
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+[data-cap-write="off"] .cap-chip-bg--write-off,
+[data-cap-write="on"] .cap-chip-bg--write-on,
+[data-cap-read="off"] .cap-chip-bg--read-off,
+[data-cap-read="on"] .cap-chip-bg--read-on {
+  opacity: 1;
+}
+
+.cap-chip-word {
+  fill: var(--fg-soft);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+[data-cap-write="on"] .cap-chip-word--write {
+  fill: var(--cpu);
+}
+
+[data-cap-read="on"] .cap-chip-word--read {
+  fill: var(--request);
+}
+
+/* --- the Replicas band -------------------------------------------------- */
+
+.cap-node-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.cap-name {
+  fill: var(--fg);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+.cap-val-bg {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.cap-val-text {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 46px;
+}
+
+[data-cap-r1="4"] .cap-val-text--r1-4,
+[data-cap-r1="5"] .cap-val-text--r1-5,
+[data-cap-r1="6"] .cap-val-text--r1-6,
+[data-cap-r1="7"] .cap-val-text--r1-7,
+[data-cap-r1="8"] .cap-val-text--r1-8,
+[data-cap-r2="4"] .cap-val-text--r2-4,
+[data-cap-r2="5"] .cap-val-text--r2-5,
+[data-cap-r2="6"] .cap-val-text--r2-6,
+[data-cap-r2="7"] .cap-val-text--r2-7,
+[data-cap-r2="8"] .cap-val-text--r2-8 {
+  opacity: 1;
+}
+
+/*
+ * A replica that is behind. There is no attribute saying so: the pairs are
+ * written out, so the mark cannot disagree with the two values that put it
+ * there. `R1` takes every write, so `R2` is the only side that can fall behind.
+ */
+[data-cap-r1="5"][data-cap-r2="4"] .cap-node--r2 .cap-val-bg,
+[data-cap-r1="6"][data-cap-r2="4"] .cap-node--r2 .cap-val-bg,
+[data-cap-r1="7"][data-cap-r2="4"] .cap-node--r2 .cap-val-bg,
+[data-cap-r1="8"][data-cap-r2="4"] .cap-node--r2 .cap-val-bg,
+[data-cap-r1="6"][data-cap-r2="5"] .cap-node--r2 .cap-val-bg,
+[data-cap-r1="7"][data-cap-r2="5"] .cap-node--r2 .cap-val-bg,
+[data-cap-r1="8"][data-cap-r2="5"] .cap-node--r2 .cap-val-bg,
+[data-cap-r1="7"][data-cap-r2="6"] .cap-node--r2 .cap-val-bg,
+[data-cap-r1="8"][data-cap-r2="6"] .cap-node--r2 .cap-val-bg,
+[data-cap-r1="8"][data-cap-r2="7"] .cap-node--r2 .cap-val-bg {
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 14 10;
+}
+
+[data-cap-r1="5"][data-cap-r2="4"] .cap-node--r2 .cap-val-text,
+[data-cap-r1="6"][data-cap-r2="4"] .cap-node--r2 .cap-val-text,
+[data-cap-r1="7"][data-cap-r2="4"] .cap-node--r2 .cap-val-text,
+[data-cap-r1="8"][data-cap-r2="4"] .cap-node--r2 .cap-val-text,
+[data-cap-r1="6"][data-cap-r2="5"] .cap-node--r2 .cap-val-text,
+[data-cap-r1="7"][data-cap-r2="5"] .cap-node--r2 .cap-val-text,
+[data-cap-r1="8"][data-cap-r2="5"] .cap-node--r2 .cap-val-text,
+[data-cap-r1="7"][data-cap-r2="6"] .cap-node--r2 .cap-val-text,
+[data-cap-r1="8"][data-cap-r2="6"] .cap-node--r2 .cap-val-text,
+[data-cap-r1="8"][data-cap-r2="7"] .cap-node--r2 .cap-val-text {
+  fill: var(--state-half);
+}
+
+/* The wiring, in the four states it is ever in. */
+.cap-link-line,
+.cap-link-stub,
+.cap-link-break,
+.cap-link-head {
+  opacity: 0;
+}
+
+.cap-link-line {
+  stroke-linecap: round;
+}
+
+.cap-link-line--ok {
+  stroke: var(--muted);
+  stroke-width: 5;
+}
+
+.cap-link-line--sync {
+  stroke: var(--request);
+  stroke-width: 10;
+}
+
+.cap-link-line--consult {
+  stroke: var(--request);
+  stroke-width: 10;
+  stroke-dasharray: 18 10;
+}
+
+.cap-link-stub {
+  stroke: var(--state-open);
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+
+.cap-link-break {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+.cap-link-head {
+  fill: none;
+  stroke: var(--request);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-cap-link="ok"] .cap-link-line--ok,
+[data-cap-link="sync"] .cap-link-line--sync,
+[data-cap-link="consult"] .cap-link-line--consult,
+[data-cap-link="cut"] .cap-link-stub,
+[data-cap-link="cut"] .cap-link-break {
+  opacity: 1;
+}
+
+[data-cap-link="sync"] .cap-link-head--right,
+[data-cap-link="consult"] .cap-link-head--right,
+[data-cap-link="consult"] .cap-link-head--left {
+  opacity: 1;
+}
+
+.cap-link-word {
+  fill: var(--fg-soft);
+  font-size: 26px;
+  font-weight: 600;
+}
+
+[data-cap-link="sync"] .cap-link-word,
+[data-cap-link="consult"] .cap-link-word {
+  fill: var(--request);
+}
+
+[data-cap-link="cut"] .cap-link-word {
+  fill: var(--state-open);
+}
+
+/* One question, two answers. The two halves read the same value stacks the
+   capsules read, so this is the replicas disagreeing and not a second pair of
+   numbers written beside them. */
+.cap-split {
+  opacity: 0;
+}
+
+[data-cap-split="on"] .cap-split {
+  opacity: 1;
+}
+
+.cap-split-bg {
+  fill: var(--surface);
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: 16 10;
+}
+
+.cap-split-glyph {
+  stroke: var(--state-open);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+.cap-split-text {
+  fill: var(--state-open);
+  font-family: var(--font-mono);
+  font-size: 40px;
+}
+
+[data-cap-r1="4"] .cap-split-text--r1-4,
+[data-cap-r1="5"] .cap-split-text--r1-5,
+[data-cap-r1="6"] .cap-split-text--r1-6,
+[data-cap-r1="7"] .cap-split-text--r1-7,
+[data-cap-r1="8"] .cap-split-text--r1-8,
+[data-cap-r2="4"] .cap-split-text--r2-4,
+[data-cap-r2="5"] .cap-split-text--r2-5,
+[data-cap-r2="6"] .cap-split-text--r2-6,
+[data-cap-r2="7"] .cap-split-text--r2-7,
+[data-cap-r2="8"] .cap-split-text--r2-8 {
+  opacity: 1;
+}
+
+/* --- the ghost ---------------------------------------------------------- */
+
+/* A world in which nobody has chosen: the replicas are the argument, and the
+   Choice band is drawn as a thing that is not there yet. */
+[data-cap-ghost="on"] .cap-replicas > .scene-box {
+  stroke: var(--accent);
+  stroke-width: 5;
+  stroke-dasharray: 22 14;
+}
+
+[data-cap-ghost="on"] .cap-choice > .scene-box {
+  stroke: var(--muted);
+  stroke-dasharray: 14 12;
+}
+
+[data-cap-ghost="on"] .cap-letter {
+  fill: var(--muted);
+}
+
+/* --- the Choice band ---------------------------------------------------- */
+
+.cap-card-bg {
+  opacity: 0;
+}
+
+.cap-card-bg--c-off,
+.cap-card-bg--a-off {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-dasharray: 16 12;
+}
+
+.cap-card-bg--c-on {
+  fill: var(--state-closed);
+  fill-opacity: 0.16;
+  stroke: var(--state-closed);
+  stroke-width: 6;
+}
+
+.cap-card-bg--a-on {
+  fill: var(--request);
+  fill-opacity: 0.16;
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-cap-card="none"] .cap-card-bg--c-off,
+[data-cap-card="a"] .cap-card-bg--c-off,
+[data-cap-card="c"] .cap-card-bg--c-on,
+[data-cap-card="none"] .cap-card-bg--a-off,
+[data-cap-card="c"] .cap-card-bg--a-off,
+[data-cap-card="a"] .cap-card-bg--a-on {
+  opacity: 1;
+}
+
+.cap-letter {
+  fill: var(--fg-soft);
+  font-size: 48px;
+  font-weight: 700;
+}
+
+[data-cap-card="c"] .cap-card--c .cap-letter {
+  fill: var(--state-closed);
+}
+
+[data-cap-card="a"] .cap-card--a .cap-letter {
+  fill: var(--request);
+}
+
+/* The price each card charges, named on the card that charges it. */
+.cap-lamp-bg {
+  opacity: 0;
+}
+
+.cap-lamp-bg--wait-off,
+.cap-lamp-bg--stale-off {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.cap-lamp-bg--wait-on {
+  fill: var(--state-open);
+  fill-opacity: 0.2;
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+.cap-lamp-bg--stale-on {
+  fill: var(--state-half);
+  fill-opacity: 0.22;
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+[data-cap-lamp="none"] .cap-lamp-bg--wait-off,
+[data-cap-lamp="stale"] .cap-lamp-bg--wait-off,
+[data-cap-lamp="wait"] .cap-lamp-bg--wait-on,
+[data-cap-lamp="none"] .cap-lamp-bg--stale-off,
+[data-cap-lamp="wait"] .cap-lamp-bg--stale-off,
+[data-cap-lamp="stale"] .cap-lamp-bg--stale-on {
+  opacity: 1;
+}
+
+.cap-lamp-word {
+  fill: var(--muted);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+[data-cap-lamp="wait"] .cap-lamp-word--wait {
+  fill: var(--state-open);
+}
+
+[data-cap-lamp="stale"] .cap-lamp-word--stale {
+  fill: var(--state-half);
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* Four highlights, four different things highlighted. The first two are the
+   theorem's own sentence — the network is not yours to choose, the two cards
+   are — and the second two are the fourth step's: no cut anywhere, and a meter
+   that still has something to say. */
+[data-cap-mark="p"] .cap-link-line {
+  stroke: var(--accent);
+  stroke-width: 12;
+  stroke-dasharray: 26 16;
+}
+
+[data-cap-mark="p"] .cap-link-word {
+  fill: var(--accent);
+}
+
+[data-cap-mark="ca"] .cap-card-bg {
+  stroke: var(--accent);
+  stroke-width: 8;
+}
+
+[data-cap-mark="ca"] .cap-letter {
+  fill: var(--accent);
+}
+
+[data-cap-mark="plain"] .cap-link-line {
+  stroke: var(--accent);
+  stroke-width: 12;
+}
+
+[data-cap-mark="plain"] .cap-link-word {
+  fill: var(--accent);
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: a choice made, both replicas level, and a meter that says
+   what today's default costs. */
+[data-cap-settled="on"] .cap-clients > .scene-box,
+[data-cap-settled="on"] .cap-replicas > .scene-box,
+[data-cap-settled="on"] .cap-choice > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}

@@ -1,0 +1,425 @@
+/* ---------------------------------------------------------------- */
+/* OAuth 2.0 stage                                                   */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One question, asked four ways: how does an app act for you without becoming
+ * you. Every rule below reads one of the four answers — a scoped key instead of
+ * a password, a code that is only a receipt, a lifetime that runs out, and an
+ * identity token that is a separate statement about a separate question.
+ *
+ * The colour argument is small. Blue is a token that is alive and doing its
+ * job. Amber is time running out — the life bar as it drains, and an access
+ * token that has expired on schedule, which is the design rather than a
+ * failure. Red is theft and what it costs: the refused call, the replayed
+ * ticket, the revoked family, and the password the old way handed over. Green
+ * is a call that came back and the settled frame. That is what lets the reader
+ * tell a token that ran out from a token that was taken away.
+ *
+ * Every value the reader can read is a stack of text elements on one spot,
+ * hidden by a base rule and revealed one at a time by the current `data-*`, so
+ * nothing interpolates and scrubbing backwards is exact in both themes. The one
+ * exception is the life bar, which is a width tween, because remaining life is
+ * a continuous quantity rather than a state.
+ */
+
+/* A path that exists but has not carried anything yet. */
+[data-oa-consent="off"] .oa-lane-user {
+  stroke-dasharray: 16 16;
+  opacity: 0.45;
+}
+
+/* --- the wallet --------------------------------------------------------- */
+
+/*
+ * A slot is a labelled place rather than a surprise, so the word is always
+ * written and what changes is whether anything is sitting on the plate. An
+ * empty slot is a thin dashed outline with no fill, which cannot be mistaken
+ * for any of the three occupied states in either theme.
+ */
+.oa-slot-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.oa-slot-text {
+  fill: var(--muted);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.oa-slot-strike {
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+[data-oa-access="live"] .oa-slot--access .oa-slot-bg,
+[data-oa-refresh="live"] .oa-slot--refresh .oa-slot-bg,
+[data-oa-id="live"] .oa-slot--id .oa-slot-bg {
+  fill: var(--request);
+  fill-opacity: 0.18;
+  stroke: var(--request);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+[data-oa-access="live"] .oa-slot--access .oa-slot-text,
+[data-oa-refresh="live"] .oa-slot--refresh .oa-slot-text,
+[data-oa-id="live"] .oa-slot--id .oa-slot-text {
+  fill: var(--fg);
+}
+
+/* Expired is the token doing what it was built to do, so it is a wait colour
+   rather than a failure one, and the line through it says it is spent. */
+[data-oa-access="expired"] .oa-slot--access .oa-slot-bg {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+[data-oa-access="expired"] .oa-slot--access .oa-slot-text {
+  fill: var(--state-half);
+}
+
+[data-oa-access="expired"] .oa-slot--access .oa-slot-strike {
+  stroke: var(--state-half);
+  opacity: 1;
+}
+
+/* Revoked is somebody else's doing, and it fills as well as strikes, so the
+   two dead states are never told apart by colour alone. */
+[data-oa-access="revoked"] .oa-slot--access .oa-slot-bg,
+[data-oa-refresh="revoked"] .oa-slot--refresh .oa-slot-bg {
+  fill: var(--state-open);
+  fill-opacity: 0.16;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+[data-oa-access="revoked"] .oa-slot--access .oa-slot-text,
+[data-oa-refresh="revoked"] .oa-slot--refresh .oa-slot-text {
+  fill: var(--state-open);
+}
+
+[data-oa-access="revoked"] .oa-slot--access .oa-slot-strike,
+[data-oa-refresh="revoked"] .oa-slot--refresh .oa-slot-strike {
+  opacity: 1;
+}
+
+/* --- what is left of the access token ----------------------------------- */
+
+.oa-life-label {
+  fill: var(--muted);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.oa-life-fill {
+  --fill-color: var(--request);
+}
+
+[data-oa-life="live"] .oa-life-label {
+  fill: var(--fg-soft);
+}
+
+[data-oa-life="low"] .oa-life-label,
+[data-oa-life="spent"] .oa-life-label {
+  fill: var(--state-half);
+}
+
+[data-oa-life="low"] .oa-life-fill {
+  --fill-color: var(--state-half);
+}
+
+[data-oa-mark="expiry"] .oa-life-label {
+  fill: var(--state-half);
+}
+
+[data-oa-mark="expiry"] .oa-life-track {
+  stroke: var(--state-half);
+  stroke-width: 3;
+}
+
+/* --- the old way -------------------------------------------------------- */
+
+/*
+ * The word the whole framework exists to remove. It appears while the app is
+ * holding it, and comes back once with a line through it, which is the promise
+ * the rest of the scene keeps: the app never sees it again.
+ */
+.oa-ghost-text {
+  fill: var(--state-open);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+.oa-ghost-strike {
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+[data-oa-ghost="on"] .oa-ghost-text--word,
+[data-oa-ghost="never"] .oa-ghost-text--word {
+  opacity: 1;
+}
+
+[data-oa-ghost="never"] .oa-ghost-text--word {
+  fill: var(--muted);
+}
+
+[data-oa-ghost="never"] .oa-ghost-strike {
+  opacity: 1;
+}
+
+/* The password call is drawn as a thing that should not exist: hollow, dashed,
+   and the colour of the risk it is. */
+.oa-req-ghost .scene-req-dot {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: 6 6;
+}
+
+/* A ticket somebody else is holding, which is the same dot with a word on it. */
+.oa-req-steal .scene-req-dot {
+  fill: var(--state-open);
+}
+
+.oa-tag {
+  fill: var(--fg-soft);
+}
+
+.oa-req-steal .oa-tag {
+  fill: var(--state-open);
+}
+
+/* --- the Auth Server ---------------------------------------------------- */
+
+/*
+ * Three things the server knows and the app cannot argue with: that the user
+ * agreed, which scopes were asked for, and which refresh token of the current
+ * family is the live one. The index is the whole of rotation — it moves by one
+ * on every redemption, and the number the reader sees is the number the server
+ * would accept.
+ */
+.oa-heard,
+.oa-ask {
+  fill: var(--fg-soft);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+.oa-ask {
+  fill: var(--accent);
+}
+
+[data-oa-consent="on"] .oa-heard--on {
+  opacity: 1;
+}
+
+[data-oa-openid="on"] .oa-ask--on {
+  opacity: 1;
+}
+
+.oa-family {
+  fill: var(--request);
+  font-size: 28px;
+}
+
+[data-oa-family="1"] .oa-family--1,
+[data-oa-family="2"] .oa-family--2 {
+  opacity: 1;
+}
+
+/* Held up while the scene says it: each of these works exactly once. */
+[data-oa-mark="once"] .oa-family {
+  fill: var(--state-half);
+}
+
+[data-oa-mark="once"] .oa-auth > .scene-box {
+  stroke: var(--state-half);
+}
+
+/* The alarm. It is out until a refresh token comes back a second time, and it
+   goes out again only when a new family has replaced the one it killed. */
+.oa-lamp {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+.oa-revoked {
+  fill: var(--muted);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+[data-oa-revoked="on"] .oa-lamp {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+[data-oa-revoked="on"] .oa-revoked--on {
+  opacity: 1;
+  fill: var(--state-open);
+}
+
+[data-oa-revoked="on"] .oa-auth > .scene-box {
+  stroke: var(--state-open);
+}
+
+/* --- the API ------------------------------------------------------------ */
+
+/*
+ * The API checks the token, not the person. `scope read` is the requirement it
+ * holds a presented token against, `ok n` is everything it has let through, and
+ * `401` is the one answer it gives to a token that is no longer alive.
+ */
+.oa-scope {
+  fill: var(--fg-soft);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+[data-oa-scope="read"] .oa-scope--read {
+  opacity: 1;
+}
+
+.oa-ok {
+  fill: var(--state-closed);
+  font-size: 34px;
+}
+
+[data-oa-ok="0"] .oa-ok--0,
+[data-oa-ok="1"] .oa-ok--1,
+[data-oa-ok="2"] .oa-ok--2,
+[data-oa-ok="3"] .oa-ok--3,
+[data-oa-ok="4"] .oa-ok--4,
+[data-oa-ok="5"] .oa-ok--5 {
+  opacity: 1;
+}
+
+.oa-ok--0 {
+  fill: var(--fg-soft);
+}
+
+.oa-deny {
+  fill: var(--state-open);
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+[data-oa-401="on"] .oa-deny--on {
+  opacity: 1;
+}
+
+[data-oa-401="on"] .oa-api > .scene-box {
+  stroke: var(--state-open);
+}
+
+/* --- the User ----------------------------------------------------------- */
+
+/*
+ * The one actor in the diagram who is not a program. Consent is the User's own
+ * state rather than a packet coming back, because a person agreeing is not a
+ * message on a wire; the identity card is the id token read out, and it sits
+ * with the User because that is who it is a statement about.
+ */
+.oa-consent-lamp {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+.oa-consent-text {
+  fill: var(--muted);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+[data-oa-consent="on"] .oa-consent-lamp {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+}
+
+[data-oa-consent="on"] .oa-consent-text--on {
+  opacity: 1;
+  fill: var(--state-closed);
+}
+
+.oa-card-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+  opacity: 0;
+}
+
+.oa-card-text {
+  fill: var(--accent);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0;
+}
+
+[data-oa-idcard="on"] .oa-card-bg {
+  fill: var(--accent);
+  fill-opacity: 0.16;
+  stroke: var(--accent);
+  stroke-width: 5;
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+[data-oa-idcard="on"] .oa-card-text--on {
+  opacity: 1;
+}
+
+/* Held up while the scene says it: the id token is for the app to read. */
+[data-oa-mark="identity"] .oa-slot--id .oa-slot-bg,
+[data-oa-mark="identity"] .oa-card-bg {
+  stroke: var(--accent);
+  stroke-width: 7;
+}
+
+[data-oa-mark="identity"] .oa-lane-api {
+  stroke-dasharray: 16 16;
+  opacity: 0.45;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* Three tokens held, five calls answered, and the alarm reset because the
+   family it was raised against is gone. */
+[data-oa-settled="on"] .oa-app > .scene-box,
+[data-oa-settled="on"] .oa-auth > .scene-box,
+[data-oa-settled="on"] .oa-api > .scene-box,
+[data-oa-settled="on"] .oa-user > .scene-box,
+[data-oa-settled="on"] .oa-lane-auth,
+[data-oa-settled="on"] .oa-lane-api,
+[data-oa-settled="on"] .oa-lane-user {
+  stroke: var(--state-closed);
+}

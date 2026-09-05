@@ -1,0 +1,496 @@
+/* ---------------------------------------------------------------- */
+/* Change Tracking stage                                             */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Every rule below is scoped by a `ct-` class, so nothing in this block can
+ * reach a shared widget class in another scene. Where a selector opens on a
+ * `data-*` value it is a value only this stage ever writes, and the element
+ * it selects carries a `ct-` class of its own.
+ */
+
+/* The snippet. Every row of every snippet is stacked on the same four
+   baselines and the current `data-snippet` picks the one that shows, so a
+   swap is a change of attribute rather than a rewrite. */
+.ct-code {
+  font-size: 24px;
+  opacity: 0;
+}
+
+[data-snippet="s1"] .ct-code--s1,
+[data-snippet="s2a"] .ct-code--s2a,
+[data-snippet="s2b"] .ct-code--s2b,
+[data-snippet="s3"] .ct-code--s3,
+[data-snippet="s3n"] .ct-code--s3n,
+[data-snippet="s4a"] .ct-code--s4a,
+[data-snippet="s4b"] .ct-code--s4b,
+[data-snippet="s4c"] .ct-code--s4c {
+  opacity: 1;
+}
+
+/* The row the cursor is on is brighter than the rest of the snippet. */
+[data-cursor="0"] .ct-code-row--0,
+[data-cursor="1"] .ct-code-row--1,
+[data-cursor="2"] .ct-code-row--2,
+[data-cursor="3"] .ct-code-row--3 {
+  fill: var(--fg);
+}
+
+.ct-cursor {
+  fill: var(--surface-2);
+  stroke: var(--accent);
+  stroke-width: 3;
+  opacity: 0;
+}
+
+[data-cursor="0"] .ct-cursor--0,
+[data-cursor="1"] .ct-cursor--1,
+[data-cursor="2"] .ct-cursor--2,
+[data-cursor="3"] .ct-cursor--3 {
+  opacity: 1;
+}
+
+/* The lane a no-tracking query rides straight through the context. */
+.ct-bypass-lane {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-dasharray: 12 12;
+  opacity: 0;
+}
+
+[data-bypass="on"] .ct-bypass-lane {
+  opacity: 0.8;
+}
+
+.ct-bypass-label {
+  --flash-color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 24px;
+}
+
+[data-bypass="on"] .ct-bypass-label {
+  opacity: 1;
+}
+
+/* How long the context lives, which is named as well as coloured. */
+.ct-lifetime {
+  font-family: var(--font-mono);
+  font-size: 24px;
+}
+
+.ct-lifetime--request {
+  --flash-color: var(--state-closed);
+}
+
+.ct-lifetime--singleton {
+  --flash-color: var(--muted);
+}
+
+[data-lifetime="request"] .ct-lifetime--request,
+[data-lifetime="singleton"] .ct-lifetime--singleton {
+  opacity: 1;
+}
+
+/* The snapshots the context is holding, read off how many rows it tracks. */
+.ct-meter-label {
+  font-size: 22px;
+}
+
+.ct-meter-fill {
+  --fill-color: var(--request);
+}
+
+[data-table="bulk"] .ct-meter-fill {
+  --fill-color: var(--state-half);
+}
+
+.scene-counter.ct-tracked {
+  fill: var(--fg);
+  font-size: 26px;
+}
+
+[data-tracked="0"] .ct-tracked--0,
+[data-tracked="1"] .ct-tracked--1,
+[data-tracked="2"] .ct-tracked--2,
+[data-tracked="3"] .ct-tracked--3,
+[data-tracked="4"] .ct-tracked--4,
+[data-tracked="5"] .ct-tracked--5,
+[data-tracked="6"] .ct-tracked--6,
+[data-tracked="7"] .ct-tracked--7,
+[data-tracked="8"] .ct-tracked--8,
+[data-tracked="9"] .ct-tracked--9,
+[data-tracked="10"] .ct-tracked--10,
+[data-tracked="11"] .ct-tracked--11,
+[data-tracked="12"] .ct-tracked--12,
+[data-tracked="13"] .ct-tracked--13,
+[data-tracked="14"] .ct-tracked--14,
+[data-tracked="15"] .ct-tracked--15 {
+  opacity: 1;
+}
+
+/* A context that never lets go is marked, not only counted. */
+.ct-leak {
+  opacity: 0;
+}
+
+[data-leak="on"] .ct-leak {
+  opacity: 1;
+}
+
+.ct-leak-glyph {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+/* The tracker: one row per entity the context handed out. */
+.ct-head {
+  font-size: 20px;
+}
+
+.ct-row-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.ct-row[data-row="empty"] .ct-row-bg {
+  fill: none;
+  stroke-dasharray: 8 10;
+}
+
+.ct-row[data-row="modified"] .ct-row-bg {
+  stroke: var(--state-half);
+}
+
+.ct-row[data-row="added"] .ct-row-bg {
+  stroke: var(--state-closed);
+}
+
+.ct-row[data-row="deleted"] .ct-row-bg {
+  stroke: var(--state-open);
+}
+
+.ct-row[data-scan="on"] .ct-row-bg {
+  stroke: var(--accent);
+  stroke-width: 4;
+}
+
+.ct-name,
+.ct-state,
+.ct-value,
+.ct-total,
+.ct-snap {
+  opacity: 0;
+}
+
+.ct-name,
+.ct-state {
+  font-size: 20px;
+}
+
+.ct-value,
+.ct-total {
+  font-size: 19px;
+}
+
+.ct-snap {
+  font-size: 18px;
+}
+
+.ct-name {
+  fill: var(--fg);
+}
+
+.ct-row[data-name="0"] .ct-name--0,
+.ct-row[data-name="1"] .ct-name--1,
+.ct-row[data-name="2"] .ct-name--2,
+.ct-row[data-name="3"] .ct-name--3,
+.ct-row[data-name="4"] .ct-name--4 {
+  opacity: 1;
+}
+
+/* A state is a word before it is a colour. */
+.ct-row[data-row="unchanged"] .ct-state--unchanged,
+.ct-row[data-row="modified"] .ct-state--modified,
+.ct-row[data-row="added"] .ct-state--added,
+.ct-row[data-row="deleted"] .ct-state--deleted {
+  opacity: 1;
+}
+
+.ct-state--modified {
+  fill: var(--state-half);
+}
+
+.ct-state--added {
+  fill: var(--state-closed);
+}
+
+.ct-state--deleted {
+  fill: var(--state-open);
+}
+
+.ct-row[data-value="0"] .ct-value--0,
+.ct-row[data-value="1"] .ct-value--1,
+.ct-row[data-value="2"] .ct-value--2,
+.ct-row[data-value="3"] .ct-value--3,
+.ct-row[data-value="4"] .ct-value--4,
+.ct-row[data-value="5"] .ct-value--5,
+.ct-row[data-value="6"] .ct-value--6,
+.ct-row[data-value="7"] .ct-value--7 {
+  opacity: 1;
+}
+
+.ct-row[data-total="0"] .ct-total--0,
+.ct-row[data-total="1"] .ct-total--1,
+.ct-row[data-total="2"] .ct-total--2,
+.ct-row[data-total="3"] .ct-total--3 {
+  opacity: 1;
+}
+
+.ct-row[data-snap="0"] .ct-snap--0,
+.ct-row[data-snap="1"] .ct-snap--1,
+.ct-row[data-snap="2"] .ct-snap--2,
+.ct-row[data-snap="3"] .ct-snap--3,
+.ct-row[data-snap="4"] .ct-snap--4,
+.ct-row[data-snap="5"] .ct-snap--5,
+.ct-row[data-snap="6"] .ct-snap--6,
+.ct-row[data-snap="7"] .ct-snap--7,
+.ct-row[data-snap="8"] .ct-snap--8 {
+  opacity: 1;
+}
+
+/* Only the columns that differ from the snapshot are marked, and those are
+   the only ones that reach the statement. No snapshot means all of them. */
+.ct-row[data-dirty="value"] .ct-value,
+.ct-row[data-dirty="all"] .ct-value,
+.ct-row[data-dirty="all"] .ct-total {
+  fill: var(--state-half);
+  font-weight: 700;
+}
+
+/* A bulk result is row texture: ten rows standing for a thousand entities. */
+.ct-bulk {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+  opacity: 0;
+}
+
+.ct-bulk[data-bulk="on"] {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+  opacity: 1;
+}
+
+.ct-bulk[data-scan="on"] {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+[data-table="rows"] .ct-bulk-group {
+  opacity: 0;
+}
+
+[data-table="bulk"] .ct-rows {
+  opacity: 0;
+}
+
+/* What SaveChanges is doing, and what it found. */
+.ct-detect {
+  --flash-color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 24px;
+}
+
+[data-detect="on"] .ct-detect {
+  opacity: 1;
+}
+
+.ct-allcols {
+  --flash-color: var(--state-half);
+  font-family: var(--font-mono);
+  font-size: 24px;
+}
+
+[data-allcols="on"] .ct-allcols {
+  opacity: 1;
+}
+
+.ct-rowversion {
+  --flash-color: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 22px;
+}
+
+[data-rowversion="on"] .ct-rowversion {
+  opacity: 1;
+}
+
+/* The database. A session that got there first is a fact, not a state. */
+.ct-other {
+  fill: var(--state-half);
+  font-size: 22px;
+  opacity: 0;
+}
+
+[data-other="on"] .ct-other {
+  opacity: 1;
+}
+
+.ct-tx-label {
+  font-size: 22px;
+  opacity: 0;
+}
+
+.ct-tx-frame {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 14 10;
+  opacity: 0;
+}
+
+[data-tx="open"] .ct-tx-label,
+[data-tx="commit"] .ct-tx-label,
+[data-tx="rollback"] .ct-tx-label,
+[data-tx="open"] .ct-tx-frame,
+[data-tx="commit"] .ct-tx-frame,
+[data-tx="rollback"] .ct-tx-frame {
+  opacity: 1;
+}
+
+[data-tx="commit"] .ct-tx-frame {
+  stroke: var(--state-closed);
+}
+
+[data-tx="rollback"] .ct-tx-frame {
+  stroke: var(--state-open);
+}
+
+.ct-sql {
+  font-size: 20px;
+  opacity: 0;
+}
+
+.ct-stmt {
+  opacity: 0;
+}
+
+.ct-stmt[data-run="live"],
+.ct-stmt[data-run="failed"],
+.ct-stmt[data-run="undone"] {
+  opacity: 1;
+}
+
+.ct-stmt[data-run="live"] .ct-sql {
+  fill: var(--fg);
+}
+
+.ct-stmt[data-run="failed"] .ct-sql {
+  fill: var(--state-open);
+}
+
+/* A statement the rollback took back is still readable, and plainly spent. */
+.ct-stmt[data-run="undone"] {
+  opacity: 0.4;
+}
+
+.ct-stmt[data-run="undone"] .ct-sql {
+  fill: var(--muted);
+}
+
+.ct-stmt[data-stmt="0"] .ct-sql--0,
+.ct-stmt[data-stmt="1"] .ct-sql--1,
+.ct-stmt[data-stmt="2"] .ct-sql--2,
+.ct-stmt[data-stmt="3"] .ct-sql--3,
+.ct-stmt[data-stmt="4"] .ct-sql--4,
+.ct-stmt[data-stmt="5"] .ct-sql--5,
+.ct-stmt[data-stmt="6"] .ct-sql--6,
+.ct-stmt[data-stmt="7"] .ct-sql--7,
+.ct-stmt[data-stmt="8"] .ct-sql--8,
+.ct-stmt[data-stmt="9"] .ct-sql--9 {
+  opacity: 1;
+}
+
+.scene-counter.ct-affected {
+  fill: var(--fg);
+  font-size: 26px;
+}
+
+[data-affected="0"] .ct-affected--0,
+[data-affected="1"] .ct-affected--1,
+[data-affected="2"] .ct-affected--2,
+[data-affected="3"] .ct-affected--3 {
+  opacity: 1;
+}
+
+[data-result="ok"] .ct-affected {
+  fill: var(--state-closed);
+}
+
+[data-result="fail"] .ct-affected {
+  fill: var(--state-open);
+}
+
+/* A result is a check or a cross as well as a colour. */
+.ct-mark {
+  opacity: 0;
+}
+
+[data-result="ok"] .ct-mark--ok,
+[data-result="fail"] .ct-mark--fail {
+  opacity: 1;
+}
+
+.ct-mark-glyph {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.ct-mark--ok .ct-mark-glyph {
+  stroke: var(--state-closed);
+}
+
+.ct-mark--fail .ct-mark-glyph {
+  stroke: var(--state-open);
+}
+
+.ct-commit {
+  --flash-color: var(--state-closed);
+  font-size: 24px;
+}
+
+.ct-rollback {
+  --flash-color: var(--state-open);
+  font-size: 24px;
+}
+
+[data-tx="commit"] .ct-commit,
+[data-tx="rollback"] .ct-rollback {
+  opacity: 1;
+}
+
+.ct-exception {
+  --flash-color: var(--state-open);
+  font-family: var(--font-mono);
+  font-size: 20px;
+}
+
+[data-exception="on"] .ct-exception {
+  opacity: 1;
+}
+
+/* Work on its way down is plain; an entity coming back carries a value. */
+.ct-req--call .scene-req-dot,
+.ct-req--stmt .scene-req-dot {
+  fill: var(--fg-soft);
+}
+
+.ct-req--entity .scene-req-dot,
+.ct-req--chip .scene-req-dot {
+  fill: var(--request);
+}

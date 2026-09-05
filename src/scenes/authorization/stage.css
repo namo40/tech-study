@@ -1,0 +1,421 @@
+/* ---------------------------------------------------------------- */
+/* Authorization stage                                               */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One question, asked four ways: not who is calling, but whether this caller
+ * may do this, to this. Every rule below reads one of the four answers — a gate
+ * that only checks the login and therefore refuses nothing, a badge that names
+ * a set of verbs, a policy that puts the question to the resource itself, and a
+ * verb no rule mentions being refused for exactly that reason.
+ *
+ * The colour argument is small. Blue is work in progress: a stage deciding, a
+ * request on its way. Green is a decision that came out yes and what follows
+ * from it — the allow lamp, a document its owner touched, `ok n`, the settled
+ * frame. Red is refusal and its opposite number: the deny lamp, `denied n`
+ * while it moves, and a document somebody else's write landed on. Amber is a
+ * question being asked rather than answered, which covers the owner probe and
+ * whatever the scene is holding up for a moment. Purple is the policy, because
+ * it is the rule that reads more than the badge. Grey, hollow and dashed are
+ * absence: the authorization stage that is not there.
+ *
+ * The three states the reader must never confuse are drawn three ways rather
+ * than three colours. A dark stage is a dashed hollow plate with a hollow
+ * dashed lamp; an idle stage is a filled plate with a solid grey lamp; a stage
+ * deciding is a filled plate with a blue rim and a blue lamp; a refusal is a
+ * red rim with a solid red lamp and a word beside it. That holds in both themes
+ * because all four resolve to tokens and differ in fill pattern as well as hue.
+ *
+ * Every value the reader can read is a stack of text elements on one spot,
+ * hidden by a base rule and revealed one at a time by the current `data-*`, so
+ * nothing interpolates and scrubbing backwards is exact in both themes.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+/*
+ * The lower lane is the only way to a document, so what is standing over it
+ * matters. With no authorization stage it is wide open, which is the first
+ * step's whole argument; while a refusal is standing it is drawn as the path
+ * this request is not taking.
+ */
+[data-az-authz="dark"] .az-lane--docs {
+  stroke: var(--state-open);
+}
+
+[data-az-decision="deny"] .az-lane--docs {
+  stroke-dasharray: 16 16;
+  opacity: 0.5;
+}
+
+/* Nothing is on its way anywhere on the settled frame, so all three lanes go
+   quiet with everything else. */
+[data-az-settled="on"] .az-lane {
+  stroke: var(--border);
+}
+
+/* --- the Users ---------------------------------------------------------- */
+
+/*
+ * Two callers, each carrying the badge it was granted. The badge is the only
+ * thing the gate knows about a caller before it looks at the resource, so it is
+ * always written: what changes is whether the scene is pointing at it.
+ */
+.az-user-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.az-user-name {
+  fill: var(--fg);
+  font-size: 38px;
+  font-weight: 700;
+}
+
+.az-badge {
+  fill: var(--fg-soft);
+  font-size: 34px;
+  letter-spacing: 1px;
+}
+
+[data-az-role="editor"] .az-badge--editor,
+[data-az-role="viewer"] .az-badge--viewer {
+  opacity: 1;
+}
+
+/* --- the Gate ----------------------------------------------------------- */
+
+/* A gate missing one of its two stages is not a whole gate, and the frame says
+   so before any of the plates inside it do. */
+[data-az-authz="dark"] .az-gate > .scene-box {
+  stroke: var(--state-half);
+  stroke-dasharray: 18 12;
+}
+
+/*
+ * A stage plate. Present and idle is a filled plate with a solid grey lamp;
+ * deciding adds a blue rim and lights the lamp. Neither can be mistaken for the
+ * dark stage below, which has no fill at all.
+ */
+.az-stage-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.az-stage-lamp {
+  fill: var(--muted);
+}
+
+.az-stage-text {
+  fill: var(--fg-soft);
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+[data-az-authn="busy"] .az-stage--authn .az-stage-bg,
+[data-az-authz="busy"] .az-stage--authz .az-stage-bg {
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+[data-az-authn="busy"] .az-stage--authn .az-stage-lamp,
+[data-az-authz="busy"] .az-stage--authz .az-stage-lamp {
+  fill: var(--accent);
+}
+
+[data-az-authn="busy"] .az-stage--authn .az-stage-text,
+[data-az-authz="busy"] .az-stage--authz .az-stage-text {
+  fill: var(--accent);
+}
+
+/*
+ * The stage that is not there. A hollow dashed plate with a hollow dashed lamp
+ * and a faded name: absence drawn as absence, so a reader who scrubs into the
+ * first step cannot read it as a stage that happens to be idle.
+ */
+[data-az-authz="dark"] .az-stage--authz .az-stage-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 12 10;
+}
+
+[data-az-authz="dark"] .az-stage--authz .az-stage-lamp {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 6 6;
+}
+
+[data-az-authz="dark"] .az-stage--authz .az-stage-text {
+  fill: var(--muted);
+}
+
+/* Which rule the second stage is deciding by. A named bundle of verbs reads as
+   ordinary machinery; the policy is drawn as the rule that reads more. */
+.az-mode {
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+.az-mode--role {
+  fill: var(--accent);
+}
+
+.az-mode--policy {
+  fill: var(--cpu);
+}
+
+[data-az-mode="role"] .az-mode--role,
+[data-az-mode="policy"] .az-mode--policy {
+  opacity: 1;
+}
+
+/* The verdict. Nothing is written between requests, because a gate with no
+   request in it has not decided anything. */
+.az-decision-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.az-decision-lamp {
+  fill: var(--muted);
+}
+
+.az-verdict {
+  font-size: 34px;
+  letter-spacing: 1px;
+}
+
+.az-verdict--allow {
+  fill: var(--state-closed);
+}
+
+.az-verdict--deny {
+  fill: var(--state-open);
+}
+
+[data-az-decision="allow"] .az-verdict--allow,
+[data-az-decision="deny"] .az-verdict--deny {
+  opacity: 1;
+}
+
+[data-az-decision="allow"] .az-decision-bg {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+[data-az-decision="allow"] .az-decision-lamp {
+  fill: var(--state-closed);
+}
+
+[data-az-decision="deny"] .az-decision-bg {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+[data-az-decision="deny"] .az-decision-lamp {
+  fill: var(--state-open);
+}
+
+/* How many calls the gate has refused. It goes red while it is moving, because
+   a refusal is the only thing that moves it. */
+.az-denied {
+  fill: var(--fg-soft);
+  font-size: 34px;
+}
+
+[data-az-denied="0"] .az-denied--0,
+[data-az-denied="1"] .az-denied--1,
+[data-az-denied="2"] .az-denied--2,
+[data-az-denied="3"] .az-denied--3 {
+  opacity: 1;
+}
+
+[data-az-decision="deny"] .az-denied {
+  fill: var(--state-open);
+}
+
+[data-az-settled="on"] .az-denied {
+  fill: var(--fg);
+}
+
+/* --- the Docs ----------------------------------------------------------- */
+
+/*
+ * Two documents. A cell says what the last call on it did, and the four answers
+ * are drawn four ways: a plain plate, a plate held up while the policy asks
+ * whose it is, a solid green plate its owner touched, and a solid red one
+ * somebody else's write landed on.
+ */
+.az-cell {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.az-cell[data-az-cell="probe"] {
+  stroke: var(--state-half);
+  stroke-width: 6;
+}
+
+.az-cell[data-az-cell="hit"] {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+}
+
+.az-cell[data-az-cell="breach"] {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+.az-doc {
+  fill: var(--fg-soft);
+  font-size: 32px;
+  font-weight: 600;
+}
+
+/* A filled cell carries its name on the fill rather than beside it. */
+.az-cell--A[data-az-cell="hit"] ~ .az-doc--A,
+.az-cell--A[data-az-cell="breach"] ~ .az-doc--A,
+.az-cell--B[data-az-cell="hit"] ~ .az-doc--B,
+.az-cell--B[data-az-cell="breach"] ~ .az-doc--B {
+  fill: var(--bg);
+}
+
+/* The question the policy puts to the resource, and the answer it gets back.
+   It is written only while it is being asked. */
+.az-owner {
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+[data-az-owner="match"] .az-owner {
+  fill: var(--state-closed);
+}
+
+[data-az-owner="mismatch"] .az-owner {
+  fill: var(--state-open);
+}
+
+[data-az-owner="match"] .az-owner,
+[data-az-owner="mismatch"] .az-owner {
+  opacity: 1;
+}
+
+/* How many calls an authorization decision let through. Under the dark gate it
+   cannot move, which is the point: nothing was authorized. */
+.az-ok {
+  fill: var(--fg-soft);
+  font-size: 34px;
+}
+
+[data-az-ok="0"] .az-ok--0,
+[data-az-ok="1"] .az-ok--1,
+[data-az-ok="2"] .az-ok--2,
+[data-az-ok="3"] .az-ok--3,
+[data-az-ok="4"] .az-ok--4,
+[data-az-ok="5"] .az-ok--5,
+[data-az-ok="6"] .az-ok--6,
+[data-az-ok="7"] .az-ok--7 {
+  opacity: 1;
+}
+
+[data-az-settled="on"] .az-ok {
+  fill: var(--fg);
+}
+
+[data-az-settled="on"] .az-docs > .scene-box {
+  stroke: var(--state-closed);
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/*
+ * A read and a write are drawn apart, because the argument the scene makes is
+ * about them differing: the same badge that may read may not write. The verb no
+ * badge lists is drawn as neither — a dashed outline with nothing inside it,
+ * which is what the gate has for it.
+ */
+.az-read .scene-req-dot {
+  fill: none;
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+.az-write .scene-req-dot {
+  fill: var(--request);
+}
+
+.az-admin .scene-req-dot {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 5;
+  stroke-dasharray: 8 7;
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The gate with no second stage, and the two questions once there are two. */
+[data-az-mark="ghost"] .az-stage--authz .az-stage-bg,
+[data-az-mark="ghost"] .az-stage--authz .az-stage-lamp {
+  stroke: var(--state-half);
+}
+
+[data-az-mark="ghost"] .az-stage--authz .az-stage-text {
+  fill: var(--state-half);
+}
+
+[data-az-mark="two"] .az-stage-bg {
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+[data-az-mark="two"] .az-stage-text {
+  fill: var(--state-half);
+}
+
+/* The rule in force, held up as a rule rather than as a colour change. */
+[data-az-mark="role"] .az-stage--authz .az-stage-bg {
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+/* Grant the bundle, not the person-by-person list. */
+[data-az-mark="bundle"] .az-user-bg {
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+[data-az-mark="bundle"] .az-badge {
+  fill: var(--accent);
+}
+
+/* The resource is part of the decision, so the documents are what is held up. */
+[data-az-mark="resource"] .az-cell[data-az-cell="idle"] {
+  stroke: var(--state-half);
+  stroke-width: 6;
+}
+
+/* Silence means no: the refusal, and the count of them. */
+[data-az-mark="silence"] .az-decision-bg {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+[data-az-mark="silence"] .az-denied {
+  fill: var(--state-open);
+}
+
+/* Least privilege: the badges again, and how little each one should open. */
+[data-az-mark="least"] .az-user-bg {
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+[data-az-mark="least"] .az-badge {
+  fill: var(--state-half);
+}

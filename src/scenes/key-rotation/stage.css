@@ -1,0 +1,314 @@
+/* ---------------------------------------------------------------- */
+/* Key Rotation stage                                                */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One credential, replaced on a schedule, and the whole argument is in which of
+ * the three key cards is lit and how.
+ *
+ * The colour argument is small. Green is a key the Service will take, and the
+ * settled frame at the end. Red is a key it will not take any more, and a call
+ * made with a copy somebody else is holding. Amber is the `leaked` mark: not a
+ * refusal, but a clock started. Blue is an ordinary call and the two marks about
+ * scheduling. Purple is the world where nothing is ever replaced, the signed
+ * tokens of the third step, and the ring that verifies them — a different
+ * lifetime on the same key material, which is why it is not drawn in either of
+ * the two colours the accepted set uses.
+ *
+ * The three states a key card can be in are three different pictures rather than
+ * three fills: a hollow dashed outline with only a name is a key that has not
+ * been cut, a filled card with the word `active` is one the Service takes, and a
+ * filled card with the word `revoked` is one it does not. The `leaked` mark sits
+ * on its own amber-outlined plate, so it stays legible whether the card under it
+ * is active or revoked and in either theme.
+ *
+ * Every value the reader can read is a stack of text elements on one spot with
+ * the widget class hiding all of them, so nothing interpolates and scrubbing
+ * backwards is exact.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+/* The lower lane is dashed because a key's state is a state, and what travels
+   down it is only the instant the change was made. */
+.kr-lane--keys {
+  stroke-dasharray: 14 12;
+  opacity: 0.7;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+.kr-req--plain .scene-req-dot {
+  fill: var(--request);
+}
+
+/* A signature rather than a key, which is the third step's whole distinction. */
+.kr-req--token .scene-req-dot {
+  fill: var(--cpu);
+}
+
+/* The Service telling the key store, which is not a caller and is not a call. */
+.kr-req--admin .scene-req-dot {
+  fill: var(--fg-soft);
+}
+
+/* A call made with a copy somebody else is holding: hollow, dashed, and the
+   colour of the risk it is. It carries the name of what it is presenting,
+   because the lane it borrowed belongs to a caller that is holding something
+   else by then. */
+.kr-req--leak .scene-req-dot {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: 6 6;
+}
+
+.kr-tag {
+  fill: var(--state-open);
+}
+
+/* --- the Callers -------------------------------------------------------- */
+
+/* A caller is always drawn, because callers do not appear and disappear. What
+   changes is the one key it presents, and that changes on a deploy. */
+.kr-caller-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.kr-caller-key {
+  fill: var(--fg);
+  font-size: 32px;
+}
+
+.kr-caller[data-kr-holds="a"] .kr-caller-key--a,
+.kr-caller[data-kr-holds="b"] .kr-caller-key--b,
+.kr-caller[data-kr-holds="c"] .kr-caller-key--c {
+  opacity: 1;
+}
+
+/* --- the Service -------------------------------------------------------- */
+
+/* The set it will take. Two keys at once is the overlap, and the overlap is the
+   thing that makes rotation boring, so it is the state that lights up. */
+.kr-lead {
+  font-size: 36px;
+}
+
+.kr-accepts {
+  fill: var(--fg);
+}
+
+.kr-accepts--ab,
+.kr-accepts--bc {
+  fill: var(--state-closed);
+}
+
+[data-kr-accepts="a"] .kr-accepts--a,
+[data-kr-accepts="ab"] .kr-accepts--ab,
+[data-kr-accepts="b"] .kr-accepts--b,
+[data-kr-accepts="bc"] .kr-accepts--bc,
+[data-kr-accepts="c"] .kr-accepts--c {
+  opacity: 1;
+}
+
+/* Signing, verifying, and the header that says which key to try. The three are
+   drawn together because the asymmetry between them is the point: one key goes
+   out, a ring comes back. */
+.kr-ring {
+  font-size: 30px;
+}
+
+.kr-sign {
+  fill: var(--fg-soft);
+}
+
+.kr-verify,
+.kr-kid {
+  fill: var(--cpu);
+}
+
+[data-kr-sign="b"] .kr-sign--b,
+[data-kr-sign="c"] .kr-sign--c,
+[data-kr-verify="ab"] .kr-verify--ab,
+[data-kr-verify="bc"] .kr-verify--bc,
+[data-kr-kid="a"] .kr-kid--a,
+[data-kr-kid="b"] .kr-kid--b {
+  opacity: 1;
+}
+
+/* The two counts. Neither ever goes backwards, and a count of nothing is drawn
+   as a checked zero rather than left out. */
+.kr-ok,
+.kr-denied {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  fill: var(--state-closed);
+}
+
+.kr-ok--0,
+.kr-denied--0 {
+  fill: var(--muted);
+}
+
+.kr-denied--1 {
+  fill: var(--state-open);
+}
+
+[data-kr-ok="0"] .kr-ok--0,
+[data-kr-ok="1"] .kr-ok--1,
+[data-kr-ok="2"] .kr-ok--2,
+[data-kr-ok="3"] .kr-ok--3,
+[data-kr-ok="4"] .kr-ok--4,
+[data-kr-ok="5"] .kr-ok--5,
+[data-kr-ok="6"] .kr-ok--6,
+[data-kr-ok="7"] .kr-ok--7,
+[data-kr-ok="8"] .kr-ok--8,
+[data-kr-ok="9"] .kr-ok--9,
+[data-kr-ok="10"] .kr-ok--10,
+[data-kr-denied="0"] .kr-denied--0,
+[data-kr-denied="1"] .kr-denied--1 {
+  opacity: 1;
+}
+
+/* --- the Keys ----------------------------------------------------------- */
+
+/*
+ * A card that has not been cut yet: hollow, thin and dashed, with only the name
+ * on it. It cannot be mistaken for either of the two live states in either
+ * theme, because neither of those is hollow and both of them carry a word.
+ */
+.kr-card-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.kr-card-name {
+  fill: var(--muted);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.kr-card-state {
+  font-size: 26px;
+}
+
+.kr-card[data-kr-card="active"] .kr-card-bg {
+  fill: var(--state-closed);
+  fill-opacity: 0.16;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+.kr-card[data-kr-card="active"] .kr-card-name {
+  fill: var(--fg);
+}
+
+.kr-card[data-kr-card="active"] .kr-card-state--active {
+  fill: var(--state-closed);
+  opacity: 1;
+}
+
+.kr-card[data-kr-card="revoked"] .kr-card-bg {
+  fill: var(--state-open);
+  fill-opacity: 0.14;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+.kr-card[data-kr-card="revoked"] .kr-card-name {
+  fill: var(--state-open);
+}
+
+.kr-card[data-kr-card="revoked"] .kr-card-state--revoked {
+  fill: var(--state-open);
+  opacity: 1;
+}
+
+/* The mark that says a copy is loose. It is written on its own plate rather than
+   as a colour on the card, so the card's tint is not what it has to be read
+   against: the plate breaks from the fill under it and outlines itself in a
+   third colour, which is what keeps it legible on an active card and on a
+   revoked one alike. Amber rather than red, because a leak is a clock starting
+   rather than a refusal. */
+.kr-card-leak {
+  opacity: 0;
+}
+
+.kr-card[data-kr-leak="on"] .kr-card-leak {
+  opacity: 1;
+}
+
+.kr-card-leak-bg {
+  fill: var(--surface);
+  stroke: var(--state-half);
+  stroke-width: 3;
+}
+
+.kr-card-leak-text {
+  fill: var(--state-half);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* --- the world without rotation ----------------------------------------- */
+
+/*
+ * The first step's argument: one key, cut once, valid forever. It is drawn in a
+ * colour the rest of the scene never uses on a card, and dashed, so nothing
+ * about it can be confused with a key the running system is actually holding.
+ */
+[data-kr-ghost="on"] .kr-keys > .scene-box {
+  stroke: var(--cpu);
+  stroke-width: 6;
+  stroke-dasharray: 18 12;
+}
+
+[data-kr-ghost="on"] .kr-card--a .kr-card-bg {
+  fill: var(--cpu);
+  fill-opacity: 0.14;
+  stroke: var(--cpu);
+  stroke-width: 6;
+  stroke-dasharray: 18 10;
+}
+
+[data-kr-ghost="on"] .kr-card--a .kr-card-name,
+[data-kr-ghost="on"] .kr-card--a .kr-card-state--active {
+  fill: var(--cpu);
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The four things the captions stop on, each drawn on the band it is about. */
+[data-kr-mark="edition"] .kr-keys > .scene-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-kr-mark="discipline"] .kr-keys > .scene-box {
+  stroke: var(--state-half);
+  stroke-width: 6;
+}
+
+[data-kr-mark="schedule"] .kr-service > .scene-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-kr-mark="ring"] .kr-service > .scene-box {
+  stroke: var(--cpu);
+  stroke-width: 6;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: one key cut, accepted, and alone, with the two it replaced
+   still on the board so the reader can see what a series looks like. */
+[data-kr-settled="on"] .kr-keys > .scene-box {
+  stroke: var(--state-closed);
+}

@@ -1,0 +1,612 @@
+/* ---------------------------------------------------------------- */
+/* Error Budget stage                                                */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One gauge, and everything else on the stage is either what fills it or what
+ * reads it. The track is the month's allowance rather than a bar with a limit
+ * drawn somewhere inside it, so "the gauge is empty" and "the month's failure
+ * has all been spent" are the same picture; the line on its right edge carries
+ * the figure the promise converts to.
+ *
+ * Every readout here is a stack of words on one spot with the widget class
+ * hiding all of them, so the state picks the one that shows and nothing
+ * interpolates between two colours. The gauge is the single exception, because
+ * it is a quantity: its width is tweened and its colour is switched, never
+ * blended.
+ *
+ * The colours carry the argument. Green is a budget with room in it. Amber is a
+ * budget being spent faster than the month can afford — the regime this page is
+ * about, where nothing has broken and the argument about shipping has already
+ * changed. Red is a budget nearly gone, and it appears on the gauge, on the
+ * figure under it and on the gate at the same time, because past that point
+ * they are one decision. The measured good-rate is painted by the same three
+ * bands, so the reader can see the SLI cross the promise before the gauge has
+ * finished moving.
+ */
+
+/* The lane carries failure and nothing else, so it is faint while a calm month
+   is barely touching the budget. The line to Release is quiet for the whole
+   scene: it says the gate reads the budget, and nothing ever travels down it. */
+[data-eb-burn="0"] .eb-lane,
+[data-eb-burn="1"] .eb-lane {
+  opacity: 0.5;
+}
+
+.eb-reads {
+  stroke-dasharray: 10 18;
+  opacity: 0.35;
+}
+
+/* --- Traffic -------------------------------------------------------- */
+
+.eb-good {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 36px;
+}
+
+/* At or under the promise, and far enough under it to be an outage. */
+[data-eb-burn="4"] .eb-good,
+[data-eb-burn="5"] .eb-good,
+[data-eb-burn="6"] .eb-good,
+[data-eb-burn="7"] .eb-good {
+  fill: var(--state-half);
+}
+
+[data-eb-burn="8"] .eb-good,
+[data-eb-burn="9"] .eb-good,
+[data-eb-burn="10"] .eb-good,
+[data-eb-burn="11"] .eb-good,
+[data-eb-burn="12"] .eb-good,
+[data-eb-burn="13"] .eb-good {
+  fill: var(--state-open);
+}
+
+[data-eb-burn="8"] .eb-traffic > .scene-box,
+[data-eb-burn="9"] .eb-traffic > .scene-box,
+[data-eb-burn="10"] .eb-traffic > .scene-box,
+[data-eb-burn="11"] .eb-traffic > .scene-box,
+[data-eb-burn="12"] .eb-traffic > .scene-box,
+[data-eb-burn="13"] .eb-traffic > .scene-box {
+  stroke: var(--state-open);
+}
+
+[data-eb-good="0"] .eb-good--0,
+[data-eb-good="1"] .eb-good--1,
+[data-eb-good="2"] .eb-good--2,
+[data-eb-good="3"] .eb-good--3,
+[data-eb-good="4"] .eb-good--4,
+[data-eb-good="5"] .eb-good--5,
+[data-eb-good="6"] .eb-good--6,
+[data-eb-good="7"] .eb-good--7,
+[data-eb-good="8"] .eb-good--8,
+[data-eb-good="9"] .eb-good--9,
+[data-eb-good="10"] .eb-good--10,
+[data-eb-good="11"] .eb-good--11,
+[data-eb-good="12"] .eb-good--12,
+[data-eb-good="13"] .eb-good--13,
+[data-eb-good="14"] .eb-good--14,
+[data-eb-good="15"] .eb-good--15,
+[data-eb-good="16"] .eb-good--16,
+[data-eb-good="17"] .eb-good--17,
+[data-eb-good="18"] .eb-good--18,
+[data-eb-good="19"] .eb-good--19,
+[data-eb-good="20"] .eb-good--20,
+[data-eb-good="21"] .eb-good--21,
+[data-eb-good="22"] .eb-good--22,
+[data-eb-good="23"] .eb-good--23,
+[data-eb-good="24"] .eb-good--24,
+[data-eb-good="25"] .eb-good--25,
+[data-eb-good="26"] .eb-good--26,
+[data-eb-good="27"] .eb-good--27,
+[data-eb-good="28"] .eb-good--28,
+[data-eb-good="29"] .eb-good--29,
+[data-eb-good="30"] .eb-good--30,
+[data-eb-good="31"] .eb-good--31,
+[data-eb-good="32"] .eb-good--32,
+[data-eb-good="33"] .eb-good--33,
+[data-eb-good="34"] .eb-good--34,
+[data-eb-good="35"] .eb-good--35,
+[data-eb-good="36"] .eb-good--36,
+[data-eb-good="37"] .eb-good--37,
+[data-eb-good="38"] .eb-good--38,
+[data-eb-good="39"] .eb-good--39,
+[data-eb-good="40"] .eb-good--40,
+[data-eb-good="41"] .eb-good--41,
+[data-eb-good="42"] .eb-good--42,
+[data-eb-good="43"] .eb-good--43,
+[data-eb-good="44"] .eb-good--44,
+[data-eb-good="45"] .eb-good--45,
+[data-eb-good="46"] .eb-good--46,
+[data-eb-good="47"] .eb-good--47,
+[data-eb-good="48"] .eb-good--48,
+[data-eb-good="49"] .eb-good--49,
+[data-eb-good="50"] .eb-good--50,
+[data-eb-good="51"] .eb-good--51,
+[data-eb-good="52"] .eb-good--52,
+[data-eb-good="53"] .eb-good--53,
+[data-eb-good="54"] .eb-good--54,
+[data-eb-good="55"] .eb-good--55,
+[data-eb-good="56"] .eb-good--56,
+[data-eb-good="57"] .eb-good--57,
+[data-eb-good="58"] .eb-good--58,
+[data-eb-good="59"] .eb-good--59,
+[data-eb-good="60"] .eb-good--60,
+[data-eb-good="61"] .eb-good--61,
+[data-eb-good="62"] .eb-good--62,
+[data-eb-good="63"] .eb-good--63,
+[data-eb-good="64"] .eb-good--64,
+[data-eb-good="65"] .eb-good--65,
+[data-eb-good="66"] .eb-good--66,
+[data-eb-good="67"] .eb-good--67,
+[data-eb-good="68"] .eb-good--68,
+[data-eb-good="69"] .eb-good--69,
+[data-eb-good="70"] .eb-good--70,
+[data-eb-good="71"] .eb-good--71,
+[data-eb-good="72"] .eb-good--72,
+[data-eb-good="73"] .eb-good--73,
+[data-eb-good="74"] .eb-good--74,
+[data-eb-good="75"] .eb-good--75,
+[data-eb-good="76"] .eb-good--76,
+[data-eb-good="77"] .eb-good--77,
+[data-eb-good="78"] .eb-good--78,
+[data-eb-good="79"] .eb-good--79,
+[data-eb-good="80"] .eb-good--80,
+[data-eb-good="81"] .eb-good--81,
+[data-eb-good="82"] .eb-good--82,
+[data-eb-good="83"] .eb-good--83,
+[data-eb-good="84"] .eb-good--84,
+[data-eb-good="85"] .eb-good--85,
+[data-eb-good="86"] .eb-good--86,
+[data-eb-good="87"] .eb-good--87,
+[data-eb-good="88"] .eb-good--88,
+[data-eb-good="89"] .eb-good--89,
+[data-eb-good="90"] .eb-good--90,
+[data-eb-good="91"] .eb-good--91,
+[data-eb-good="92"] .eb-good--92,
+[data-eb-good="93"] .eb-good--93,
+[data-eb-good="94"] .eb-good--94,
+[data-eb-good="95"] .eb-good--95,
+[data-eb-good="96"] .eb-good--96,
+[data-eb-good="97"] .eb-good--97,
+[data-eb-good="98"] .eb-good--98,
+[data-eb-good="99"] .eb-good--99,
+[data-eb-good="100"] .eb-good--100,
+[data-eb-good="101"] .eb-good--101,
+[data-eb-good="102"] .eb-good--102,
+[data-eb-good="103"] .eb-good--103,
+[data-eb-good="104"] .eb-good--104,
+[data-eb-good="105"] .eb-good--105,
+[data-eb-good="106"] .eb-good--106,
+[data-eb-good="107"] .eb-good--107,
+[data-eb-good="108"] .eb-good--108,
+[data-eb-good="109"] .eb-good--109,
+[data-eb-good="110"] .eb-good--110,
+[data-eb-good="111"] .eb-good--111,
+[data-eb-good="112"] .eb-good--112,
+[data-eb-good="113"] .eb-good--113,
+[data-eb-good="114"] .eb-good--114,
+[data-eb-good="115"] .eb-good--115,
+[data-eb-good="116"] .eb-good--116,
+[data-eb-good="117"] .eb-good--117,
+[data-eb-good="118"] .eb-good--118,
+[data-eb-good="119"] .eb-good--119,
+[data-eb-good="120"] .eb-good--120,
+[data-eb-good="121"] .eb-good--121,
+[data-eb-good="122"] .eb-good--122,
+[data-eb-good="123"] .eb-good--123,
+[data-eb-good="124"] .eb-good--124,
+[data-eb-good="125"] .eb-good--125,
+[data-eb-good="126"] .eb-good--126,
+[data-eb-good="127"] .eb-good--127,
+[data-eb-good="128"] .eb-good--128,
+[data-eb-good="129"] .eb-good--129,
+[data-eb-good="130"] .eb-good--130,
+[data-eb-good="131"] .eb-good--131,
+[data-eb-good="132"] .eb-good--132,
+[data-eb-good="133"] .eb-good--133,
+[data-eb-good="134"] .eb-good--134,
+[data-eb-good="135"] .eb-good--135,
+[data-eb-good="136"] .eb-good--136,
+[data-eb-good="137"] .eb-good--137,
+[data-eb-good="138"] .eb-good--138,
+[data-eb-good="139"] .eb-good--139,
+[data-eb-good="140"] .eb-good--140,
+[data-eb-good="141"] .eb-good--141,
+[data-eb-good="142"] .eb-good--142,
+[data-eb-good="143"] .eb-good--143,
+[data-eb-good="144"] .eb-good--144,
+[data-eb-good="145"] .eb-good--145,
+[data-eb-good="146"] .eb-good--146,
+[data-eb-good="147"] .eb-good--147,
+[data-eb-good="148"] .eb-good--148,
+[data-eb-good="149"] .eb-good--149,
+[data-eb-good="150"] .eb-good--150,
+[data-eb-good="151"] .eb-good--151,
+[data-eb-good="152"] .eb-good--152,
+[data-eb-good="153"] .eb-good--153,
+[data-eb-good="154"] .eb-good--154,
+[data-eb-good="155"] .eb-good--155,
+[data-eb-good="156"] .eb-good--156,
+[data-eb-good="157"] .eb-good--157,
+[data-eb-good="158"] .eb-good--158,
+[data-eb-good="159"] .eb-good--159,
+[data-eb-good="160"] .eb-good--160,
+[data-eb-good="161"] .eb-good--161,
+[data-eb-good="162"] .eb-good--162,
+[data-eb-good="163"] .eb-good--163,
+[data-eb-good="164"] .eb-good--164,
+[data-eb-good="165"] .eb-good--165,
+[data-eb-good="166"] .eb-good--166,
+[data-eb-good="167"] .eb-good--167,
+[data-eb-good="168"] .eb-good--168,
+[data-eb-good="169"] .eb-good--169,
+[data-eb-good="170"] .eb-good--170,
+[data-eb-good="171"] .eb-good--171,
+[data-eb-good="172"] .eb-good--172,
+[data-eb-good="173"] .eb-good--173,
+[data-eb-good="174"] .eb-good--174,
+[data-eb-good="175"] .eb-good--175,
+[data-eb-good="176"] .eb-good--176,
+[data-eb-good="177"] .eb-good--177,
+[data-eb-good="178"] .eb-good--178,
+[data-eb-good="179"] .eb-good--179,
+[data-eb-good="180"] .eb-good--180,
+[data-eb-good="181"] .eb-good--181,
+[data-eb-good="182"] .eb-good--182,
+[data-eb-good="183"] .eb-good--183,
+[data-eb-good="184"] .eb-good--184,
+[data-eb-good="185"] .eb-good--185,
+[data-eb-good="186"] .eb-good--186,
+[data-eb-good="187"] .eb-good--187,
+[data-eb-good="188"] .eb-good--188,
+[data-eb-good="189"] .eb-good--189,
+[data-eb-good="190"] .eb-good--190,
+[data-eb-good="191"] .eb-good--191,
+[data-eb-good="192"] .eb-good--192,
+[data-eb-good="193"] .eb-good--193,
+[data-eb-good="194"] .eb-good--194,
+[data-eb-good="195"] .eb-good--195,
+[data-eb-good="196"] .eb-good--196,
+[data-eb-good="197"] .eb-good--197,
+[data-eb-good="198"] .eb-good--198,
+[data-eb-good="199"] .eb-good--199,
+[data-eb-good="200"] .eb-good--200 {
+  opacity: 1;
+}
+
+/* --- Budget --------------------------------------------------------- */
+
+/* The promise, and the plate it is written on. Turning it over is what the
+   first step does, and both the plate and the figure it converts to say so. */
+.eb-chip-slo-bg {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+[data-eb-flip="on"] .eb-chip-slo-bg {
+  stroke: var(--accent);
+}
+
+.eb-slo {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 34px;
+}
+
+.eb-slo--set {
+  opacity: 1;
+}
+
+[data-eb-flip="on"] .eb-slo {
+  fill: var(--accent);
+}
+
+/* The gauge. Its width is what is left and its colour is the regime; the two
+   are set separately so neither can be inferred from the other. */
+.eb-gauge-track {
+  stroke-width: 3;
+}
+
+.eb-gauge-fill {
+  --fill-color: var(--state-closed);
+}
+
+[data-eb-level="warn"] .eb-gauge-fill {
+  --fill-color: var(--state-half);
+}
+
+[data-eb-level="low"] .eb-gauge-fill {
+  --fill-color: var(--state-open);
+}
+
+/* The closing review: the empty part of the track is what the period spent, and
+   for as long as it is being looked at, the track says so. */
+[data-eb-summary="on"] .eb-gauge-track {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+/* The end of the track is the whole allowance, drawn as a line so the gauge has
+   a wall to fall away from rather than a number to pass. */
+.eb-capacity-line {
+  stroke: var(--fg-soft);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+[data-eb-flip="on"] .eb-capacity-line {
+  stroke: var(--accent);
+}
+
+.eb-capacity {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 34px;
+}
+
+[data-eb-flip="on"] .eb-capacity--on {
+  opacity: 1;
+}
+
+[data-eb-flip="on"] .eb-capacity {
+  fill: var(--accent);
+}
+
+.eb-left {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 36px;
+}
+
+[data-eb-level="warn"] .eb-left {
+  fill: var(--state-half);
+}
+
+[data-eb-level="low"] .eb-left {
+  fill: var(--state-open);
+}
+
+[data-eb-left="0"] .eb-left--0,
+[data-eb-left="1"] .eb-left--1,
+[data-eb-left="2"] .eb-left--2,
+[data-eb-left="3"] .eb-left--3,
+[data-eb-left="4"] .eb-left--4,
+[data-eb-left="5"] .eb-left--5,
+[data-eb-left="6"] .eb-left--6,
+[data-eb-left="7"] .eb-left--7,
+[data-eb-left="8"] .eb-left--8,
+[data-eb-left="9"] .eb-left--9,
+[data-eb-left="10"] .eb-left--10,
+[data-eb-left="11"] .eb-left--11,
+[data-eb-left="12"] .eb-left--12,
+[data-eb-left="13"] .eb-left--13,
+[data-eb-left="14"] .eb-left--14,
+[data-eb-left="15"] .eb-left--15,
+[data-eb-left="16"] .eb-left--16,
+[data-eb-left="17"] .eb-left--17,
+[data-eb-left="18"] .eb-left--18,
+[data-eb-left="19"] .eb-left--19,
+[data-eb-left="20"] .eb-left--20,
+[data-eb-left="21"] .eb-left--21,
+[data-eb-left="22"] .eb-left--22,
+[data-eb-left="23"] .eb-left--23,
+[data-eb-left="24"] .eb-left--24,
+[data-eb-left="25"] .eb-left--25,
+[data-eb-left="26"] .eb-left--26,
+[data-eb-left="27"] .eb-left--27,
+[data-eb-left="28"] .eb-left--28,
+[data-eb-left="29"] .eb-left--29,
+[data-eb-left="30"] .eb-left--30,
+[data-eb-left="31"] .eb-left--31,
+[data-eb-left="32"] .eb-left--32,
+[data-eb-left="33"] .eb-left--33,
+[data-eb-left="34"] .eb-left--34,
+[data-eb-left="35"] .eb-left--35,
+[data-eb-left="36"] .eb-left--36,
+[data-eb-left="37"] .eb-left--37,
+[data-eb-left="38"] .eb-left--38,
+[data-eb-left="39"] .eb-left--39,
+[data-eb-left="40"] .eb-left--40,
+[data-eb-left="41"] .eb-left--41,
+[data-eb-left="42"] .eb-left--42,
+[data-eb-left="43"] .eb-left--43,
+[data-eb-left="44"] .eb-left--44,
+[data-eb-left="45"] .eb-left--45,
+[data-eb-left="46"] .eb-left--46,
+[data-eb-left="47"] .eb-left--47,
+[data-eb-left="48"] .eb-left--48,
+[data-eb-left="49"] .eb-left--49,
+[data-eb-left="50"] .eb-left--50,
+[data-eb-left="51"] .eb-left--51,
+[data-eb-left="52"] .eb-left--52,
+[data-eb-left="53"] .eb-left--53,
+[data-eb-left="54"] .eb-left--54,
+[data-eb-left="55"] .eb-left--55,
+[data-eb-left="56"] .eb-left--56,
+[data-eb-left="57"] .eb-left--57,
+[data-eb-left="58"] .eb-left--58,
+[data-eb-left="59"] .eb-left--59,
+[data-eb-left="60"] .eb-left--60,
+[data-eb-left="61"] .eb-left--61,
+[data-eb-left="62"] .eb-left--62,
+[data-eb-left="63"] .eb-left--63,
+[data-eb-left="64"] .eb-left--64,
+[data-eb-left="65"] .eb-left--65,
+[data-eb-left="66"] .eb-left--66,
+[data-eb-left="67"] .eb-left--67,
+[data-eb-left="68"] .eb-left--68,
+[data-eb-left="69"] .eb-left--69,
+[data-eb-left="70"] .eb-left--70,
+[data-eb-left="71"] .eb-left--71,
+[data-eb-left="72"] .eb-left--72,
+[data-eb-left="73"] .eb-left--73,
+[data-eb-left="74"] .eb-left--74,
+[data-eb-left="75"] .eb-left--75,
+[data-eb-left="76"] .eb-left--76,
+[data-eb-left="77"] .eb-left--77,
+[data-eb-left="78"] .eb-left--78,
+[data-eb-left="79"] .eb-left--79,
+[data-eb-left="80"] .eb-left--80,
+[data-eb-left="81"] .eb-left--81,
+[data-eb-left="82"] .eb-left--82,
+[data-eb-left="83"] .eb-left--83,
+[data-eb-left="84"] .eb-left--84,
+[data-eb-left="85"] .eb-left--85,
+[data-eb-left="86"] .eb-left--86,
+[data-eb-left="87"] .eb-left--87,
+[data-eb-left="88"] .eb-left--88,
+[data-eb-left="89"] .eb-left--89,
+[data-eb-left="90"] .eb-left--90,
+[data-eb-left="91"] .eb-left--91,
+[data-eb-left="92"] .eb-left--92,
+[data-eb-left="93"] .eb-left--93,
+[data-eb-left="94"] .eb-left--94,
+[data-eb-left="95"] .eb-left--95,
+[data-eb-left="96"] .eb-left--96,
+[data-eb-left="97"] .eb-left--97,
+[data-eb-left="98"] .eb-left--98,
+[data-eb-left="99"] .eb-left--99,
+[data-eb-left="100"] .eb-left--100 {
+  opacity: 1;
+}
+
+.eb-burn {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 36px;
+}
+
+[data-eb-burn="4"] .eb-burn,
+[data-eb-burn="5"] .eb-burn,
+[data-eb-burn="6"] .eb-burn,
+[data-eb-burn="7"] .eb-burn {
+  fill: var(--state-half);
+}
+
+[data-eb-burn="8"] .eb-burn,
+[data-eb-burn="9"] .eb-burn,
+[data-eb-burn="10"] .eb-burn,
+[data-eb-burn="11"] .eb-burn,
+[data-eb-burn="12"] .eb-burn,
+[data-eb-burn="13"] .eb-burn {
+  fill: var(--state-open);
+}
+
+[data-eb-burn="0"] .eb-burn--0,
+[data-eb-burn="1"] .eb-burn--1,
+[data-eb-burn="2"] .eb-burn--2,
+[data-eb-burn="3"] .eb-burn--3,
+[data-eb-burn="4"] .eb-burn--4,
+[data-eb-burn="5"] .eb-burn--5,
+[data-eb-burn="6"] .eb-burn--6,
+[data-eb-burn="7"] .eb-burn--7,
+[data-eb-burn="8"] .eb-burn--8,
+[data-eb-burn="9"] .eb-burn--9,
+[data-eb-burn="10"] .eb-burn--10,
+[data-eb-burn="11"] .eb-burn--11,
+[data-eb-burn="12"] .eb-burn--12,
+[data-eb-burn="13"] .eb-burn--13 {
+  opacity: 1;
+}
+
+.eb-day {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 36px;
+}
+
+[data-eb-day="1"] .eb-day--1,
+[data-eb-day="2"] .eb-day--2,
+[data-eb-day="3"] .eb-day--3,
+[data-eb-day="4"] .eb-day--4,
+[data-eb-day="5"] .eb-day--5,
+[data-eb-day="6"] .eb-day--6,
+[data-eb-day="7"] .eb-day--7,
+[data-eb-day="8"] .eb-day--8,
+[data-eb-day="9"] .eb-day--9,
+[data-eb-day="10"] .eb-day--10,
+[data-eb-day="11"] .eb-day--11,
+[data-eb-day="12"] .eb-day--12,
+[data-eb-day="13"] .eb-day--13,
+[data-eb-day="14"] .eb-day--14,
+[data-eb-day="15"] .eb-day--15,
+[data-eb-day="16"] .eb-day--16,
+[data-eb-day="17"] .eb-day--17,
+[data-eb-day="18"] .eb-day--18,
+[data-eb-day="19"] .eb-day--19,
+[data-eb-day="20"] .eb-day--20,
+[data-eb-day="21"] .eb-day--21,
+[data-eb-day="22"] .eb-day--22,
+[data-eb-day="23"] .eb-day--23,
+[data-eb-day="24"] .eb-day--24,
+[data-eb-day="25"] .eb-day--25,
+[data-eb-day="26"] .eb-day--26,
+[data-eb-day="27"] .eb-day--27,
+[data-eb-day="28"] .eb-day--28,
+[data-eb-day="29"] .eb-day--29,
+[data-eb-day="30"] .eb-day--30 {
+  opacity: 1;
+}
+
+/* --- Release -------------------------------------------------------- */
+
+.eb-chip-gate-bg {
+  fill: var(--surface);
+  stroke: var(--state-closed);
+  stroke-width: 3;
+}
+
+[data-eb-gate="frozen"] .eb-chip-gate-bg {
+  stroke: var(--state-open);
+}
+
+.eb-gate {
+  font-family: var(--font-mono);
+  font-size: 34px;
+  letter-spacing: 1px;
+}
+
+.eb-gate--open {
+  fill: var(--state-closed);
+}
+
+.eb-gate--frozen {
+  fill: var(--state-open);
+}
+
+[data-eb-gate="open"] .eb-gate--open,
+[data-eb-gate="frozen"] .eb-gate--frozen {
+  opacity: 1;
+}
+
+/* A frozen gate is a rule about what may leave, so the box it governs carries
+   it: the frame breaks and the counter that is not moving goes quiet. */
+[data-eb-gate="frozen"] .eb-release > .scene-box {
+  stroke: var(--state-open);
+  stroke-dasharray: 14 10;
+}
+
+.eb-ship {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 36px;
+}
+
+[data-eb-gate="frozen"] .eb-ship {
+  fill: var(--muted);
+}
+
+[data-eb-ship="0"] .eb-ship--0,
+[data-eb-ship="1"] .eb-ship--1,
+[data-eb-ship="2"] .eb-ship--2,
+[data-eb-ship="3"] .eb-ship--3,
+[data-eb-ship="4"] .eb-ship--4,
+[data-eb-ship="5"] .eb-ship--5,
+[data-eb-ship="6"] .eb-ship--6,
+[data-eb-ship="7"] .eb-ship--7,
+[data-eb-ship="8"] .eb-ship--8 {
+  opacity: 1;
+}

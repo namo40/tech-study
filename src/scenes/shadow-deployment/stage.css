@@ -1,0 +1,799 @@
+/* ---------------------------------------------------------------- */
+/* Shadow Deployment stage                                           */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Two versions side by side, one of which nobody is allowed to see.
+ *
+ * The colour argument is small. Green is what a user really got and what really
+ * got out: the `ok n` readout, a matching run, a side effect that landed, the
+ * version holding traffic, and the closing frame. Red is the two things that
+ * are wrong — the moment a build that passed a fake load meets the real shape
+ * of production, and the mismatch the comparator finds — plus the mark on a
+ * target that says a send was stopped there. Amber is the cage: the gate
+ * standing, the gate lighting up as something bounces off it, the version being
+ * fixed, and the warning about what would have gone out twice. Purple is the
+ * copy and everything downstream of it: the fork arm that is a duplicate, the
+ * attempt creeping toward the gate, and the open ring the shadow's answers fall
+ * into. Blue is what travels for real, and whatever the scene is holding up at
+ * the moment. Muted grey is a slot with nothing deployed in it, a version that
+ * has stepped aside, and settings that split nothing.
+ *
+ * Nothing is told apart by colour alone. A synthetic load is **six even bars of
+ * one height**; production is **six ragged bars of six heights**. A version
+ * slot with nothing in it is a **faint dashed hollow plate with no bar**, one
+ * standing by is a **dashed plate with a dashed bar**, one taking copies is a
+ * **hollow plate with a hatched bar and an arrow into an open ring**, one being
+ * fixed is a **hatched plate with a line broken across its bar**, one serving
+ * is a **filled plate with a solid bar and an arrow pointing home**, and one
+ * that has stepped aside is a **muted plate with a hollow bar struck through**.
+ * The real request's fork arm is **solid**; the copy's is **dashed**. A side
+ * effect that landed is a **filled square with a check**; one the gate stopped
+ * is a **dashed hollow square with a bar across it**, and a target that has
+ * seen one of each draws **both marks at once**. The doubled-send warning is
+ * **two faint overlapping plates inside a ring**. The `config` knob sits
+ * **left while nothing is split and right while something is**, and the gate
+ * gains a **bolt across it** while it is standing.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a
+ * base rule hiding all of them and the current `data-*` revealing exactly one,
+ * so nothing is interpolated and scrubbing backwards lands on the value rather
+ * than on an average of two: the `ok n` and `same n` readouts, the `diff`
+ * verdict, the ghost's two bar rows and two glyphs, the fork's three arms, each
+ * card's six plates and five bars and two outlets, each target's four plates,
+ * the gate's bolt, the warning, and the two knob positions. The scene has no
+ * continuous quantity at all.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+.sd-lane--call,
+.sd-lane--effect,
+.sd-lane--attempt {
+  opacity: 0.7;
+}
+
+/* The lane an attempt rides is drawn like the attempt: it is a road to a wall. */
+.sd-lane--attempt {
+  stroke-dasharray: 14 10;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+.sd-req--call .scene-req-dot {
+  fill: var(--request);
+}
+
+/* A side effect the serving version really sent. It lands, so it is drawn in
+   the colour of things that are finished. */
+.sd-req--effect .scene-req-dot {
+  fill: var(--state-closed);
+}
+
+/* An attempt the shadow made. Hollow, because there is nothing in it that will
+   ever reach the other end. */
+.sd-req--attempt .scene-req-dot {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-width: 5;
+  stroke-dasharray: 10 7;
+}
+
+/* --- the bands ---------------------------------------------------------- */
+
+/* Two of the three titles sit at their band's left edge. The third sits at
+   x 396, because the live version's effect lane runs down the Effects band's
+   left corner and a word there would be inside its halo. */
+.sd-title {
+  font-size: 40px;
+}
+
+.sd-hatch-line {
+  stroke: var(--cpu);
+  opacity: 0.45;
+}
+
+/* --- the Traffic band --------------------------------------------------- */
+
+/* The one number the reader is asked to trust: answers users actually got. It
+   is one text per value, so it never interpolates and never counts anything
+   the model did not count. */
+.sd-ok {
+  fill: var(--state-closed);
+  font-family: var(--font-mono);
+  font-size: 30px;
+}
+
+[data-sd-ok="0"] .sd-ok--0,
+[data-sd-ok="1"] .sd-ok--1,
+[data-sd-ok="2"] .sd-ok--2,
+[data-sd-ok="3"] .sd-ok--3,
+[data-sd-ok="4"] .sd-ok--4,
+[data-sd-ok="5"] .sd-ok--5,
+[data-sd-ok="6"] .sd-ok--6,
+[data-sd-ok="7"] .sd-ok--7,
+[data-sd-ok="8"] .sd-ok--8 {
+  opacity: 1;
+}
+
+/* Nothing has been answered yet, so the count is not yet a good-news number. */
+[data-sd-ok="0"] .sd-ok {
+  fill: var(--fg-soft);
+}
+
+/* The first step's ghost: the world where a synthetic load is the whole test. */
+.sd-bar {
+  opacity: 0;
+}
+
+/* Six bars of one height and one spacing. That is the whole lie. */
+.sd-bar--even {
+  fill: var(--request);
+  fill-opacity: 0.32;
+  stroke: var(--request);
+  stroke-width: 3;
+}
+
+/* The same six slots, filled with what production is actually shaped like. */
+.sd-bar--wild {
+  fill: var(--state-open);
+  fill-opacity: 0.28;
+  stroke: var(--state-open);
+  stroke-width: 3;
+}
+
+[data-sd-ghost="idle"] .sd-bar--even,
+[data-sd-ghost="pass"] .sd-bar--even,
+[data-sd-ghost="deploy"] .sd-bar--even,
+[data-sd-ghost="break"] .sd-bar--wild {
+  opacity: 1;
+}
+
+/* Drawn but not yet run: the load is there, the verdict is not. */
+[data-sd-ghost="idle"] .sd-bar--even {
+  fill-opacity: 0;
+  stroke-dasharray: 10 8;
+}
+
+.sd-ghost-glyph {
+  fill: none;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+.sd-ghost-glyph--pass {
+  stroke: var(--state-closed);
+}
+
+.sd-ghost-glyph--break {
+  stroke: var(--state-open);
+}
+
+.sd-ghost-ring {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: 12 9;
+  opacity: 0;
+}
+
+[data-sd-ghost="pass"] .sd-ghost-glyph--pass,
+[data-sd-ghost="deploy"] .sd-ghost-glyph--pass,
+[data-sd-ghost="break"] .sd-ghost-glyph--break,
+[data-sd-ghost="break"] .sd-ghost-ring {
+  opacity: 1;
+}
+
+/* The build going out, which in this world is the last thing anybody checks. */
+.sd-deploy {
+  opacity: 0;
+}
+
+[data-sd-ghost="deploy"] .sd-deploy,
+[data-sd-ghost="break"] .sd-deploy {
+  opacity: 1;
+}
+
+.sd-deploy-bg {
+  fill: var(--accent);
+  fill-opacity: 0.14;
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.sd-deploy-arrow {
+  fill: var(--accent);
+}
+
+.sd-deploy-slab {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 4;
+}
+
+/* The deploy that has already gone wrong keeps its plate and changes what it
+   means, so the reader is not asked to remember that it happened. */
+[data-sd-ghost="break"] .sd-deploy-bg,
+[data-sd-ghost="break"] .sd-deploy-slab {
+  stroke: var(--state-open);
+}
+
+[data-sd-ghost="break"] .sd-deploy-bg {
+  fill: var(--state-open);
+}
+
+[data-sd-ghost="break"] .sd-deploy-arrow {
+  fill: var(--state-open);
+}
+
+/* --- the Versions band -------------------------------------------------- */
+
+/* The fork. One arm per card the traffic is offered to, and the copy's arm is
+   dashed, because a duplicate of a request is not the request. */
+.sd-fork-stub,
+.sd-fork-line {
+  stroke: var(--accent);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.sd-fork-head {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sd-fork-arm {
+  opacity: 0;
+}
+
+[data-sd-fork="solo"] .sd-fork-arm--live,
+[data-sd-fork="mirror"] .sd-fork-arm--live,
+[data-sd-fork="mirror"] .sd-fork-arm--copy,
+[data-sd-fork="new"] .sd-fork-arm--new {
+  opacity: 1;
+}
+
+.sd-fork-arm--copy .sd-fork-line {
+  stroke: var(--cpu);
+  stroke-dasharray: 14 10;
+}
+
+.sd-fork-arm--copy .sd-fork-head {
+  stroke: var(--cpu);
+}
+
+/* --- a version card ----------------------------------------------------- */
+
+.sd-card-bg {
+  opacity: 0;
+}
+
+.sd-card-bg--empty {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 16 12;
+}
+
+.sd-card-bg--warm {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+  stroke-dasharray: 22 10;
+}
+
+.sd-card-bg--mirror {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-width: 5;
+}
+
+.sd-card-bg--fix {
+  fill: url(#sd-hatch);
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+.sd-card-bg--serving {
+  fill: var(--state-closed);
+  fill-opacity: 0.16;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+.sd-card-bg--retired {
+  fill: var(--muted);
+  fill-opacity: 0.14;
+  stroke: var(--muted);
+  stroke-width: 4;
+}
+
+[data-sd-side="empty"] .sd-card-bg--empty,
+[data-sd-side="warm"] .sd-card-bg--warm,
+[data-sd-side="mirror"] .sd-card-bg--mirror,
+[data-sd-side="fix"] .sd-card-bg--fix,
+[data-sd-side="serving"] .sd-card-bg--serving,
+[data-sd-side="retired"] .sd-card-bg--retired {
+  opacity: 1;
+}
+
+.sd-card-name {
+  fill: var(--fg);
+  font-size: 34px;
+}
+
+[data-sd-side="empty"] .sd-card-name {
+  fill: var(--muted);
+}
+
+[data-sd-side="retired"] .sd-card-name {
+  fill: var(--fg-soft);
+}
+
+.sd-card-bar {
+  opacity: 0;
+}
+
+.sd-card-bar--warm {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+  stroke-dasharray: 16 9;
+}
+
+/* Taking copies is work that produces nothing anyone can see, so the bar is
+   hatched rather than filled. */
+.sd-card-bar--mirror {
+  fill: url(#sd-hatch);
+  stroke: var(--cpu);
+  stroke-width: 3;
+}
+
+.sd-card-bar--fix {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 26 10;
+}
+
+.sd-card-bar--serving {
+  fill: var(--state-closed);
+  stroke: none;
+}
+
+.sd-card-bar--retired {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+}
+
+[data-sd-side="warm"] .sd-card-bar--warm,
+[data-sd-side="mirror"] .sd-card-bar--mirror,
+[data-sd-side="fix"] .sd-card-bar--fix,
+[data-sd-side="serving"] .sd-card-bar--serving,
+[data-sd-side="retired"] .sd-card-bar--retired {
+  opacity: 1;
+}
+
+/* The break a mismatch is being chased down, drawn across the bar it is in. */
+.sd-card-break {
+  stroke: var(--state-half);
+  stroke-width: 6;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+[data-sd-side="fix"] .sd-card-break {
+  opacity: 1;
+}
+
+/* A version that has stepped aside keeps its plate and is struck through, so
+   the reader can see it is still there and no longer working. */
+.sd-card-strike {
+  stroke: var(--muted);
+  stroke-width: 5;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+[data-sd-side="retired"] .sd-card-strike {
+  opacity: 1;
+}
+
+/* Where a card's answer goes: home to the user, or into an open ring. */
+.sd-outlet {
+  opacity: 0;
+}
+
+[data-sd-side="serving"] .sd-outlet--home,
+[data-sd-side="mirror"] .sd-outlet--void,
+[data-sd-side="fix"] .sd-outlet--void {
+  opacity: 1;
+}
+
+.sd-outlet--home .sd-outlet-shaft,
+.sd-outlet--home .sd-outlet-head {
+  stroke: var(--state-closed);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.sd-outlet--void .sd-outlet-shaft {
+  stroke: var(--cpu);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 9 7;
+}
+
+.sd-outlet-ring {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-width: 5;
+  stroke-dasharray: 11 8;
+}
+
+/* --- the comparator ----------------------------------------------------- */
+
+.sd-comp-bg {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 16 12;
+}
+
+[data-sd-verdict="same"] .sd-comp-bg {
+  stroke: var(--state-closed);
+  stroke-width: 4;
+  stroke-dasharray: none;
+}
+
+[data-sd-verdict="diff"] .sd-comp-bg {
+  fill: var(--state-open);
+  fill-opacity: 0.14;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+[data-sd-verdict="done"] .sd-comp-bg {
+  fill: var(--state-closed);
+  fill-opacity: 0.16;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+.sd-same {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 32px;
+}
+
+[data-sd-same="0"] .sd-same--0,
+[data-sd-same="1"] .sd-same--1,
+[data-sd-same="2"] .sd-same--2,
+[data-sd-same="3"] .sd-same--3,
+[data-sd-same="4"] .sd-same--4 {
+  opacity: 1;
+}
+
+[data-sd-verdict="same"] .sd-same,
+[data-sd-verdict="done"] .sd-same {
+  fill: var(--state-closed);
+}
+
+[data-sd-verdict="diff"] .sd-same {
+  fill: var(--state-open);
+}
+
+.sd-diff {
+  fill: var(--state-open);
+  font-family: var(--font-mono);
+  font-size: 32px;
+}
+
+[data-sd-verdict="diff"] .sd-diff {
+  opacity: 1;
+}
+
+/* Where the shadow's answer actually goes. It is a connector rather than a
+   packet, because nothing the shadow answers ever leaves this band. */
+.sd-answer {
+  opacity: 0;
+}
+
+[data-sd-fork="mirror"] .sd-answer {
+  opacity: 1;
+}
+
+.sd-answer-line,
+.sd-answer-head {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sd-answer-line {
+  stroke-dasharray: 12 8;
+}
+
+/* --- the Effects band --------------------------------------------------- */
+
+/* The gate. It is not there until the cage is built, it gains a bolt across it
+   while it stands, and it lights up as something bounces off it. */
+.sd-gate-bg {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 12 9;
+}
+
+.sd-gate-bolt {
+  stroke: var(--state-half);
+  stroke-width: 8;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+[data-sd-block="armed"] .sd-gate-bg,
+[data-sd-block="hit"] .sd-gate-bg {
+  fill: var(--state-half);
+  fill-opacity: 0.16;
+  stroke: var(--state-half);
+  stroke-width: 4;
+  stroke-dasharray: none;
+}
+
+[data-sd-block="hit"] .sd-gate-bg {
+  fill-opacity: 0.34;
+  stroke-width: 7;
+}
+
+[data-sd-block="armed"] .sd-gate-bolt,
+[data-sd-block="hit"] .sd-gate-bolt {
+  opacity: 1;
+}
+
+.sd-block-word {
+  fill: var(--fg-soft);
+  font-size: 28px;
+}
+
+[data-sd-block="armed"] .sd-block-word,
+[data-sd-block="hit"] .sd-block-word {
+  fill: var(--state-half);
+}
+
+/* --- a target card ------------------------------------------------------ */
+
+.sd-target-bg {
+  opacity: 0;
+}
+
+.sd-target-bg--none {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 16 12;
+}
+
+.sd-target-bg--pass {
+  fill: var(--state-closed);
+  fill-opacity: 0.12;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+}
+
+.sd-target-bg--blocked {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 4;
+}
+
+/* A target that has seen one of each keeps both marks, so the contrast the
+   third step is about is a single picture rather than a memory. */
+.sd-target-bg--both {
+  fill: var(--state-closed);
+  fill-opacity: 0.12;
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+[data-sd-target="none"] .sd-target-bg--none,
+[data-sd-target="pass"] .sd-target-bg--pass,
+[data-sd-target="blocked"] .sd-target-bg--blocked,
+[data-sd-target="both"] .sd-target-bg--both {
+  opacity: 1;
+}
+
+.sd-target-word {
+  fill: var(--fg);
+  font-size: 30px;
+}
+
+[data-sd-target="none"] .sd-target-word {
+  fill: var(--fg-soft);
+}
+
+.sd-mark {
+  opacity: 0;
+}
+
+[data-sd-target="pass"] .sd-mark--pass,
+[data-sd-target="both"] .sd-mark--pass,
+[data-sd-target="blocked"] .sd-mark--stop,
+[data-sd-target="both"] .sd-mark--stop {
+  opacity: 1;
+}
+
+.sd-mark-bg {
+  fill: var(--state-closed);
+  fill-opacity: 0.24;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+}
+
+.sd-mark-glyph {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sd-stop-bg {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 4;
+  stroke-dasharray: 9 6;
+}
+
+.sd-stop-bar {
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+/* What the gate stopped, held up for a moment on the thing it would have
+   happened to: the same send, twice. */
+.sd-twice {
+  opacity: 0;
+}
+
+[data-sd-twice="on"] .sd-twice {
+  opacity: 1;
+}
+
+.sd-twice-back,
+.sd-twice-front {
+  fill: var(--state-open);
+  fill-opacity: 0.2;
+  stroke: var(--state-open);
+  stroke-width: 3;
+}
+
+.sd-twice-ring {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-dasharray: 11 8;
+}
+
+/* --- the settings ------------------------------------------------------- */
+
+/* One build. The switch is the whole difference between the two environments,
+   which is why the cage is configuration and not a fork of the code. */
+.sd-config-bg {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 16 12;
+}
+
+[data-sd-config="on"] .sd-config-bg,
+[data-sd-config="split"] .sd-config-bg {
+  stroke: var(--state-half);
+  stroke-width: 4;
+  stroke-dasharray: none;
+}
+
+[data-sd-config="split"] .sd-config-bg {
+  fill: var(--accent);
+  fill-opacity: 0.16;
+  stroke: var(--accent);
+  stroke-width: 6;
+}
+
+.sd-config-word {
+  fill: var(--fg-soft);
+  font-size: 26px;
+}
+
+[data-sd-config="on"] .sd-config-word {
+  fill: var(--state-half);
+}
+
+[data-sd-config="split"] .sd-config-word {
+  fill: var(--accent);
+}
+
+.sd-config-track {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+[data-sd-config="on"] .sd-config-track,
+[data-sd-config="split"] .sd-config-track {
+  stroke: var(--state-half);
+}
+
+[data-sd-config="split"] .sd-config-track {
+  stroke: var(--accent);
+}
+
+.sd-config-knob {
+  fill: var(--muted);
+  opacity: 0;
+}
+
+[data-sd-config="off"] .sd-config-knob--left,
+[data-sd-config="on"] .sd-config-knob--right,
+[data-sd-config="split"] .sd-config-knob--right {
+  opacity: 1;
+}
+
+[data-sd-config="on"] .sd-config-knob--right {
+  fill: var(--state-half);
+}
+
+[data-sd-config="split"] .sd-config-knob--right {
+  fill: var(--accent);
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The empty slot the answer to the first step is going to be put in. */
+[data-sd-mark="shadow"] .sd-card--shadow .sd-card-bg--empty {
+  stroke: var(--accent);
+  stroke-width: 6;
+}
+
+/* The real thing, which is the only place a real copy can come from. */
+[data-sd-mark="copy"] .sd-traffic > .scene-box,
+[data-sd-mark="copy"] .sd-lane--call {
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+/* The answers users are getting, which is the number that does not move. */
+[data-sd-mark="unseen"] .sd-ok,
+[data-sd-mark="zero"] .sd-ok {
+  fill: var(--accent);
+}
+
+/* And the one card every one of them came from. */
+[data-sd-mark="zero"] .sd-card--live .sd-card-bg--serving {
+  stroke: var(--accent);
+  stroke-width: 7;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: the shadow promoted, the cage gone with the difference it
+   was enforcing, and nothing left in flight. */
+[data-sd-settled="on"] .sd-traffic > .scene-box,
+[data-sd-settled="on"] .sd-versions > .scene-box,
+[data-sd-settled="on"] .sd-effects > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}

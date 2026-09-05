@@ -1,0 +1,536 @@
+/* ---------------------------------------------------------------- */
+/* Background Service stage                                          */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Work nobody is waiting on, and the argument is in who owns the time.
+ *
+ * The colour argument is small. Purple is a request doing the work itself: the
+ * long block inside the request capsule and the frame the App wears while it is
+ * there, and nothing that happens after the handoff is ever drawn in it. Red is
+ * a failure the reader is meant to feel — the reply the client stopped waiting
+ * for, and the one job two instances both finished. Green is work that landed:
+ * the loop while it is running, a done mark, the lease, the settled frame. Amber
+ * is work that is waiting on something — a service in the middle of stopping,
+ * and a queue holding jobs while nothing is taking them. Blue is ordinary
+ * traffic, the stub the request is left with once it hands its work over, and
+ * the three places the captions stop.
+ *
+ * The four lifetimes are four shapes before they are four colours: a dashed
+ * hollow ring is `start`, a solid disc is `running`, a smaller disc inside a
+ * dashed halo is `stopping`, and a hollow circle struck through is `stopped`.
+ * The word beside the lamp says the same thing again, and the socket stays
+ * drawn under all four so the resting state reads as an empty holder rather
+ * than as a missing element.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a base
+ * rule hiding all of them, so nothing is interpolated and scrubbing backwards is
+ * exact. There is no continuous quantity on this stage at all: the queue is a
+ * count of filled slots and the reply is one of four numbers.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+/* Nothing is being handed anywhere while the App still does the work itself,
+   so the work lane is drawn as a route rather than as a route in use. */
+.bs-lane--work {
+  stroke-dasharray: 14 12;
+  opacity: 0.45;
+}
+
+[data-bs-mode="delegate"] .bs-lane--work {
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+.bs-lane--done {
+  opacity: 0.85;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/* Work on its way to the queue, a finished job on its way to the strip, and the
+   one job two instances both finished, which is hollow and dashed because it is
+   one job wearing two completions. */
+.bs-req--work .scene-req-dot {
+  fill: var(--request);
+}
+
+.bs-req--done .scene-req-dot {
+  fill: var(--state-closed);
+}
+
+.bs-req--dup .scene-req-dot {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: 6 6;
+}
+
+/* --- the App ------------------------------------------------------------ */
+
+/* The one request the reader watches. It is always drawn, because a request
+   does not appear and disappear here; what changes is what is inside it. */
+.bs-req-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+/* What is going on inside the request: three blocks on one spot, none of them
+   showing until something is. The long ones are the same length on purpose,
+   because the client giving up did not make the report any shorter. */
+.bs-work {
+  opacity: 0;
+}
+
+.bs-work--long {
+  fill: var(--cpu);
+  fill-opacity: 0.2;
+  stroke: var(--cpu);
+  stroke-width: 4;
+  stroke-dasharray: 14 9;
+}
+
+.bs-work--timeout {
+  fill: var(--state-open);
+  fill-opacity: 0.2;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-dasharray: 14 9;
+}
+
+.bs-work--hand {
+  fill: var(--request);
+  fill-opacity: 0.25;
+  stroke: var(--request);
+  stroke-width: 4;
+}
+
+[data-bs-work="long"] .bs-work--long,
+[data-bs-work="timeout"] .bs-work--timeout,
+[data-bs-work="hand"] .bs-work--hand {
+  opacity: 1;
+}
+
+/* The frame says which world the App is in: a report being built where the
+   caller is waiting, or a caller who has already given up. */
+[data-bs-work="long"] .bs-app > .scene-box {
+  stroke: var(--cpu);
+  stroke-width: 6;
+  stroke-dasharray: 18 12;
+}
+
+[data-bs-work="timeout"] .bs-app > .scene-box {
+  stroke: var(--state-open);
+  stroke-width: 6;
+  stroke-dasharray: 18 12;
+}
+
+/* What the request cost the caller. The last rung of the ladder is the one past
+   what the client will wait for, which is why it is the only red one. */
+.bs-reply {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  fill: var(--state-half);
+}
+
+.bs-reply--0 {
+  fill: var(--state-closed);
+}
+
+.bs-reply--3 {
+  fill: var(--state-open);
+}
+
+[data-bs-reply="0"] .bs-reply--0,
+[data-bs-reply="1"] .bs-reply--1,
+[data-bs-reply="2"] .bs-reply--2,
+[data-bs-reply="3"] .bs-reply--3 {
+  opacity: 1;
+}
+
+/* The app restarting. It goes quiet rather than away: the box is still there,
+   and so is the last thing it said, because the point of the third step is what
+   keeps running while this band is dark. */
+[data-bs-app="down"] .bs-app {
+  opacity: 0.4;
+}
+
+[data-bs-app="down"] .bs-app > .scene-box {
+  stroke: var(--muted);
+  stroke-dasharray: 18 12;
+}
+
+/* --- the Host ----------------------------------------------------------- */
+
+/* The service itself. At rest it is hollow and dashed, because a service the
+   host has not started yet is a declaration rather than a process. */
+.bs-capsule {
+  fill: var(--surface-2);
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+[data-bs-life="start"] .bs-capsule {
+  stroke: var(--request);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+[data-bs-life="running"] .bs-capsule {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+[data-bs-life="stopping"] .bs-capsule {
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 16 10;
+}
+
+.bs-service {
+  fill: var(--fg-soft);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+[data-bs-life="running"] .bs-service {
+  fill: var(--fg);
+}
+
+/* The job in the service's hands. This is what makes `stopping` mean something:
+   the lamp cannot reach `stopped` while this is still lit. */
+.bs-hand {
+  fill: var(--request);
+  opacity: 0;
+}
+
+[data-bs-hand="on"] .bs-hand {
+  opacity: 1;
+}
+
+[data-bs-life="stopping"] .bs-hand {
+  fill: var(--state-half);
+}
+
+/* The loop. It is drawn at rest as well, faintly, because the loop is the shape
+   of the pattern rather than something the third step adds. */
+.bs-loop {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 5;
+  stroke-dasharray: 6 12;
+}
+
+[data-bs-life="running"] .bs-loop {
+  stroke: var(--state-closed);
+  stroke-dasharray: 14 10;
+}
+
+[data-bs-life="stopping"] .bs-loop {
+  stroke: var(--state-half);
+  stroke-dasharray: 8 12;
+}
+
+/* The lease. One mark, on the instance that holds it. */
+.bs-lease {
+  opacity: 0;
+}
+
+[data-bs-lease="on"] .bs-lease {
+  opacity: 1;
+}
+
+.bs-lease-body {
+  fill: var(--state-closed);
+  fill-opacity: 0.3;
+  stroke: var(--state-closed);
+  stroke-width: 3;
+}
+
+.bs-lease-shackle {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+/* The second instance a scale-out adds, drawn beside the first in the same
+   shape. Once the lease is held it is still there and still running; it is
+   simply not the one that may take this job, which is what single-flight
+   actually looks like. */
+.bs-shadow {
+  fill: var(--surface-2);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+  stroke-dasharray: 12 9;
+  opacity: 0;
+}
+
+[data-bs-scale="two"] .bs-shadow {
+  opacity: 1;
+}
+
+[data-bs-scale="two"][data-bs-lease="on"] .bs-shadow {
+  stroke: var(--muted);
+  stroke-dasharray: 6 10;
+  opacity: 0.5;
+}
+
+/* The process boundary the third step draws around the loop. */
+.bs-badge {
+  fill: none;
+  stroke: var(--request);
+  stroke-width: 4;
+  stroke-dasharray: 16 12;
+  opacity: 0;
+}
+
+[data-bs-place="split"] .bs-badge {
+  opacity: 1;
+}
+
+/* The lamp. The socket is always drawn, so the resting state is an empty holder
+   rather than a hole, and the four things it can be lit as are four shapes. */
+.bs-socket {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.bs-glyph {
+  opacity: 0;
+}
+
+.bs-lamp-ring {
+  fill: none;
+  stroke: var(--request);
+  stroke-width: 5;
+  stroke-dasharray: 8 7;
+}
+
+.bs-lamp--running .bs-lamp-dot {
+  fill: var(--state-closed);
+}
+
+.bs-lamp--stopping .bs-lamp-dot {
+  fill: var(--state-half);
+}
+
+.bs-lamp-halo {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 4;
+  stroke-dasharray: 7 8;
+}
+
+.bs-lamp-hollow {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 5;
+}
+
+.bs-lamp-bar {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+[data-bs-life="start"] .bs-lamp--start,
+[data-bs-life="running"] .bs-lamp--running,
+[data-bs-life="stopping"] .bs-lamp--stopping,
+[data-bs-life="stopped"] .bs-lamp--stopped {
+  opacity: 1;
+}
+
+/* The word beside the lamp: four texts on one spot, none of them showing until
+   the host has started the service. */
+.bs-life-text {
+  font-size: 34px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.bs-life-text--start {
+  fill: var(--request);
+}
+
+.bs-life-text--running {
+  fill: var(--state-closed);
+}
+
+.bs-life-text--stopping {
+  fill: var(--state-half);
+}
+
+.bs-life-text--stopped {
+  fill: var(--muted);
+}
+
+[data-bs-life="start"] .bs-life-text--start,
+[data-bs-life="running"] .bs-life-text--running,
+[data-bs-life="stopping"] .bs-life-text--stopping,
+[data-bs-life="stopped"] .bs-life-text--stopped {
+  opacity: 1;
+}
+
+/* --- the queue ---------------------------------------------------------- */
+
+/* A free slot is room; a held slot is a job standing in it. A held slot turns
+   amber whenever nothing is taking anything out, which is the buffering the
+   third step is about: the queue is not told to hold, it is simply not drained. */
+.bs-slot {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.bs-slot[data-bs-slot="held"] {
+  fill: var(--request);
+  fill-opacity: 0.18;
+  stroke: var(--request);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+[data-bs-life="idle"] .bs-slot[data-bs-slot="held"],
+[data-bs-life="stopped"] .bs-slot[data-bs-slot="held"] {
+  fill: var(--state-half);
+  fill-opacity: 0.2;
+  stroke: var(--state-half);
+}
+
+.bs-queue {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  fill: var(--fg-soft);
+}
+
+.bs-queue--0 {
+  fill: var(--muted);
+}
+
+[data-bs-queue="0"] .bs-queue--0,
+[data-bs-queue="1"] .bs-queue--1,
+[data-bs-queue="2"] .bs-queue--2,
+[data-bs-queue="3"] .bs-queue--3,
+[data-bs-queue="4"] .bs-queue--4,
+[data-bs-queue="5"] .bs-queue--5 {
+  opacity: 1;
+}
+
+/* --- the Jobs ----------------------------------------------------------- */
+
+/* One cell per job the strip has room for. An empty cell is hollow and dashed,
+   a done one is filled: nothing here is told apart by colour alone. */
+.bs-mark-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 8 7;
+}
+
+.bs-mark[data-bs-done-mark="on"] .bs-mark-bg {
+  fill: var(--state-closed);
+  fill-opacity: 0.85;
+  stroke: var(--state-closed);
+  stroke-dasharray: none;
+}
+
+/* The record of a job two instances both finished, drawn on the job rather than
+   announced. The count still says one, because one job was done. */
+.bs-mark-dup {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-dasharray: 6 5;
+  opacity: 0;
+}
+
+.bs-mark[data-bs-dup="on"] .bs-mark-dup {
+  opacity: 1;
+}
+
+.bs-done {
+  font-family: var(--font-mono);
+  font-size: 34px;
+  fill: var(--state-closed);
+}
+
+.bs-done--0 {
+  fill: var(--muted);
+}
+
+[data-bs-done="0"] .bs-done--0,
+[data-bs-done="1"] .bs-done--1,
+[data-bs-done="2"] .bs-done--2,
+[data-bs-done="3"] .bs-done--3,
+[data-bs-done="4"] .bs-done--4,
+[data-bs-done="5"] .bs-done--5,
+[data-bs-done="6"] .bs-done--6,
+[data-bs-done="7"] .bs-done--7,
+[data-bs-done="8"] .bs-done--8,
+[data-bs-done="9"] .bs-done--9,
+[data-bs-done="10"] .bs-done--10 {
+  opacity: 1;
+}
+
+/* The warning, which is up only while two instances are holding one job. */
+.bs-twice {
+  opacity: 0;
+}
+
+[data-bs-twice="on"] .bs-twice {
+  opacity: 1;
+}
+
+.bs-twice-lamp {
+  fill: var(--state-open);
+}
+
+.bs-twice-text {
+  fill: var(--state-open);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The three things the captions stop on, each drawn on the band it is about. */
+[data-bs-mark="split"] .bs-app > .scene-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-bs-mark="split"] .bs-lane--work {
+  stroke: var(--request);
+  stroke-width: 7;
+}
+
+[data-bs-mark="apart"] .bs-host > .scene-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-bs-mark="apart"] .bs-badge {
+  stroke-width: 7;
+}
+
+[data-bs-mark="truth"] .bs-slot {
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: a queue with nothing in it, a strip with everything on it,
+   and a service still running because nothing asked it to stop. */
+[data-bs-settled="on"] .bs-host > .scene-box,
+[data-bs-settled="on"] .bs-jobs > .scene-box {
+  stroke: var(--state-closed);
+}

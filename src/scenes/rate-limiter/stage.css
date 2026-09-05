@@ -1,0 +1,117 @@
+/* ---------------------------------------------------------------- */
+/* Rate Limiter stage                                                */
+/* ---------------------------------------------------------------- */
+
+.rl-bucket-wall {
+  fill: none;
+  stroke: var(--fg);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Only the bucket that ran dry flashes; in step 4 that is always key A. */
+[data-reject="on"] .rl-bucket--a .rl-bucket-wall {
+  stroke: var(--state-open);
+}
+
+.rl-slot {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+.rl-token,
+.rl-drip {
+  fill: var(--state-half);
+}
+
+.rl-token {
+  opacity: 0;
+}
+
+/* A bucket shows as many tokens as its count. */
+[data-count="1"] .rl-token--1,
+[data-count="2"] .rl-token--1,
+[data-count="2"] .rl-token--2,
+[data-count="3"] .rl-token--1,
+[data-count="3"] .rl-token--2,
+[data-count="3"] .rl-token--3,
+[data-count="4"] .rl-token--1,
+[data-count="4"] .rl-token--2,
+[data-count="4"] .rl-token--3,
+[data-count="4"] .rl-token--4,
+[data-count="5"] .rl-token--1,
+[data-count="5"] .rl-token--2,
+[data-count="5"] .rl-token--3,
+[data-count="5"] .rl-token--4,
+[data-count="5"] .rl-token--5 {
+  opacity: 1;
+}
+
+/* The second bucket only exists once the limiter is partitioned. */
+.rl-bucket--b {
+  opacity: 0;
+}
+
+[data-split="on"] .rl-bucket--b {
+  opacity: 1;
+}
+
+.rl-count {
+  fill: var(--fg);
+  font-size: 30px;
+}
+
+[data-tokens="0"] .rl-count--0,
+[data-tokens="1"] .rl-count--1,
+[data-tokens="2"] .rl-count--2,
+[data-tokens="3"] .rl-count--3,
+[data-tokens="4"] .rl-count--4,
+[data-tokens="5"] .rl-count--5 {
+  opacity: 1;
+}
+
+/* With two buckets the counts are read from the slots, and the keys name them. */
+[data-split="on"] .rl-legend {
+  opacity: 0;
+}
+
+.rl-key {
+  --flash-color: var(--fg-soft);
+
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+
+[data-split="on"] .rl-key {
+  opacity: 1;
+}
+
+.rl-fork {
+  opacity: 0;
+}
+
+[data-split="on"] .rl-fork {
+  opacity: 1;
+}
+
+.rl-429 {
+  --flash-color: var(--state-open);
+
+  font-size: 44px;
+}
+
+[data-reject="on"] .rl-429 {
+  opacity: 1;
+}
+
+/* Retry-After sweep under the client box */
+.rl-retry {
+  --ring-width: 10;
+  --ring-color: var(--accent);
+}
+
+.rl-drip {
+  opacity: 0;
+}

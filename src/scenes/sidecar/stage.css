@@ -1,0 +1,619 @@
+/* ---------------------------------------------------------------- */
+/* Sidecar stage                                                     */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One pod, two containers, and the whole difference between platform work
+ * written into an application and platform work parked beside it.
+ *
+ * The colour argument is small. Purple is the platform's work living inside the
+ * application: the three lump chips while they are in `app`, the app plate that
+ * is carrying them, and the ghost app next door carrying the same three again.
+ * Amber is encryption still on the request: the padlock and the ring it wears
+ * until the sidecar takes them off. Blue is traffic and the work it causes — a
+ * traveller, the gate with a request outstanding, a container that is busy, the
+ * loopback while plaintext is crossing it. Red is the far service's one blip.
+ * Green is a fact that has settled: a lifetime lamp that is up, a shipment that
+ * landed, `ok n`, `svc` answering, and the closing frame.
+ *
+ * Nothing is told apart by colour alone. An empty seat is a **hollow dashed
+ * slot** and a filled one is a **plate**; a lump inside the app is **filled**
+ * and the same lump inside the sidecar is **outlined**; the ghost's copies are
+ * **dashed**; a lamp is a **check** or a **cross** as well as green or red, and
+ * a container whose lamp is down takes a **dashed outline** too; an encrypted
+ * request carries a **padlock inside a dashed ring** and a terminated one
+ * carries **two plain rules and no ring**; and `svc` answers with the check and
+ * the cross every scene uses.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a base
+ * rule hiding all of them, so nothing interpolates and scrubbing backwards is
+ * exact: the readout, the pod frame, both container plates, each lump's two
+ * homes, the two lamps, the wiring, the badge, the gate and the `svc` verdict.
+ * The scene has no continuous quantity at all.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+/* The two lower lanes are dashed until there is a sidecar to put anything on
+   them, because until then nothing in the pod ships or calls anything. */
+.sc-lane--log,
+.sc-lane--out {
+  stroke-dasharray: 12 10;
+  opacity: 0.4;
+}
+
+[data-sc-side="idle"] .sc-lane--log,
+[data-sc-side="busy"] .sc-lane--log,
+[data-sc-side="idle"] .sc-lane--out,
+[data-sc-side="busy"] .sc-lane--out {
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/* A request arriving from outside. */
+.sc-req--in .scene-req-dot {
+  fill: var(--request);
+}
+
+/* A batch of log lines. Nobody waits for it, so it is drawn quieter. */
+.sc-req--log .scene-req-dot {
+  fill: var(--fg-soft);
+}
+
+/* A call the ambassador makes, drawn hollow because it is the app's call being
+   carried by somebody else. */
+.sc-req--out .scene-req-dot {
+  fill: none;
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+/* The seal. A padlock inside a dashed ring while the request is encrypted, two
+   plain rules once the sidecar has terminated it. */
+.sc-lock-ring {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 9 8;
+  opacity: 0;
+}
+
+.sc-lock,
+.sc-plain {
+  fill: none;
+  stroke: var(--bg);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+[data-sc-chip="locked"] .sc-lock-ring,
+[data-sc-chip="locked"] .sc-lock,
+[data-sc-chip="plain"] .sc-plain {
+  opacity: 1;
+}
+
+/* --- the bands ---------------------------------------------------------- */
+
+/* The Traffic and Pod titles sit at their left edges and the Backends title on
+   the free column between the two lower lanes, so the keep-outs stay clear. */
+.sc-title {
+  font-size: 40px;
+}
+
+/* --- the Traffic band --------------------------------------------------- */
+
+/* The gate everything arrives through, drawn with a padlock because everything
+   arriving is encrypted. It fills while a request is outstanding. */
+.sc-gate-bg {
+  opacity: 0;
+}
+
+.sc-gate-bg--idle {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.sc-gate-bg--live {
+  fill: var(--request);
+  fill-opacity: 0.16;
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+[data-sc-gate="idle"] .sc-gate-bg--idle,
+[data-sc-gate="live"] .sc-gate-bg--live {
+  opacity: 1;
+}
+
+.sc-gate-lock {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-sc-gate="live"] .sc-gate-lock {
+  stroke: var(--request);
+}
+
+/* The readout. One text per value, and the state picks one, so the number never
+   interpolates and never counts anything the model did not count. */
+.sc-ok {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 28px;
+}
+
+[data-sc-ok="0"] .sc-ok--0,
+[data-sc-ok="1"] .sc-ok--1,
+[data-sc-ok="2"] .sc-ok--2,
+[data-sc-ok="3"] .sc-ok--3 {
+  opacity: 1;
+}
+
+[data-sc-settled="on"] .sc-ok {
+  fill: var(--state-closed);
+}
+
+/* --- the Pod band ------------------------------------------------------- */
+
+/* The frame is drawn around one seat while the app is alone and around two once
+   the pod has a second seat. Two rects, exactly one of them ever revealed. */
+.sc-frame {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-dasharray: 18 12;
+  opacity: 0;
+}
+
+[data-sc-pod="solo"] .sc-frame--solo,
+[data-sc-pod="pair"] .sc-frame--pair {
+  opacity: 1;
+}
+
+/* A seat with nothing in it: hollow and dashed, so an empty seat is a different
+   shape from an occupied one and not only a different colour. */
+.sc-seat {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-dasharray: 12 9;
+  opacity: 0;
+}
+
+[data-sc-side="empty"] .sc-seat {
+  opacity: 1;
+}
+
+/* The container plates. The app is carrying the platform's work, rid of it,
+   serving a request, or waiting on somebody else to answer one. */
+.sc-plate {
+  opacity: 0;
+}
+
+.sc-box--app .sc-plate--fat {
+  fill: var(--cpu);
+  fill-opacity: 0.16;
+  stroke: var(--cpu);
+  stroke-width: 6;
+}
+
+.sc-box--app .sc-plate--slim {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.sc-box--app .sc-plate--serving {
+  fill: var(--request);
+  fill-opacity: 0.14;
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+.sc-box--app .sc-plate--calling {
+  fill: var(--request);
+  fill-opacity: 0.06;
+  stroke: var(--request);
+  stroke-width: 6;
+  stroke-dasharray: 20 12;
+}
+
+[data-sc-app="fat"] .sc-box--app .sc-plate--fat,
+[data-sc-app="slim"] .sc-box--app .sc-plate--slim,
+[data-sc-app="serving"] .sc-box--app .sc-plate--serving,
+[data-sc-app="calling"] .sc-box--app .sc-plate--calling {
+  opacity: 1;
+}
+
+.sc-box--side .sc-plate--idle {
+  fill: var(--surface-2);
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+}
+
+.sc-box--side .sc-plate--busy {
+  fill: var(--request);
+  fill-opacity: 0.14;
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-sc-side="idle"] .sc-box--side .sc-plate--idle,
+[data-sc-side="busy"] .sc-box--side .sc-plate--busy {
+  opacity: 1;
+}
+
+.sc-box-name {
+  fill: var(--fg);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+/* The sidecar's furniture only exists once something is in the seat. */
+.sc-side-name,
+.sc-side-lamp {
+  opacity: 0;
+}
+
+[data-sc-side="idle"] .sc-side-name,
+[data-sc-side="busy"] .sc-side-name,
+[data-sc-side="idle"] .sc-side-lamp,
+[data-sc-side="busy"] .sc-side-lamp {
+  opacity: 1;
+}
+
+/* A container whose lifetime went down takes a dashed outline as well as a red
+   lamp, so the restart reads without the palette. */
+[data-sc-life="down"] .sc-plate {
+  stroke: var(--muted);
+  stroke-dasharray: 14 10;
+}
+
+/* The lamp itself. Both containers carry one and both are written in one
+   breath, so the reader can never catch the two of them disagreeing. */
+.sc-lamp-disc {
+  stroke: none;
+  opacity: 0;
+}
+
+.sc-lamp-disc--up {
+  fill: var(--state-closed);
+}
+
+.sc-lamp-disc--down {
+  fill: var(--state-open);
+}
+
+.sc-lamp-glyph {
+  fill: none;
+  stroke: var(--bg);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+[data-sc-life="up"] .sc-lamp-disc--up,
+[data-sc-life="up"] .sc-lamp-glyph--up,
+[data-sc-life="down"] .sc-lamp-disc--down,
+[data-sc-life="down"] .sc-lamp-glyph--down {
+  opacity: 1;
+}
+
+/* The three lumps. Each is drawn in both seats and its own state reveals at
+   most one, so the lump that moved is the same lump and not a new one that
+   happens to share a word. Filled in the app, outlined in the sidecar. */
+.sc-chip {
+  opacity: 0;
+}
+
+[data-sc-tls="app"] .sc-chip--tls-app,
+[data-sc-tls="side"] .sc-chip--tls-side,
+[data-sc-log="app"] .sc-chip--log-app,
+[data-sc-log="side"] .sc-chip--log-side,
+[data-sc-retry="app"] .sc-chip--retry-app,
+[data-sc-retry="side"] .sc-chip--retry-side {
+  opacity: 1;
+}
+
+.sc-chip--app .sc-chip-bg {
+  fill: var(--cpu);
+  fill-opacity: 0.22;
+  stroke: var(--cpu);
+  stroke-width: 4;
+}
+
+.sc-chip--side .sc-chip-bg {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+}
+
+.sc-chip-word {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.sc-chip--app .sc-chip-word {
+  fill: var(--cpu);
+}
+
+.sc-chip--side .sc-chip-word {
+  fill: var(--state-closed);
+}
+
+/* The app next door, in another language, with the same three lumps grown into
+   it again. Dashed throughout, because it is an argument rather than a thing. */
+.sc-dup {
+  opacity: 0;
+}
+
+[data-sc-dup="on"] .sc-dup {
+  opacity: 1;
+}
+
+.sc-dup-bg {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-width: 4;
+  stroke-dasharray: 20 14;
+}
+
+.sc-dup-name {
+  fill: var(--cpu);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+.sc-dup-chip-bg {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.sc-dup-chip-word {
+  fill: var(--cpu);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* The loopback between the two seats. It does not exist until there is a second
+   container to wire to, and it thickens while plaintext is crossing it. */
+.sc-loop {
+  opacity: 0;
+}
+
+[data-sc-wire="idle"] .sc-loop,
+[data-sc-wire="plain"] .sc-loop {
+  opacity: 1;
+}
+
+.sc-wire {
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+.sc-wire--idle {
+  stroke: var(--muted);
+  stroke-width: 5;
+  stroke-dasharray: 10 8;
+}
+
+.sc-wire--plain {
+  stroke: var(--request);
+  stroke-width: 10;
+}
+
+[data-sc-wire="idle"] .sc-wire--idle,
+[data-sc-wire="plain"] .sc-wire--plain {
+  opacity: 1;
+}
+
+.sc-wire-word {
+  fill: var(--fg-soft);
+  font-size: 26px;
+  font-weight: 600;
+}
+
+[data-sc-wire="plain"] .sc-wire-word {
+  fill: var(--request);
+}
+
+/* The outward-facing role the fourth step puts on the sidecar. An outline while
+   it is on duty, a filled plate while it is carrying a call. */
+.sc-amb-bg {
+  opacity: 0;
+}
+
+.sc-amb-bg--on {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.sc-amb-bg--working {
+  fill: var(--request);
+  fill-opacity: 0.18;
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+[data-sc-amb="on"] .sc-amb-bg--on,
+[data-sc-amb="working"] .sc-amb-bg--working {
+  opacity: 1;
+}
+
+.sc-amb-word {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-weight: 600;
+  opacity: 0;
+}
+
+[data-sc-amb="on"] .sc-amb-word,
+[data-sc-amb="working"] .sc-amb-word {
+  opacity: 1;
+}
+
+[data-sc-amb="working"] .sc-amb-word {
+  fill: var(--request);
+}
+
+/* --- the Backends band -------------------------------------------------- */
+
+.sc-card-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.sc-card-name {
+  fill: var(--fg);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+[data-sc-svc="busy"] .sc-card-bg--svc {
+  fill: var(--request);
+  fill-opacity: 0.14;
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+[data-sc-svc="fail"] .sc-card-bg--svc {
+  fill: var(--state-open);
+  fill-opacity: 0.16;
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+[data-sc-svc="ok"] .sc-card-bg--svc {
+  fill: var(--state-closed);
+  fill-opacity: 0.16;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+/* The verdict, drawn as a glyph so the blip and the answer are never told apart
+   by colour alone. */
+.sc-svc-glyph {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+.sc-svc-glyph--ok {
+  stroke: var(--state-closed);
+}
+
+.sc-svc-glyph--fail {
+  stroke: var(--state-open);
+}
+
+[data-sc-svc="ok"] .sc-svc-glyph--ok,
+[data-sc-svc="fail"] .sc-svc-glyph--fail {
+  opacity: 1;
+}
+
+/* One mark per batch of log lines that landed, revealed cumulatively. */
+.sc-ship {
+  fill: var(--state-closed);
+  opacity: 0;
+}
+
+[data-sc-logs="1"] .sc-ship--1,
+[data-sc-logs="2"] .sc-ship--1,
+[data-sc-logs="2"] .sc-ship--2 {
+  opacity: 1;
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* Six highlights, six different things highlighted. Each one rings the thing
+   the caption is talking about at that moment and nothing else. */
+[data-sc-mark="notapp"] .sc-chip--app .sc-chip-bg {
+  stroke: var(--accent);
+  stroke-width: 7;
+}
+
+[data-sc-mark="seat"] .sc-seat {
+  stroke: var(--accent);
+  stroke-width: 7;
+}
+
+[data-sc-mark="seat"] .sc-frame--pair {
+  stroke: var(--accent);
+  stroke-width: 7;
+}
+
+[data-sc-mark="life"] .sc-lamp-disc {
+  stroke: var(--accent);
+  stroke-width: 6;
+}
+
+[data-sc-mark="thin"] .sc-box--app .sc-plate {
+  stroke: var(--accent);
+  stroke-width: 9;
+}
+
+[data-sc-mark="apart"] .sc-plate {
+  stroke: var(--accent);
+  stroke-width: 9;
+  stroke-dasharray: 24 14;
+}
+
+[data-sc-mark="nocode"] .sc-box--app .sc-plate {
+  stroke: var(--accent);
+  stroke-width: 9;
+  stroke-dasharray: 8 11;
+}
+
+[data-sc-mark="nocode"] .sc-wire--idle,
+[data-sc-mark="nocode"] .sc-wire--plain {
+  stroke: var(--accent);
+  stroke-width: 12;
+  stroke-dasharray: none;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: the platform's work is living beside the application, in and
+   out, and the application's code never learned any of it. */
+[data-sc-settled="on"] .sc-traffic > .scene-box,
+[data-sc-settled="on"] .sc-pod > .scene-box,
+[data-sc-settled="on"] .sc-backends > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+[data-sc-settled="on"] .sc-frame--pair {
+  stroke: var(--state-closed);
+  stroke-dasharray: none;
+}
+
+[data-sc-settled="on"] .sc-amb-bg--on {
+  stroke: var(--state-closed);
+  stroke-dasharray: none;
+}
+
+/* The inbound lane, brighter while the gate has a request outstanding. */
+.sc-lane--in {
+  opacity: 0.7;
+}
+
+[data-sc-gate="live"] .sc-lane--in {
+  stroke: var(--request);
+  opacity: 1;
+}

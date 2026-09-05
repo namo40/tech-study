@@ -1,0 +1,166 @@
+/* ---------------------------------------------------------------- */
+/* Web-Queue-Worker stage                                            */
+/* ---------------------------------------------------------------- */
+
+/* The status lane is a poll rather than the work path, and the request that
+   travels it is drawn hollow, so the two never read as the same call. */
+.wqw-status-link {
+  stroke-dasharray: 10 12;
+  opacity: 0.55;
+}
+
+.wqw-req-code {
+  font-size: 21px;
+}
+
+/* The Web tier's occupancy. Full means the tier is running the work itself and
+   nothing else is getting in, which is the whole of step 1. */
+.wqw-busy-fill {
+  --fill-color: var(--request);
+}
+
+[data-busy="full"] .wqw-busy-fill {
+  --fill-color: var(--state-open);
+}
+
+/* The queue is named from the margin and counted from under its track, because
+   a chip is dropped in over every slot and slid along the row they sit on. */
+.wqw-queue-label {
+  font-size: 26px;
+}
+
+.wqw-depth {
+  fill: var(--fg-soft);
+  font-size: 22px;
+}
+
+[data-depth="0"] .wqw-depth--0,
+[data-depth="1"] .wqw-depth--1,
+[data-depth="2"] .wqw-depth--2,
+[data-depth="3"] .wqw-depth--3,
+[data-depth="4"] .wqw-depth--4,
+[data-depth="5"] .wqw-depth--5,
+[data-depth="6"] .wqw-depth--6,
+[data-depth="7"] .wqw-depth--7,
+[data-depth="8"] .wqw-depth--8,
+[data-depth="9"] .wqw-depth--9,
+[data-depth="10"] .wqw-depth--10,
+[data-depth="11"] .wqw-depth--11,
+[data-depth="12"] .wqw-depth--12 {
+  opacity: 1;
+}
+
+/* A job chip: outlined while it waits its turn, filled while a worker has it,
+   green once the work is done, red once the job has been given up on. */
+.wqw-chip-bg {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.wqw-chip-text {
+  fill: var(--fg);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.wqw-chip[data-chip="running"] .wqw-chip-bg {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+.wqw-chip[data-chip="done"] .wqw-chip-bg {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+}
+
+.wqw-chip[data-chip="dead"] .wqw-chip-bg {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+}
+
+.wqw-chip[data-chip="running"] .wqw-chip-text,
+.wqw-chip[data-chip="done"] .wqw-chip-text,
+.wqw-chip[data-chip="dead"] .wqw-chip-text {
+  fill: var(--bg);
+}
+
+/* Workers. Two stand there from the first frame with nothing to take, and two
+   are outlines until step 4 pays for them. */
+.wqw-worker-label {
+  fill: var(--fg-soft);
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.wqw-worker[data-worker="off"] {
+  opacity: 0.55;
+}
+
+.wqw-worker[data-worker="absent"] {
+  opacity: 0.4;
+}
+
+.wqw-worker[data-worker="absent"] .wqw-worker-box {
+  stroke-dasharray: 16 14;
+}
+
+.wqw-worker[data-worker="absent"] .wqw-bar-track {
+  opacity: 0;
+}
+
+.wqw-worker[data-worker="busy"] .wqw-worker-box {
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+.wqw-worker[data-worker="fail"] .wqw-worker-box {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+.wqw-bar-fill {
+  --fill-color: var(--request);
+}
+
+.wqw-worker[data-worker="fail"] .wqw-bar-fill {
+  --fill-color: var(--state-open);
+}
+
+/* The two workers step 4 adds. The label sits under the row rather than over
+   it, because every worker lane comes down through the band above. */
+.wqw-scale {
+  --flash-color: var(--accent);
+
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+[data-scale="on"] .wqw-scale {
+  opacity: 1;
+}
+
+/* The dead-letter queue is on the stage from the first frame so that nothing
+   appears out of nowhere, but it is only an outline until it holds something. */
+.wqw-dlq-box {
+  stroke-dasharray: 16 14;
+  opacity: 0.4;
+}
+
+.wqw-dlq-label {
+  fill: var(--fg-soft);
+  font-size: 28px;
+  font-weight: 600;
+  opacity: 0.4;
+}
+
+[data-dlq="on"] .wqw-dlq-box {
+  stroke: var(--state-open);
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+[data-dlq="on"] .wqw-dlq-label {
+  fill: var(--fg);
+  opacity: 1;
+}

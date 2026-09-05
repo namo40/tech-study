@@ -1,0 +1,601 @@
+/* ---------------------------------------------------------------- */
+/* Load Test stage                                                   */
+/* ---------------------------------------------------------------- */
+
+/* The node is a chart: throughput and p95 plotted against load, with the
+   markers the run works out for itself drawn on top of it. Every number the
+   reader sees is a counter, so a value walks to its next step instead of being
+   interpolated, and scrubbing backwards lands on the number that was there. */
+
+/* The generator: how many virtual users, and which leg of the plan they are on. */
+.scene-counter.lt-vus {
+  fill: var(--fg);
+  font-size: 34px;
+}
+
+.lt-gauge-fill {
+  --fill-color: var(--request);
+}
+
+.lt-stage-word {
+  --flash-color: var(--fg-soft);
+
+  font-size: 26px;
+  letter-spacing: 1px;
+}
+
+.lt-stage-word--soak {
+  --flash-color: var(--state-half);
+}
+
+[data-stage="ramp"] .lt-stage-word--ramp,
+[data-stage="hold"] .lt-stage-word--hold,
+[data-stage="soak"] .lt-stage-word--soak {
+  opacity: 1;
+}
+
+/* The two arrival models, shown together so the reader can compare them. */
+.lt-model {
+  fill: var(--muted);
+  font-size: 22px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-model="closed"] .lt-model,
+[data-model="open"] .lt-model {
+  opacity: 1;
+}
+
+[data-model="closed"] .lt-model--closed,
+[data-model="open"] .lt-model--open {
+  fill: var(--fg);
+}
+
+/* The three readouts. Each is coloured like the line it belongs to. */
+.scene-counter.lt-rps {
+  fill: var(--request);
+  font-size: 24px;
+}
+
+.scene-counter.lt-p95,
+.lt-p95-none {
+  fill: var(--state-half);
+  font-size: 24px;
+}
+
+.lt-p95-none {
+  fill: var(--muted);
+}
+
+.scene-counter.lt-errors {
+  fill: var(--state-open);
+  font-size: 24px;
+}
+
+[data-p95="none"] .lt-p95-none {
+  opacity: 1;
+}
+
+[data-errors="0"] .lt-errors--0 {
+  fill: var(--fg-soft);
+}
+
+/* The plot itself: a baseline, four gridlines, and the two curves. */
+.lt-grid {
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.lt-baseline {
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.lt-tick,
+.lt-axis {
+  font-size: 20px;
+}
+
+.lt-curve {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lt-curve--tp,
+.lt-curve--tp-warm {
+  stroke: var(--request);
+}
+
+.lt-curve--p95,
+.lt-curve--p95-warm {
+  stroke: var(--state-half);
+}
+
+/* Everything measured before the runtime warmed up is drawn broken, because it
+   is not a measurement of the system anybody is asking about. */
+.lt-curve--tp-warm,
+.lt-curve--p95-warm {
+  stroke-dasharray: 10 8;
+  opacity: 0.7;
+}
+
+.lt-legend {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.lt-legend--tp {
+  fill: var(--request);
+}
+
+.lt-legend--p95 {
+  fill: var(--state-half);
+}
+
+/* The objective, which is the line the sustainable point is read off. */
+.lt-slo {
+  opacity: 0;
+}
+
+[data-slo="on"] .lt-slo {
+  opacity: 1;
+}
+
+.lt-slo-line {
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+  stroke-dasharray: 6 6;
+}
+
+.lt-slo-label {
+  fill: var(--fg-soft);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* Markers. Each one owns a label row, so two that land near the same load
+   never write over each other, and a marker the run has moved past is dimmed
+   rather than removed. */
+.lt-marker {
+  opacity: 0;
+}
+
+.lt-marker[data-shown="1"] {
+  opacity: 1;
+}
+
+.lt-marker[data-shown="2"] {
+  opacity: 0.45;
+}
+
+.lt-line {
+  stroke-width: 3;
+}
+
+.lt-marker-label {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.lt-line--warmup {
+  stroke: var(--muted);
+  stroke-dasharray: 4 8;
+}
+
+.lt-marker-label--warmup {
+  fill: var(--muted);
+}
+
+.lt-line--knee {
+  stroke: var(--state-open);
+  stroke-width: 4;
+}
+
+.lt-marker-label--knee {
+  fill: var(--state-open);
+}
+
+.lt-line--max {
+  stroke: var(--fg-soft);
+  stroke-dasharray: 14 8;
+}
+
+.lt-marker-label--max {
+  fill: var(--fg-soft);
+}
+
+.lt-line--sustainable {
+  stroke: var(--state-closed);
+  stroke-width: 4;
+}
+
+.lt-marker-label--sustainable {
+  fill: var(--state-closed);
+}
+
+/* The row under the chart is one of two things, and never both at once. */
+.lt-panels,
+.lt-row-label--panels {
+  opacity: 0;
+}
+
+[data-panels="on"] .lt-panels,
+[data-panels="on"] .lt-row-label--panels {
+  opacity: 1;
+}
+
+[data-panels="on"] .lt-deps,
+[data-panels="on"] .lt-row-label--deps {
+  opacity: 0;
+}
+
+/* Dependency meters. A meter says what it is doing with a word as well as a
+   colour, so the one that gave way first is never told apart by colour alone. */
+.lt-pool-fill,
+.lt-cpu-fill,
+.lt-mem-fill {
+  --fill-color: var(--request);
+}
+
+.lt-meter[data-meter="warn"] .scene-fill {
+  --fill-color: var(--state-half);
+}
+
+.lt-meter[data-meter="full"] .scene-fill {
+  --fill-color: var(--state-open);
+}
+
+.lt-meter[data-meter="full"] .lt-meter-box {
+  stroke: var(--state-open);
+}
+
+.scene-counter.lt-pool-count {
+  fill: var(--fg-soft);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.scene-counter.lt-waiting,
+.scene-counter.lt-cpu-value,
+.scene-counter.lt-mem-value {
+  fill: var(--fg);
+  font-size: 26px;
+}
+
+.lt-flag {
+  font-size: 22px;
+}
+
+.lt-flag--pool {
+  --flash-color: var(--state-open);
+}
+
+.lt-flag--mem {
+  --flash-color: var(--state-half);
+}
+
+.lt-meter--pool[data-meter="full"] .lt-flag--pool,
+.lt-meter--mem[data-meter="warn"] .lt-flag--mem {
+  opacity: 1;
+}
+
+/* The two data realism panels. The one that is not a real test is drawn broken
+   and says so, so the better looking number is never the trusted one. */
+.lt-panel-box--hot {
+  stroke-dasharray: 12 8;
+}
+
+.lt-panel-cache {
+  font-size: 24px;
+}
+
+.lt-panel-rps,
+.lt-panel-p95 {
+  fill: var(--fg);
+  font-size: 26px;
+}
+
+.lt-panel-verdict {
+  font-size: 22px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.lt-panel-verdict--hot {
+  fill: var(--state-open);
+}
+
+.lt-panel-verdict--real {
+  fill: var(--state-closed);
+}
+
+[data-lit="hot"] .lt-panel--hot .lt-panel-verdict,
+[data-lit="real"] .lt-panel--real .lt-panel-verdict {
+  opacity: 1;
+}
+
+[data-lit="hot"] .lt-panel--real,
+[data-lit="real"] .lt-panel--hot {
+  opacity: 0.4;
+}
+
+/* Which number each readout is showing. */
+[data-vus="0"] .lt-vus--0,
+[data-vus="1"] .lt-vus--1,
+[data-vus="2"] .lt-vus--2,
+[data-vus="3"] .lt-vus--3,
+[data-vus="4"] .lt-vus--4,
+[data-vus="5"] .lt-vus--5,
+[data-vus="6"] .lt-vus--6,
+[data-vus="7"] .lt-vus--7,
+[data-vus="8"] .lt-vus--8,
+[data-vus="9"] .lt-vus--9,
+[data-vus="10"] .lt-vus--10,
+[data-vus="11"] .lt-vus--11,
+[data-vus="12"] .lt-vus--12,
+[data-vus="13"] .lt-vus--13,
+[data-vus="14"] .lt-vus--14,
+[data-vus="15"] .lt-vus--15,
+[data-vus="16"] .lt-vus--16,
+[data-vus="17"] .lt-vus--17,
+[data-vus="18"] .lt-vus--18,
+[data-vus="19"] .lt-vus--19,
+[data-vus="20"] .lt-vus--20,
+[data-vus="21"] .lt-vus--21,
+[data-vus="22"] .lt-vus--22,
+[data-vus="23"] .lt-vus--23,
+[data-vus="24"] .lt-vus--24,
+[data-vus="25"] .lt-vus--25,
+[data-vus="26"] .lt-vus--26,
+[data-vus="27"] .lt-vus--27,
+[data-vus="28"] .lt-vus--28,
+[data-vus="29"] .lt-vus--29,
+[data-vus="30"] .lt-vus--30,
+[data-vus="31"] .lt-vus--31,
+[data-vus="32"] .lt-vus--32,
+[data-vus="33"] .lt-vus--33,
+[data-vus="34"] .lt-vus--34,
+[data-vus="35"] .lt-vus--35,
+[data-vus="36"] .lt-vus--36,
+[data-vus="37"] .lt-vus--37,
+[data-vus="38"] .lt-vus--38,
+[data-vus="39"] .lt-vus--39,
+[data-vus="40"] .lt-vus--40 {
+  opacity: 1;
+}
+
+[data-rps="0"] .lt-rps--0,
+[data-rps="1"] .lt-rps--1,
+[data-rps="2"] .lt-rps--2,
+[data-rps="3"] .lt-rps--3,
+[data-rps="4"] .lt-rps--4,
+[data-rps="5"] .lt-rps--5,
+[data-rps="6"] .lt-rps--6,
+[data-rps="7"] .lt-rps--7,
+[data-rps="8"] .lt-rps--8,
+[data-rps="9"] .lt-rps--9,
+[data-rps="10"] .lt-rps--10,
+[data-rps="11"] .lt-rps--11,
+[data-rps="12"] .lt-rps--12,
+[data-rps="13"] .lt-rps--13,
+[data-rps="14"] .lt-rps--14,
+[data-rps="15"] .lt-rps--15,
+[data-rps="16"] .lt-rps--16,
+[data-rps="17"] .lt-rps--17,
+[data-rps="18"] .lt-rps--18,
+[data-rps="19"] .lt-rps--19,
+[data-rps="20"] .lt-rps--20,
+[data-rps="21"] .lt-rps--21,
+[data-rps="22"] .lt-rps--22,
+[data-rps="23"] .lt-rps--23,
+[data-rps="24"] .lt-rps--24,
+[data-rps="25"] .lt-rps--25,
+[data-rps="26"] .lt-rps--26,
+[data-rps="27"] .lt-rps--27,
+[data-rps="28"] .lt-rps--28,
+[data-rps="29"] .lt-rps--29,
+[data-rps="30"] .lt-rps--30,
+[data-rps="31"] .lt-rps--31,
+[data-rps="32"] .lt-rps--32,
+[data-rps="33"] .lt-rps--33,
+[data-rps="34"] .lt-rps--34,
+[data-rps="35"] .lt-rps--35,
+[data-rps="36"] .lt-rps--36,
+[data-rps="37"] .lt-rps--37,
+[data-rps="38"] .lt-rps--38,
+[data-rps="39"] .lt-rps--39,
+[data-rps="40"] .lt-rps--40,
+[data-rps="41"] .lt-rps--41,
+[data-rps="42"] .lt-rps--42,
+[data-rps="43"] .lt-rps--43,
+[data-rps="44"] .lt-rps--44,
+[data-rps="45"] .lt-rps--45,
+[data-rps="46"] .lt-rps--46,
+[data-rps="47"] .lt-rps--47,
+[data-rps="48"] .lt-rps--48 {
+  opacity: 1;
+}
+
+[data-p95v="0"] .lt-p95--0,
+[data-p95v="1"] .lt-p95--1,
+[data-p95v="2"] .lt-p95--2,
+[data-p95v="3"] .lt-p95--3,
+[data-p95v="4"] .lt-p95--4,
+[data-p95v="5"] .lt-p95--5,
+[data-p95v="6"] .lt-p95--6,
+[data-p95v="7"] .lt-p95--7,
+[data-p95v="8"] .lt-p95--8,
+[data-p95v="9"] .lt-p95--9,
+[data-p95v="10"] .lt-p95--10,
+[data-p95v="11"] .lt-p95--11,
+[data-p95v="12"] .lt-p95--12,
+[data-p95v="13"] .lt-p95--13,
+[data-p95v="14"] .lt-p95--14,
+[data-p95v="15"] .lt-p95--15,
+[data-p95v="16"] .lt-p95--16,
+[data-p95v="17"] .lt-p95--17,
+[data-p95v="18"] .lt-p95--18,
+[data-p95v="19"] .lt-p95--19,
+[data-p95v="20"] .lt-p95--20,
+[data-p95v="21"] .lt-p95--21,
+[data-p95v="22"] .lt-p95--22,
+[data-p95v="23"] .lt-p95--23,
+[data-p95v="24"] .lt-p95--24,
+[data-p95v="25"] .lt-p95--25,
+[data-p95v="26"] .lt-p95--26,
+[data-p95v="27"] .lt-p95--27,
+[data-p95v="28"] .lt-p95--28,
+[data-p95v="29"] .lt-p95--29,
+[data-p95v="30"] .lt-p95--30,
+[data-p95v="31"] .lt-p95--31,
+[data-p95v="32"] .lt-p95--32,
+[data-p95v="33"] .lt-p95--33,
+[data-p95v="34"] .lt-p95--34,
+[data-p95v="35"] .lt-p95--35,
+[data-p95v="36"] .lt-p95--36,
+[data-p95v="37"] .lt-p95--37,
+[data-p95v="38"] .lt-p95--38,
+[data-p95v="39"] .lt-p95--39,
+[data-p95v="40"] .lt-p95--40,
+[data-p95v="41"] .lt-p95--41,
+[data-p95v="42"] .lt-p95--42,
+[data-p95v="43"] .lt-p95--43,
+[data-p95v="44"] .lt-p95--44,
+[data-p95v="45"] .lt-p95--45,
+[data-p95v="46"] .lt-p95--46,
+[data-p95v="47"] .lt-p95--47,
+[data-p95v="48"] .lt-p95--48,
+[data-p95v="49"] .lt-p95--49,
+[data-p95v="50"] .lt-p95--50,
+[data-p95v="51"] .lt-p95--51,
+[data-p95v="52"] .lt-p95--52,
+[data-p95v="53"] .lt-p95--53,
+[data-p95v="54"] .lt-p95--54,
+[data-p95v="55"] .lt-p95--55,
+[data-p95v="56"] .lt-p95--56,
+[data-p95v="57"] .lt-p95--57,
+[data-p95v="58"] .lt-p95--58,
+[data-p95v="59"] .lt-p95--59,
+[data-p95v="60"] .lt-p95--60,
+[data-p95v="61"] .lt-p95--61,
+[data-p95v="62"] .lt-p95--62,
+[data-p95v="63"] .lt-p95--63,
+[data-p95v="64"] .lt-p95--64,
+[data-p95v="65"] .lt-p95--65,
+[data-p95v="66"] .lt-p95--66,
+[data-p95v="67"] .lt-p95--67,
+[data-p95v="68"] .lt-p95--68,
+[data-p95v="69"] .lt-p95--69,
+[data-p95v="70"] .lt-p95--70,
+[data-p95v="71"] .lt-p95--71,
+[data-p95v="72"] .lt-p95--72,
+[data-p95v="73"] .lt-p95--73,
+[data-p95v="74"] .lt-p95--74,
+[data-p95v="75"] .lt-p95--75 {
+  opacity: 1;
+}
+
+[data-p95="none"] .lt-p95 {
+  opacity: 0;
+}
+
+[data-errors="0"] .lt-errors--0,
+[data-errors="1"] .lt-errors--1,
+[data-errors="2"] .lt-errors--2,
+[data-errors="3"] .lt-errors--3,
+[data-errors="4"] .lt-errors--4,
+[data-errors="5"] .lt-errors--5,
+[data-errors="6"] .lt-errors--6,
+[data-errors="7"] .lt-errors--7,
+[data-errors="8"] .lt-errors--8 {
+  opacity: 1;
+}
+
+[data-pool="0"] .lt-pool-count--0,
+[data-pool="1"] .lt-pool-count--1,
+[data-pool="2"] .lt-pool-count--2,
+[data-pool="3"] .lt-pool-count--3,
+[data-pool="4"] .lt-pool-count--4,
+[data-pool="5"] .lt-pool-count--5,
+[data-pool="6"] .lt-pool-count--6,
+[data-pool="7"] .lt-pool-count--7,
+[data-pool="8"] .lt-pool-count--8,
+[data-pool="9"] .lt-pool-count--9,
+[data-pool="10"] .lt-pool-count--10 {
+  opacity: 1;
+}
+
+[data-waiting="0"] .lt-waiting--0,
+[data-waiting="1"] .lt-waiting--1,
+[data-waiting="2"] .lt-waiting--2,
+[data-waiting="3"] .lt-waiting--3,
+[data-waiting="4"] .lt-waiting--4,
+[data-waiting="5"] .lt-waiting--5,
+[data-waiting="6"] .lt-waiting--6,
+[data-waiting="7"] .lt-waiting--7,
+[data-waiting="8"] .lt-waiting--8,
+[data-waiting="9"] .lt-waiting--9,
+[data-waiting="10"] .lt-waiting--10,
+[data-waiting="11"] .lt-waiting--11,
+[data-waiting="12"] .lt-waiting--12,
+[data-waiting="13"] .lt-waiting--13,
+[data-waiting="14"] .lt-waiting--14,
+[data-waiting="15"] .lt-waiting--15,
+[data-waiting="16"] .lt-waiting--16,
+[data-waiting="17"] .lt-waiting--17,
+[data-waiting="18"] .lt-waiting--18,
+[data-waiting="19"] .lt-waiting--19,
+[data-waiting="20"] .lt-waiting--20 {
+  opacity: 1;
+}
+
+[data-cpu="0"] .lt-cpu-value--0,
+[data-cpu="1"] .lt-cpu-value--1,
+[data-cpu="2"] .lt-cpu-value--2,
+[data-cpu="3"] .lt-cpu-value--3,
+[data-cpu="4"] .lt-cpu-value--4,
+[data-cpu="5"] .lt-cpu-value--5,
+[data-cpu="6"] .lt-cpu-value--6,
+[data-cpu="7"] .lt-cpu-value--7,
+[data-cpu="8"] .lt-cpu-value--8,
+[data-cpu="9"] .lt-cpu-value--9,
+[data-cpu="10"] .lt-cpu-value--10,
+[data-cpu="11"] .lt-cpu-value--11,
+[data-cpu="12"] .lt-cpu-value--12,
+[data-cpu="13"] .lt-cpu-value--13,
+[data-cpu="14"] .lt-cpu-value--14,
+[data-cpu="15"] .lt-cpu-value--15,
+[data-cpu="16"] .lt-cpu-value--16,
+[data-cpu="17"] .lt-cpu-value--17,
+[data-cpu="18"] .lt-cpu-value--18,
+[data-cpu="19"] .lt-cpu-value--19,
+[data-cpu="20"] .lt-cpu-value--20 {
+  opacity: 1;
+}
+
+[data-mem="0"] .lt-mem-value--0,
+[data-mem="1"] .lt-mem-value--1,
+[data-mem="2"] .lt-mem-value--2,
+[data-mem="3"] .lt-mem-value--3,
+[data-mem="4"] .lt-mem-value--4,
+[data-mem="5"] .lt-mem-value--5,
+[data-mem="6"] .lt-mem-value--6,
+[data-mem="7"] .lt-mem-value--7,
+[data-mem="8"] .lt-mem-value--8,
+[data-mem="9"] .lt-mem-value--9,
+[data-mem="10"] .lt-mem-value--10,
+[data-mem="11"] .lt-mem-value--11,
+[data-mem="12"] .lt-mem-value--12,
+[data-mem="13"] .lt-mem-value--13,
+[data-mem="14"] .lt-mem-value--14,
+[data-mem="15"] .lt-mem-value--15,
+[data-mem="16"] .lt-mem-value--16,
+[data-mem="17"] .lt-mem-value--17,
+[data-mem="18"] .lt-mem-value--18,
+[data-mem="19"] .lt-mem-value--19,
+[data-mem="20"] .lt-mem-value--20 {
+  opacity: 1;
+}

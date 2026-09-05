@@ -1,0 +1,348 @@
+/* ---------------------------------------------------------------- */
+/* Multiplexing stage                                                */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One wire, three questions, and what each protocol does with the slow one.
+ *
+ * Colour here is identity rather than judgement. A is amber, B is blue and C is
+ * violet, and those three colours mean the same request wherever they appear —
+ * on a traveller, on the chip it left from, on the slot it came back into, on
+ * the disc the server is working on it with, and in the `busy:` readout. No
+ * other colour is used for identity, so a colour on this stage always answers
+ * the question of which request something belongs to.
+ *
+ * The two judgement colours are kept small and are never the only signal. Red
+ * is the bar across the server's way out and the ring around an answer stuck
+ * behind it, and it also tints `waiting` once that number is above zero. Green
+ * is the settled frame, a filled completion slot and a finished stream. Both
+ * always arrive with a shape or a number that says the same thing.
+ *
+ * Direction is a shape, not a colour: a request travelling down is a filled
+ * disc and an answer travelling up is a hollow ring, so the two are told apart
+ * at a glance without either of them being labelled.
+ *
+ * Every value the reader can read is a stack of text elements on one spot with
+ * a base rule hiding all of them, and exactly one is revealed by the `data-*`
+ * value that names it. Nothing is interpolated, so scrubbing backwards lands on
+ * the same frame it left.
+ */
+
+/* --- which request a thing belongs to ----------------------------------- */
+
+.mux-req--a,
+.mux-chip--a,
+.mux-stream--a,
+.mux-serve--a,
+.mux-hold--a,
+.mux-busy--a,
+.mux-slot-letter--a {
+  --mux-key: var(--state-half);
+}
+
+.mux-req--b,
+.mux-chip--b,
+.mux-stream--b,
+.mux-serve--b,
+.mux-hold--b,
+.mux-busy--b,
+.mux-slot-letter--b {
+  --mux-key: var(--request);
+}
+
+.mux-req--c,
+.mux-chip--c,
+.mux-stream--c,
+.mux-serve--c,
+.mux-hold--c,
+.mux-busy--c,
+.mux-slot-letter--c {
+  --mux-key: var(--cpu);
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/* A question is solid and an answer is hollow, so the lane says which way the
+   traffic on it is going before the reader has read anything. */
+.mux-req--down .scene-req-dot {
+  fill: var(--mux-key);
+}
+
+.mux-req--up .scene-req-dot {
+  fill: none;
+  stroke: var(--mux-key);
+  stroke-width: 6;
+}
+
+/* --- the Client band ---------------------------------------------------- */
+
+/* A request the client is holding: its letter, and whether it is prepared. */
+.mux-chip-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.mux-chip-letter {
+  fill: var(--mux-key);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+.mux-chip-ready {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  opacity: 0;
+}
+
+[data-mux-chip="idle"] .mux-chip-letter {
+  fill: var(--muted);
+}
+
+[data-mux-chip="ready"] .mux-chip-ready {
+  opacity: 1;
+}
+
+/* Gone: the plate empties out and keeps only the outline of whose it was. */
+[data-mux-chip="sent"] .mux-chip-bg {
+  fill: none;
+  stroke: var(--mux-key);
+}
+
+[data-mux-chip="done"] .mux-chip-bg {
+  fill: none;
+  stroke: var(--state-closed);
+}
+
+/* Where answers land, filled left to right in the order they actually arrive. */
+.mux-slot-bg {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 9 9;
+}
+
+.mux-slot-letter {
+  fill: var(--mux-key);
+  font-size: 34px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-mux-slot="a"] .mux-slot-bg,
+[data-mux-slot="b"] .mux-slot-bg,
+[data-mux-slot="c"] .mux-slot-bg {
+  fill: var(--surface-2);
+  stroke: var(--state-closed);
+  stroke-dasharray: none;
+}
+
+[data-mux-slot="a"] .mux-slot-letter--a,
+[data-mux-slot="b"] .mux-slot-letter--b,
+[data-mux-slot="c"] .mux-slot-letter--c {
+  opacity: 1;
+}
+
+/* The closing beat holds the row up, because the order in it is the argument. */
+[data-mux-order="on"] .mux-slot-bg {
+  stroke: var(--accent);
+  stroke-width: 6;
+}
+
+/* How many of the three are home. Three of three is the run finishing. */
+.mux-done {
+  font-size: 34px;
+  fill: var(--fg-soft);
+}
+
+.mux-done--3 {
+  fill: var(--state-closed);
+}
+
+[data-mux-done="0"] .mux-done--0,
+[data-mux-done="1"] .mux-done--1,
+[data-mux-done="2"] .mux-done--2,
+[data-mux-done="3"] .mux-done--3 {
+  opacity: 1;
+}
+
+/* --- the Connection band ------------------------------------------------ */
+
+.mux-mode-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+/* The ring is up only while the scene is asserting which protocol this is. */
+.mux-mode-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 5;
+  opacity: 0;
+}
+
+[data-mux-mark="on"] .mux-mode-ring {
+  opacity: 0.95;
+}
+
+.mux-mode-text {
+  fill: var(--fg);
+  font-size: 34px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-mux-mode="http11"] .mux-mode-text--http11,
+[data-mux-mode="pipelining"] .mux-mode-text--pipelining,
+[data-mux-mode="http2"] .mux-mode-text--http2 {
+  opacity: 1;
+}
+
+/* The half measure warns, the one that works does not. */
+[data-mux-mode="pipelining"] .mux-mode-bg {
+  stroke: var(--state-half);
+}
+
+[data-mux-mode="http2"] .mux-mode-bg {
+  stroke: var(--state-closed);
+}
+
+/* Who has the wire. Under HTTP/2 nobody does, and the tags answer instead. */
+.mux-busy {
+  fill: var(--mux-key);
+  font-size: 36px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-mux-busy="a"] .mux-busy--a,
+[data-mux-busy="b"] .mux-busy--b,
+[data-mux-busy="c"] .mux-busy--c {
+  opacity: 1;
+}
+
+[data-mux-mode="http2"] .mux-busy {
+  opacity: 0;
+}
+
+/* A stream is not there, open and empty, carrying its request, or finished. */
+.mux-stream {
+  opacity: 0;
+}
+
+.mux-stream[data-mux-stream="open"],
+.mux-stream[data-mux-stream="live"],
+.mux-stream[data-mux-stream="done"] {
+  opacity: 1;
+}
+
+.mux-stream-bg {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 9 9;
+}
+
+.mux-stream-text {
+  fill: var(--fg-soft);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.mux-stream[data-mux-stream="live"] .mux-stream-bg {
+  fill: var(--surface-2);
+  stroke: var(--mux-key);
+  stroke-dasharray: none;
+}
+
+.mux-stream[data-mux-stream="live"] .mux-stream-text {
+  fill: var(--mux-key);
+}
+
+.mux-stream[data-mux-stream="done"] .mux-stream-bg {
+  stroke: var(--state-closed);
+  stroke-dasharray: none;
+}
+
+.mux-stream[data-mux-stream="done"] .mux-stream-text {
+  fill: var(--state-closed);
+}
+
+/* How many requests the connection has no room for. Above zero is the tax. */
+.mux-wait {
+  font-size: 34px;
+  fill: var(--fg-soft);
+}
+
+.mux-wait--1,
+.mux-wait--2,
+.mux-wait--3 {
+  fill: var(--state-open);
+}
+
+[data-mux-wait="0"] .mux-wait--0,
+[data-mux-wait="1"] .mux-wait--1,
+[data-mux-wait="2"] .mux-wait--2,
+[data-mux-wait="3"] .mux-wait--3 {
+  opacity: 1;
+}
+
+/* --- the Server band ---------------------------------------------------- */
+
+.mux-slow {
+  opacity: 0;
+}
+
+[data-mux-slow="on"] .mux-slow {
+  opacity: 1;
+}
+
+.mux-slow-bg {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 4;
+}
+
+.mux-slow-text {
+  fill: var(--state-half);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+/* One disc per request, lit while the server is working on that one. More than
+   one lit at a time is the server doing what it could always do. */
+.mux-serve {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 4;
+}
+
+.mux-serve[data-mux-serve="on"] {
+  fill: var(--mux-key);
+  stroke: var(--mux-key);
+}
+
+/* The bar across the way out, and the finished answers held behind it. */
+.mux-gate {
+  fill: var(--state-open);
+  opacity: 0;
+}
+
+[data-mux-gate="shut"] .mux-gate {
+  opacity: 0.9;
+}
+
+.mux-hold {
+  fill: none;
+  stroke: none;
+  opacity: 0;
+}
+
+.mux-hold[data-mux-hold="on"] {
+  fill: var(--mux-key);
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-dasharray: 7 7;
+  opacity: 1;
+}

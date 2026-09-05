@@ -1,0 +1,120 @@
+/* ---------------------------------------------------------------- */
+/* Thread Pool stage                                                 */
+/* ---------------------------------------------------------------- */
+
+.tp-lane-label {
+  font-size: 20px;
+}
+
+/* A lane is a bar. Idle is thin and grey, running is filled by `.scene-slot`,
+   blocked is hatched so it never rests on colour alone, and CPU has its own
+   fill. */
+.tp-bar {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.tp-hatch-line {
+  stroke: var(--state-open);
+}
+
+.tp-bar[data-lane-state="blocked"] {
+  fill: url(#tp-hatch);
+  stroke: var(--state-open);
+  stroke-width: 4;
+}
+
+.tp-bar[data-lane-state="cpu"] {
+  fill: var(--cpu);
+  stroke: var(--cpu);
+}
+
+/* A lane the pool has not injected yet is not drawn at all. */
+.tp-bar[data-lane-state="absent"] {
+  opacity: 0;
+}
+
+.tp-lane--5 .tp-lane-label,
+.tp-lane--6 .tp-lane-label {
+  opacity: 0;
+}
+
+[data-threads="5"] .tp-lane--5 .tp-lane-label,
+[data-threads="6"] .tp-lane--5 .tp-lane-label,
+[data-threads="6"] .tp-lane--6 .tp-lane-label {
+  opacity: 1;
+}
+
+/* Dashed lines from every stuck thread down to what it is waiting for. */
+.tp-blocked-line {
+  stroke: var(--state-open);
+  stroke-width: 3;
+  stroke-dasharray: 10 10;
+  opacity: 0;
+}
+
+.tp-await-box {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-dasharray: 9 8;
+}
+
+.tp-queue,
+.tp-awaiting,
+.tp-threads {
+  fill: var(--fg-soft);
+  font-size: 22px;
+}
+
+.tp-threads {
+  font-size: 24px;
+}
+
+[data-queue="0"] .tp-queue--0,
+[data-queue="1"] .tp-queue--1,
+[data-queue="2"] .tp-queue--2,
+[data-queue="3"] .tp-queue--3,
+[data-queue="4"] .tp-queue--4,
+[data-queue="5"] .tp-queue--5,
+[data-queue="6"] .tp-queue--6 {
+  opacity: 1;
+}
+
+[data-queue="3"] .tp-queue--3,
+[data-queue="4"] .tp-queue--4,
+[data-queue="5"] .tp-queue--5,
+[data-queue="6"] .tp-queue--6 {
+  fill: var(--state-half);
+}
+
+[data-awaiting="0"] .tp-awaiting--0,
+[data-awaiting="1"] .tp-awaiting--1,
+[data-awaiting="2"] .tp-awaiting--2,
+[data-awaiting="3"] .tp-awaiting--3,
+[data-awaiting="4"] .tp-awaiting--4,
+[data-awaiting="5"] .tp-awaiting--5,
+[data-awaiting="6"] .tp-awaiting--6,
+[data-awaiting="7"] .tp-awaiting--7,
+[data-awaiting="8"] .tp-awaiting--8 {
+  opacity: 1;
+}
+
+[data-threads="4"] .tp-threads--4,
+[data-threads="5"] .tp-threads--5,
+[data-threads="6"] .tp-threads--6 {
+  opacity: 1;
+}
+
+/* Flashed each time the pool decides to add one more thread. */
+.tp-inject {
+  --flash-color: var(--accent);
+
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+
+[data-inject="on"] .tp-inject {
+  opacity: 1;
+}

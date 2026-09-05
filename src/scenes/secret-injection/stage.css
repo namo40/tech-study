@@ -1,0 +1,610 @@
+/* ---------------------------------------------------------------- */
+/* Secret Injection stage                                            */
+/* ---------------------------------------------------------------- */
+
+/*
+ * A credential that still has to exist, and the whole argument is in how it
+ * gets from the store to the process without ever being part of the artifact.
+ *
+ * The colour argument is small. Purple is the world where the secret is part of
+ * the image: the baked plate, the two layers it is welded into, and the copies
+ * that spread out of it. Nothing the running system holds is ever drawn in it.
+ * Amber is the environment: the slot it fills, the leaks that come with it, and
+ * the restart a new value costs — it works, it is not free. Green is the file
+ * path and the things that make it manageable: a mounted slot, the `allow`
+ * list, a clean layer strip, the settled frame. Red is a refusal and the moment
+ * the spread stops being fixable. Blue is a journey, the store's new version
+ * and the places the captions stop.
+ *
+ * The two delivery slots are two pictures rather than two fills. An empty slot
+ * is a hollow dashed plate with a word and no value; a filled `env` slot is a
+ * solid amber plate carrying `v 1` or `v 2` with three dashed copies beside it
+ * and a restart ring past them; a mounted `file` slot is a solid green plate
+ * with a document glyph that only exists while something is mounted. A stale
+ * environment is a fourth picture again — dashed, red-edged, with the old
+ * version still legible — so "holding the previous value" is never told from
+ * "holding the current one" by colour alone.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a
+ * base rule hiding all of them, so nothing interpolates and scrubbing backwards
+ * is exact. The scene has no continuous quantity at all.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+/* Deployments come down this one, and after the first step none of them is
+   carrying a credential. That is the point of the column staying quiet. */
+.sj-lane--deploy {
+  opacity: 0.8;
+}
+
+/* The delivery lane runs one way only: the store is asked from below and
+   answers upward, and a refusal never comes back down it because a refusal
+   never leaves the store. It is dashed until injection is the premise. */
+.sj-lane--inject {
+  stroke-dasharray: 12 10;
+  opacity: 0.4;
+}
+
+[data-sj-mode="on"] .sj-lane--inject {
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/* A workload being deployed. It is the only traveller that is not a secret,
+   which is why it is drawn in the colour of nothing in particular. */
+.sj-req--deploy .scene-req-dot {
+  fill: var(--fg-soft);
+}
+
+/* A value on its way into an environment, and a file on its way to a mount. */
+.sj-req--env .scene-req-dot {
+  fill: var(--state-half);
+}
+
+.sj-req--file .scene-req-dot {
+  fill: var(--state-closed);
+}
+
+/* A file being refreshed where it already stands: hollow, because the mount is
+   the same mount and only what is inside it changed. */
+.sj-req--refresh .scene-req-dot {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+/* Every traveller carries the name of the workload it is for, because both
+   lanes are named after where they go rather than after who is waiting. */
+.sj-tag {
+  fill: var(--fg-soft);
+}
+
+/* --- the bands ---------------------------------------------------------- */
+
+/* The three band titles sit closer to their left edges than most stages put
+   them, so the deploy lane's keep-out column stays clear of the word `Pods`. */
+.sj-title {
+  font-size: 40px;
+}
+
+/* --- the Image ---------------------------------------------------------- */
+
+/* The artifact drawn as what it is made of. The strip is declared texture: no
+   word sits on it except the one the first step welds into it. */
+.sj-bar {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.sj-bar--1 {
+  stroke-opacity: 0.9;
+}
+
+.sj-bar--2 {
+  stroke-opacity: 0.75;
+}
+
+.sj-bar--3 {
+  stroke-opacity: 0.6;
+}
+
+.sj-bar--4 {
+  stroke-opacity: 0.45;
+}
+
+/* Two of the four layers carry the secret, because a baked credential lands in
+   whichever layer the instruction that wrote it did. */
+[data-sj-image="baked"] .sj-bar--2,
+[data-sj-image="baked"] .sj-bar--3 {
+  fill: var(--cpu);
+  fill-opacity: 0.18;
+  stroke: var(--cpu);
+  stroke-opacity: 1;
+  stroke-width: 3;
+}
+
+/* A strip that is known clean is its own picture rather than the absence of
+   one: it is what the rest of the scene is standing on. */
+[data-sj-image="clean"] .sj-bar {
+  fill: var(--state-closed);
+  fill-opacity: 0.12;
+  stroke: var(--state-closed);
+  stroke-opacity: 1;
+  stroke-width: 3;
+}
+
+.sj-baked {
+  opacity: 0;
+}
+
+[data-sj-image="baked"] .sj-baked {
+  opacity: 1;
+}
+
+/* A solid backing under the baked plate, so the layer lines stop at its edge
+   instead of running through the word welded into them. */
+.sj-baked-mask {
+  fill: var(--surface);
+}
+
+.sj-baked-bg {
+  fill: var(--cpu);
+  fill-opacity: 0.2;
+  stroke: var(--cpu);
+  stroke-width: 5;
+  stroke-dasharray: 14 8;
+}
+
+.sj-baked-text {
+  fill: var(--cpu);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+/* The copies the image leaves behind: a registry, a cache, another team. Each
+   is fainter than the last, because a copy of a copy is where the trail stops
+   being followed. They arrive one at a time rather than all at once. */
+.sj-copy {
+  fill: var(--cpu);
+  fill-opacity: 0.12;
+  stroke: var(--cpu);
+  stroke-width: 3;
+  stroke-dasharray: 8 7;
+  opacity: 0;
+}
+
+.sj-copy--1 {
+  stroke-opacity: 0.95;
+}
+
+.sj-copy--2 {
+  stroke-opacity: 0.7;
+}
+
+.sj-copy--3 {
+  stroke-opacity: 0.45;
+}
+
+[data-sj-spread="1"] .sj-copy--1,
+[data-sj-spread="2"] .sj-copy--1,
+[data-sj-spread="2"] .sj-copy--2,
+[data-sj-spread="3"] .sj-copy--1,
+[data-sj-spread="3"] .sj-copy--2,
+[data-sj-spread="3"] .sj-copy--3,
+[data-sj-spread="peak"] .sj-copy--1,
+[data-sj-spread="peak"] .sj-copy--2,
+[data-sj-spread="peak"] .sj-copy--3 {
+  opacity: 1;
+}
+
+/* The peak: the copies are loose and no later push takes them back, which is a
+   refusal waiting to happen rather than a refusal. */
+[data-sj-spread="peak"] .sj-copy {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+  stroke-opacity: 1;
+}
+
+[data-sj-spread="peak"] .sj-baked-bg {
+  stroke: var(--state-open);
+}
+
+[data-sj-spread="peak"] .sj-baked-text {
+  fill: var(--state-open);
+}
+
+[data-sj-image="baked"] .sj-image > .scene-box {
+  stroke: var(--cpu);
+  stroke-width: 6;
+  stroke-dasharray: 18 12;
+}
+
+[data-sj-spread="peak"] .sj-image > .scene-box {
+  stroke: var(--state-open);
+}
+
+[data-sj-image="clean"] .sj-image > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+/* --- the Pods ----------------------------------------------------------- */
+
+/* A capsule is always drawn, because the argument is about what is in the slot
+   rather than about which workloads exist. A pod that has not started, or that
+   is down for a restart, is hollow and dashed with a grey name. */
+.sj-pod-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.sj-pod[data-sj-run="off"] .sj-pod-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-dasharray: 12 10;
+}
+
+.sj-pod-name {
+  fill: var(--fg);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.sj-pod[data-sj-run="off"] .sj-pod-name {
+  fill: var(--muted);
+}
+
+/* The empty slot: hollow, thin and dashed, so it reads as room for a value
+   rather than as a value of any kind. */
+.sj-slot-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.sj-slot-name {
+  fill: var(--fg-soft);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.sj-value {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.sj-pod[data-sj-slot="v1"] .sj-value--v1,
+.sj-pod[data-sj-slot="v2"] .sj-value--v2 {
+  opacity: 1;
+}
+
+/* A filled environment and a mounted file are two different pictures. The
+   environment is amber because it works everywhere and leaks everywhere; the
+   file is green and grows a document glyph that exists only while a mount
+   does. */
+.sj-pod[data-sj-slot="v1"] .sj-slot-bg--env,
+.sj-pod[data-sj-slot="v2"] .sj-slot-bg--env {
+  fill: var(--state-half);
+  fill-opacity: 0.18;
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+.sj-pod[data-sj-slot="v1"] .sj-slot-bg--file,
+.sj-pod[data-sj-slot="v2"] .sj-slot-bg--file {
+  fill: var(--state-closed);
+  fill-opacity: 0.16;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+.sj-mount {
+  fill: var(--state-closed);
+  fill-opacity: 0.3;
+  stroke: var(--state-closed);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+.sj-pod[data-sj-slot="v1"] .sj-mount,
+.sj-pod[data-sj-slot="v2"] .sj-mount {
+  opacity: 1;
+}
+
+/* An environment holding the version before the store's. It is the same slot,
+   the same word and the same shape as a fresh one, and it is told apart by
+   being dashed and red-edged as well as by the number still sitting in it. */
+.sj-pod[data-sj-stale="on"] .sj-slot-bg {
+  fill-opacity: 0.08;
+  stroke: var(--state-open);
+  stroke-dasharray: 14 8;
+}
+
+.sj-pod[data-sj-stale="on"] .sj-value {
+  fill: var(--state-open);
+}
+
+.sj-pod[data-sj-stale="on"] .sj-pod-bg {
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 14 10;
+}
+
+/* Where an environment goes without being asked: a child process, a crash
+   dump, a diagnostic page. Only the environment pod draws them, because only
+   the environment pays for them. */
+.sj-leak {
+  fill: var(--state-half);
+  fill-opacity: 0.12;
+  stroke: var(--state-half);
+  stroke-width: 3;
+  stroke-dasharray: 8 7;
+  opacity: 0;
+}
+
+.sj-leak--1 {
+  stroke-opacity: 0.95;
+}
+
+.sj-leak--2 {
+  stroke-opacity: 0.7;
+}
+
+.sj-leak--3 {
+  stroke-opacity: 0.45;
+}
+
+.sj-pod[data-sj-leak="on"] .sj-leak {
+  opacity: 1;
+}
+
+/* What a new value costs on the environment path, in four states that are four
+   pictures: nothing at all, a thin grey ring while the scene is only naming
+   the cost, a heavy amber dashed ring once a newer version actually exists,
+   and a solid blue ring while the pod is down. */
+.sj-restart {
+  opacity: 0;
+}
+
+.sj-pod[data-sj-restart="hint"] .sj-restart--hint,
+.sj-pod[data-sj-restart="due"] .sj-restart--due,
+.sj-pod[data-sj-restart="running"] .sj-restart--running {
+  opacity: 1;
+}
+
+.sj-restart-ring {
+  fill: none;
+  stroke-width: 5;
+}
+
+.sj-restart--hint .sj-restart-ring {
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 6 8;
+}
+
+.sj-restart--hint .sj-restart-arrow {
+  fill: var(--muted);
+}
+
+.sj-restart--due .sj-restart-ring {
+  stroke: var(--state-half);
+  stroke-dasharray: 14 8;
+}
+
+.sj-restart--due .sj-restart-arrow {
+  fill: var(--state-half);
+}
+
+.sj-restart--running .sj-restart-ring {
+  stroke: var(--request);
+}
+
+.sj-restart--running .sj-restart-arrow {
+  fill: var(--request);
+}
+
+/* A workload that reached for a path its name is not on. The refusal is drawn
+   on the pod as well as in the store, because a reader who is watching the
+   Pods should not have to look away to find out what happened. */
+.sj-pod[data-sj-refused="on"] .sj-pod-bg {
+  stroke: var(--state-open);
+  stroke-width: 6;
+  stroke-dasharray: 14 10;
+}
+
+/* --- the Store ---------------------------------------------------------- */
+
+/* The card that owns the version. Every delivery reads it and none of them
+   writes it, which is the whole reason rotation happens in one place. */
+.sj-card-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.sj-card-name {
+  fill: var(--fg-soft);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.sj-card-version {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-sj-version="1"] .sj-card-version--1,
+[data-sj-version="2"] .sj-card-version--2 {
+  opacity: 1;
+}
+
+[data-sj-version="2"] .sj-card-bg {
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+[data-sj-version="2"] .sj-card-version--2 {
+  fill: var(--request);
+}
+
+/* The list that says who may read. It is drawn late and it decided early: the
+   mount in the third step passed because of the same list. */
+.sj-allow {
+  opacity: 0;
+}
+
+[data-sj-allow="on"] .sj-allow,
+[data-sj-allow="hit"] .sj-allow {
+  opacity: 1;
+}
+
+.sj-allow-bg {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.sj-allow-text {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+[data-sj-allow="hit"] .sj-allow-bg {
+  fill: var(--state-closed);
+  fill-opacity: 0.16;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+[data-sj-allow="hit"] .sj-allow-text {
+  fill: var(--fg);
+}
+
+/* A refusal is a change of state inside the Store rather than something it
+   posts back, so it is written on its own outlined plate and nothing travels. */
+.sj-deny {
+  opacity: 0;
+}
+
+[data-sj-deny="on"] .sj-deny {
+  opacity: 1;
+}
+
+.sj-deny-bg {
+  fill: var(--surface);
+  stroke: var(--state-open);
+  stroke-width: 4;
+}
+
+.sj-deny-text {
+  fill: var(--state-open);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+/* The count of everything the list let through: one place to rotate is also
+   one place that knows who read what. A count of nothing is drawn as a checked
+   zero rather than left out. */
+.sj-ok {
+  fill: var(--state-closed);
+  font-family: var(--font-mono);
+  font-size: 30px;
+}
+
+.sj-ok--0 {
+  fill: var(--muted);
+}
+
+[data-sj-ok="0"] .sj-ok--0,
+[data-sj-ok="1"] .sj-ok--1,
+[data-sj-ok="2"] .sj-ok--2,
+[data-sj-ok="3"] .sj-ok--3,
+[data-sj-ok="4"] .sj-ok--4 {
+  opacity: 1;
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The seven things the captions stop on, each drawn on the band it is about. */
+[data-sj-mark="clean"] .sj-image > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 7;
+}
+
+[data-sj-mark="delivery"] .sj-pods > .scene-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-sj-mark="delivery"] .sj-lane--inject {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-sj-mark="anywhere"] .sj-pod--a .sj-slot-bg {
+  stroke: var(--request);
+  stroke-width: 7;
+}
+
+[data-sj-mark="frozen"] .sj-pod--a .sj-slot-bg {
+  stroke: var(--state-half);
+  stroke-width: 7;
+  stroke-dasharray: 14 8;
+}
+
+[data-sj-mark="audit"] .sj-store > .scene-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-sj-mark="audit"] .sj-ok {
+  fill: var(--request);
+}
+
+[data-sj-mark="managed"] .sj-store > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 6;
+}
+
+/* Nobody rebuilt anything, and the way to say that is to point at the artifact
+   nothing in the fourth step touched. */
+[data-sj-mark="norebuild"] .sj-image > .scene-box {
+  stroke: var(--state-half);
+  stroke-width: 7;
+  stroke-dasharray: 18 12;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: one store holding one version, and both delivery paths on
+   it without an image having been built anywhere in the picture. */
+[data-sj-settled="on"] .sj-pods > .scene-box,
+[data-sj-settled="on"] .sj-store > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+/* Both delivery slots are thickened, because the point of the last frame is
+   that the two paths ended up on the same version by different means. */
+[data-sj-settled="on"] .sj-pod--a .sj-slot-bg,
+[data-sj-settled="on"] .sj-pod--b .sj-slot-bg {
+  stroke-width: 7;
+}

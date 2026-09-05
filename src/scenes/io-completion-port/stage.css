@@ -1,0 +1,380 @@
+/* ---------------------------------------------------------------- */
+/* I/O Completion Port stage                                         */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Four threads, six operations, and the port between them.
+ *
+ * The colour argument is small. Purple is code actually running on a thread: a
+ * slot that is `busy`. Red is a thread that is not running anything and cannot
+ * be given away either — the ghost's held slots, and the fourth step's one held
+ * slot, which is the same picture rebuilt one floor up. Green is a thread that
+ * is available and work that came back: a `free` slot, the `ok n` readout, the
+ * gate once it is on, and the closing frame. Blue is the operating system doing
+ * the waiting: the fill inside a progress bar, and everything that travels.
+ * Amber is work standing still — the backlog behind a full pool, and a
+ * completion packet sitting on the port with nobody to run it yet.
+ *
+ * Nothing is told apart by colour alone. A slot that is `free` is a **hollow
+ * dashed plate carrying the word**; one that is running code is a **filled plate
+ * with a solid bar across it**; one that is held by a wait is a **hatched plate
+ * with a hollow dashed bar**. A progress bar that is idle is an **empty track**
+ * and a running one is a **track with a fill in it**. A packet slot that is
+ * empty is a **dashed outline** and a full one is a **filled block**. The
+ * `limit` badge is **dashed with no posts** until it is on and **filled with a
+ * post either side** afterwards. The `port` card is **dashed while the ghost is
+ * up**, because a blocking world has no port in it at all.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a base
+ * rule hiding all of them, so nothing interpolates and scrubbing backwards is
+ * exact: the readout, the backlog, each slot's three plates and its two bars,
+ * each progress bar's four fills, the packet queue's six depths, and the badge's
+ * two plates. The scene has no continuous quantity at all.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+.iocp-lane--in,
+.iocp-lane--io {
+  opacity: 0.7;
+}
+
+/* Nothing rides the lower lane while the ghost is up, because in a blocking
+   world the thread goes down with the operation and never comes back up. */
+[data-iocp-mode="ghost"] .iocp-lane--io {
+  stroke-dasharray: 12 10;
+  opacity: 0.35;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+.iocp-req--work .scene-req-dot {
+  fill: var(--request);
+}
+
+/* The one request whose continuation blocks the thread that started it. It is
+   drawn hollow because what it is carrying is a thread that is not there. */
+.iocp-req--trap .scene-req-dot {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+/* --- the bands ---------------------------------------------------------- */
+
+/* Every title sits at its band's left edge, so the column the lane sweeps stays
+   clear from the Requests box down to the IO box. */
+.iocp-title {
+  font-size: 40px;
+}
+
+.iocp-hatch-line {
+  stroke: var(--state-open);
+  opacity: 0.4;
+}
+
+/* --- the Requests band -------------------------------------------------- */
+
+/* The readout. One text per value, and the state picks one, so the number never
+   interpolates and never counts anything the model did not count. */
+.iocp-ok {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 28px;
+}
+
+[data-iocp-ok="0"] .iocp-ok--0,
+[data-iocp-ok="1"] .iocp-ok--1,
+[data-iocp-ok="2"] .iocp-ok--2,
+[data-iocp-ok="3"] .iocp-ok--3,
+[data-iocp-ok="4"] .iocp-ok--4,
+[data-iocp-ok="5"] .iocp-ok--5,
+[data-iocp-ok="6"] .iocp-ok--6,
+[data-iocp-ok="7"] .iocp-ok--7,
+[data-iocp-ok="8"] .iocp-ok--8,
+[data-iocp-ok="9"] .iocp-ok--9,
+[data-iocp-ok="10"] .iocp-ok--10,
+[data-iocp-ok="11"] .iocp-ok--11,
+[data-iocp-ok="12"] .iocp-ok--12 {
+  opacity: 1;
+}
+
+[data-iocp-settled="on"] .iocp-ok {
+  fill: var(--state-closed);
+}
+
+/* The backlog: one group per depth, so the number of pips is a state and not a
+   tween, and an empty band is genuinely empty. */
+.iocp-backlog {
+  opacity: 0;
+}
+
+[data-iocp-backlog="0"] .iocp-backlog--0,
+[data-iocp-backlog="1"] .iocp-backlog--1,
+[data-iocp-backlog="2"] .iocp-backlog--2,
+[data-iocp-backlog="3"] .iocp-backlog--3 {
+  opacity: 1;
+}
+
+.iocp-pip {
+  fill: var(--state-half);
+  fill-opacity: 0.28;
+  stroke: var(--state-half);
+  stroke-width: 4;
+}
+
+/* --- the Threads band --------------------------------------------------- */
+
+.iocp-slot-bg {
+  opacity: 0;
+}
+
+.iocp-slot-bg--free {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 14 10;
+}
+
+.iocp-slot-bg--busy {
+  fill: var(--cpu);
+  fill-opacity: 0.16;
+  stroke: var(--cpu);
+  stroke-width: 5;
+}
+
+/* A held slot is hatched, so a thread that is only waiting is a different
+   surface and not only a different colour. */
+.iocp-slot-bg--held {
+  fill: url(#iocp-hatch);
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: 18 10;
+}
+
+[data-iocp-slot="free"] .iocp-slot-bg--free,
+[data-iocp-slot="busy"] .iocp-slot-bg--busy,
+[data-iocp-slot="held"] .iocp-slot-bg--held {
+  opacity: 1;
+}
+
+.iocp-slot-name {
+  fill: var(--fg-soft);
+  font-size: 30px;
+}
+
+[data-iocp-slot="busy"] .iocp-slot-name {
+  fill: var(--cpu);
+}
+
+[data-iocp-slot="held"] .iocp-slot-name {
+  fill: var(--state-open);
+}
+
+/* The bar across a slot says what the thread is doing with itself: solid for
+   code that is running, hollow and dashed for a wait that is not. */
+.iocp-slot-bar {
+  opacity: 0;
+}
+
+.iocp-slot-bar--busy {
+  fill: var(--cpu);
+}
+
+.iocp-slot-bar--held {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-dasharray: 12 9;
+}
+
+[data-iocp-slot="busy"] .iocp-slot-bar--busy,
+[data-iocp-slot="held"] .iocp-slot-bar--held {
+  opacity: 1;
+}
+
+.iocp-slot-word {
+  fill: var(--state-closed);
+  font-size: 30px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-iocp-slot="free"] .iocp-slot-word {
+  opacity: 1;
+}
+
+/* The gate in front of the pool. */
+.iocp-badge-bg {
+  opacity: 0;
+}
+
+.iocp-badge-bg--off {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 12 9;
+}
+
+.iocp-badge-bg--on {
+  fill: var(--state-closed);
+  fill-opacity: 0.16;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+[data-iocp-limit="off"] .iocp-badge-bg--off,
+[data-iocp-limit="on"] .iocp-badge-bg--on {
+  opacity: 1;
+}
+
+.iocp-post {
+  fill: var(--state-closed);
+  opacity: 0;
+}
+
+[data-iocp-limit="on"] .iocp-post {
+  opacity: 1;
+}
+
+.iocp-badge-word {
+  fill: var(--muted);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+[data-iocp-limit="on"] .iocp-badge-word {
+  fill: var(--state-closed);
+}
+
+/* --- the IO band -------------------------------------------------------- */
+
+.iocp-card-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+/* There is no port in a blocking world, so while the ghost is up the card that
+   would hold the packets is drawn as something that is not there yet. */
+[data-iocp-mode="ghost"] .iocp-card--port .iocp-card-bg {
+  fill: none;
+  stroke-dasharray: 14 10;
+}
+
+.iocp-card-word {
+  fill: var(--fg-soft);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+[data-iocp-mode="ghost"] .iocp-card--port .iocp-card-word {
+  fill: var(--muted);
+}
+
+/* A progress bar. The track is always there and the fill is one of four widths,
+   so an idle device and a busy one are different pictures. */
+.iocp-bar-track {
+  fill: var(--border);
+  fill-opacity: 0.5;
+}
+
+.iocp-bar-fill {
+  fill: var(--request);
+  opacity: 0;
+}
+
+[data-iocp-bar="1"] .iocp-bar-fill--1,
+[data-iocp-bar="2"] .iocp-bar-fill--2,
+[data-iocp-bar="3"] .iocp-bar-fill--3,
+[data-iocp-bar="4"] .iocp-bar-fill--4 {
+  opacity: 1;
+}
+
+/* The port's queue. The slots are outlines so an empty port is a picture, and
+   one group per depth fills that many of them. */
+.iocp-packet-slot {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 8 7;
+}
+
+.iocp-queue {
+  opacity: 0;
+}
+
+[data-iocp-port="0"] .iocp-queue--0,
+[data-iocp-port="1"] .iocp-queue--1,
+[data-iocp-port="2"] .iocp-queue--2,
+[data-iocp-port="3"] .iocp-queue--3,
+[data-iocp-port="4"] .iocp-queue--4,
+[data-iocp-port="5"] .iocp-queue--5,
+[data-iocp-port="6"] .iocp-queue--6 {
+  opacity: 1;
+}
+
+.iocp-packet {
+  fill: var(--state-half);
+  fill-opacity: 0.3;
+  stroke: var(--state-half);
+  stroke-width: 4;
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* Five highlights, five different things highlighted. The first two are the
+   first step's sentence — a thread is for running code, and the waiting belongs
+   to the operating system — the third and fourth are the second step's, that
+   the bars run while every slot reads `free`, and the last is the third step's
+   two numbers side by side. */
+[data-iocp-mark="nothread"] .iocp-threads > .scene-box {
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+[data-iocp-mark="nothread"] .iocp-slot-name {
+  fill: var(--accent);
+}
+
+[data-iocp-mark="os"] .iocp-card-bg {
+  stroke: var(--accent);
+  stroke-width: 6;
+}
+
+[data-iocp-mark="os"] .iocp-card-word {
+  fill: var(--accent);
+}
+
+[data-iocp-mark="bars"] .iocp-bar-fill,
+[data-iocp-mark="count"] .iocp-bar-fill {
+  fill: var(--accent);
+}
+
+[data-iocp-mark="bars"] .iocp-bar:not([data-iocp-bar="off"]) .iocp-bar-track,
+[data-iocp-mark="count"] .iocp-bar:not([data-iocp-bar="off"]) .iocp-bar-track {
+  fill: var(--accent);
+  fill-opacity: 0.25;
+}
+
+[data-iocp-mark="wait"] .iocp-slot-bg--free,
+[data-iocp-mark="count"] .iocp-slot-bg--free {
+  stroke: var(--accent);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+[data-iocp-mark="wait"] .iocp-slot-word,
+[data-iocp-mark="count"] .iocp-slot-word {
+  fill: var(--accent);
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: the gate is on, the port is empty and every thread is free. */
+[data-iocp-settled="on"] .iocp-requests > .scene-box,
+[data-iocp-settled="on"] .iocp-threads > .scene-box,
+[data-iocp-settled="on"] .iocp-io > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}

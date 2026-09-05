@@ -1,0 +1,230 @@
+/* ---------------------------------------------------------------- */
+/* CQRS stage                                                        */
+/* ---------------------------------------------------------------- */
+
+/* Each band is two boxes that start out on top of each other. Everything that
+   only exists once a band has come apart is hidden until it has. */
+.cq-label--split,
+.cq-read-side {
+  opacity: 0;
+}
+
+[data-split="on"] .cq-label--one {
+  opacity: 0;
+}
+
+[data-split="on"] .cq-label--split,
+[data-split="on"] .cq-read-side {
+  opacity: 1;
+}
+
+.cq-store-two,
+.cq-stores-only {
+  opacity: 0;
+}
+
+[data-stores="two"] .cq-store-one {
+  opacity: 0;
+}
+
+[data-stores="two"] .cq-store-two,
+[data-stores="two"] .cq-stores-only {
+  opacity: 1;
+}
+
+.cq-side-label {
+  letter-spacing: 1px;
+}
+
+/* The write model: three rules a command runs before anything is persisted. */
+.cq-rule-box {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.cq-rule[data-rule="on"] .cq-rule-box {
+  fill: var(--state-closed);
+  stroke: var(--state-closed);
+}
+
+.cq-rule-tick {
+  fill: none;
+  stroke: var(--bg);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+.cq-rule[data-rule="on"] .cq-rule-tick {
+  opacity: 1;
+}
+
+.cq-rule-bar {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+/* The read model: one row per answer, in the shape the screen asks for. */
+.cq-table-label {
+  font-size: 24px;
+}
+
+.cq-row-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.cq-row[data-hit="on"] .cq-row-bg {
+  stroke: var(--cpu);
+  stroke-width: 4;
+}
+
+/* A row behind the write side is not wrong yet, so it warns rather than clears;
+   a row the rebuild has emptied is an outline with nothing in it. */
+.cq-row[data-row="stale"] .cq-row-bg {
+  stroke: var(--state-half);
+  stroke-width: 4;
+}
+
+.cq-row[data-row="empty"] .cq-row-bg {
+  stroke-dasharray: 12 10;
+  fill: none;
+}
+
+.cq-cell {
+  fill: var(--fg-soft);
+}
+
+.cq-row[data-row="stale"] .cq-cell {
+  fill: var(--state-half);
+}
+
+.cq-row[data-row="empty"] .cq-cell {
+  opacity: 0;
+}
+
+/* The field the rebuild adds, which is the whole reason for rebuilding. */
+.cq-cell--4 {
+  opacity: 0;
+}
+
+[data-cols="4"] .cq-row:not([data-row="empty"]) .cq-cell--4 {
+  opacity: 1;
+}
+
+/* Both tiers are measured the same way, and both say `full` at the same
+   reading, so the bar and the border can never disagree. */
+.cq-write-busy-fill,
+.cq-read-busy-fill {
+  --fill-color: var(--request);
+}
+
+[data-write-busy="full"] .cq-write-busy-fill,
+[data-read-busy="full"] .cq-read-busy-fill {
+  --fill-color: var(--state-open);
+}
+
+/* What the storage band says about itself: how far behind the read side is,
+   how many changes the write side has published, and what a read costs. */
+.cq-lag,
+.cq-events {
+  fill: var(--fg-soft);
+  font-size: 22px;
+}
+
+[data-lag="0"] .cq-lag--0,
+[data-lag="1"] .cq-lag--1 {
+  opacity: 1;
+}
+
+[data-lag="1"] .cq-lag--1 {
+  fill: var(--state-half);
+}
+
+[data-events="0"] .cq-events--0, [data-events="1"] .cq-events--1,
+[data-events="2"] .cq-events--2, [data-events="3"] .cq-events--3,
+[data-events="4"] .cq-events--4, [data-events="5"] .cq-events--5,
+[data-events="6"] .cq-events--6, [data-events="7"] .cq-events--7,
+[data-events="8"] .cq-events--8, [data-events="9"] .cq-events--9,
+[data-events="10"] .cq-events--10, [data-events="11"] .cq-events--11 {
+  opacity: 1;
+}
+
+.cq-read-flash {
+  --flash-color: var(--fg-soft);
+
+  font-size: 22px;
+}
+
+[data-read="join"] .cq-read-flash--join {
+  --flash-color: var(--state-half);
+
+  opacity: 1;
+}
+
+[data-read="view"] .cq-read-flash--view {
+  --flash-color: var(--state-closed);
+
+  opacity: 1;
+}
+
+/* A read served from a row the projection has not reached yet. */
+.cq-stale {
+  --flash-color: var(--state-half);
+
+  font-size: 26px;
+  letter-spacing: 1px;
+}
+
+[data-stale="on"] .cq-stale {
+  opacity: 1;
+}
+
+/* The rebuild, which is the read model being thrown away and made again. */
+.cq-rebuild-only {
+  opacity: 0;
+}
+
+[data-rebuild="on"] .cq-rebuild-only {
+  opacity: 1;
+}
+
+.cq-rebuild-label {
+  --flash-color: var(--accent);
+
+  font-size: 22px;
+  opacity: 1;
+}
+
+.cq-rebuild-fill {
+  --fill-color: var(--accent);
+}
+
+/* The projection: the route a change takes to the read side, and the changes
+   themselves. Dashed, because nothing on it is inside the write transaction. */
+.cq-projection-path {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 14 14;
+}
+
+.cq-projection-head {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cq-event-shape {
+  fill: var(--accent);
+  stroke: var(--bg);
+  stroke-width: 3;
+}

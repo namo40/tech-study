@@ -1,0 +1,275 @@
+/* ---------------------------------------------------------------- */
+/* Deadlock stage                                                    */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Two transactions, two colours, and one rule about where each colour goes.
+ * T1 is the request blue and T2 the warning amber, and every part of the stage
+ * that belongs to one of them takes its colour from `--lane-color`: the dot on
+ * the lane, the ring it wears while it waits, and the lock slot it fills. That
+ * is what lets the reader answer "who is holding this row" without a legend.
+ */
+.dl-txn--1,
+.dl-gnode--1,
+.dl-req--t1,
+.dl-slot[data-lock="t1"] {
+  --lane-color: var(--request);
+}
+
+.dl-txn--2,
+.dl-gnode--2,
+.dl-req--t2,
+.dl-slot[data-lock="t2"] {
+  --lane-color: var(--state-half);
+}
+
+.dl-req--t1 .scene-req-dot,
+.dl-req--t2 .scene-req-dot {
+  fill: var(--lane-color);
+}
+
+.dl-req--t1 .scene-req-halo,
+.dl-req--t2 .scene-req-halo {
+  stroke: var(--lane-color);
+  stroke-dasharray: 10 10;
+}
+
+/* The version a writer is carrying, on the outer side of its lane. */
+.dl-chip-box {
+  fill: var(--surface-2);
+  stroke: var(--lane-color);
+  stroke-width: 3;
+}
+
+.dl-chip-text {
+  fill: var(--fg);
+  font-size: 22px;
+}
+
+/* The one thing a transaction is doing, written under its name. */
+.dl-act {
+  --flash-color: var(--lane-color);
+
+  font-size: 24px;
+}
+
+.dl-act--commit {
+  --flash-color: var(--state-closed);
+}
+
+.dl-act--conflict {
+  --flash-color: var(--state-open);
+}
+
+.dl-act--wait {
+  --flash-color: var(--fg-soft);
+}
+
+.dl-acts[data-act="lock-a"] .dl-act--lock-a,
+.dl-acts[data-act="lock-b"] .dl-act--lock-b,
+.dl-acts[data-act="wait"] .dl-act--wait,
+.dl-acts[data-act="commit"] .dl-act--commit,
+.dl-acts[data-act="retry"] .dl-act--retry,
+.dl-acts[data-act="read"] .dl-act--read,
+.dl-acts[data-act="write"] .dl-act--write,
+.dl-acts[data-act="conflict"] .dl-act--conflict {
+  opacity: 1;
+}
+
+/* The lock order, which is the whole of the third step's fix. */
+.dl-order {
+  --flash-color: var(--state-closed);
+
+  font-size: 22px;
+}
+
+[data-order="on"] .dl-order {
+  opacity: 1;
+}
+
+/* The wait-for graph. A node fills while its transaction is holding a row, so
+   an edge between two filled nodes is the shape a deadlock has. */
+.dl-waits {
+  font-size: 22px;
+}
+
+.dl-gnode-ring {
+  fill: var(--surface-2);
+  stroke: var(--lane-color);
+  stroke-width: 4;
+}
+
+.dl-gnode-text {
+  fill: var(--fg-soft);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+[data-hold1="1"] .dl-gnode--1 .dl-gnode-ring,
+[data-hold1="2"] .dl-gnode--1 .dl-gnode-ring,
+[data-hold2="1"] .dl-gnode--2 .dl-gnode-ring,
+[data-hold2="2"] .dl-gnode--2 .dl-gnode-ring {
+  fill: var(--lane-color);
+}
+
+[data-hold1="1"] .dl-gnode--1 .dl-gnode-text,
+[data-hold1="2"] .dl-gnode--1 .dl-gnode-text,
+[data-hold2="1"] .dl-gnode--2 .dl-gnode-text,
+[data-hold2="2"] .dl-gnode--2 .dl-gnode-text {
+  fill: var(--bg);
+}
+
+.dl-edge {
+  opacity: 0;
+}
+
+.dl-edge-line {
+  stroke: var(--fg-soft);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.dl-edge-head {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-wait1="on"] .dl-edge--1,
+[data-wait2="on"] .dl-edge--2 {
+  opacity: 1;
+}
+
+/* A cycle is the one state the graph is drawn in a different colour, because it
+   is the one state no amount of waiting gets out of. */
+[data-graph="cycle"] .dl-edge-line,
+[data-graph="cycle"] .dl-edge-head {
+  stroke: var(--state-open);
+}
+
+[data-graph="cycle"] .dl-gnode-ring {
+  stroke: var(--state-open);
+}
+
+.dl-deadlock {
+  --flash-color: var(--state-open);
+
+  font-size: 34px;
+}
+
+[data-deadlock="on"] .dl-deadlock {
+  opacity: 1;
+}
+
+.dl-victim {
+  --flash-color: var(--state-open);
+
+  font-size: 26px;
+}
+
+[data-victim="t1"] .dl-victim--t1,
+[data-victim="t2"] .dl-victim--t2 {
+  opacity: 1;
+}
+
+/* The database. Both rows span the width, so `row A` sitting above `row B` is
+   what makes locking them in one order a move in one direction. */
+.dl-row-box {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.dl-row-label {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.dl-slot-box {
+  fill: var(--surface);
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 8 8;
+}
+
+.dl-slot[data-lock="t1"] .dl-slot-box,
+.dl-slot[data-lock="t2"] .dl-slot-box {
+  fill: var(--lane-color);
+  stroke: var(--lane-color);
+  stroke-dasharray: none;
+}
+
+.dl-x {
+  fill: var(--bg);
+  font-size: 26px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.dl-slot[data-lock="t1"] .dl-x,
+.dl-slot[data-lock="t2"] .dl-x {
+  opacity: 1;
+}
+
+/* The last step holds no lock at all, so the slots are not there to be read. */
+[data-mode="version"] .dl-slot {
+  opacity: 0;
+}
+
+.dl-value-text {
+  fill: var(--fg);
+  font-size: 24px;
+}
+
+[data-row-a="base"] .dl-value-text--base,
+[data-row-a="v7"] .dl-value-text--v7,
+[data-row-a="v8"] .dl-value-text--v8,
+[data-row-a="v9"] .dl-value-text--v9 {
+  opacity: 1;
+}
+
+/* The readouts under the box: what finished, what collided, what ran twice. */
+.dl-commits,
+.dl-deadlocks,
+.dl-retries {
+  fill: var(--fg-soft);
+  font-size: 20px;
+}
+
+.dl-deadlocks {
+  fill: var(--state-open);
+}
+
+[data-deadlocks="0"] .dl-deadlocks--0 {
+  fill: var(--fg-soft);
+}
+
+[data-commits="0"] .dl-commits--0,
+[data-commits="1"] .dl-commits--1,
+[data-commits="2"] .dl-commits--2,
+[data-commits="3"] .dl-commits--3,
+[data-commits="4"] .dl-commits--4,
+[data-commits="5"] .dl-commits--5,
+[data-commits="6"] .dl-commits--6,
+[data-commits="7"] .dl-commits--7,
+[data-commits="8"] .dl-commits--8,
+[data-commits="9"] .dl-commits--9,
+[data-commits="10"] .dl-commits--10,
+[data-commits="11"] .dl-commits--11,
+[data-commits="12"] .dl-commits--12 {
+  opacity: 1;
+}
+
+[data-deadlocks="0"] .dl-deadlocks--0,
+[data-deadlocks="1"] .dl-deadlocks--1 {
+  opacity: 1;
+}
+
+[data-retries="0"] .dl-retries--0,
+[data-retries="1"] .dl-retries--1,
+[data-retries="2"] .dl-retries--2 {
+  opacity: 1;
+}

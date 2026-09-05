@@ -59,6 +59,14 @@ const totalLabel = `0:00 / ${totalMinutes}:${String(totalSeconds).padStart(2, '0
         ))}
       </div>
 
+      {/*
+        The rules for this one stage, inlined so a page carries only the scene
+        it draws. The shared widget classes stay in the linked stylesheet, and
+        this comes after it in document order, so a scene still overrides a
+        widget exactly as it did when every stage lived in one file.
+      */}
+      <style is:inline set:html={asset.css} />
+
       <div class="stage-frame" data-stage set:html={asset.markup} />
 
       <div class="controls">

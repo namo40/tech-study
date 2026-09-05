@@ -1,0 +1,294 @@
+/* ---------------------------------------------------------------- */
+/* Bearer Token stage                                                */
+/* ---------------------------------------------------------------- */
+
+/* The two lanes. The Attacker's is drawn only while there is an Attacker on
+   the other end of it, so the opening diagram is the honest one. */
+.bt-lane {
+  stroke-width: 4;
+  opacity: 0.4;
+}
+
+.bt-lane--attacker {
+  stroke: var(--state-open);
+  stroke-dasharray: 14 12;
+  opacity: 0;
+}
+
+[data-bt-attacker="on"] .bt-lane--attacker {
+  opacity: 0.7;
+}
+
+/* What the Client is asking for, which never changes, and the header that
+   asking carries, which is the whole of the first step. */
+.bt-call-box,
+.bt-hdr-box {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.bt-call-text {
+  fill: var(--fg-soft);
+  font-size: 25px;
+  font-weight: 600;
+}
+
+.scene-counter.bt-hdr-text {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 25px;
+}
+
+.bt-hdr-text--none {
+  fill: var(--state-open);
+}
+
+.bt-hdr-text--fresh {
+  fill: var(--accent);
+}
+
+[data-bt-hdr="token"] .bt-hdr-text--token,
+[data-bt-hdr="fresh"] .bt-hdr-text--fresh,
+[data-bt-hdr="none"] .bt-hdr-text--none {
+  opacity: 1;
+}
+
+[data-bt-hdr="none"] .bt-hdr-box {
+  stroke: var(--state-open);
+  stroke-dasharray: 9 9;
+}
+
+[data-bt-hdr="fresh"] .bt-hdr-box {
+  stroke: var(--accent);
+}
+
+/* The word the Client says when it swaps one token for the next. */
+.bt-rotate {
+  opacity: 0;
+}
+
+.bt-rotate-box {
+  fill: var(--surface-2);
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.bt-rotate-text {
+  fill: var(--accent);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+[data-bt-rotate="on"] .bt-rotate {
+  opacity: 1;
+}
+
+/* How much life is left on the token the Client is holding, drawn only while
+   there is little enough of it left to be worth watching. */
+.scene-counter.bt-ttl {
+  fill: var(--state-half);
+  font-family: var(--font-mono);
+  font-size: 30px;
+}
+
+.bt-ttl--0 {
+  fill: var(--state-open);
+}
+
+[data-bt-ttl="0"] .bt-ttl--0,
+[data-bt-ttl="1"] .bt-ttl--1,
+[data-bt-ttl="2"] .bt-ttl--2,
+[data-bt-ttl="3"] .bt-ttl--3,
+[data-bt-ttl="4"] .bt-ttl--4,
+[data-bt-ttl="5"] .bt-ttl--5,
+[data-bt-ttl="6"] .bt-ttl--6,
+[data-bt-ttl="7"] .bt-ttl--7,
+[data-bt-ttl="8"] .bt-ttl--8,
+[data-bt-ttl="9"] .bt-ttl--9,
+[data-bt-ttl="10"] .bt-ttl--10,
+[data-bt-ttl="11"] .bt-ttl--11,
+[data-bt-ttl="12"] .bt-ttl--12 {
+  opacity: 1;
+}
+
+/* The gate row. Each plate says its own name until it has an answer, and then
+   says the same name with a mark after it, so the verdict is never colour on
+   its own. The fourth gate is not drawn until the fourth step adds it. */
+.bt-gate-box {
+  fill: var(--surface-2);
+}
+
+.scene-counter.bt-gate-text {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 32px;
+}
+
+.bt-gate-text--ok {
+  fill: var(--state-closed);
+}
+
+.bt-gate-text--fail {
+  fill: var(--state-open);
+}
+
+[data-bt-gate="off"] .bt-gate-text--off,
+[data-bt-gate="ok"] .bt-gate-text--ok,
+[data-bt-gate="fail"] .bt-gate-text--fail {
+  opacity: 1;
+}
+
+[data-bt-gate="ok"] .bt-gate-box {
+  stroke: var(--state-closed);
+}
+
+[data-bt-gate="fail"] .bt-gate-box {
+  stroke: var(--state-open);
+}
+
+.bt-gate--jti {
+  opacity: 0;
+}
+
+[data-bt-jti="on"] .bt-gate--jti {
+  opacity: 1;
+}
+
+/* The two answers the API has given, which are the only score the scene keeps. */
+.scene-counter.bt-ok,
+.scene-counter.bt-fail {
+  font-family: var(--font-mono);
+  font-size: 34px;
+}
+
+.scene-counter.bt-ok {
+  fill: var(--state-closed);
+}
+
+.scene-counter.bt-fail {
+  fill: var(--state-open);
+}
+
+[data-bt-ok="0"] .bt-ok--0,
+[data-bt-ok="1"] .bt-ok--1,
+[data-bt-ok="2"] .bt-ok--2,
+[data-bt-ok="3"] .bt-ok--3,
+[data-bt-ok="4"] .bt-ok--4,
+[data-bt-ok="5"] .bt-ok--5,
+[data-bt-ok="6"] .bt-ok--6,
+[data-bt-ok="7"] .bt-ok--7,
+[data-bt-ok="8"] .bt-ok--8,
+[data-bt-fail="0"] .bt-fail--0,
+[data-bt-fail="1"] .bt-fail--1,
+[data-bt-fail="2"] .bt-fail--2,
+[data-bt-fail="3"] .bt-fail--3,
+[data-bt-fail="4"] .bt-fail--4 {
+  opacity: 1;
+}
+
+/* The token, taken apart. The three segments are always drawn, because a JWT
+   is always three parts; what the second step adds is which one is being read
+   and what turns out to be inside the middle one. */
+[data-bt-panel="on"] .bt-panel-box {
+  stroke: var(--accent);
+}
+
+.bt-seg-box {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.bt-seg-text {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+[data-bt-seg="header"] .bt-seg--header .bt-seg-box,
+[data-bt-seg="payload"] .bt-seg--payload .bt-seg-box,
+[data-bt-seg="signature"] .bt-seg--signature .bt-seg-box,
+[data-bt-seg="all"] .bt-seg-box {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+[data-bt-seg="header"] .bt-seg--header .bt-seg-text,
+[data-bt-seg="payload"] .bt-seg--payload .bt-seg-text,
+[data-bt-seg="signature"] .bt-seg--signature .bt-seg-text,
+[data-bt-seg="all"] .bt-seg-text {
+  fill: var(--bg);
+}
+
+.bt-claim {
+  opacity: 0;
+}
+
+.bt-claim-box {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+  stroke-dasharray: 8 7;
+}
+
+.bt-claim-text {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+[data-bt-claims="on"] .bt-claim {
+  opacity: 1;
+}
+
+/* The sentence the second step is for, and the stamp the fourth one adds. */
+.bt-b64 {
+  fill: var(--state-half);
+  font-size: 24px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-bt-b64="on"] .bt-b64 {
+  opacity: 1;
+}
+
+.bt-revoked {
+  fill: var(--state-open);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  opacity: 0;
+}
+
+[data-bt-revoked="on"] .bt-revoked {
+  opacity: 1;
+}
+
+/* The Attacker, which holds nothing the Client does not hold. */
+.bt-attacker {
+  opacity: 0;
+}
+
+.bt-attacker-box {
+  stroke: var(--state-open);
+}
+
+.bt-att-chip-box {
+  fill: var(--surface-2);
+  stroke: var(--state-open);
+  stroke-width: 3;
+}
+
+.bt-att-chip-text {
+  fill: var(--fg);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+[data-bt-attacker="on"] .bt-attacker {
+  opacity: 1;
+}

@@ -1,0 +1,499 @@
+/* ---------------------------------------------------------------- */
+/* Repository stage                                                  */
+/* ---------------------------------------------------------------- */
+
+/*
+ * The argument on this stage is about what the domain is allowed to see, so it
+ * is made with shape and texture before it is made with colour.
+ *
+ * The service is one capsule drawn three ways: a plain outline with nothing in
+ * it, a dashed one carrying query fragments, and a heavier dashed one whose
+ * fragments have turned into warnings. Growth is the signal — one chip, then
+ * three, then three drawn as a problem — and the capsule only takes the colour
+ * of a warning at the size where every copy has drifted from every other and
+ * nothing can be tested without a database.
+ *
+ * The door is the same plate twice: a hollow dashed plate with nothing written
+ * on it, which is a repository nobody has declared yet, and a filled plate
+ * carrying two words, which is the whole interface the domain ever sees. Behind
+ * it the implementation is a third plate with three states that differ by what
+ * is drawn on them rather than by hue: nothing at all, three engine bars, or
+ * six dots that are a set held in memory. That is what lets the swap read in
+ * either theme, and it is why the domain side of the picture does not move when
+ * it happens.
+ *
+ * The bench is two slots and a verdict. An empty slot is a hollow dashed plate;
+ * an entity card is a filled plate with an id on it and two field bars under
+ * the id; a value chip is a pill with content and nothing else, because a value
+ * has no identity to draw. A replaced value is two pills and a chevron — the
+ * discarded one hollow and muted above, the new one filled below — so
+ * replacement is a shape rather than a shade. The verdict is a word plus a
+ * glyph, a check for `same` and a cross for `not same`, and neither can be
+ * mistaken for the blank plate that means nothing has been decided.
+ *
+ * The colour argument is small and it is the same everywhere. Blue is the
+ * domain's own traffic: a call going down, the engine's access to the Store.
+ * Green is an answer that came back and the rows that are really there. Violet
+ * is a write, which is the one kind of call that changes the Store. Amber is
+ * persistence loose in the domain, and red is that at its worst. Nothing is
+ * told apart by colour alone anywhere on the stage.
+ *
+ * Every value the reader can read is a stack of elements on one spot with the
+ * base rule hiding all of them, so nothing interpolates and scrubbing backwards
+ * is exact.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+/* The upper lane is walked in both directions, so it is the heavier of the
+   two; the lower one is the implementation's own business. */
+.repo-lane--call {
+  stroke-width: 6;
+}
+
+.repo-lane--store {
+  stroke-dasharray: 16 12;
+}
+
+/* Before the door exists there is nothing to call and no engine to walk. */
+[data-repo-mode="leaking"] .repo-lane--call,
+[data-repo-impl="none"] .repo-lane--store {
+  opacity: 0.35;
+}
+
+/* The fake answers out of its own set: the lower lane rests, visibly. */
+[data-repo-impl="memory"] .repo-lane--store {
+  opacity: 0.3;
+  stroke-dasharray: 6 18;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+.repo-req--find .scene-req-dot {
+  fill: var(--request);
+}
+
+/* An answer on its way back up the same column the call came down. */
+.repo-req--reply .scene-req-dot {
+  fill: var(--state-closed);
+}
+
+/* A write, in the one colour no read on this stage is drawn in. */
+.repo-req--add .scene-req-dot {
+  fill: var(--cpu);
+}
+
+/* The implementation's own trip to the Store. It is hollow and dashed because
+   it is not the domain's call: the domain never knows it happened. */
+.repo-req--store .scene-req-dot {
+  fill: none;
+  stroke: var(--request);
+  stroke-width: 5;
+  stroke-dasharray: 6 6;
+}
+
+/* --- the Domain band ---------------------------------------------------- */
+
+/* The service, at whichever of its three conditions the scene has reached. */
+.repo-capsule {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+  opacity: 0;
+}
+
+[data-repo-leak="none"] .repo-capsule--clean,
+[data-repo-leak="1"] .repo-capsule--leaking,
+[data-repo-leak="3"] .repo-capsule--leaking,
+[data-repo-leak="flood"] .repo-capsule--flooded {
+  opacity: 1;
+}
+
+.repo-capsule--leaking {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: 16 10;
+}
+
+.repo-capsule--flooded {
+  fill: var(--state-open);
+  fill-opacity: 0.14;
+  stroke: var(--state-open);
+  stroke-width: 7;
+  stroke-dasharray: 16 10;
+}
+
+.repo-service {
+  fill: var(--fg);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+[data-repo-leak="flood"] .repo-service {
+  fill: var(--state-open);
+}
+
+/* One chip per query somebody copied into the service. They only ever appear
+   while persistence is loose in the domain. */
+.repo-frag {
+  opacity: 0;
+}
+
+[data-repo-leak="1"] .repo-frag--1,
+[data-repo-leak="3"] .repo-frag--1,
+[data-repo-leak="3"] .repo-frag--2,
+[data-repo-leak="3"] .repo-frag--3,
+[data-repo-leak="flood"] .repo-frag--1,
+[data-repo-leak="flood"] .repo-frag--2,
+[data-repo-leak="flood"] .repo-frag--3 {
+  opacity: 1;
+}
+
+.repo-frag-bg {
+  fill: var(--surface);
+  stroke: var(--state-half);
+  stroke-width: 3;
+}
+
+.repo-frag-bar {
+  fill: var(--state-half);
+}
+
+[data-repo-leak="flood"] .repo-frag-bg {
+  stroke: var(--state-open);
+  stroke-width: 4;
+}
+
+[data-repo-leak="flood"] .repo-frag-bar {
+  fill: var(--state-open);
+}
+
+/* --- the door ----------------------------------------------------------- */
+
+.repo-face {
+  opacity: 0;
+}
+
+[data-repo-door="off"] .repo-face--closed,
+[data-repo-door="on"] .repo-face--open {
+  opacity: 1;
+}
+
+/* A repository nobody has declared: hollow, thin, dashed, not a word on it. */
+.repo-face-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 12 10;
+}
+
+.repo-face-bg--open {
+  fill: var(--request);
+  fill-opacity: 0.12;
+  stroke: var(--request);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+/* The two words the domain is ever allowed to say. */
+.repo-op {
+  fill: var(--fg);
+  font-size: 34px;
+  font-weight: 700;
+}
+
+/* --- what is behind the door -------------------------------------------- */
+
+.repo-impl {
+  opacity: 0;
+}
+
+[data-repo-impl="none"] .repo-impl--none,
+[data-repo-impl="sql"] .repo-impl--sql,
+[data-repo-impl="memory"] .repo-impl--memory {
+  opacity: 1;
+}
+
+.repo-impl-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 12 10;
+}
+
+/* The engine: a filled plate carrying the rows it knows how to write. */
+.repo-impl-bg--sql {
+  fill: var(--surface-2);
+  stroke: var(--fg-soft);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+.repo-engine-bar {
+  fill: var(--fg-soft);
+}
+
+/* The fake: a hollow plate holding a set, which is six dots and no engine. */
+.repo-impl-bg--memory {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-width: 6;
+  stroke-dasharray: 20 12;
+}
+
+.repo-memory-dot {
+  fill: var(--cpu);
+}
+
+/* The badge that marks an exchange, on its own plate so it is legible over
+   whichever implementation happens to be underneath. */
+.repo-swap {
+  opacity: 0;
+}
+
+[data-repo-swap="on"] .repo-swap {
+  opacity: 1;
+}
+
+.repo-swap-bg {
+  fill: var(--surface);
+  stroke: var(--cpu);
+  stroke-width: 4;
+}
+
+.repo-swap-text {
+  fill: var(--cpu);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+/* --- the equality bench ------------------------------------------------- */
+
+.repo-card {
+  opacity: 0;
+}
+
+[data-repo-left="empty"] .repo-card--left-empty,
+[data-repo-left="e7a"] .repo-card--left-e7a,
+[data-repo-left="e7c"] .repo-card--left-e7c,
+[data-repo-left="v10"] .repo-card--left-v10,
+[data-repo-right="empty"] .repo-card--right-empty,
+[data-repo-right="e7b"] .repo-card--right-e7b,
+[data-repo-right="e9c"] .repo-card--right-e9c,
+[data-repo-right="v10"] .repo-card--right-v10,
+[data-repo-right="v10n"] .repo-card--right-v10n {
+  opacity: 1;
+}
+
+/* A slot waiting for a card, which must not read like a card with nothing
+   written on it. */
+.repo-slot-empty {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 12 10;
+}
+
+.repo-card-bg {
+  fill: var(--surface-2);
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+}
+
+/* The one thing an entity is: its identity. */
+.repo-card-id {
+  fill: var(--fg);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+/* Today's state, drawn as bars because the fields are never the point. */
+.repo-card-bar {
+  fill: var(--fg-soft);
+  opacity: 0.75;
+}
+
+/* A value: content on a pill, no id line and no field bars, because there is
+   nothing about it that is not its content. */
+.repo-pill {
+  fill: var(--state-closed);
+  fill-opacity: 0.16;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+}
+
+.repo-pill-text {
+  fill: var(--fg);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+/* The chip somebody tried to change, and the one they got instead. */
+.repo-pill--old {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.repo-pill-text--old {
+  fill: var(--muted);
+  font-size: 24px;
+}
+
+.repo-pill--new {
+  stroke-width: 5;
+}
+
+.repo-pill-text--new {
+  font-size: 24px;
+}
+
+.repo-chevron {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* --- the verdict -------------------------------------------------------- */
+
+.repo-verdict {
+  opacity: 0;
+}
+
+[data-repo-verdict="none"] .repo-verdict--none,
+[data-repo-verdict="same"] .repo-verdict--same,
+[data-repo-verdict="not-same"] .repo-verdict--not-same {
+  opacity: 1;
+}
+
+/* Nothing has been decided: a plate with neither a word nor a glyph on it. */
+rect.repo-verdict--none {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 12 10;
+}
+
+.repo-verdict-lamp {
+  stroke: none;
+}
+
+.repo-verdict-lamp--same {
+  fill: var(--state-closed);
+}
+
+.repo-verdict-lamp--not {
+  fill: var(--state-open);
+}
+
+.repo-verdict-glyph {
+  fill: none;
+  stroke: var(--bg);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.repo-verdict-text {
+  fill: var(--state-closed);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.repo-verdict-text--not {
+  fill: var(--state-open);
+  font-size: 28px;
+}
+
+/* --- the Store ---------------------------------------------------------- */
+
+/* One cell per row the Store holds. A stored row is filled and an empty one is
+   a hollow outline, so the count is legible without reading the number. */
+.repo-cell {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+[data-repo-rows="3"] .repo-cell--1,
+[data-repo-rows="3"] .repo-cell--2,
+[data-repo-rows="3"] .repo-cell--3,
+[data-repo-rows="4"] .repo-cell--1,
+[data-repo-rows="4"] .repo-cell--2,
+[data-repo-rows="4"] .repo-cell--3,
+[data-repo-rows="4"] .repo-cell--4,
+[data-repo-rows="5"] .repo-cell--1,
+[data-repo-rows="5"] .repo-cell--2,
+[data-repo-rows="5"] .repo-cell--3,
+[data-repo-rows="5"] .repo-cell--4,
+[data-repo-rows="5"] .repo-cell--5 {
+  fill: var(--state-closed);
+  fill-opacity: 0.28;
+  stroke: var(--state-closed);
+}
+
+/* How many rows are really there. It only ever moves because an engine put one
+   there, and it never goes backwards. */
+.repo-rows {
+  font-size: 32px;
+  fill: var(--state-closed);
+}
+
+[data-repo-rows="3"] .repo-rows--3,
+[data-repo-rows="4"] .repo-rows--4,
+[data-repo-rows="5"] .repo-rows--5 {
+  opacity: 1;
+}
+
+/* --- the world before the door ------------------------------------------ */
+
+/* While persistence is loose in the domain the Repository band and the Store
+   are the outlines of something nobody has committed to yet. */
+[data-repo-mode="leaking"] .repo-band > .scene-box,
+[data-repo-mode="leaking"] .repo-store > .scene-box {
+  stroke: var(--muted);
+  stroke-dasharray: 12 14;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: a domain with nothing of the database in it, one door, and
+   a store that is only ever reached through it. */
+[data-repo-settled="on"] .repo-domain > .scene-box,
+[data-repo-settled="on"] .repo-store > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 6;
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The four things the captions stop on, each drawn on the band it is about. */
+[data-repo-mark="behind"] .repo-band > .scene-box {
+  stroke: var(--state-half);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+[data-repo-mark="testable"] .repo-impl-bg--sql,
+[data-repo-mark="testable"] .repo-impl-bg--memory {
+  stroke: var(--cpu);
+  stroke-width: 7;
+}
+
+[data-repo-mark="identity"] .repo-card-id {
+  fill: var(--request);
+}
+
+[data-repo-mark="identity"] .repo-band > .scene-box {
+  stroke: var(--request);
+  stroke-width: 6;
+}
+
+[data-repo-mark="no-repo"] .repo-band > .scene-box {
+  stroke: var(--cpu);
+  stroke-width: 6;
+}

@@ -1,0 +1,684 @@
+/* ---------------------------------------------------------------- */
+/* Prepared Statement stage                                          */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One decision, drawn twice: whether the value is inside the sentence or
+ * beside it. Every rule below reads one of the four things that follow from
+ * that — a value glued into the text and becoming a clause of it, a value sent
+ * as data and becoming a name to compare, a plan cache keyed by the text, and
+ * a cache that never warms because no two texts are alike.
+ *
+ * The colour argument is small. Purple is the parameterized world everywhere
+ * it appears: the `params` plate, the statement that carries a placeholder, the
+ * hole itself, the skeleton on its way down and the parameter riding beside it.
+ * Amber is cost and warning: the `parse` and `plan` lamps while a text is being
+ * compiled, a plan just written into a slot, the concatenated mode before
+ * anything has gone wrong, and whatever the scene is holding up. Red is the
+ * input wearing quotes and everything it causes. Green is a plan handed back
+ * without being compiled, an answer that matched nobody, and the closed
+ * boundary. Blue is ordinary: a query nobody has to worry about, one row coming
+ * back, a plan sitting warm. Grey, hollow and dashed are absence — an input
+ * slot with nothing in it, a cache slot that has never held anything, a lamp
+ * that is not lit, and the replayed world of the third step, which is a
+ * hypothetical rather than a regression.
+ *
+ * The four states a cache slot can be in are drawn four ways rather than four
+ * shades, because three of them mean completely different things and would
+ * otherwise be told apart by hue alone. An empty slot is a dashed hollow plate
+ * with nothing inside it. A slot that was just filled is solid amber with the
+ * plan bar showing and a dashed ring around it. A slot holding a plan quietly
+ * is solid blue with the bar and no ring. A slot handing its plan back is solid
+ * green with the bar and a solid ring. Fill, stroke width, ring and the bar all
+ * differ, so all four survive both themes.
+ *
+ * Every value the reader can read is a stack of text elements on one spot,
+ * hidden by a base rule and revealed one at a time by the current `data-*`, so
+ * nothing interpolates and scrubbing backwards is exact in both themes.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+/* The corridor a skeleton goes down says which world it belongs to. */
+[data-pst-mode="params"] .pst-lane--query {
+  stroke: var(--cpu);
+  opacity: 0.6;
+}
+
+/* Everything the table has, on its way out. */
+[data-pst-rows="all"] .pst-lane--result {
+  stroke: var(--state-open);
+  opacity: 0.7;
+}
+
+/* Nothing is on its way anywhere on the settled frame. */
+[data-pst-settled="on"] .pst-lane {
+  stroke: var(--border);
+}
+
+/* --- the App ------------------------------------------------------------ */
+
+/*
+ * The mode the query is being built in. Concatenation is drawn as a dashed
+ * amber plate, because it is not broken yet and is about to be; parameters are
+ * a solid purple one, because the decision has been made.
+ */
+.pst-mode-bg {
+  opacity: 0;
+}
+
+.pst-mode-bg--concat {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 3;
+  stroke-dasharray: 12 10;
+}
+
+.pst-mode-bg--params {
+  fill: var(--surface-2);
+  stroke: var(--cpu);
+  stroke-width: 3;
+}
+
+[data-pst-mode="concat"] .pst-mode-bg--concat,
+[data-pst-mode="params"] .pst-mode-bg--params {
+  opacity: 1;
+}
+
+.pst-mode-text {
+  font-size: 38px;
+  letter-spacing: 1px;
+}
+
+.pst-mode-text--concat {
+  fill: var(--state-half);
+}
+
+.pst-mode-text--params {
+  fill: var(--cpu);
+}
+
+[data-pst-mode="concat"] .pst-mode-text--concat,
+[data-pst-mode="params"] .pst-mode-text--params {
+  opacity: 1;
+}
+
+/*
+ * The statement itself. In concatenation it is one continuous piece with the
+ * bridge fusing the input onto its end; in parameters it stops at a placeholder
+ * hole and the input is a separate plate with a gap between them. The gap is
+ * the boundary, and it is drawn as a gap on purpose.
+ */
+.pst-stmt {
+  fill: var(--surface-2);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+[data-pst-mode="params"] .pst-stmt {
+  stroke: var(--cpu);
+}
+
+.pst-hole {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-width: 3;
+  stroke-dasharray: 8 7;
+  opacity: 0;
+}
+
+[data-pst-mode="params"] .pst-hole {
+  opacity: 1;
+}
+
+.pst-bridge {
+  fill: var(--fg-soft);
+  opacity: 0;
+}
+
+[data-pst-mode="concat"] .pst-bridge {
+  opacity: 1;
+}
+
+/* The input, and the plate it is carried on. An empty slot is dashed and
+   grey, an ordinary value is blue, and one wearing quotes is red before it
+   has done anything at all. */
+.pst-chip-bg {
+  opacity: 0;
+}
+
+.pst-chip-bg--idle {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 12 10;
+}
+
+.pst-chip-bg--input {
+  fill: var(--surface-2);
+  stroke: var(--request);
+  stroke-width: 3;
+}
+
+.pst-chip-bg--injected {
+  fill: var(--surface-2);
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+[data-pst-chip="idle"] .pst-chip-bg--idle,
+[data-pst-chip="input"] .pst-chip-bg--input,
+[data-pst-chip="injected"] .pst-chip-bg--injected {
+  opacity: 1;
+}
+
+.pst-chip-text {
+  font-size: 34px;
+  letter-spacing: 1px;
+}
+
+.pst-chip-text--idle {
+  fill: var(--muted);
+}
+
+.pst-chip-text--input {
+  fill: var(--fg);
+}
+
+.pst-chip-text--injected {
+  fill: var(--state-open);
+}
+
+[data-pst-chip="idle"] .pst-chip-text--idle,
+[data-pst-chip="input"] .pst-chip-text--input,
+[data-pst-chip="injected"] .pst-chip-text--injected {
+  opacity: 1;
+}
+
+/*
+ * The whole of the first step in two rules. Concatenated, the quoted input is
+ * welded onto the statement and the statement turns red with it, because it is
+ * now one sentence and the sentence has changed. Parameterized, the same input
+ * is just as red and the statement is not, because nothing was welded.
+ */
+[data-pst-mode="concat"][data-pst-chip="injected"] .pst-bridge {
+  fill: var(--state-open);
+}
+
+[data-pst-mode="concat"][data-pst-chip="injected"] .pst-stmt {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+/* --- the replayed world ------------------------------------------------- */
+
+/*
+ * The third step goes back to concatenation to price it, which is a
+ * hypothetical rather than a regression, so the App is drawn as a ghost: the
+ * frame, the plate, the word and the statement all fall back to grey and dash.
+ * That has to stay separate from the first step's amber, because one is what
+ * people used to do and the other is what this scene would be doing now.
+ */
+[data-pst-ghost="on"] .pst-app > .scene-box {
+  stroke: var(--muted);
+  stroke-dasharray: 18 12;
+}
+
+[data-pst-ghost="on"] .pst-mode-bg--concat {
+  stroke: var(--muted);
+  stroke-dasharray: 6 8;
+}
+
+[data-pst-ghost="on"] .pst-mode-text--concat {
+  fill: var(--muted);
+}
+
+[data-pst-ghost="on"] .pst-stmt {
+  stroke: var(--muted);
+  stroke-dasharray: 10 8;
+}
+
+[data-pst-ghost="on"] .pst-bridge {
+  fill: var(--muted);
+}
+
+/* --- the Database ------------------------------------------------------- */
+
+/*
+ * The two lamps. They are lit only while a text nobody has seen is being turned
+ * into a plan, which is the entire cost the third step is about: a hit lights
+ * neither of them, and the reader can see that the fast path is fast because it
+ * skips work rather than because it does the same work quicker.
+ */
+.pst-lamp {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 6 6;
+}
+
+.pst-lamp-ring {
+  fill: none;
+  stroke-width: 4;
+  opacity: 0;
+}
+
+.pst-lamp-text {
+  fill: var(--fg-soft);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+[data-pst-parse="on"] .pst-lamp--parse,
+[data-pst-plan="on"] .pst-lamp--plan {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+  stroke-dasharray: none;
+}
+
+[data-pst-parse="on"] .pst-lamp-ring--parse,
+[data-pst-plan="on"] .pst-lamp-ring--plan {
+  stroke: var(--state-half);
+  stroke-dasharray: 8 10;
+  opacity: 0.9;
+}
+
+[data-pst-parse="on"] .pst-lamp-text--parse,
+[data-pst-plan="on"] .pst-lamp-text--plan {
+  fill: var(--state-half);
+}
+
+.pst-cache-text {
+  fill: var(--fg-soft);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/*
+ * One plan cache slot, four ways. Never held anything: a dashed hollow plate
+ * with no plan bar in it. Just compiled into: amber, solid, the bar showing, a
+ * dashed ring around it. Holding a plan quietly: blue, solid, the bar, no ring.
+ * Handing that plan back: green, solid, the bar, a solid ring. The three that
+ * mean different things differ in fill, in stroke width and in whether there is
+ * a bar or a ring, so none of them depends on hue to be told apart.
+ */
+.pst-slot-box {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 14 10;
+}
+
+.pst-slot-plan {
+  fill: var(--muted);
+  opacity: 0;
+}
+
+.pst-slot-ring {
+  fill: none;
+  stroke-width: 4;
+  opacity: 0;
+}
+
+[data-pst-slot="stored"] .pst-slot-box {
+  fill: var(--state-half);
+  fill-opacity: 0.2;
+  stroke: var(--state-half);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+[data-pst-slot="stored"] .pst-slot-plan {
+  fill: var(--state-half);
+  opacity: 1;
+}
+
+[data-pst-slot="stored"] .pst-slot-ring {
+  stroke: var(--state-half);
+  stroke-dasharray: 10 8;
+  opacity: 0.9;
+}
+
+[data-pst-slot="warm"] .pst-slot-box {
+  fill: var(--request);
+  fill-opacity: 0.18;
+  stroke: var(--request);
+  stroke-width: 3;
+  stroke-dasharray: none;
+}
+
+[data-pst-slot="warm"] .pst-slot-plan {
+  fill: var(--request);
+  opacity: 1;
+}
+
+[data-pst-slot="hit"] .pst-slot-box {
+  fill: var(--state-closed);
+  fill-opacity: 0.26;
+  stroke: var(--state-closed);
+  stroke-width: 6;
+  stroke-dasharray: none;
+}
+
+[data-pst-slot="hit"] .pst-slot-plan {
+  fill: var(--state-closed);
+  opacity: 1;
+}
+
+[data-pst-slot="hit"] .pst-slot-ring {
+  stroke: var(--state-closed);
+  stroke-dasharray: none;
+  opacity: 1;
+}
+
+/* The two numbers the third step is an argument about. Both read grey until
+   they have something to say. */
+.pst-hit {
+  fill: var(--state-closed);
+  font-size: 36px;
+}
+
+.pst-miss {
+  fill: var(--state-half);
+  font-size: 36px;
+}
+
+.pst-hit--0,
+.pst-miss--0 {
+  fill: var(--muted);
+}
+
+[data-pst-hit="0"] .pst-hit--0,
+[data-pst-hit="1"] .pst-hit--1,
+[data-pst-hit="2"] .pst-hit--2,
+[data-pst-hit="3"] .pst-hit--3,
+[data-pst-hit="4"] .pst-hit--4,
+[data-pst-hit="5"] .pst-hit--5,
+[data-pst-hit="6"] .pst-hit--6,
+[data-pst-hit="7"] .pst-hit--7,
+[data-pst-hit="8"] .pst-hit--8,
+[data-pst-hit="9"] .pst-hit--9,
+[data-pst-miss="0"] .pst-miss--0,
+[data-pst-miss="1"] .pst-miss--1,
+[data-pst-miss="2"] .pst-miss--2,
+[data-pst-miss="3"] .pst-miss--3,
+[data-pst-miss="4"] .pst-miss--4,
+[data-pst-miss="5"] .pst-miss--5,
+[data-pst-miss="6"] .pst-miss--6,
+[data-pst-miss="7"] .pst-miss--7,
+[data-pst-miss="8"] .pst-miss--8 {
+  opacity: 1;
+}
+
+/* --- the Results -------------------------------------------------------- */
+
+/*
+ * The strip is the answer rather than a picture of it. Nothing has been asked
+ * yet: eight dashed hollow cells. One row came back: the first cell filled and
+ * the rest still hollow. Nobody matched: eight cells outlined in the colour of
+ * a closed boundary, which is a real answer and must not read like the strip
+ * nobody has answered into. Everything came back: eight solid red cells.
+ */
+.pst-cell {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 6 6;
+}
+
+[data-pst-rows="zero"] .pst-cell {
+  stroke: var(--state-closed);
+  stroke-dasharray: none;
+  opacity: 0.6;
+}
+
+[data-pst-rows="one"] .pst-cell--1 {
+  fill: var(--request);
+  stroke: var(--request);
+  stroke-dasharray: none;
+}
+
+[data-pst-rows="all"] .pst-cell {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+  stroke-dasharray: none;
+}
+
+.pst-ok {
+  fill: var(--state-closed);
+  font-size: 36px;
+}
+
+.pst-ok--0 {
+  fill: var(--muted);
+}
+
+[data-pst-ok="0"] .pst-ok--0,
+[data-pst-ok="1"] .pst-ok--1,
+[data-pst-ok="2"] .pst-ok--2,
+[data-pst-ok="3"] .pst-ok--3,
+[data-pst-ok="4"] .pst-ok--4,
+[data-pst-ok="5"] .pst-ok--5,
+[data-pst-ok="6"] .pst-ok--6,
+[data-pst-ok="7"] .pst-ok--7,
+[data-pst-ok="8"] .pst-ok--8,
+[data-pst-ok="9"] .pst-ok--9,
+[data-pst-ok="10"] .pst-ok--10,
+[data-pst-ok="11"] .pst-ok--11,
+[data-pst-ok="12"] .pst-ok--12,
+[data-pst-ok="13"] .pst-ok--13,
+[data-pst-ok="14"] .pst-ok--14,
+[data-pst-ok="15"] .pst-ok--15,
+[data-pst-ok="16"] .pst-ok--16 {
+  opacity: 1;
+}
+
+/*
+ * The leak readout, three ways. Nothing has crossed the boundary: a dashed grey
+ * plate with the word quiet inside it. The table walked out: a red plate and a
+ * red word. The same input arrived and matched nobody: a green plate with the
+ * word struck through, which is a different thing from never having leaked and
+ * says so without relying on colour.
+ */
+.pst-leak-bg {
+  opacity: 0;
+}
+
+.pst-leak-bg--off {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 12 10;
+}
+
+.pst-leak-bg--on {
+  fill: var(--state-open);
+  fill-opacity: 0.2;
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+.pst-leak-bg--sealed {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+}
+
+[data-pst-leak="off"] .pst-leak-bg--off,
+[data-pst-leak="on"] .pst-leak-bg--on,
+[data-pst-leak="sealed"] .pst-leak-bg--sealed {
+  opacity: 1;
+}
+
+.pst-leak-text {
+  font-size: 38px;
+  letter-spacing: 2px;
+}
+
+.pst-leak-text--off {
+  fill: var(--muted);
+}
+
+.pst-leak-text--on {
+  fill: var(--state-open);
+}
+
+.pst-leak-text--sealed {
+  fill: var(--state-closed);
+}
+
+[data-pst-leak="off"] .pst-leak-text--off,
+[data-pst-leak="on"] .pst-leak-text--on,
+[data-pst-leak="sealed"] .pst-leak-text--sealed {
+  opacity: 1;
+}
+
+.pst-leak-bar {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+[data-pst-leak="sealed"] .pst-leak-bar {
+  opacity: 1;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/*
+ * A traveller is drawn as what it is carrying. A concatenated query is one
+ * piece in the colour of text, because the value is the text now; the same
+ * query built from a quoted input is red for the same reason. A parameterized
+ * query is the skeleton, and its value is a separate plate riding beside it:
+ * purple for an ordinary one and red for the attack string, which is the point.
+ * The dangerous thing is still dangerous and is simply no longer part of the
+ * sentence.
+ */
+.pst-carry--concat .scene-req-dot {
+  fill: var(--fg-soft);
+  stroke: var(--bg);
+  stroke-width: 4;
+}
+
+.pst-carry--injected .scene-req-dot {
+  fill: var(--state-open);
+  stroke: var(--bg);
+  stroke-width: 5;
+}
+
+.pst-carry--params .scene-req-dot,
+.pst-carry--guarded .scene-req-dot {
+  fill: var(--cpu);
+  stroke: var(--bg);
+  stroke-width: 4;
+}
+
+.pst-val {
+  fill: var(--surface-2);
+  stroke: var(--cpu);
+  stroke-width: 4;
+}
+
+.pst-carry--guarded .pst-val {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+[data-pst-ghost="on"] .pst-carry--concat .scene-req-dot {
+  fill: var(--muted);
+}
+
+/* What comes back: one row, nobody, or everything there was. */
+.pst-carry--rows .scene-req-dot {
+  fill: var(--request);
+}
+
+.pst-carry--zero .scene-req-dot {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+.pst-carry--leak .scene-req-dot {
+  fill: var(--state-open);
+  stroke: var(--bg);
+  stroke-width: 6;
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The database did nothing wrong: it ran the sentence it was handed, and the
+   sentence and the thing that ran it are held up together. */
+[data-pst-mark="handed"] .pst-db > .scene-box,
+[data-pst-mark="handed"] .pst-stmt {
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+/* The hole is the placeholder, and the placeholder is the whole difference. */
+[data-pst-mark="hole"] .pst-hole {
+  stroke: var(--state-half);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+/* Nothing to escape and nothing to sanitize: two pieces, and a gap. */
+[data-pst-mark="structural"] .pst-stmt,
+[data-pst-mark="structural"] .pst-chip-bg {
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+[data-pst-mark="structural"] .pst-hole {
+  stroke: var(--state-half);
+  stroke-dasharray: none;
+}
+
+/* Every value its own text, so the cache holds nothing worth holding. */
+[data-pst-mark="churn"] .pst-slot-box {
+  stroke: var(--state-open);
+}
+
+[data-pst-mark="churn"] .pst-miss {
+  fill: var(--state-open);
+}
+
+/* Keep the text stable and the values in parameters, which is the only
+   discipline the pattern actually asks for. */
+[data-pst-mark="discipline"] .pst-mode-bg--params {
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+[data-pst-mark="discipline"] .pst-mode-text--params {
+  fill: var(--state-half);
+}
+
+[data-pst-mark="discipline"] .pst-slot-ring {
+  stroke: var(--state-half);
+  stroke-dasharray: 10 8;
+  opacity: 0.85;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* One skeleton, one plan, a cache that stayed warm, and a boundary that closed
+   as a side effect of the same decision. */
+[data-pst-settled="on"] .pst-app > .scene-box {
+  stroke: var(--cpu);
+}
+
+[data-pst-settled="on"] .pst-results > .scene-box {
+  stroke: var(--state-closed);
+}
+
+[data-pst-settled="on"] .pst-leak-bg--sealed {
+  stroke-width: 5;
+}
+
+[data-pst-settled="on"] .pst-slot-box {
+  stroke-width: 4;
+}

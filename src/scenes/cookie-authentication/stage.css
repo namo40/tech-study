@@ -1,0 +1,354 @@
+/* ---------------------------------------------------------------- */
+/* Cookie Authentication stage                                       */
+/* ---------------------------------------------------------------- */
+
+/* The two lanes. The second is drawn only once there is a second tab at the
+   top of it, so the opening diagram is the honest one. */
+.ck-lane {
+  stroke-width: 4;
+  opacity: 0.4;
+}
+
+.ck-lane--evil {
+  stroke: var(--state-open);
+  stroke-dasharray: 14 12;
+  opacity: 0;
+}
+
+[data-ck-evil="idle"] .ck-lane--evil,
+[data-ck-evil="post"] .ck-lane--evil,
+[data-ck-evil="get"] .ck-lane--evil {
+  opacity: 0.7;
+}
+
+/* The Browser and the Form name themselves smaller than a client box usually
+   does, because both have a full row of plates to clear underneath. */
+.ck-title {
+  font-size: 36px;
+}
+
+/* The two tabs. Each says its own name while it is quiet and its name plus the
+   method while it has a request out. */
+.ck-tab .ck-tab-box {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.ck-tab--evil .ck-tab-box {
+  stroke: var(--state-open);
+  stroke-dasharray: 10 8;
+}
+
+.ck-tab--evil {
+  opacity: 0;
+}
+
+[data-ck-evil="idle"] .ck-tab--evil,
+[data-ck-evil="post"] .ck-tab--evil,
+[data-ck-evil="get"] .ck-tab--evil {
+  opacity: 1;
+}
+
+.scene-counter.ck-site-text {
+  fill: var(--fg);
+  font-size: 27px;
+  font-weight: 600;
+}
+
+.scene-counter.ck-evil-text {
+  fill: var(--state-open);
+  font-size: 27px;
+  font-weight: 600;
+}
+
+[data-ck-site="idle"] .ck-site-text--idle,
+[data-ck-site="post"] .ck-site-text--post,
+[data-ck-site="get"] .ck-site-text--get,
+[data-ck-evil="idle"] .ck-evil-text--idle,
+[data-ck-evil="post"] .ck-evil-text--post,
+[data-ck-evil="get"] .ck-evil-text--get {
+  opacity: 1;
+}
+
+[data-ck-site="post"] .ck-tab--site .ck-tab-box,
+[data-ck-site="get"] .ck-tab--site .ck-tab-box {
+  stroke: var(--request);
+}
+
+/* The cookie jar. It is drawn empty from the first frame, because an empty jar
+   is the honest state of a browser nobody has signed in to yet. */
+.ck-browser .ck-jar {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 10 10;
+  opacity: 0.7;
+}
+
+.ck-cookie,
+.ck-httponly {
+  opacity: 0;
+}
+
+[data-ck-jar="stored"] .ck-cookie,
+[data-ck-jar="stored"] .ck-httponly {
+  opacity: 1;
+}
+
+.ck-cookie-box {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.scene-mono.ck-cookie-text {
+  fill: var(--accent);
+  font-size: 23px;
+  font-weight: 600;
+}
+
+/* The attribute that keeps scripts out, which says so when one tries. */
+.ck-httponly-box {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.scene-counter.ck-httponly-text {
+  fill: var(--fg-soft);
+  font-size: 23px;
+}
+
+.scene-counter.ck-httponly-text--blocked {
+  fill: var(--state-closed);
+}
+
+[data-ck-httponly="on"] .ck-httponly-text--on,
+[data-ck-httponly="blocked"] .ck-httponly-text--blocked {
+  opacity: 1;
+}
+
+[data-ck-httponly="blocked"] .ck-httponly-box {
+  stroke: var(--state-closed);
+}
+
+/* The attribute the third step adds, which is the first line drawn. */
+.ck-samesite {
+  opacity: 0;
+}
+
+[data-ck-samesite="lax"] .ck-samesite {
+  opacity: 1;
+}
+
+.ck-samesite-box {
+  fill: var(--surface);
+  stroke: var(--state-closed);
+  stroke-width: 3;
+}
+
+.ck-samesite-text {
+  fill: var(--state-closed);
+  font-size: 23px;
+  font-weight: 600;
+}
+
+/* The gate row. A gate that has not been added yet is not drawn at all, and
+   each plate says its own name until it has an answer about a request. */
+.ck-gates .ck-gate {
+  opacity: 0;
+}
+
+.ck-gate[data-ck-gate="off"],
+.ck-gate[data-ck-gate="ok"],
+.ck-gate[data-ck-gate="fail"] {
+  opacity: 1;
+}
+
+.ck-gate--cookie .ck-gate-box,
+.ck-gate--samesite .ck-gate-box,
+.ck-gate--token .ck-gate-box,
+.ck-gate--origin .ck-gate-box {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.scene-counter.ck-gate-text {
+  fill: var(--fg-soft);
+  font-size: 28px;
+}
+
+.scene-counter.ck-gate-text--ok {
+  fill: var(--state-closed);
+}
+
+.scene-counter.ck-gate-text--fail {
+  fill: var(--state-open);
+}
+
+[data-ck-gate="off"] .ck-gate-text--off,
+[data-ck-gate="ok"] .ck-gate-text--ok,
+[data-ck-gate="fail"] .ck-gate-text--fail {
+  opacity: 1;
+}
+
+[data-ck-gate="ok"] .ck-gate-box {
+  stroke: var(--state-closed);
+}
+
+[data-ck-gate="fail"] .ck-gate-box {
+  stroke: var(--state-open);
+}
+
+/* What the Server has answered, counted. Three readouts rather than one,
+   because a refusal and a rejection fail for different reasons. */
+.scene-counter.ck-ok {
+  fill: var(--state-closed);
+  font-family: var(--font-mono);
+  font-size: 34px;
+}
+
+.scene-counter.ck-unauth {
+  fill: var(--state-half);
+  font-family: var(--font-mono);
+  font-size: 34px;
+}
+
+.scene-counter.ck-bad {
+  fill: var(--state-open);
+  font-family: var(--font-mono);
+  font-size: 34px;
+}
+
+[data-ck-ok="0"] .ck-ok--0,
+[data-ck-ok="1"] .ck-ok--1,
+[data-ck-ok="2"] .ck-ok--2,
+[data-ck-ok="3"] .ck-ok--3,
+[data-ck-ok="4"] .ck-ok--4,
+[data-ck-ok="5"] .ck-ok--5,
+[data-ck-ok="6"] .ck-ok--6,
+[data-ck-ok="7"] .ck-ok--7,
+[data-ck-ok="8"] .ck-ok--8,
+[data-ck-ok="9"] .ck-ok--9,
+[data-ck-ok="10"] .ck-ok--10,
+[data-ck-ok="11"] .ck-ok--11,
+[data-ck-ok="12"] .ck-ok--12 {
+  opacity: 1;
+}
+
+[data-ck-unauth="0"] .ck-unauth--0,
+[data-ck-unauth="1"] .ck-unauth--1,
+[data-ck-unauth="2"] .ck-unauth--2,
+[data-ck-unauth="3"] .ck-unauth--3,
+[data-ck-unauth="4"] .ck-unauth--4 {
+  opacity: 1;
+}
+
+[data-ck-bad="0"] .ck-bad--0,
+[data-ck-bad="1"] .ck-bad--1,
+[data-ck-bad="2"] .ck-bad--2,
+[data-ck-bad="3"] .ck-bad--3,
+[data-ck-bad="4"] .ck-bad--4 {
+  opacity: 1;
+}
+
+
+/* The form the page renders, and the hidden field the fourth step puts in it. */
+.ck-form .ck-form-box {
+  fill: var(--surface);
+}
+
+.ck-form .ck-field {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.ck-token {
+  opacity: 0;
+}
+
+[data-ck-form="on"] .ck-token {
+  opacity: 1;
+}
+
+.ck-token-box {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-dasharray: 9 7;
+}
+
+.ck-token-text {
+  fill: var(--accent);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* The readout panel: the option not taken, and the defences that are. */
+.ck-panel .ck-panel-box {
+  fill: var(--surface);
+}
+
+.ck-strict {
+  opacity: 0;
+}
+
+[data-ck-strict="on"] .ck-strict {
+  opacity: 1;
+}
+
+.ck-strict-box {
+  fill: var(--surface-2);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.ck-strict-text {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.ck-summary {
+  opacity: 0;
+}
+
+[data-ck-summary="on"] .ck-summary {
+  opacity: 1;
+}
+
+.ck-summary-line {
+  fill: var(--state-closed);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* What a traveller carries: the cookie the browser attached to it, and on the
+   sign-in answer alone, the header that puts one in the jar. */
+.ck-carry-box {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.scene-mono.ck-carry-text {
+  fill: var(--accent);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.ck-set-box {
+  fill: var(--surface);
+  stroke: var(--state-closed);
+  stroke-width: 3;
+}
+
+.ck-set-text {
+  fill: var(--state-closed);
+  font-size: 20px;
+  font-weight: 700;
+}

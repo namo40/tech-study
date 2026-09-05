@@ -1,0 +1,623 @@
+/* ---------------------------------------------------------------- */
+/* Rollback stage                                                    */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Three revisions, one pointer, and the two things that never follow it back.
+ *
+ * The colour argument is small. Green is the revision holding traffic and the
+ * answers it gives: a `live` card, a good answer chip, the `ok n` readout, the
+ * compatible window and the closing frame. Red is the release the incident is
+ * about and every consequence of it: a `bad` card, an error chip, the `err n`
+ * readout once it is climbing, the barred read and the effects that already
+ * left. Amber is work standing still — the ghost's rebuild, and the record the
+ * bad release wrote in its own shape. Blue is what travels, and the thing the
+ * scene is holding up at any moment. Muted grey is a revision that is neither
+ * holding traffic nor at fault: a slot never deployed, a revision kept on the
+ * shelf, and the shelf itself while it is empty.
+ *
+ * Nothing is told apart by colour alone. A chip with no answer is a **dashed
+ * empty outline**, a good one is a **filled plate with a check**, a bad one is
+ * a **filled plate with a cross**. A card never deployed is a **faint dashed
+ * hollow plate with no bar**, one standing by is a **dashed plate with a dashed
+ * bar**, one live is a **filled plate with a solid bar**, one shelved is a
+ * **hollow plate sitting on a solid rail**, one known bad is a **hatched plate
+ * with a hollow dashed bar**, and one the ghost threw away is a **faint dashed
+ * plate with a line struck through it**. The shelf rail is **absent while the
+ * ghost is up, dashed where a slot is empty, and solid under a revision that is
+ * kept**. The `err n` readout gains a **plate under it** once it is spiking. A
+ * read the old code cannot make is a **ring with a bar across it**; the
+ * compatible window is a **span with an arrowhead at each end**. An escaped
+ * effect is an **arrow pointing out of the box**, and it is never taken off.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a
+ * base rule hiding all of them, so nothing interpolates and scrubbing backwards
+ * is exact: both readouts, each chip's three plates, each card's six plates and
+ * four bars, each rail's two spellings, the three `active` pills, the two build
+ * fills, the `new` record row, the compatible window, the barred read and the
+ * three escape counts. The scene has no continuous quantity at all.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+.rbk-lane--call,
+.rbk-lane--write {
+  opacity: 0.7;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+.rbk-req--call .scene-req-dot {
+  fill: var(--request);
+}
+
+/* A record being written. It is drawn in the colour of work that stays behind,
+   because the point of the third step is that this one does not roll back. */
+.rbk-req--write .scene-req-dot {
+  fill: var(--state-half);
+}
+
+/* An effect on its way out of the system: hollow, because there is nothing
+   left inside the process to take back. */
+.rbk-req--effect .scene-req-dot {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: 10 7;
+}
+
+/* --- the bands ---------------------------------------------------------- */
+
+/* Every title sits at its band's left edge, so the column the lanes sweep
+   stays clear from the Traffic box down to the State box. */
+.rbk-title {
+  font-size: 40px;
+}
+
+.rbk-hatch-line {
+  stroke: var(--state-open);
+  opacity: 0.4;
+}
+
+/* --- the Traffic band --------------------------------------------------- */
+
+/* The readouts. One text per value, and the state picks one, so neither number
+   interpolates and neither counts anything the model did not count. */
+.rbk-err,
+.rbk-ok {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 30px;
+}
+
+[data-rbk-err="0"] .rbk-err--0,
+[data-rbk-err="1"] .rbk-err--1,
+[data-rbk-err="2"] .rbk-err--2,
+[data-rbk-err="3"] .rbk-err--3 {
+  opacity: 1;
+}
+
+/* One bad answer in three is a wobble; two is an incident, and the readout
+   gains a plate so the difference is a shape and not only a colour. */
+[data-rbk-err="1"] .rbk-err {
+  fill: var(--state-half);
+}
+
+[data-rbk-err="2"] .rbk-err,
+[data-rbk-err="3"] .rbk-err {
+  fill: var(--state-open);
+}
+
+.rbk-err-plate {
+  fill: var(--state-open);
+  fill-opacity: 0.16;
+  stroke: var(--state-open);
+  stroke-width: 3;
+  opacity: 0;
+}
+
+[data-rbk-err="2"] .rbk-err-plate,
+[data-rbk-err="3"] .rbk-err-plate {
+  opacity: 1;
+}
+
+[data-rbk-ok="0"] .rbk-ok--0,
+[data-rbk-ok="1"] .rbk-ok--1,
+[data-rbk-ok="2"] .rbk-ok--2,
+[data-rbk-ok="3"] .rbk-ok--3,
+[data-rbk-ok="4"] .rbk-ok--4,
+[data-rbk-ok="5"] .rbk-ok--5,
+[data-rbk-ok="6"] .rbk-ok--6,
+[data-rbk-ok="7"] .rbk-ok--7,
+[data-rbk-ok="8"] .rbk-ok--8,
+[data-rbk-ok="9"] .rbk-ok--9,
+[data-rbk-ok="10"] .rbk-ok--10,
+[data-rbk-ok="11"] .rbk-ok--11,
+[data-rbk-ok="12"] .rbk-ok--12,
+[data-rbk-ok="13"] .rbk-ok--13,
+[data-rbk-ok="14"] .rbk-ok--14,
+[data-rbk-ok="15"] .rbk-ok--15,
+[data-rbk-ok="16"] .rbk-ok--16,
+[data-rbk-ok="17"] .rbk-ok--17,
+[data-rbk-ok="18"] .rbk-ok--18 {
+  opacity: 1;
+}
+
+[data-rbk-settled="on"] .rbk-ok {
+  fill: var(--state-closed);
+}
+
+/* The three answers the `err n` readout is counted over. */
+.rbk-chip-bg {
+  opacity: 0;
+}
+
+.rbk-chip-bg--none {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 12 9;
+}
+
+.rbk-chip-bg--ok {
+  fill: var(--state-closed);
+  fill-opacity: 0.18;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+}
+
+.rbk-chip-bg--err {
+  fill: var(--state-open);
+  fill-opacity: 0.18;
+  stroke: var(--state-open);
+  stroke-width: 4;
+}
+
+[data-rbk-chip="none"] .rbk-chip-bg--none,
+[data-rbk-chip="ok"] .rbk-chip-bg--ok,
+[data-rbk-chip="err"] .rbk-chip-bg--err {
+  opacity: 1;
+}
+
+.rbk-chip-glyph {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+.rbk-chip-glyph--ok {
+  stroke: var(--state-closed);
+}
+
+.rbk-chip-glyph--err {
+  stroke: var(--state-open);
+}
+
+[data-rbk-chip="ok"] .rbk-chip-glyph--ok,
+[data-rbk-chip="err"] .rbk-chip-glyph--err {
+  opacity: 1;
+}
+
+/* --- the Releases band -------------------------------------------------- */
+
+/* The pointer. It is one pill drawn over every slot, and the state reveals the
+   one that is over the revision holding traffic, so moving it is a change of
+   which pill is up rather than a tween across the band. */
+.rbk-pill {
+  opacity: 0;
+}
+
+[data-rbk-active="v1"] .rbk-pill--v1,
+[data-rbk-active="v2"] .rbk-pill--v2,
+[data-rbk-active="v3"] .rbk-pill--v3 {
+  opacity: 1;
+}
+
+.rbk-pill-bg {
+  fill: var(--accent);
+  fill-opacity: 0.18;
+  stroke: var(--accent);
+  stroke-width: 4;
+}
+
+.rbk-pill-word {
+  fill: var(--accent);
+  font-size: 28px;
+}
+
+/* A pointer sitting over a revision that is answering badly is the picture the
+   second step is about, so it says so rather than staying calm. */
+[data-rbk-err="3"] .rbk-pill-bg {
+  stroke: var(--state-open);
+  fill: var(--state-open);
+}
+
+[data-rbk-err="3"] .rbk-pill-word {
+  fill: var(--state-open);
+}
+
+/* --- a revision card ---------------------------------------------------- */
+
+.rbk-card-bg {
+  opacity: 0;
+}
+
+.rbk-card-bg--none {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 16 12;
+}
+
+.rbk-card-bg--ready {
+  fill: var(--state-closed);
+  fill-opacity: 0.08;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+  stroke-dasharray: 18 10;
+}
+
+.rbk-card-bg--live {
+  fill: var(--state-closed);
+  fill-opacity: 0.18;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+.rbk-card-bg--shelf {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+}
+
+/* A revision known to be bad is hatched, so it is a different surface and not
+   only a different colour, and it keeps saying so after the pointer leaves. */
+.rbk-card-bg--bad {
+  fill: url(#rbk-hatch);
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+.rbk-card-bg--gone {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 10 12;
+}
+
+[data-rbk-rev="none"] .rbk-card-bg--none,
+[data-rbk-rev="ready"] .rbk-card-bg--ready,
+[data-rbk-rev="live"] .rbk-card-bg--live,
+[data-rbk-rev="shelf"] .rbk-card-bg--shelf,
+[data-rbk-rev="bad"] .rbk-card-bg--bad,
+[data-rbk-rev="gone"] .rbk-card-bg--gone {
+  opacity: 1;
+}
+
+.rbk-card-name {
+  fill: var(--fg-soft);
+  font-size: 36px;
+}
+
+[data-rbk-rev="none"] .rbk-card-name {
+  fill: var(--muted);
+  opacity: 0.5;
+}
+
+[data-rbk-rev="ready"] .rbk-card-name,
+[data-rbk-rev="live"] .rbk-card-name {
+  fill: var(--state-closed);
+}
+
+[data-rbk-rev="bad"] .rbk-card-name {
+  fill: var(--state-open);
+}
+
+[data-rbk-rev="gone"] .rbk-card-name {
+  fill: var(--muted);
+  opacity: 0.45;
+}
+
+/* The bar across a card says what the revision is doing with itself: solid for
+   one holding traffic, hollow for one waiting on the shelf, hollow and dashed
+   for one that is only evidence now. */
+.rbk-card-bar {
+  opacity: 0;
+}
+
+.rbk-card-bar--ready {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+  stroke-dasharray: 14 10;
+}
+
+.rbk-card-bar--live {
+  fill: var(--state-closed);
+}
+
+.rbk-card-bar--shelf {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+}
+
+.rbk-card-bar--bad {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-dasharray: 12 9;
+}
+
+[data-rbk-rev="ready"] .rbk-card-bar--ready,
+[data-rbk-rev="live"] .rbk-card-bar--live,
+[data-rbk-rev="shelf"] .rbk-card-bar--shelf,
+[data-rbk-rev="bad"] .rbk-card-bar--bad {
+  opacity: 1;
+}
+
+/* Only the ghost ever throws a revision away, and the line through the card is
+   what the whole first step is arguing against. */
+.rbk-card-strike {
+  stroke: var(--state-open);
+  stroke-width: 6;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+[data-rbk-rev="gone"] .rbk-card-strike {
+  opacity: 0.75;
+}
+
+/* --- the shelf ---------------------------------------------------------- */
+
+/* There is no shelf at all while the ghost is up. Once history mode is on the
+   slot is drawn empty, and a revision that is kept fills it. */
+.rbk-rail {
+  opacity: 0;
+}
+
+.rbk-rail--slot {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 14 11;
+}
+
+.rbk-rail--held {
+  fill: var(--fg-soft);
+  fill-opacity: 0.3;
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+[data-rbk-mode="history"] .rbk-rail--slot {
+  opacity: 1;
+}
+
+[data-rbk-mode="history"] .rbk-rev[data-rbk-rev="shelf"] .rbk-rail--slot {
+  opacity: 0;
+}
+
+[data-rbk-mode="history"] .rbk-rev[data-rbk-rev="shelf"] .rbk-rail--held {
+  opacity: 1;
+}
+
+/* --- the ghost's rebuild ------------------------------------------------ */
+
+/* The only road a world without a shelf has, drawn as a bar that is still
+   nowhere near the end when the step is over. */
+.rbk-build {
+  opacity: 0;
+}
+
+[data-rbk-build="1"] .rbk-build,
+[data-rbk-build="2"] .rbk-build {
+  opacity: 1;
+}
+
+.rbk-build-track {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 3;
+  stroke-dasharray: 14 10;
+}
+
+.rbk-build-fill {
+  fill: var(--state-half);
+  fill-opacity: 0.75;
+  opacity: 0;
+}
+
+[data-rbk-build="1"] .rbk-build-fill--1,
+[data-rbk-build="2"] .rbk-build-fill--2 {
+  opacity: 1;
+}
+
+/* --- the State band ----------------------------------------------------- */
+
+.rbk-db-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.rbk-db-word {
+  fill: var(--fg-soft);
+  font-size: 30px;
+}
+
+.rbk-record-word {
+  fill: var(--fg-soft);
+  font-size: 26px;
+}
+
+.rbk-record-block {
+  fill: var(--fg-soft);
+  fill-opacity: 0.4;
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+/* The record the bad release wrote in its own shape. It arrives once and it is
+   never taken off again, because data does not roll back with the pointer. */
+.rbk-record-block--new,
+.rbk-record-word--new {
+  opacity: 0;
+}
+
+.rbk-record-block--new {
+  fill: var(--state-half);
+  fill-opacity: 0.35;
+  stroke: var(--state-half);
+}
+
+[data-rbk-db="both"] .rbk-record-block--new,
+[data-rbk-db="both"] .rbk-record-word--new {
+  opacity: 1;
+}
+
+[data-rbk-db="both"] .rbk-record-word--new {
+  fill: var(--state-half);
+}
+
+/* A read the old code cannot make. */
+.rbk-warn {
+  opacity: 0;
+}
+
+[data-rbk-warn="on"] .rbk-warn {
+  opacity: 1;
+}
+
+.rbk-warn-ring {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 6;
+}
+
+.rbk-warn-bar {
+  stroke: var(--state-open);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+/* The compatible window: neighbouring revisions reading each other's writes. */
+.rbk-compat {
+  opacity: 0;
+}
+
+[data-rbk-compat="on"] .rbk-compat {
+  opacity: 1;
+}
+
+.rbk-compat-span,
+.rbk-compat-tick {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.rbk-compat-head {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* What already left. One group per count, so the number of arrows is a state
+   and not a tween, and an empty band is genuinely empty. */
+.rbk-escape {
+  opacity: 0;
+}
+
+[data-rbk-escaped="0"] .rbk-escape--0,
+[data-rbk-escaped="1"] .rbk-escape--1,
+[data-rbk-escaped="2"] .rbk-escape--2 {
+  opacity: 1;
+}
+
+.rbk-escape-arrow {
+  fill: var(--state-open);
+  fill-opacity: 0.35;
+  stroke: var(--state-open);
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+
+.rbk-escape-tail {
+  fill: var(--state-open);
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The peak of the ghost: a revision thrown away, and a rebuild as the only
+   road left. */
+[data-rbk-mark="noway"] .rbk-card-bg--gone {
+  stroke: var(--state-open);
+  stroke-width: 6;
+}
+
+[data-rbk-mark="noway"] .rbk-build-track {
+  stroke: var(--accent);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+/* The shelf itself, and then the shelf together with the pointer that uses it. */
+[data-rbk-mark="keep"] .rbk-rail--slot,
+[data-rbk-mark="road"] .rbk-rail--slot {
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+[data-rbk-mark="keep"] .rbk-rail--held,
+[data-rbk-mark="road"] .rbk-rail--held {
+  fill: var(--accent);
+  fill-opacity: 0.28;
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+[data-rbk-mark="road"] .rbk-pill-bg,
+[data-rbk-mark="fast"] .rbk-pill-bg {
+  fill-opacity: 0.4;
+  stroke-width: 7;
+}
+
+[data-rbk-mark="fast"] .rbk-card-bg--shelf {
+  stroke: var(--accent);
+  stroke-width: 6;
+}
+
+/* The schema kept wider than the code that reads it. */
+[data-rbk-mark="wide"] .rbk-compat-span,
+[data-rbk-mark="wide"] .rbk-compat-tick,
+[data-rbk-mark="wide"] .rbk-compat-head {
+  stroke: var(--accent);
+  stroke-width: 8;
+}
+
+/* What cannot be called back. */
+[data-rbk-mark="gone"] .rbk-escape-arrow {
+  fill-opacity: 0.6;
+  stroke-width: 6;
+}
+
+[data-rbk-mark="gone"] .rbk-escape-tail {
+  fill: var(--accent);
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: the corrected release forward, the readout back to normal,
+   and the shelf holding what it was asked to hold. */
+[data-rbk-settled="on"] .rbk-traffic > .scene-box,
+[data-rbk-settled="on"] .rbk-releases > .scene-box,
+[data-rbk-settled="on"] .rbk-state > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}

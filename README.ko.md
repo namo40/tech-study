@@ -58,14 +58,14 @@ src/
   layouts/              문서 골격: head, 폰트, 테마, 헤더, 푸터
   pages/                루트 리다이렉트, /{lang}/, /{lang}/{slug}
   components/           헤더, 언어 전환, 테마 전환, 장면 플레이어
-  scenes/               무대 마크업과 GSAP 타임라인
+  scenes/               무대 마크업, 무대 스타일, GSAP 타임라인
   scripts/              플레이어, 효과음, 테마 전환
-  styles/               디자인 토큰, 전역 스타일, 장면 스타일
+  styles/               디자인 토큰, 전역 스타일, 공용 장면 위젯
 ```
 
 ## 장면 추가하기
 
-장면 하나는 `src/scenes/<id>/` 폴더이고, 그 안에 모듈 두 개를 둡니다.
+장면 하나는 `src/scenes/<id>/` 폴더이고, 그 안에 모듈 두 개와 스타일시트 하나를 둡니다.
 
 `stage.ts`는 페이지에 그대로 실리는 정적 SVG인 `stageMarkup`을 내보냅니다. `src/scenes/shared/stage.ts`의 공용 빌더로 조립하세요. `clientBox`, `nodeFrame`, `serviceBox`, `verticalLink`, `healthDot`, `slotRow`, `counterVariants`, `timerRing`, `trackAndFill`, `chip`, `requestsLayer`가 있습니다. 좌표는 전부 인자이므로 장면마다 자기 숫자를 그대로 쓰면서도 옆 장면과 같은 그림으로 읽힙니다. 좌표는 1080 × 1920 공간에 적지만 공용 `VIEWBOX`가 이 공간을 `0 400 1080 1520`으로 잘라냅니다. 따라서 `y` 0..400은 캔버스 밖이고, `y` 400..440은 첫 상자 위에 남겨 둔 프레임 여백입니다. 이 모듈은 서버에서 import되므로 GSAP을 끌어오면 안 되고, 플레이어가 실행 시점에 채우는 빈 `scene-requests` 레이어로 끝나야 합니다.
 
@@ -73,7 +73,7 @@ src/
 
 상태는 속성으로 바꾸고, 콜백에서 바꾸지 않습니다. `src/scenes/shared/state.ts`의 `attr(tl, target, name, value, at)`가 길이 0짜리 tween으로 `data-*` 값을 쓰고, 그 속성을 보는 CSS가 모습을 결정합니다. 색을 보간하지 않기 때문에 스크럽 양방향과 두 테마가 모두 맞아떨어집니다.
 
-무대 스타일은 `src/styles/scene.css`의 위젯 클래스로 씁니다. `.scene-track`, `.scene-fill`, `.scene-ring`, `.scene-counter`, `.scene-flash`, `.scene-slot`, `.scene-chip`, `.scene-mono`, `.scene-health`를 장면 접두어 클래스 옆에 함께 적으면 됩니다. 그러면 장면 규칙에는 다른 점만 남는데, 보통 커스텀 속성(`--fill-color`, `--ring-color`, `--ring-width`, `--flash-color`) 하나와 글자 크기입니다.
+`stage.css`에는 그 장면 하나의 규칙만 둡니다. 레지스트리가 이 파일을 텍스트로 읽어 장면을 그리는 페이지에 인라인하므로, 읽는 사람은 눈앞의 무대에 필요한 규칙만 내려받고 나머지 아흔 개는 받지 않습니다. 모든 무대가 함께 쓰는 것은 `src/styles/scene.css`에 남습니다. 상자, 연결선, 그리고 위젯 클래스인 `.scene-track`, `.scene-fill`, `.scene-ring`, `.scene-counter`, `.scene-flash`, `.scene-slot`, `.scene-chip`, `.scene-mono`, `.scene-health`가 여기에 있고, 이들을 장면 접두어 클래스 옆에 함께 적으면 됩니다. 그러면 장면 규칙에는 다른 점만 남는데, 보통 커스텀 속성(`--fill-color`, `--ring-color`, `--ring-width`, `--flash-color`) 하나와 글자 크기입니다. 공용 스타일시트는 head에서 링크로 걸리고 장면 스타일시트는 본문에 인라인되므로, 접두어 규칙은 옆에 나란히 적은 위젯 규칙을 여전히 덮어씁니다. 공용 클래스나 상태 속성만으로 적은 규칙은 어느 무대에나 닿을 수 있으므로, 장면 파일이 아니라 공용 스타일시트의 `Rules shared across stages` 절에 둡니다.
 
 큐나 풀처럼 한 사건이 다음 사건을 부르는 장면은 일정을 먼저 계산하고 tween은 그다음에 깝니다. `src/scenes/shared/simulation.ts`의 `createScheduler()`는 예약된 사건을 이른 순서로 실행하고 실행 도중에 새 사건을 예약할 수 있게 해 줍니다. `collapseLast`와 `collapseAtInstant`는 같은 시각에 떨어지는 변화를 하나로 접어, 그 한 프레임이 읽는 사람의 스크럽 방향에 따라 달라지지 않게 합니다.
 

@@ -1,0 +1,273 @@
+/* ---------------------------------------------------------------- */
+/* Event Sourcing stage                                              */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One log, and three things that are derived from it. The Order's card, the
+ * snapshot and the projection are all the same events added up in three
+ * different places, so none of them is drawn as a source of truth: the log is
+ * the only thing here with a colour of its own.
+ *
+ * Every readout, both badges, both chips and the snapshot card are stacks of
+ * text on one spot with the widget class hiding all of them, so the state picks
+ * the one that shows and nothing ever interpolates between two colours. The six
+ * event rows are the exception, because a row is a shape rather than a word:
+ * they are drawn from `data-es-row` alone, so the number of written rows is
+ * `seq` by construction and the two can never disagree.
+ *
+ * The colours carry the argument. A written row is the colour of traffic,
+ * because an event is work that happened. A row a replay is folding right now
+ * is amber, and so is `replaying`, because an aggregate part way through a
+ * rebuild is not wrong, it is not finished. A row a snapshot covers is violet,
+ * the colour this site gives to work the system chose not to do, which is
+ * exactly what a snapshot buys. `paid`, `projection`, `audit` and the settled
+ * outline are green, because those are the four places the log is shown to have
+ * arrived somewhere. Nothing here is red: this scene has no failure in it, only
+ * a change of what counts as the record.
+ */
+
+/* The three lanes. The feed lane is not carrying anything until somebody is
+   subscribed to the log, so it is drawn as a broken line until they are. */
+[data-es-proj="off"] .es-lane-feed {
+  stroke-dasharray: 16 16;
+  opacity: 0.45;
+}
+
+/* The append lane belongs to whoever is using it: a write on the way out, or a
+   replay reading its way back in. */
+[data-es-replay="on"] .es-lane-bus {
+  stroke: var(--state-half);
+}
+
+[data-es-replay="on"] .es-order > .scene-box {
+  stroke: var(--state-half);
+}
+
+[data-es-settled="on"] .es-order > .scene-box,
+[data-es-settled="on"] .es-log > .scene-box,
+[data-es-settled="on"] .es-readers > .scene-box {
+  stroke: var(--state-closed);
+}
+
+/* The two commands the App can send, named rather than animated: which one is
+   travelling is the dot on the lane, not a change of plate. */
+.es-chip-add .es-chip-add-bg,
+.es-chip-pay .es-chip-pay-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.es-cmd-word {
+  fill: var(--fg-soft);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+/* The aggregate's state card, which is the log added up and nothing else. */
+.es-card {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.es-items {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 40px;
+}
+
+.es-items--0 {
+  fill: var(--muted);
+}
+[data-es-items="0"] .es-items--0,
+[data-es-items="1"] .es-items--1,
+[data-es-items="2"] .es-items--2,
+[data-es-items="3"] .es-items--3,
+[data-es-items="4"] .es-items--4 {
+  opacity: 1;
+}
+
+/* Paid is a fact the log records, so it is green once an event has said so. */
+.es-chip-paid-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-es-paid="on"] .es-chip-paid .es-chip-paid-bg {
+  stroke: var(--state-closed);
+}
+
+.es-paid {
+  fill: var(--muted);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.es-paid--on {
+  fill: var(--state-closed);
+}
+[data-es-paid="off"] .es-paid--off,
+[data-es-paid="on"] .es-paid--on {
+  opacity: 1;
+}
+
+/* An aggregate part way through a rebuild has no answer yet, which is a wait
+   rather than a failure. */
+.es-chip-replay-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-es-replay="on"] .es-chip-replay .es-chip-replay-bg {
+  stroke: var(--state-half);
+}
+
+.es-replay {
+  fill: var(--muted);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.es-replay--on {
+  fill: var(--state-half);
+}
+[data-es-replay="off"] .es-replay--off,
+[data-es-replay="on"] .es-replay--on {
+  opacity: 1;
+}
+
+/* How many events the log holds. It is the one number nothing else can move. */
+.es-seq {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 34px;
+}
+
+.es-seq--0 {
+  fill: var(--muted);
+}
+[data-es-seq="0"] .es-seq--0,
+[data-es-seq="1"] .es-seq--1,
+[data-es-seq="2"] .es-seq--2,
+[data-es-seq="3"] .es-seq--3,
+[data-es-seq="4"] .es-seq--4,
+[data-es-seq="5"] .es-seq--5,
+[data-es-seq="6"] .es-seq--6 {
+  opacity: 1;
+}
+
+/* The snapshot card is not there at all until one is stored, because a
+   snapshot that has not been taken is not an empty snapshot. */
+.es-snap {
+  opacity: 0;
+}
+[data-es-snap="1"] .es-snap,
+[data-es-snap="2"] .es-snap,
+[data-es-snap="3"] .es-snap,
+[data-es-snap="4"] .es-snap,
+[data-es-snap="5"] .es-snap,
+[data-es-snap="6"] .es-snap {
+  opacity: 1;
+}
+
+.es-snap-bg {
+  fill: var(--surface);
+  stroke: var(--cpu);
+  stroke-width: 3;
+}
+
+.es-snap-text {
+  fill: var(--cpu);
+  font-size: 30px;
+}
+[data-es-snap="1"] .es-snap-text--1,
+[data-es-snap="2"] .es-snap-text--2,
+[data-es-snap="3"] .es-snap-text--3,
+[data-es-snap="4"] .es-snap-text--4,
+[data-es-snap="5"] .es-snap-text--5,
+[data-es-snap="6"] .es-snap-text--6 {
+  opacity: 1;
+}
+
+/* The log itself: one bar per event, written from the top down and never
+   written over. A row says three things and no more — that it exists, that a
+   replay is folding it right now, and that a snapshot has made reading it
+   unnecessary. */
+.es-row {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+.es-row[data-es-row="on"] {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+.es-row[data-es-row="read"] {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+}
+
+.es-row[data-es-row="snap"] {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-dasharray: 10 8;
+}
+
+/* The two things that live off the log, and how far one of them has got. */
+.es-chip-proj-bg,
+.es-chip-audit-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-es-proj="on"] .es-chip-proj .es-chip-proj-bg,
+[data-es-audit="on"] .es-chip-audit .es-chip-audit-bg {
+  stroke: var(--state-closed);
+}
+
+.es-proj,
+.es-audit {
+  fill: var(--muted);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.es-proj--on,
+.es-audit--on {
+  fill: var(--state-closed);
+}
+[data-es-proj="off"] .es-proj--off,
+[data-es-proj="on"] .es-proj--on,
+[data-es-audit="off"] .es-audit--off,
+[data-es-audit="on"] .es-audit--on {
+  opacity: 1;
+}
+
+.es-rows {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 34px;
+}
+
+.es-rows--0 {
+  fill: var(--muted);
+}
+[data-es-rows="0"] .es-rows--0,
+[data-es-rows="1"] .es-rows--1,
+[data-es-rows="2"] .es-rows--2,
+[data-es-rows="3"] .es-rows--3,
+[data-es-rows="4"] .es-rows--4,
+[data-es-rows="5"] .es-rows--5,
+[data-es-rows="6"] .es-rows--6 {
+  opacity: 1;
+}
+
+[data-es-settled="on"] .es-rows {
+  fill: var(--state-closed);
+}

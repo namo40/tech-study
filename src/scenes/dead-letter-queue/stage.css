@@ -1,0 +1,370 @@
+/* ---------------------------------------------------------------- */
+/* Dead Letter Queue stage                                           */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Everything the reader counts on this stage is a stack of text on one spot
+ * with a single variant revealed: the id a slot is holding, the id and the
+ * reason a dead-letter row carries, the delivery count, and the three
+ * readouts. The base rule below is the load bearing half. Without it a state
+ * nobody wrote would print the whole stack on top of itself, which is
+ * invisible in a DOM snapshot and unreadable on screen.
+ */
+.dq-msg,
+.dq-row-id,
+.dq-reason,
+.dq-delivery,
+.dq-depth,
+.dq-done,
+.dq-count {
+  opacity: 0;
+}
+
+/* The Producer, and the chip that says the cause upstream has been repaired. */
+.dq-fix {
+  opacity: 0;
+}
+
+[data-dq-fix="on"] .dq-fix {
+  opacity: 1;
+}
+
+.dq-fix-bg {
+  stroke: var(--state-closed);
+}
+
+.dq-fix-text {
+  fill: var(--state-closed);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+/* The side road. Drawn dashed, because it is the exit rather than the route. */
+.dq-side-link {
+  stroke-dasharray: 16 12;
+}
+
+/* The Queue: how deep it is, and the strip of slots that says what is in it. */
+.dq-depth {
+  fill: var(--fg-soft);
+  font-size: 30px;
+}
+
+.dq-slot-box {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.dq-slot[data-dq-slot="held"] .dq-slot-box {
+  fill: var(--surface);
+  stroke: var(--request);
+  stroke-dasharray: none;
+}
+
+/*
+ * A message that has already failed keeps its place at the head of the queue,
+ * so it is hatched rather than merely recoloured: the texture is what says the
+ * line is stopped behind it even when the reader is not watching the ring.
+ */
+.dq-slot[data-dq-slot="poison"] .dq-slot-box {
+  fill: url(#dq-hatch);
+  stroke: var(--state-open);
+  stroke-dasharray: none;
+}
+
+.dq-slot[data-dq-slot="expiring"] .dq-slot-box {
+  fill: var(--surface);
+  stroke: var(--state-half);
+  stroke-dasharray: 12 8;
+}
+
+.dq-hatch-line {
+  stroke: var(--state-open);
+}
+
+.dq-msg {
+  fill: var(--fg);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+/* The delivery count of whatever the queue is retrying, drawn as three thirds. */
+.dq-ring-track {
+  fill: none;
+  stroke: var(--surface-2);
+  stroke-width: 14;
+}
+
+.dq-ring-arc {
+  fill: none;
+  stroke: var(--state-open);
+  stroke-width: 14;
+  stroke-linecap: butt;
+  opacity: 0;
+}
+
+.dq-poison {
+  opacity: 0;
+}
+
+.dq-poison-bg {
+  stroke: var(--state-open);
+}
+
+.dq-poison-text {
+  fill: var(--state-open);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.dq-delivery {
+  fill: var(--state-open);
+  font-size: 30px;
+  font-weight: 700;
+}
+
+/* The policy the broker is holding the message to, which never changes. */
+.dq-policy-bg {
+  stroke: var(--fg-soft);
+}
+
+.dq-policy-text {
+  fill: var(--fg-soft);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+/* The Consumer: one result at a time, and everything it has acknowledged. */
+.dq-tick-bg {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 5;
+}
+
+[data-dq-tick="ok"] .dq-tick-bg {
+  stroke: var(--state-closed);
+}
+
+[data-dq-tick="fail"] .dq-tick-bg {
+  stroke: var(--state-open);
+}
+
+.dq-tick-glyph {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+[data-dq-tick="ok"] .dq-tick-glyph--ok {
+  stroke: var(--state-closed);
+  opacity: 1;
+}
+
+[data-dq-tick="fail"] .dq-tick-glyph--fail {
+  stroke: var(--state-open);
+  opacity: 1;
+}
+
+.dq-done {
+  fill: var(--state-closed);
+  font-size: 34px;
+}
+
+/* The shelf: three rows, each carrying a message and the reason it is there. */
+.dq-row-bg {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.dq-row[data-dq-row="held"] .dq-row-bg,
+.dq-row[data-dq-row="detail"] .dq-row-bg {
+  fill: var(--surface-2);
+  stroke: var(--fg-soft);
+  stroke-dasharray: none;
+}
+
+/*
+ * The row the third step opens up. Nothing new is written into it: the point
+ * is that the history was attached when the message arrived, so the highlight
+ * only asks the reader to look at what is already there.
+ */
+.dq-row[data-dq-row="detail"] .dq-row-bg {
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+.dq-row-id {
+  fill: var(--fg);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.dq-reason {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.dq-reason--max {
+  fill: var(--state-open);
+}
+
+.dq-reason--expired {
+  fill: var(--state-half);
+}
+
+.dq-reason--resubmit {
+  fill: var(--state-closed);
+}
+
+.dq-reason--discard {
+  fill: var(--fg-soft);
+}
+
+/* The alarm: a line the shelf is not meant to reach, and the word for it. */
+.dq-alert-line {
+  stroke: var(--border);
+  stroke-width: 4;
+  stroke-dasharray: 14 10;
+}
+
+[data-dq-alert="on"] .dq-alert-line {
+  stroke: var(--state-half);
+}
+
+.dq-alert {
+  fill: var(--state-half);
+  font-size: 30px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-dq-alert="on"] .dq-alert {
+  opacity: 1;
+}
+
+.dq-count {
+  fill: var(--fg-soft);
+  font-size: 30px;
+}
+
+[data-dq-alert="on"] .dq-count {
+  fill: var(--state-half);
+}
+
+/* The id a traveller is carrying, so the reader can follow one message. */
+.dq-tag {
+  fill: var(--fg-soft);
+}
+
+/* Which third of the delivery ring is filled. */
+[data-dq-delivery="1"] .dq-ring-arc--1,
+[data-dq-delivery="2"] .dq-ring-arc--1,
+[data-dq-delivery="2"] .dq-ring-arc--2,
+[data-dq-delivery="3"] .dq-ring-arc--1,
+[data-dq-delivery="3"] .dq-ring-arc--2,
+[data-dq-delivery="3"] .dq-ring-arc--3 {
+  opacity: 1;
+}
+
+/* The chip and the count that go with it. */
+[data-dq-delivery="1"] .dq-poison,
+[data-dq-delivery="2"] .dq-poison,
+[data-dq-delivery="3"] .dq-poison {
+  opacity: 1;
+}
+
+[data-dq-delivery="1"] .dq-delivery--1,
+[data-dq-delivery="2"] .dq-delivery--2,
+[data-dq-delivery="3"] .dq-delivery--3 {
+  opacity: 1;
+}
+
+/* The message one queue slot is holding. */
+[data-dq-msg="4"] .dq-msg--4,
+[data-dq-msg="5"] .dq-msg--5,
+[data-dq-msg="6"] .dq-msg--6,
+[data-dq-msg="7"] .dq-msg--7,
+[data-dq-msg="8"] .dq-msg--8,
+[data-dq-msg="9"] .dq-msg--9,
+[data-dq-msg="10"] .dq-msg--10,
+[data-dq-msg="11"] .dq-msg--11,
+[data-dq-msg="12"] .dq-msg--12,
+[data-dq-msg="13"] .dq-msg--13,
+[data-dq-msg="14"] .dq-msg--14,
+[data-dq-msg="15"] .dq-msg--15,
+[data-dq-msg="16"] .dq-msg--16,
+[data-dq-msg="17"] .dq-msg--17,
+[data-dq-msg="18"] .dq-msg--18 {
+  opacity: 1;
+}
+
+/* The message one dead-letter row is holding. */
+[data-dq-id="4"] .dq-row-id--4,
+[data-dq-id="5"] .dq-row-id--5,
+[data-dq-id="6"] .dq-row-id--6,
+[data-dq-id="7"] .dq-row-id--7,
+[data-dq-id="8"] .dq-row-id--8,
+[data-dq-id="9"] .dq-row-id--9,
+[data-dq-id="10"] .dq-row-id--10,
+[data-dq-id="11"] .dq-row-id--11,
+[data-dq-id="12"] .dq-row-id--12,
+[data-dq-id="13"] .dq-row-id--13,
+[data-dq-id="14"] .dq-row-id--14,
+[data-dq-id="15"] .dq-row-id--15,
+[data-dq-id="16"] .dq-row-id--16,
+[data-dq-id="17"] .dq-row-id--17,
+[data-dq-id="18"] .dq-row-id--18 {
+  opacity: 1;
+}
+
+/* Why it is there, which is the whole reason the shelf is worth keeping. */
+[data-dq-reason="max"] .dq-reason--max,
+[data-dq-reason="expired"] .dq-reason--expired,
+[data-dq-reason="resubmit"] .dq-reason--resubmit,
+[data-dq-reason="discard"] .dq-reason--discard {
+  opacity: 1;
+}
+
+/* How many messages are waiting their turn. */
+[data-dq-depth="0"] .dq-depth--0,
+[data-dq-depth="1"] .dq-depth--1,
+[data-dq-depth="2"] .dq-depth--2,
+[data-dq-depth="3"] .dq-depth--3,
+[data-dq-depth="4"] .dq-depth--4,
+[data-dq-depth="5"] .dq-depth--5,
+[data-dq-depth="6"] .dq-depth--6 {
+  opacity: 1;
+}
+
+/* How many the consumer has acknowledged. */
+[data-dq-done="0"] .dq-done--0,
+[data-dq-done="1"] .dq-done--1,
+[data-dq-done="2"] .dq-done--2,
+[data-dq-done="3"] .dq-done--3,
+[data-dq-done="4"] .dq-done--4,
+[data-dq-done="5"] .dq-done--5,
+[data-dq-done="6"] .dq-done--6,
+[data-dq-done="7"] .dq-done--7,
+[data-dq-done="8"] .dq-done--8,
+[data-dq-done="9"] .dq-done--9,
+[data-dq-done="10"] .dq-done--10,
+[data-dq-done="11"] .dq-done--11,
+[data-dq-done="12"] .dq-done--12,
+[data-dq-done="13"] .dq-done--13,
+[data-dq-done="14"] .dq-done--14 {
+  opacity: 1;
+}
+
+/* How many are parked on the shelf. */
+[data-dq-dlq="0"] .dq-count--0,
+[data-dq-dlq="1"] .dq-count--1,
+[data-dq-dlq="2"] .dq-count--2,
+[data-dq-dlq="3"] .dq-count--3 {
+  opacity: 1;
+}

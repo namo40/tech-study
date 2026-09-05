@@ -1,0 +1,292 @@
+/* ---------------------------------------------------------------- */
+/* Replication Lag stage                                             */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Two boxes holding the same row, and one line between them. Everything the
+ * scene is about happens on that line: how long a change takes to cross it,
+ * how many are on it at once, and what the box on the right answers with while
+ * it is still working through them. The stream is dashed rather than solid
+ * because nothing the reader sends travels it: it is the database copying
+ * itself, and it is the one line that is not a request's route.
+ */
+
+/* What the session remembers, drawn in the App box rather than in the router,
+   because that is where it is kept: a cookie, a claim, a header. */
+.rl-session {
+  opacity: 0;
+}
+
+.scene-stage:not([data-session="off"]) .rl-session {
+  opacity: 1;
+}
+
+.rl-session-text {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 20px;
+}
+
+[data-session="0"] .rl-session-text--0, [data-session="1"] .rl-session-text--1, [data-session="2"] .rl-session-text--2,
+[data-session="3"] .rl-session-text--3, [data-session="4"] .rl-session-text--4, [data-session="5"] .rl-session-text--5,
+[data-session="6"] .rl-session-text--6, [data-session="7"] .rl-session-text--7, [data-session="8"] .rl-session-text--8,
+[data-session="9"] .rl-session-text--9, [data-session="10"] .rl-session-text--10, [data-session="11"] .rl-session-text--11,
+[data-session="12"] .rl-session-text--12 {
+  opacity: 1;
+}
+
+/* The rules the router routes by. The pair spelling holds while there are two
+   nodes; the failover spelling is the same rule about the one that survived. */
+.rl-rule {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.rl-rule--writes-failover,
+.rl-rule--reads-failover,
+.rl-rule--session {
+  opacity: 0;
+}
+
+[data-topology="failover"] .rl-rule--writes-pair,
+[data-topology="failover"] .rl-rule--reads-pair {
+  opacity: 0;
+}
+
+[data-topology="failover"] .rl-rule--writes-failover,
+[data-topology="failover"] .rl-rule--reads-failover,
+[data-policy="session"] .rl-rule--session {
+  opacity: 1;
+}
+
+/* The rule a read is being routed by right now, which is the whole of the
+   decision the third step is about. */
+[data-route="reads"] .rl-rule--reads,
+[data-route="session"] .rl-rule--session {
+  fill: var(--accent);
+}
+
+.rl-wait {
+  --flash-color: var(--state-half);
+
+  font-size: 22px;
+}
+
+[data-route="wait"] .rl-wait {
+  opacity: 1;
+}
+
+/* The two tallies: how many reads were answered, and how many of those with a
+   value the reader had already replaced. */
+.rl-reads,
+.rl-stale {
+  fill: var(--fg-soft);
+  font-size: 20px;
+}
+
+.rl-stale {
+  fill: var(--state-open);
+}
+
+[data-stale="0"] .rl-stale--0 {
+  fill: var(--fg-soft);
+}
+
+[data-reads="0"] .rl-reads--0, [data-reads="1"] .rl-reads--1, [data-reads="2"] .rl-reads--2, [data-reads="3"] .rl-reads--3,
+[data-reads="4"] .rl-reads--4, [data-reads="5"] .rl-reads--5, [data-reads="6"] .rl-reads--6, [data-reads="7"] .rl-reads--7,
+[data-reads="8"] .rl-reads--8, [data-reads="9"] .rl-reads--9, [data-reads="10"] .rl-reads--10, [data-reads="11"] .rl-reads--11,
+[data-reads="12"] .rl-reads--12, [data-reads="13"] .rl-reads--13 {
+  opacity: 1;
+}
+
+[data-stale="0"] .rl-stale--0, [data-stale="1"] .rl-stale--1, [data-stale="2"] .rl-stale--2 {
+  opacity: 1;
+}
+
+/* The two boxes. The border says which of them writes are landing on, so
+   promotion is that border moving rather than a caption. */
+.rl-node-box--primary {
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+[data-primary="down"] .rl-node--primary {
+  opacity: 0.35;
+}
+
+[data-primary="down"] .rl-node-box--primary {
+  stroke: var(--muted);
+  stroke-dasharray: 14 12;
+}
+
+[data-replica="promoted"] .rl-node-box--replica {
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+/* What each box holds, and where it has got to. */
+.rl-value-text {
+  fill: var(--fg);
+  font-size: 20px;
+  opacity: 0;
+}
+
+[data-pval="ann"] .rl-value-primary .rl-value-text--ann, [data-pval="bea"] .rl-value-primary .rl-value-text--bea,
+[data-pval="cy"] .rl-value-primary .rl-value-text--cy, [data-pval="di"] .rl-value-primary .rl-value-text--di,
+[data-pval="ed"] .rl-value-primary .rl-value-text--ed, [data-pval="fay"] .rl-value-primary .rl-value-text--fay {
+  opacity: 1;
+}
+
+[data-rval="ann"] .rl-value-replica .rl-value-text--ann, [data-rval="bea"] .rl-value-replica .rl-value-text--bea,
+[data-rval="cy"] .rl-value-replica .rl-value-text--cy, [data-rval="di"] .rl-value-replica .rl-value-text--di,
+[data-rval="ed"] .rl-value-replica .rl-value-text--ed, [data-rval="fay"] .rl-value-replica .rl-value-text--fay {
+  opacity: 1;
+}
+
+/* While the replica is handing back a value its primary has already replaced,
+   the chip holding that value warns rather than clears. */
+[data-stale-mark="on"] .rl-value-replica .scene-chip-outline {
+  stroke: var(--state-half);
+}
+
+.rl-lsn-primary,
+.rl-lsn-replica {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 24px;
+}
+
+[data-plsn="0"] .rl-lsn-primary--0, [data-plsn="1"] .rl-lsn-primary--1, [data-plsn="2"] .rl-lsn-primary--2,
+[data-plsn="3"] .rl-lsn-primary--3, [data-plsn="4"] .rl-lsn-primary--4, [data-plsn="5"] .rl-lsn-primary--5,
+[data-plsn="6"] .rl-lsn-primary--6, [data-plsn="7"] .rl-lsn-primary--7, [data-plsn="8"] .rl-lsn-primary--8,
+[data-plsn="9"] .rl-lsn-primary--9, [data-plsn="10"] .rl-lsn-primary--10, [data-plsn="11"] .rl-lsn-primary--11,
+[data-plsn="12"] .rl-lsn-primary--12 {
+  opacity: 1;
+}
+
+[data-rlsn="0"] .rl-lsn-replica--0, [data-rlsn="1"] .rl-lsn-replica--1, [data-rlsn="2"] .rl-lsn-replica--2,
+[data-rlsn="3"] .rl-lsn-replica--3, [data-rlsn="4"] .rl-lsn-replica--4, [data-rlsn="5"] .rl-lsn-replica--5,
+[data-rlsn="6"] .rl-lsn-replica--6, [data-rlsn="7"] .rl-lsn-replica--7, [data-rlsn="8"] .rl-lsn-replica--8,
+[data-rlsn="9"] .rl-lsn-replica--9, [data-rlsn="10"] .rl-lsn-replica--10, [data-rlsn="11"] .rl-lsn-replica--11,
+[data-rlsn="12"] .rl-lsn-replica--12 {
+  opacity: 1;
+}
+
+/* What the box on the right says about itself while it is doing it. */
+.rl-mark {
+  font-size: 24px;
+}
+
+.rl-mark--stale {
+  --flash-color: var(--state-half);
+}
+
+.rl-mark--promote {
+  --flash-color: var(--accent);
+}
+
+[data-stale-mark="on"] .rl-mark--stale,
+[data-replica="promoted"] .rl-mark--promote {
+  opacity: 1;
+}
+
+/* The stream, and the changes crossing it. A change is a diamond rather than a
+   request dot because nobody is waiting at the other end of it. */
+.rl-stream-line {
+  stroke-dasharray: 16 14;
+}
+
+.rl-stream-head {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[data-replica="promoted"] .rl-stream {
+  opacity: 0.3;
+}
+
+.rl-change {
+  fill: var(--state-half);
+}
+
+.rl-write {
+  fill: var(--request);
+}
+
+/* A change still crossing when the primary went is not late, it is gone: it
+   stops where it had got to and greys out. */
+[data-lost="on"] .rl-change--lost {
+  fill: var(--muted);
+}
+
+/* The lag: what the last change cost, on a readout and on a meter scaled to
+   the worst the scene reaches. */
+.rl-lag {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 600;
+}
+
+[data-lagstate="high"] .rl-lag {
+  fill: var(--state-open);
+}
+
+[data-lag="0"] .rl-lag--0, [data-lag="1"] .rl-lag--1, [data-lag="2"] .rl-lag--2, [data-lag="3"] .rl-lag--3,
+[data-lag="4"] .rl-lag--4, [data-lag="5"] .rl-lag--5, [data-lag="6"] .rl-lag--6, [data-lag="7"] .rl-lag--7,
+[data-lag="8"] .rl-lag--8, [data-lag="9"] .rl-lag--9, [data-lag="10"] .rl-lag--10, [data-lag="11"] .rl-lag--11,
+[data-lag="12"] .rl-lag--12, [data-lag="13"] .rl-lag--13, [data-lag="14"] .rl-lag--14, [data-lag="15"] .rl-lag--15,
+[data-lag="16"] .rl-lag--16, [data-lag="17"] .rl-lag--17, [data-lag="18"] .rl-lag--18, [data-lag="19"] .rl-lag--19,
+[data-lag="20"] .rl-lag--20, [data-lag="21"] .rl-lag--21, [data-lag="22"] .rl-lag--22, [data-lag="23"] .rl-lag--23,
+[data-lag="24"] .rl-lag--24, [data-lag="25"] .rl-lag--25, [data-lag="26"] .rl-lag--26, [data-lag="27"] .rl-lag--27,
+[data-lag="28"] .rl-lag--28, [data-lag="29"] .rl-lag--29, [data-lag="30"] .rl-lag--30, [data-lag="31"] .rl-lag--31,
+[data-lag="32"] .rl-lag--32 {
+  opacity: 1;
+}
+
+.rl-meter-fill {
+  --fill-color: var(--state-closed);
+}
+
+[data-lagstate="high"] .rl-meter-fill {
+  --fill-color: var(--state-open);
+}
+
+/* The mark the meter is read against, and what a failover above it cost. */
+.rl-tick {
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+  opacity: 0;
+}
+
+.rl-alert {
+  fill: var(--fg-soft);
+  font-size: 20px;
+  opacity: 0;
+}
+
+[data-alert="on"] .rl-tick,
+[data-alert="on"] .rl-alert {
+  opacity: 1;
+}
+
+.rl-lost {
+  --flash-color: var(--muted);
+
+  font-size: 24px;
+}
+
+.rl-rpo {
+  --flash-color: var(--state-open);
+
+  font-size: 20px;
+}
+
+[data-lost="on"] .rl-lost,
+[data-lost="on"] .rl-rpo {
+  opacity: 1;
+}

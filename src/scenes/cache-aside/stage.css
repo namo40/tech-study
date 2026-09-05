@@ -1,0 +1,87 @@
+/* ---------------------------------------------------------------- */
+/* Cache-Aside stage                                                 */
+/* ---------------------------------------------------------------- */
+
+.ca-row-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.ca-row[data-entry="empty"] .ca-row-bg {
+  fill: none;
+  stroke: var(--muted);
+  stroke-dasharray: 10 8;
+}
+
+.ca-key {
+  font-size: 26px;
+}
+
+.ca-chip-text {
+  font-size: 26px;
+}
+
+.ca-row[data-value="v1"] .ca-chip-text--v1,
+.ca-row[data-value="v2"] .ca-chip-text--v2 {
+  opacity: 1;
+}
+
+.ca-ttl-fill {
+  --fill-color: var(--accent);
+}
+
+.ca-ttl-label {
+  font-size: 20px;
+}
+
+/* One flash slot at the top right of the node, four possible words. */
+.ca-flash {
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+.ca-flash--hit {
+  --flash-color: var(--state-closed);
+}
+
+.ca-flash--miss,
+.ca-flash--stale {
+  --flash-color: var(--state-half);
+}
+
+.ca-flash--invalidate {
+  --flash-color: var(--state-open);
+}
+
+[data-flash="hit"] .ca-flash--hit,
+[data-flash="miss"] .ca-flash--miss,
+[data-flash="stale"] .ca-flash--stale,
+[data-flash="invalidate"] .ca-flash--invalidate {
+  opacity: 1;
+}
+
+/* Database: the authoritative value and how often it was read. */
+.ca-db-value {
+  fill: var(--fg);
+  font-size: 28px;
+}
+
+[data-db="v1"] .ca-db-value--v1,
+[data-db="v2"] .ca-db-value--v2 {
+  opacity: 1;
+}
+
+/* The one counter the design leaves at normal weight. */
+.ca-reads {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-weight: 400;
+}
+
+[data-reads="0"] .ca-reads--0,
+[data-reads="1"] .ca-reads--1,
+[data-reads="2"] .ca-reads--2,
+[data-reads="3"] .ca-reads--3 {
+  opacity: 1;
+}

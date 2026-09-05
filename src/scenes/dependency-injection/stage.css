@@ -1,0 +1,626 @@
+/* ---------------------------------------------------------------- */
+/* Dependency Injection stage                                        */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Three registrations, one graph built to order, and three lanes that fill at
+ * three different rates.
+ *
+ * The colour argument is small. Blue is what travels and whatever the scene is
+ * holding up at the moment. Green is an answer and anything that has settled:
+ * an answered request slot, the `ok n` readout, the `build` lamp once the
+ * container is up, and the closing frame. Red is the first step's ghost — the
+ * wires a class draws for itself and the touch points one swap would land on —
+ * and nothing else in the scene is red, because nothing else in the scene is
+ * wrong. Amber is an instance being made or handed out again, which is the one
+ * moment a lane changes. Muted grey is a slot with nothing in it, a
+ * registration not yet written, and an instance that has been released.
+ *
+ * Nothing is told apart by colour alone. A request slot with nothing in it is a
+ * **dashed hollow plate**, one carrying a request is a **filled plate**, one
+ * that was answered is a **filled plate with a check**. A registration row is a
+ * **dashed hollow plate** before it is written and a **solid plate carrying two
+ * symbols, an arrow and a badge** after; `build` gives every written row a
+ * **heavier rim**, because closing the registrations is a thing that happens to
+ * all of them at once. A lifetime badge is a **dashed empty pill** until the
+ * lifetimes are declared and a **filled pill with its word** after. In the
+ * graph region a need the container has not reached yet is a **dashed hollow
+ * circle on a dashed link** and one it has filled is a **solid circle on a
+ * solid link**. An instance slot is a **faint dashed empty square**, then a
+ * **heavy filled square** the instant it is made, then a **filled square**, and
+ * a released one is a **hollow dashed square with a line struck through it**;
+ * the one singleton being handed out again is a **filled square with a doubled
+ * rim**, which is the picture of a lane that gains nothing. The scope is a
+ * **dashed outline while closed and a solid one while open**.
+ *
+ * Every value the reader can read is a stack of elements on one spot with a
+ * base rule hiding all of them and the current `data-*` revealing exactly one,
+ * so nothing is interpolated and scrubbing backwards lands on the value rather
+ * than on an average of two: the `ok n` readout, each request slot's three
+ * plates, each registration row's two plates and its badge's two pills, each
+ * graph link and node's two fills, each of the twenty-one instance slots' five
+ * plates, the scope's two outlines, and the two lamps' five plates. The scene
+ * has no continuous quantity at all.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+.di-link--call,
+.di-link--make {
+  opacity: 0.7;
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+.di-req--call .scene-req-dot {
+  fill: var(--request);
+}
+
+/* The indication that the container has started making things. It is drawn in
+   the colour of work in progress, because that is all it is: nothing has been
+   decided by the time it lands. */
+.di-req--make .scene-req-dot {
+  fill: var(--state-half);
+}
+
+/* --- the bands ---------------------------------------------------------- */
+
+/* Every title sits at its band's left edge, so the column the lanes sweep stays
+   clear from the App box down to the Instances box. `Instances` is set smaller
+   than the other two names because it is the long one and the lower lane's
+   keep-out cuts across the band it names. */
+.di-title {
+  font-size: 40px;
+}
+
+.di-title--instances {
+  font-size: 32px;
+}
+
+/* --- the App band ------------------------------------------------------- */
+
+/* The readout. One text per value, and the state picks one, so the number never
+   interpolates and never counts anything the model did not count. */
+.di-ok {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 30px;
+}
+
+[data-di-ok="0"] .di-ok--0,
+[data-di-ok="1"] .di-ok--1,
+[data-di-ok="2"] .di-ok--2,
+[data-di-ok="3"] .di-ok--3,
+[data-di-ok="4"] .di-ok--4,
+[data-di-ok="5"] .di-ok--5 {
+  opacity: 1;
+}
+
+[data-di-settled="on"] .di-ok {
+  fill: var(--state-closed);
+}
+
+/* The two request slots, used in turn. The index marks are how they are told
+   apart when neither is carrying anything. */
+.di-slot-bg {
+  opacity: 0;
+}
+
+.di-slot-bg--idle {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 12 9;
+}
+
+.di-slot-bg--live {
+  fill: var(--request);
+  fill-opacity: 0.18;
+  stroke: var(--request);
+  stroke-width: 4;
+}
+
+.di-slot-bg--ok {
+  fill: var(--state-closed);
+  fill-opacity: 0.18;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+}
+
+[data-di-chip="idle"] .di-slot-bg--idle,
+[data-di-chip="live"] .di-slot-bg--live,
+[data-di-chip="ok"] .di-slot-bg--ok {
+  opacity: 1;
+}
+
+.di-slot-mark {
+  fill: var(--fg-soft);
+}
+
+[data-di-chip="live"] .di-slot-mark {
+  fill: var(--request);
+}
+
+[data-di-chip="ok"] .di-slot-mark {
+  fill: var(--state-closed);
+}
+
+.di-slot-glyph {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+[data-di-chip="ok"] .di-slot-glyph {
+  opacity: 1;
+}
+
+/* --- the Container band ------------------------------------------------- */
+
+/* A registration row. The plate says whether anything is registered here at
+   all; the body inside it is only ever drawn on a row that is. */
+.di-row-bg {
+  opacity: 0;
+}
+
+.di-row-bg--blank {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 16 12;
+}
+
+.di-row-bg--on {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+}
+
+[data-di-row="blank"] .di-row-bg--blank,
+[data-di-row="on"] .di-row-bg--on {
+  opacity: 1;
+}
+
+.di-row-body {
+  opacity: 0;
+}
+
+[data-di-row="on"] .di-row-body {
+  opacity: 1;
+}
+
+/* Building the container closes the registrations. It happens to every written
+   row at once, so it is drawn on the rim rather than inside. */
+[data-di-build="on"] .di-row-bg--on {
+  stroke: var(--state-closed);
+  stroke-width: 6;
+}
+
+.di-contract {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+}
+
+.di-impl {
+  fill: var(--fg-soft);
+  fill-opacity: 0.16;
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+}
+
+.di-symbol {
+  fill: var(--fg);
+  font-size: 26px;
+}
+
+.di-arrow {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The lifetime badge: an empty pill until the lifetimes are declared, then the
+   word itself. The row is registered either way — what changes is whether the
+   reader has been told how long the thing it makes lives. */
+.di-badge-bg {
+  opacity: 0;
+}
+
+.di-badge-bg--off {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.di-badge-bg--on {
+  fill: var(--accent);
+  fill-opacity: 0.16;
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+[data-di-lifetimes="off"] .di-badge-bg--off,
+[data-di-lifetimes="on"] .di-badge-bg--on {
+  opacity: 1;
+}
+
+.di-badge-word {
+  fill: var(--accent);
+  font-size: 24px;
+  opacity: 0;
+}
+
+[data-di-lifetimes="on"] .di-badge-word {
+  opacity: 1;
+}
+
+/* --- the graph region --------------------------------------------------- */
+
+/* One region, two spellings, and never both: the ghost belongs to the world
+   where a class makes its own dependencies, the tree to the one where a
+   container does. */
+.di-ghost {
+  opacity: 0;
+}
+
+[data-di-mode="direct"] .di-ghost {
+  opacity: 1;
+}
+
+[data-di-ghost="off"] .di-ghost {
+  opacity: 0;
+}
+
+.di-ghost-node {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+  opacity: 0;
+}
+
+[data-di-ghost="nodes"] .di-ghost-node,
+[data-di-ghost="deep"] .di-ghost-node,
+[data-di-ghost="lit"] .di-ghost-node,
+[data-di-ghost="near"] .di-ghost-node--1,
+[data-di-ghost="near"] .di-ghost-node--2 {
+  opacity: 1;
+}
+
+/* A wire drawn by hand, which is what `new` inside a class is. */
+.di-ghost-wire {
+  stroke: var(--state-open);
+  stroke-width: 5;
+  stroke-dasharray: 14 10;
+  opacity: 0;
+}
+
+[data-di-ghost="near"] .di-ghost-wire--1,
+[data-di-ghost="deep"] .di-ghost-wire,
+[data-di-ghost="lit"] .di-ghost-wire {
+  opacity: 1;
+}
+
+/* A place one swap would have to touch. It only ever appears on a wire that is
+   already drawn, because the wires are the work. */
+.di-ghost-touch {
+  fill: var(--state-open);
+  stroke: var(--bg);
+  stroke-width: 3;
+  opacity: 0;
+}
+
+[data-di-ghost="lit"] .di-ghost-touch {
+  opacity: 1;
+}
+
+[data-di-ghost="lit"] .di-ghost-wire {
+  stroke-width: 7;
+  stroke-dasharray: none;
+}
+
+[data-di-ghost="lit"] .di-ghost-node {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+.di-tree {
+  opacity: 0;
+}
+
+[data-di-mode="injected"] .di-tree {
+  opacity: 1;
+}
+
+.di-tree-link {
+  fill: none;
+  opacity: 0;
+}
+
+.di-tree-link--idle {
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 12 10;
+}
+
+.di-tree-link--on {
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+.di-tree-root,
+.di-tree-leaf {
+  opacity: 0;
+}
+
+.di-tree-root--idle,
+.di-tree-leaf--idle {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 14 11;
+}
+
+.di-tree-root--on,
+.di-tree-leaf--on {
+  fill: var(--accent);
+  fill-opacity: 0.2;
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+/* The chain is walked one declared need at a time, so a leaf is filled exactly
+   when the container has reached it and never before. */
+[data-di-assembly="idle"] .di-tree-link--idle,
+[data-di-assembly="idle"] .di-tree-leaf--idle,
+[data-di-assembly="idle"] .di-tree-root--idle,
+[data-di-assembly="w1"] .di-tree-root--idle,
+[data-di-assembly="w2"] .di-tree-root--idle,
+[data-di-assembly="w3"] .di-tree-root--idle,
+[data-di-assembly="built"] .di-tree-root--on {
+  opacity: 1;
+}
+
+[data-di-assembly="w1"] .di-tree-link--1.di-tree-link--on,
+[data-di-assembly="w1"] .di-tree-leaf--1.di-tree-leaf--on,
+[data-di-assembly="w1"] .di-tree-link--2.di-tree-link--idle,
+[data-di-assembly="w1"] .di-tree-leaf--2.di-tree-leaf--idle,
+[data-di-assembly="w1"] .di-tree-link--3.di-tree-link--idle,
+[data-di-assembly="w1"] .di-tree-leaf--3.di-tree-leaf--idle {
+  opacity: 1;
+}
+
+[data-di-assembly="w2"] .di-tree-link--1.di-tree-link--on,
+[data-di-assembly="w2"] .di-tree-leaf--1.di-tree-leaf--on,
+[data-di-assembly="w2"] .di-tree-link--2.di-tree-link--on,
+[data-di-assembly="w2"] .di-tree-leaf--2.di-tree-leaf--on,
+[data-di-assembly="w2"] .di-tree-link--3.di-tree-link--idle,
+[data-di-assembly="w2"] .di-tree-leaf--3.di-tree-leaf--idle {
+  opacity: 1;
+}
+
+[data-di-assembly="w3"] .di-tree-link--on,
+[data-di-assembly="w3"] .di-tree-leaf--on,
+[data-di-assembly="built"] .di-tree-link--on,
+[data-di-assembly="built"] .di-tree-leaf--on {
+  opacity: 1;
+}
+
+/* --- the Instances band ------------------------------------------------- */
+
+.di-lane-word {
+  fill: var(--fg-soft);
+  font-size: 22px;
+}
+
+.di-box-bg {
+  opacity: 0;
+}
+
+.di-box-bg--off {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 8 7;
+}
+
+.di-box-bg--new {
+  fill: var(--state-half);
+  fill-opacity: 0.3;
+  stroke: var(--state-half);
+  stroke-width: 6;
+}
+
+.di-box-bg--live {
+  fill: var(--fg-soft);
+  fill-opacity: 0.22;
+  stroke: var(--fg-soft);
+  stroke-width: 4;
+}
+
+/* The one instance being handed to somebody else. The second rim around it is
+   the whole point: the lane gains nothing. */
+.di-box-bg--reused {
+  fill: var(--state-half);
+  fill-opacity: 0.18;
+  stroke: var(--state-half);
+  stroke-width: 4;
+}
+
+.di-box-bg--disposed {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 6 6;
+}
+
+[data-di-box="off"] .di-box-bg--off,
+[data-di-box="new"] .di-box-bg--new,
+[data-di-box="live"] .di-box-bg--live,
+[data-di-box="reused"] .di-box-bg--reused,
+[data-di-box="disposed"] .di-box-bg--disposed {
+  opacity: 1;
+}
+
+/* The second rim, drawn only around the instance that is being handed out
+   again, so a reuse is a different shape and not only a different colour. */
+.di-box-ring {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 3;
+  opacity: 0;
+}
+
+[data-di-box="reused"] .di-box-ring {
+  opacity: 1;
+}
+
+.di-box-strike {
+  stroke: var(--muted);
+  stroke-width: 3;
+  opacity: 0;
+}
+
+[data-di-box="disposed"] .di-box-strike {
+  opacity: 1;
+}
+
+/* The scope: what an open one owns is everything drawn inside it, which is the
+   scoped lane and the transients resolved through it. */
+.di-scope {
+  fill: none;
+  opacity: 0;
+}
+
+.di-scope--closed {
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 14 12;
+}
+
+.di-scope--open {
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+[data-di-scope="closed"] .di-scope--closed,
+[data-di-scope="open"] .di-scope--open {
+  opacity: 1;
+}
+
+/* The container's own life, drawn as two lamps: one for the moment it is built
+   and one for the moment it lets go. */
+.di-lamp-bg {
+  opacity: 0;
+}
+
+.di-lamp-bg--build-off,
+.di-lamp-bg--dispose-off {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.di-lamp-bg--build-on {
+  fill: var(--state-closed);
+  fill-opacity: 0.18;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+}
+
+.di-lamp-bg--dispose-run {
+  fill: var(--state-half);
+  fill-opacity: 0.22;
+  stroke: var(--state-half);
+  stroke-width: 4;
+}
+
+.di-lamp-bg--dispose-done {
+  fill: var(--state-closed);
+  fill-opacity: 0.18;
+  stroke: var(--state-closed);
+  stroke-width: 4;
+  stroke-dasharray: 16 8;
+}
+
+[data-di-build="off"] .di-lamp-bg--build-off,
+[data-di-build="on"] .di-lamp-bg--build-on,
+[data-di-dispose="off"] .di-lamp-bg--dispose-off,
+[data-di-dispose="run"] .di-lamp-bg--dispose-run,
+[data-di-dispose="done"] .di-lamp-bg--dispose-done {
+  opacity: 1;
+}
+
+.di-lamp-word {
+  fill: var(--fg-soft);
+  font-size: 20px;
+}
+
+[data-di-build="on"] .di-lamp--build .di-lamp-word {
+  fill: var(--state-closed);
+}
+
+[data-di-dispose="run"] .di-lamp--dispose .di-lamp-word {
+  fill: var(--state-half);
+}
+
+[data-di-dispose="done"] .di-lamp--dispose .di-lamp-word {
+  fill: var(--state-closed);
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* A class says what it needs and nothing about what fills it. */
+[data-di-mark="declare"] .di-tree-leaf--idle,
+[data-di-mark="declare"] .di-tree-leaf--on {
+  stroke: var(--accent);
+  stroke-width: 7;
+  stroke-dasharray: none;
+}
+
+/* And the making happens in exactly one place. */
+[data-di-mark="onePlace"] .di-container > .scene-box {
+  stroke: var(--accent);
+  stroke-width: 6;
+}
+
+/* Swapping an implementation is one registration line. */
+[data-di-mark="oneLine"] .di-impl {
+  fill-opacity: 0.4;
+  stroke: var(--accent);
+  stroke-width: 7;
+}
+
+[data-di-mark="oneLine"] .di-arrow {
+  stroke: var(--accent);
+  stroke-width: 6;
+}
+
+/* Same classes, three counts. */
+[data-di-mark="grow"] .di-lane-word {
+  fill: var(--accent);
+}
+
+[data-di-mark="grow"] .di-box-bg--disposed,
+[data-di-mark="grow"] .di-box-bg--live {
+  stroke: var(--accent);
+  stroke-width: 5;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* The run is over: the registrations closed, every scope shut, every instance
+   released and the container gone with them. */
+[data-di-settled="on"] .di-app > .scene-box,
+[data-di-settled="on"] .di-container > .scene-box,
+[data-di-settled="on"] .di-instances > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}

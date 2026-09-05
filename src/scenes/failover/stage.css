@@ -1,0 +1,243 @@
+/* ---------------------------------------------------------------- */
+/* Failover stage                                                    */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Two machines that can each say all three words, which is the point: nothing
+ * here is drawn as "the primary" or "the replica", only as a box holding a
+ * badge whose value the timeline sets. Every badge, the connection target, the
+ * backlog and the vote count are stacks of text on one spot with the widget
+ * class hiding all of them, so the state picks the one that shows and nothing
+ * ever interpolates between two words.
+ *
+ * The colours carry the argument. `primary` is the colour of traffic, because
+ * the primary is the only machine the app is talking to; `replica` is the green
+ * of something healthy that is not being asked for anything; `down` is the red
+ * of a machine that has stopped. The same three colours appear on the lamps
+ * through the shared health widget, so the lamp under a box and the badge inside
+ * it are never telling two different stories.
+ *
+ * The backlog and the ledger are deliberately different colours from each other.
+ * `behind` is amber: a replica that is one write short is late, not wrong, and
+ * it catches up on its own. `lost` is red and it never goes out again, because
+ * the write it counts is not late — it is gone, and it is what the promotion
+ * cost.
+ *
+ * `data-repl` is the direction of the arrow between the boxes, and it is derived
+ * rather than told: it points from whichever machine is the primary to whichever
+ * is the replica, and it shows nothing at all while one of them is down. That is
+ * why the fourth step reads as a reversal instead of a restart.
+ */
+
+/* The connection: a name that never changes, and the machine it resolves to. */
+.fo-conn-bg {
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.fo-conn .fo-host {
+  font-size: 30px;
+}
+
+.fo-target-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.fo-target {
+  fill: var(--request);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+[data-target="a"] .fo-target--a,
+[data-target="b"] .fo-target--b {
+  opacity: 1;
+}
+
+/* A machine, and whether it is the one the app is being answered by. */
+.fo-node > .scene-box {
+  stroke-width: 3;
+}
+
+.fo-node-box {
+  fill: var(--surface);
+}
+
+[data-a="primary"] .fo-node-box--a,
+[data-b="primary"] .fo-node-box--b {
+  stroke: var(--request);
+  stroke-width: 5;
+}
+
+/* Stopped, not merely quiet: the outline breaks up and the name goes soft. */
+[data-a="down"] .fo-node-box--a,
+[data-b="down"] .fo-node-box--b {
+  stroke: var(--state-open);
+  stroke-dasharray: 12 10;
+}
+
+[data-a="down"] .fo-node--a .scene-node-title,
+[data-b="down"] .fo-node--b .scene-node-title {
+  fill: var(--fg-soft);
+}
+
+.fo-node .scene-node-title {
+  letter-spacing: 2px;
+}
+
+/* The word a machine says about itself. */
+.fo-badge-a-bg,
+.fo-badge-b-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+/* A machine that has stopped says so on the plate as well as in the word. */
+[data-a="down"] .fo-badge-a .fo-badge-a-bg,
+[data-b="down"] .fo-badge-b .fo-badge-b-bg {
+  stroke: var(--state-open);
+}
+
+.fo-role-a,
+.fo-role-b {
+  fill: var(--fg-soft);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.fo-role-a--primary,
+.fo-role-b--primary {
+  fill: var(--request);
+}
+
+.fo-role-a--replica,
+.fo-role-b--replica {
+  fill: var(--state-closed);
+}
+
+.fo-role-a--down,
+.fo-role-b--down {
+  fill: var(--state-open);
+}
+[data-a="primary"] .fo-role-a--primary,
+[data-a="replica"] .fo-role-a--replica,
+[data-a="down"] .fo-role-a--down,
+[data-b="primary"] .fo-role-b--primary,
+[data-b="replica"] .fo-role-b--replica,
+[data-b="down"] .fo-role-b--down {
+  opacity: 1;
+}
+
+/* How many writes the replica has not been sent. Late, not wrong. */
+/* The backlog plate is quieter than the role plate: it carries a number, not a name. */
+.fo-behind .fo-behind-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.fo-behind-text {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 28px;
+}
+
+.fo-behind-text--1 {
+  fill: var(--state-half);
+}
+[data-behind="0"] .fo-behind-text--0,
+[data-behind="1"] .fo-behind-text--1 {
+  opacity: 1;
+}
+
+/* The link between the machines, and which way it is carrying copies. */
+.fo-repl-line {
+  stroke-width: 5;
+}
+
+[data-repl="none"] .fo-repl .fo-repl-line {
+  stroke-dasharray: 10 12;
+  opacity: 0.45;
+}
+
+.fo-arrow {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+[data-repl="ab"] .fo-arrow--ab,
+[data-repl="ba"] .fo-arrow--ba {
+  opacity: 1;
+}
+
+/* The Monitor: one lamp per machine, at the foot of that machine's column. */
+.fo-monitor .scene-node-label {
+  letter-spacing: 2px;
+}
+
+.fo-lamp-a,
+.fo-lamp-b {
+  stroke: var(--bg);
+  stroke-width: 4;
+}
+
+.fo-lamp-a-ring,
+.fo-lamp-b-ring {
+  stroke-width: 5;
+}
+
+.fo-lamp-label {
+  fill: var(--fg-soft);
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* How many members are still counted, which is what a majority is read from. */
+.fo-votes {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 32px;
+}
+
+.fo-votes--2 {
+  fill: var(--state-half);
+}
+
+.fo-votes--1,
+.fo-votes--0 {
+  fill: var(--state-open);
+}
+[data-votes="0"] .fo-votes--0,
+[data-votes="1"] .fo-votes--1,
+[data-votes="2"] .fo-votes--2,
+[data-votes="3"] .fo-votes--3 {
+  opacity: 1;
+}
+
+/* What the promotion cost. Once it is on, it stays on. */
+.fo-lost {
+  --flash-color: var(--state-open);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+[data-lost="on"] .fo-lost {
+  opacity: 1;
+}
+
+/* Three travellers, three shapes: a write, a beat, and a copy of a write. */
+.fo-write {
+  fill: var(--request);
+}
+
+.fo-beat {
+  fill: var(--state-closed);
+}
+
+.fo-copy {
+  fill: var(--cpu);
+}

@@ -1,0 +1,368 @@
+/* ---------------------------------------------------------------- */
+/* Authorization Code stage                                          */
+/* ---------------------------------------------------------------- */
+
+/* The front channel is drawn dashed everywhere it appears, because the whole
+   scene turns on which of the two lines a thing travelled on. */
+.ac-front {
+  stroke-dasharray: 16 14;
+}
+
+/* The browser, whose address bar is the reason a code can leak at all. */
+.ac-url-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.ac-url-text {
+  font-size: 22px;
+  opacity: 0;
+}
+
+[data-url="app"] .ac-url-text--app,
+[data-url="authorize"] .ac-url-text--authorize,
+[data-url="code"] .ac-url-text--code {
+  opacity: 1;
+}
+
+[data-url="code"] .ac-url-text--code {
+  fill: var(--state-half);
+}
+
+[data-url="code"] .ac-url-bg {
+  stroke: var(--state-half);
+}
+
+/* A plate is one token, in the app's hands or in the server's record. It is
+   coloured by which token it is and goes grey when it stops being worth
+   anything. */
+.ac-plate {
+  opacity: 0;
+}
+
+.ac-plate-bg {
+  fill: var(--plate-color);
+}
+
+.ac-plate-text {
+  fill: var(--bg);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.ac-slot-text {
+  fill: var(--bg);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.ac-plate-strike {
+  stroke: var(--bg);
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+.ac-issued--code {
+  --plate-color: var(--state-half);
+}
+
+.ac-issued--access,
+.ac-hold--access {
+  --plate-color: var(--state-closed);
+}
+
+.ac-issued--id,
+.ac-hold--id {
+  --plate-color: var(--request);
+}
+
+.ac-issued--refresh,
+.ac-hold--refresh {
+  --plate-color: var(--cpu);
+}
+
+[data-code="issued"] .ac-issued--code,
+[data-code="used"] .ac-issued--code,
+[data-access="live"] .ac-issued--access,
+[data-access="expired"] .ac-issued--access,
+[data-id="issued"] .ac-issued--id,
+[data-refresh="live"] .ac-issued--refresh,
+[data-refresh="revoked"] .ac-issued--refresh,
+[data-hold-access="held"] .ac-hold--access,
+[data-hold-access="expired"] .ac-hold--access,
+[data-hold-id="held"] .ac-hold--id,
+[data-hold-refresh="held"] .ac-hold--refresh,
+[data-hold-refresh="revoked"] .ac-hold--refresh {
+  opacity: 1;
+}
+
+[data-code="used"] .ac-issued--code,
+[data-access="expired"] .ac-issued--access,
+[data-refresh="revoked"] .ac-issued--refresh,
+[data-hold-access="expired"] .ac-hold--access,
+[data-hold-refresh="revoked"] .ac-hold--refresh {
+  --plate-color: var(--muted);
+}
+
+[data-code="used"] .ac-issued--code .ac-plate-strike,
+[data-refresh="revoked"] .ac-issued--refresh .ac-plate-strike,
+[data-hold-refresh="revoked"] .ac-hold--refresh .ac-plate-strike {
+  opacity: 1;
+}
+
+/* What the app is, and what it invented for this one login. */
+.ac-public {
+  --flash-color: var(--cpu);
+  font-size: 20px;
+}
+
+[data-public="on"] .ac-public {
+  opacity: 1;
+}
+
+.ac-verifier {
+  font-size: 22px;
+  opacity: 0;
+}
+
+[data-verifier="on"] .ac-verifier {
+  opacity: 1;
+}
+
+/* The authorization server: one cell per endpoint, and the verdict the
+   `/token` cell reaches on whatever was brought to it. */
+.ac-cell {
+  fill: var(--surface-2);
+}
+
+.ac-endpoint {
+  fill: var(--fg);
+  font-size: 24px;
+}
+
+.ac-field {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-login="on"] .ac-field {
+  stroke: var(--state-half);
+}
+
+.ac-login {
+  --flash-color: var(--state-half);
+  font-size: 22px;
+}
+
+[data-login="on"] .ac-login {
+  opacity: 1;
+}
+
+.ac-challenge {
+  font-size: 18px;
+  opacity: 0;
+}
+
+[data-challenge="on"] .ac-challenge {
+  opacity: 1;
+}
+
+.ac-lock-body {
+  fill: var(--fg-soft);
+}
+
+.ac-lock-shackle {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.ac-verdict {
+  font-size: 22px;
+}
+
+.ac-verdict--secret,
+.ac-verdict--verifier {
+  --flash-color: var(--state-closed);
+}
+
+.ac-verdict--rotate {
+  --flash-color: var(--state-half);
+}
+
+.ac-verdict--used,
+.ac-verdict--no-secret,
+.ac-verdict--no-verifier,
+.ac-verdict--reused,
+.ac-verdict--revoked {
+  --flash-color: var(--state-open);
+}
+
+[data-verdict="secret"] .ac-verdict--secret,
+[data-verdict="verifier"] .ac-verdict--verifier,
+[data-verdict="used"] .ac-verdict--used,
+[data-verdict="no-secret"] .ac-verdict--no-secret,
+[data-verdict="no-verifier"] .ac-verdict--no-verifier,
+[data-verdict="rotate"] .ac-verdict--rotate,
+[data-verdict="reused"] .ac-verdict--reused,
+[data-verdict="revoked"] .ac-verdict--revoked {
+  opacity: 1;
+}
+
+/* What has been issued, and how much of the access token's life is left. */
+.ac-strip-frame {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.ac-life-fill {
+  --fill-color: var(--state-closed);
+}
+
+[data-access="expired"] .ac-life-fill {
+  --fill-color: var(--muted);
+}
+
+/* The attacker, which is drawn dashed because it is not part of the system. */
+.ac-attacker-box {
+  stroke-dasharray: 12 10;
+}
+
+.ac-attacker .scene-node-title {
+  fill: var(--fg-soft);
+}
+
+[data-attacker="active"] .ac-attacker-box {
+  stroke: var(--state-open);
+}
+
+[data-attacker="active"] .ac-attacker .scene-node-title {
+  fill: var(--state-open);
+}
+
+.ac-stolen {
+  opacity: 0;
+}
+
+.ac-stolen-bg {
+  fill: var(--state-half);
+}
+
+[data-stolen="code"] .ac-stolen,
+[data-stolen="refresh"] .ac-stolen,
+[data-stolen="old"] .ac-stolen {
+  opacity: 1;
+}
+
+[data-stolen="refresh"] .ac-stolen-bg {
+  fill: var(--cpu);
+}
+
+[data-stolen="old"] .ac-stolen-bg {
+  fill: var(--muted);
+}
+
+.ac-stolen-text {
+  fill: var(--bg);
+  font-size: 20px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+[data-stolen="code"] .ac-stolen-text--code,
+[data-stolen="refresh"] .ac-stolen-text--refresh,
+[data-stolen="old"] .ac-stolen-text--refresh {
+  opacity: 1;
+}
+
+.ac-note {
+  --flash-color: var(--state-open);
+  font-size: 18px;
+}
+
+[data-note="used"] .ac-note--used,
+[data-note="no-secret"] .ac-note--no-secret,
+[data-note="no-verifier"] .ac-note--no-verifier,
+[data-note="reused"] .ac-note--reused {
+  opacity: 1;
+}
+
+/* The API, which never sees anything but an access token. */
+.ac-api-note {
+  font-size: 24px;
+}
+
+.ac-api-note--ok {
+  --flash-color: var(--state-closed);
+}
+
+.ac-api-note--401 {
+  --flash-color: var(--state-open);
+}
+
+[data-api="ok"] .ac-api-note--ok,
+[data-api="401"] .ac-api-note--401 {
+  opacity: 1;
+}
+
+/* What travels. A redirect is a plain dot, because it carries nothing but
+   itself; everything else is a plate with the one word it is carrying, and the
+   word changes when the thing it stands for does. */
+.ac-chip-bg {
+  fill: var(--request);
+}
+
+.ac-chip-text {
+  fill: var(--bg);
+  font-size: 18px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.ac-req[data-carry="code"] .ac-chip-text--code,
+.ac-req[data-carry="tokens"] .ac-chip-text--tokens,
+.ac-req[data-carry="Bearer"] .ac-chip-text--bearer,
+.ac-req[data-carry="refresh"] .ac-chip-text--refresh,
+.ac-req[data-carry="access"] .ac-chip-text--access,
+.ac-req[data-carry="challenge"] .ac-chip-text--challenge {
+  opacity: 1;
+}
+
+.ac-req--code .ac-chip-bg,
+.ac-req--steal .ac-chip-bg {
+  fill: var(--state-half);
+}
+
+.ac-req--refresh .ac-chip-bg {
+  fill: var(--cpu);
+}
+
+.ac-req--attack .ac-chip-bg {
+  fill: var(--state-open);
+}
+
+.ac-req--api .ac-chip-bg {
+  fill: var(--state-closed);
+}
+
+.ac-req[data-carry="tokens"] .ac-chip-bg {
+  fill: var(--state-closed);
+}
+
+/* The one flow that never happens: tokens on the front channel, drawn hollow
+   because the reader is being shown what the code exists to prevent. */
+.ac-req--ghost .ac-chip-bg {
+  fill: none;
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+  stroke-dasharray: 8 8;
+}
+
+.ac-req--ghost .ac-chip-text {
+  fill: var(--fg-soft);
+}

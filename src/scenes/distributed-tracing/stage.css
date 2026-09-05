@@ -1,0 +1,293 @@
+/* ---------------------------------------------------------------- */
+/* Distributed Tracing stage                                         */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Two halves, and the whole scene is the line between them. The top two thirds
+ * are the system as it runs: a client, a broker, four services, and the plate a
+ * request carries its context on. The bottom third is the Trace panel, which is
+ * not part of the system at all but a reading of it, so it is drawn quieter —
+ * a name column, an axis, and bars whose only colour is the one that says a
+ * span took too long or a trace was worth keeping.
+ */
+
+/* The services, and the one that is doing something right now. */
+.dt-title {
+  fill: var(--fg);
+}
+
+.dt-svc[data-svc="busy"] .dt-svc-box {
+  stroke: var(--request);
+}
+
+.dt-svc[data-svc="busy"] .dt-title {
+  fill: var(--request);
+}
+
+/* What a service wrote in its own log, which on its own explains nothing. */
+.dt-log {
+  fill: var(--fg-soft);
+  font-size: 16px;
+  opacity: 0;
+}
+
+[data-log-gateway="get"] .dt-log--gateway.dt-log--get,
+[data-log-orders="load"] .dt-log--orders.dt-log--load,
+[data-log-orders="publish"] .dt-log--orders.dt-log--publish,
+[data-log-payments="charge"] .dt-log--payments.dt-log--charge,
+[data-log-payments="tenant"] .dt-log--payments.dt-log--tenant,
+[data-log-worker="consume"] .dt-log--worker.dt-log--consume {
+  opacity: 1;
+}
+
+/* Baggage arriving is the one log line that came from somewhere else. */
+.dt-log--tenant {
+  fill: var(--cpu);
+}
+
+/* Three lines nobody can join up. */
+.dt-doubt {
+  --flash-color: var(--state-half);
+  font-size: 28px;
+}
+
+[data-doubt="on"] .dt-doubt {
+  opacity: 1;
+}
+
+/* The broker, and the message sitting in it. */
+.dt-queue .scene-box {
+  fill: var(--surface-2);
+}
+
+.dt-slot {
+  fill: var(--surface);
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+.dt-slot[data-slot-state="busy"] {
+  fill: var(--cpu);
+  stroke: var(--cpu);
+}
+
+/* The Trace panel: a readout, so everything in it is quieter than the stage. */
+.dt-panel .scene-box {
+  fill: var(--surface-2);
+}
+
+.dt-grid {
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.dt-axis {
+  font-size: 20px;
+}
+
+.dt-id-text {
+  font-size: 20px;
+  fill: var(--fg-soft);
+  opacity: 0;
+}
+
+.dt-id-text--minted {
+  fill: var(--request);
+}
+
+[data-traceid="none"] .dt-id-text--none,
+[data-traceid="minted"] .dt-id-text--minted {
+  opacity: 1;
+}
+
+[data-traceid="minted"] .dt-id-bg {
+  stroke: var(--request);
+}
+
+.dt-meter-label {
+  font-size: 20px;
+}
+
+.dt-meter-fill {
+  --fill-color: var(--cpu);
+}
+
+/* One row of the waterfall: the span's name, and the bar it is drawn as. */
+.dt-name {
+  fill: var(--fg-soft);
+  font-size: 16px;
+  opacity: 0;
+}
+
+.dt-row[data-row="root"] .dt-name--root,
+.dt-row[data-row="load"] .dt-name--load,
+.dt-row[data-row="charge"] .dt-name--charge,
+.dt-row[data-row="consume"] .dt-name--consume {
+  opacity: 1;
+}
+
+.dt-bar {
+  --fill-color: var(--request);
+  opacity: 0;
+}
+
+.dt-row[data-bar="running"] .dt-bar,
+.dt-row[data-bar="done"] .dt-bar,
+.dt-row[data-bar="slow"] .dt-bar,
+.dt-row[data-bar="guilty"] .dt-bar {
+  opacity: 1;
+}
+
+.dt-row[data-bar="slow"] .dt-bar,
+.dt-row[data-bar="guilty"] .dt-bar {
+  --fill-color: var(--state-half);
+}
+
+.dt-row[data-bar="guilty"] .dt-bar {
+  stroke: var(--state-open);
+  stroke-width: 4;
+}
+
+/* The number a settled bar is worth reading, written along its own end. */
+.dt-total {
+  fill: var(--bg);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* Only the named rows or only the stacked ones, never both at once. */
+[data-panel="mini"] .dt-row,
+[data-panel="mini"] .dt-link,
+[data-panel="named"] .dt-mini {
+  opacity: 0;
+}
+
+/*
+ * A message hop is a link, not a nesting: the consumer started after the
+ * producing span had already closed, so the panel joins the two ends with a
+ * dotted line instead of putting one inside the other.
+ */
+.dt-link {
+  fill: none;
+  stroke: var(--cpu);
+  stroke-width: 3;
+  stroke-dasharray: 8 8;
+  opacity: 0;
+}
+
+[data-link="on"] .dt-link {
+  opacity: 1;
+}
+
+/*
+ * The ten traces a burst produces. They carry no names and sit closer together
+ * than a labelled row may: this is row texture, read as a quantity of stored
+ * traces rather than as a table anybody looks up a value in.
+ */
+.dt-mini {
+  --fill-color: var(--request);
+  opacity: 0;
+}
+
+.dt-mini[data-mini="ok"],
+.dt-mini[data-mini="error"],
+.dt-mini[data-mini="slow"],
+.dt-mini[data-mini="held"],
+.dt-mini[data-mini="dropped"] {
+  opacity: 1;
+}
+
+.dt-mini[data-mini="slow"] {
+  --fill-color: var(--state-half);
+}
+
+.dt-mini[data-mini="error"] {
+  --fill-color: var(--state-open);
+}
+
+.dt-mini[data-mini="held"] {
+  --fill-color: var(--muted);
+}
+
+.dt-mini[data-mini="dropped"] {
+  --fill-color: var(--muted);
+  opacity: 0.45;
+}
+
+/* What the sampler in front of all of it is set to. */
+.dt-mode {
+  font-family: var(--font-mono);
+  font-size: 24px;
+}
+
+.dt-mode--all {
+  --flash-color: var(--fg-soft);
+}
+
+.dt-mode--head {
+  --flash-color: var(--state-half);
+}
+
+.dt-mode--tail {
+  --flash-color: var(--state-closed);
+}
+
+[data-mode="all"] .dt-mode--all,
+[data-mode="head"] .dt-mode--head,
+[data-mode="tail"] .dt-mode--tail {
+  opacity: 1;
+}
+
+/*
+ * What travels: a dot, with the plate the context rides on hanging under it.
+ * A request with no plate at all is step 1, where nothing is propagated.
+ */
+.dt-carry {
+  opacity: 0;
+}
+
+.dt-carry-bg {
+  fill: var(--request);
+}
+
+.dt-carry-text {
+  fill: var(--bg);
+  font-size: 15px;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.dt-req[data-carry="tp"] .dt-carry,
+.dt-req[data-carry="tp-bag"] .dt-carry,
+.dt-req[data-carry="sampled"] .dt-carry,
+.dt-req[data-carry="unsampled"] .dt-carry {
+  opacity: 1;
+}
+
+.dt-req[data-carry="tp"] .dt-carry-text--tp,
+.dt-req[data-carry="tp-bag"] .dt-carry-text--tp-bag,
+.dt-req[data-carry="sampled"] .dt-carry-text--sampled,
+.dt-req[data-carry="unsampled"] .dt-carry-text--unsampled {
+  opacity: 1;
+}
+
+.dt-req[data-carry="tp-bag"] .dt-carry-bg {
+  fill: var(--cpu);
+}
+
+.dt-req[data-carry="sampled"] .dt-carry-bg {
+  fill: var(--state-closed);
+}
+
+.dt-req[data-carry="unsampled"] .dt-carry-bg {
+  fill: var(--muted);
+}
+
+.dt-req--message .scene-req-dot {
+  fill: var(--cpu);
+}
+
+/* A call that came back but came back slow is a success with a warning on it. */
+.dt-req[data-slow="1"] .scene-req-ok-bg {
+  fill: var(--state-half);
+}

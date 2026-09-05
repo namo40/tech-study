@@ -58,14 +58,14 @@ src/
   layouts/              Document shell: head, fonts, theme, header, footer
   pages/                Root redirect, /{lang}/, /{lang}/{slug}
   components/           Header, language switcher, theme toggle, scene player
-  scenes/               Stage markup and GSAP timelines
+  scenes/               Stage markup, stage styles, and GSAP timelines
   scripts/              Player, sound cues, theme toggle
-  styles/               Design tokens, global styles, scene styles
+  styles/               Design tokens, global styles, shared scene widgets
 ```
 
 ## Adding a scene
 
-A scene is a folder under `src/scenes/<id>/` holding two modules.
+A scene is a folder under `src/scenes/<id>/` holding two modules and a stylesheet.
 
 `stage.ts` exports `stageMarkup`, the static SVG the page ships with. Build it from the shared builders in `src/scenes/shared/stage.ts`: `clientBox`, `nodeFrame`, `serviceBox`, `verticalLink`, `healthDot`, `slotRow`, `counterVariants`, `timerRing`, `trackAndFill`, `chip`, `requestsLayer`. Every coordinate is an argument, so a stage keeps its own numbers and still reads as the same diagram as its neighbours. Coordinates are written in a 1080 × 1920 space that the shared `VIEWBOX` crops to `0 400 1080 1520`, so `y` 0..400 is outside the canvas and `y` 400..440 is the frame's top padding above the first box. The module is imported on the server, so it must not pull in GSAP, and it has to end with the empty `scene-requests` layer the player fills at run time.
 
@@ -73,7 +73,7 @@ A scene is a folder under `src/scenes/<id>/` holding two modules.
 
 Change state by attribute, never from a callback. `attr(tl, target, name, value, at)` in `src/scenes/shared/state.ts` writes a `data-*` value with a zero-length tween, and CSS keyed on that attribute decides what it looks like. That is what keeps both scrub directions and both themes correct, because the colour is never interpolated.
 
-Style the stage with the widget classes in `src/styles/scene.css` — `.scene-track`, `.scene-fill`, `.scene-ring`, `.scene-counter`, `.scene-flash`, `.scene-slot`, `.scene-chip`, `.scene-mono`, `.scene-health` — written next to your own prefixed class. The scene rule then says only what is different, which is usually a custom property (`--fill-color`, `--ring-color`, `--ring-width`, `--flash-color`) and a font size.
+`stage.css` holds the rules for that one stage. The registry reads it as text and the page that draws the scene inlines it, so a reader downloads the rules for the stage in front of them and not for the other ninety. What every stage shares stays in `src/styles/scene.css`: the boxes, the connectors, and the widget classes — `.scene-track`, `.scene-fill`, `.scene-ring`, `.scene-counter`, `.scene-flash`, `.scene-slot`, `.scene-chip`, `.scene-mono`, `.scene-health` — which you write next to your own prefixed class. The scene rule then says only what is different, which is usually a custom property (`--fill-color`, `--ring-color`, `--ring-width`, `--flash-color`) and a font size. The shared stylesheet is linked from the head and the scene's is inlined in the body, so a prefixed rule still wins over the widget rule it sits next to. A rule written only with shared classes or state attributes can reach any stage, so it belongs in the shared stylesheet too, under its `Rules shared across stages` section, not in a scene's own file.
 
 A scene with a queue, a pool, or anything else where one event books the next should work out its schedule first and lay tweens down afterwards. `createScheduler()` in `src/scenes/shared/simulation.ts` runs booked events earliest first and lets a running event book more, and `collapseLast` and `collapseAtInstant` fold changes that land on the same instant so a single frame does not depend on which way the reader scrubbed.
 

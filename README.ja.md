@@ -58,14 +58,14 @@ src/
   layouts/              文書の骨格: head、フォント、テーマ、ヘッダー、フッター
   pages/                ルートのリダイレクト、/{lang}/、/{lang}/{slug}
   components/           ヘッダー、言語切り替え、テーマ切り替え、シーンプレーヤー
-  scenes/               ステージのマークアップと GSAP タイムライン
+  scenes/               ステージのマークアップ、ステージのスタイル、GSAP タイムライン
   scripts/              プレーヤー、効果音、テーマ切り替え
-  styles/               デザイントークン、全体スタイル、シーンスタイル
+  styles/               デザイントークン、全体スタイル、共通のシーンウィジェット
 ```
 
 ## シーンを追加する
 
-1 つのシーンは `src/scenes/<id>/` フォルダーで、その中にモジュールを 2 つ置きます。
+1 つのシーンは `src/scenes/<id>/` フォルダーで、その中にモジュールを 2 つとスタイルシートを 1 つ置きます。
 
 `stage.ts` は、ページにそのまま載る静的な SVG である `stageMarkup` を公開します。`src/scenes/shared/stage.ts` の共通ビルダーで組み立ててください。`clientBox`、`nodeFrame`、`serviceBox`、`verticalLink`、`healthDot`、`slotRow`、`counterVariants`、`timerRing`、`trackAndFill`、`chip`、`requestsLayer` があります。座標はすべて引数なので、シーンごとに自分の数値を保ったまま、隣のシーンと同じ図として読めます。座標は 1080 × 1920 の空間に書きますが、共通の `VIEWBOX` がこの空間を `0 400 1080 1520` に切り取ります。そのため `y` 0..400 はキャンバスの外で、`y` 400..440 は最初のボックスの上に残したフレームの余白です。このモジュールはサーバー側で import されるため GSAP を持ち込んではならず、プレーヤーが実行時に埋める空の `scene-requests` レイヤーで終わる必要があります。
 
@@ -73,7 +73,7 @@ src/
 
 状態は属性で変え、コールバックでは変えません。`src/scenes/shared/state.ts` の `attr(tl, target, name, value, at)` が長さ 0 の tween で `data-*` の値を書き、その属性を見る CSS が見た目を決めます。色を補間しないので、スクラブの両方向でも 2 つのテーマでも正しいままです。
 
-ステージのスタイルには `src/styles/scene.css` のウィジェットクラスを使います。`.scene-track`、`.scene-fill`、`.scene-ring`、`.scene-counter`、`.scene-flash`、`.scene-slot`、`.scene-chip`、`.scene-mono`、`.scene-health` を、シーンの接頭辞付きクラスの隣に並べて書きます。するとシーン側の規則には違うところだけが残り、たいていはカスタムプロパティ（`--fill-color`、`--ring-color`、`--ring-width`、`--flash-color`）1 つとフォントサイズだけになります。
+`stage.css` には、そのシーン 1 つ分の規則だけを置きます。レジストリがこのファイルをテキストとして読み、シーンを描くページがインラインで載せるので、読む人は目の前のステージに必要な規則だけを受け取り、残りの 90 個は受け取りません。すべてのステージで共通のものは `src/styles/scene.css` に残ります。ボックス、コネクター、そしてウィジェットクラスの `.scene-track`、`.scene-fill`、`.scene-ring`、`.scene-counter`、`.scene-flash`、`.scene-slot`、`.scene-chip`、`.scene-mono`、`.scene-health` がここにあり、これらをシーンの接頭辞付きクラスの隣に並べて書きます。するとシーン側の規則には違うところだけが残り、たいていはカスタムプロパティ（`--fill-color`、`--ring-color`、`--ring-width`、`--flash-color`）1 つとフォントサイズだけになります。共通のスタイルシートは head からリンクで読み込まれ、シーンのスタイルシートは本文にインラインで置かれるため、接頭辞付きの規則は隣に並べたウィジェットの規則を変わらず上書きします。共通のクラスや状態の属性だけで書いた規則はどのステージにも届くため、シーンのファイルではなく共通のスタイルシートの `Rules shared across stages` の節に置きます。
 
 キューやプールのように 1 つの出来事が次の出来事を呼ぶシーンは、先に予定を計算してから tween を並べます。`src/scenes/shared/simulation.ts` の `createScheduler()` は予約した出来事を早い順に実行し、実行の途中で新しい出来事を予約することもできます。`collapseLast` と `collapseAtInstant` は同じ瞬間に重なる変化を 1 つにたたみ、その 1 フレームが読む人のスクラブ方向で変わらないようにします。
 

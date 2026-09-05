@@ -1,0 +1,91 @@
+/* ---------------------------------------------------------------- */
+/* Circuit Breaker stage                                             */
+/* ---------------------------------------------------------------- */
+
+.cb-arm {
+  stroke: var(--state-closed);
+  stroke-width: 16;
+  stroke-linecap: round;
+}
+
+[data-state="open"] .cb-arm {
+  stroke: var(--state-open);
+}
+
+[data-state="half"] .cb-arm {
+  stroke: var(--state-half);
+  stroke-dasharray: 12 14;
+}
+
+.cb-contact {
+  fill: var(--bg);
+  stroke: var(--fg);
+  stroke-width: 5;
+}
+
+.cb-badge-glow {
+  fill: var(--state-closed);
+  opacity: 0;
+}
+
+[data-state="open"] .cb-badge-glow {
+  fill: var(--state-open);
+}
+
+[data-state="half"] .cb-badge-glow {
+  fill: var(--state-half);
+}
+
+.cb-badge-pill {
+  fill: var(--state-closed);
+}
+
+[data-state="open"] .cb-badge-pill {
+  fill: var(--state-open);
+}
+
+[data-state="half"] .cb-badge-pill {
+  fill: var(--state-half);
+}
+
+.cb-badge-text {
+  fill: var(--bg);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  opacity: 0;
+}
+
+[data-state="closed"] .cb-badge-text--closed,
+[data-state="open"] .cb-badge-text--open,
+[data-state="half"] .cb-badge-text--half {
+  opacity: 1;
+}
+
+.cb-timer {
+  --ring-width: 11;
+  --ring-color: var(--state-open);
+}
+
+.cb-meter-fill {
+  --fill-color: var(--state-closed);
+}
+
+[data-meter="2"] .cb-meter-fill {
+  --fill-color: var(--state-half);
+}
+
+[data-meter="3"] .cb-meter-fill {
+  --fill-color: var(--state-open);
+}
+
+.cb-threshold {
+  stroke: var(--fg);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.cb-threshold-label {
+  fill: var(--fg-soft);
+  font-size: 19px;
+}

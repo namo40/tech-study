@@ -1,0 +1,560 @@
+/* ---------------------------------------------------------------- */
+/* Feature Flag stage                                                */
+/* ---------------------------------------------------------------- */
+
+/*
+ * One switch, and the two sentences it separates: the code is on the servers,
+ * and somebody can see it. Every rule below reads one of the four things that
+ * follow — a world with no switch in it, a dial that turns a blast radius into
+ * a number, a flip that takes a release back without a build, and a switch that
+ * has done its job and has to come out.
+ *
+ * The colour argument is small. Blue is the path that already works: v1, a
+ * caller standing on it, an assignment travelling to it. Purple is the new code
+ * everywhere it appears — a caller admitted to it, a bucket under the line, an
+ * assignment on its way to v2 — because the whole pattern is about who reaches
+ * that one thing. Red is the build being wrong and the moment it cannot be
+ * taken back. Green is a thing that stopped going wrong and the settled frame.
+ * Amber is whatever the scene is holding up. Grey, hollow and dashed are
+ * absence: a caller nothing has assigned, a lane nothing is using, a switch
+ * that is not there.
+ *
+ * The three states the reader must never confuse are drawn three ways rather
+ * than three colours. A caller on v1 is a solid blue disc with no rim; a caller
+ * admitted to v2 is a solid purple disc with a rim in the page colour cut
+ * through it; a caller nothing has assigned is hollow and dashed with no fill
+ * at all. That holds in both themes because all three resolve to tokens and
+ * differ in fill pattern as well as hue.
+ *
+ * The two absences are drawn apart for the same reason. Before the flag exists
+ * the plate is a dashed amber outline with a bar across it, and the first step
+ * turns that red while it says the only way back is another deploy. After the
+ * flag is removed the same plate is green, because the same unconditional path
+ * arrived at on purpose is the finished job rather than the defect. The word in
+ * the plate reads `v2` in both, which is the honest thing: the mechanism is
+ * identical and only the twelve seconds in between are not.
+ *
+ * Every value the reader can read is a stack of text elements on one spot,
+ * hidden by a base rule and revealed one at a time by the current `data-*`, so
+ * nothing interpolates and scrubbing backwards is exact in both themes.
+ */
+
+/* --- the lanes ---------------------------------------------------------- */
+
+/*
+ * A lane nothing is being sent down is drawn as the path this setting is not
+ * taking. Which one that is falls straight out of the setting: `off` and `kill`
+ * close v2, and a hundred percent or no flag at all closes v1.
+ */
+[data-ff-flag="off"] .ff-lane--v2,
+[data-ff-flag="kill"] .ff-lane--v2,
+[data-ff-flag="p100"] .ff-lane--v1,
+[data-ff-flag="none"] .ff-lane--v1 {
+  stroke: var(--muted);
+  stroke-dasharray: 16 16;
+  opacity: 0.5;
+}
+
+/* Nothing is on its way anywhere on the settled frame. */
+[data-ff-settled="on"] .ff-lane {
+  stroke: var(--border);
+}
+
+[data-ff-settled="on"] .ff-lane--v2 {
+  stroke: var(--state-closed);
+}
+
+/* --- the Users ---------------------------------------------------------- */
+
+/*
+ * The badge says what is on the servers, which is not what anybody is seeing.
+ * Before the deploy it is a hollow plate naming the one version that exists;
+ * after it, a filled plate saying the new code is there and waiting.
+ */
+.ff-dep-bg {
+  opacity: 0;
+}
+
+.ff-dep-bg--off {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 12 10;
+}
+
+.ff-dep-bg--on {
+  fill: var(--surface-2);
+  stroke: var(--cpu);
+  stroke-width: 3;
+}
+
+[data-ff-deployed="off"] .ff-dep-bg--off,
+[data-ff-deployed="on"] .ff-dep-bg--on {
+  opacity: 1;
+}
+
+.ff-dep-text {
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+.ff-dep-text--off {
+  fill: var(--muted);
+}
+
+.ff-dep-text--on {
+  fill: var(--cpu);
+}
+
+[data-ff-deployed="off"] .ff-dep-text--off,
+[data-ff-deployed="on"] .ff-dep-text--on {
+  opacity: 1;
+}
+
+/*
+ * A caller, drawn twice: once as itself in the Users box and once as its bucket
+ * in the strip. Both carry one state and both answer to the same three rules,
+ * so a reader who follows a dot down the stage finds the same answer twice.
+ */
+.ff-dot {
+  fill: var(--muted);
+}
+
+.ff-dot[data-ff-cell="off"] {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 6 6;
+}
+
+.ff-dot[data-ff-cell="v1"] {
+  fill: var(--request);
+  stroke: none;
+}
+
+.ff-dot[data-ff-cell="v2"] {
+  fill: var(--cpu);
+  stroke: var(--bg);
+  stroke-width: 4;
+}
+
+/* --- the Flag ----------------------------------------------------------- */
+
+/* A Flag box with no switch in it is not a whole one, and the frame says so
+   before the plate inside it does. Amber while nothing has been decided yet,
+   green once the deciding is over. */
+[data-ff-switch="ghost"] .ff-flag > .scene-box {
+  stroke: var(--state-half);
+  stroke-dasharray: 18 12;
+}
+
+[data-ff-switch="removed"] .ff-flag > .scene-box {
+  stroke: var(--state-closed);
+  stroke-dasharray: 18 12;
+}
+
+/*
+ * The switch itself, present only while there is one. The plate, the rail, the
+ * share admitted and the knob are one group, so the whole control appears and
+ * disappears together rather than dissolving part by part.
+ */
+.ff-switch,
+.ff-absent {
+  opacity: 0;
+}
+
+[data-ff-switch="on"] .ff-switch,
+[data-ff-switch="ghost"] .ff-absent--ghost,
+[data-ff-switch="removed"] .ff-absent--removed {
+  opacity: 1;
+}
+
+.ff-plate {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 3;
+}
+
+.ff-rail {
+  fill: var(--surface);
+}
+
+/* How much of the dial is open. `off` and `kill` draw nothing, which is the
+   point of both of them. */
+.ff-share {
+  --fill-color: var(--cpu);
+  opacity: 0;
+}
+
+.ff-knob {
+  fill: var(--fg);
+  stroke: var(--surface-2);
+  stroke-width: 4;
+  opacity: 0;
+}
+
+[data-ff-flag="off"] .ff-share--off,
+[data-ff-flag="p10"] .ff-share--p10,
+[data-ff-flag="p50"] .ff-share--p50,
+[data-ff-flag="p100"] .ff-share--p100,
+[data-ff-flag="kill"] .ff-share--kill,
+[data-ff-flag="off"] .ff-knob--off,
+[data-ff-flag="p10"] .ff-knob--p10,
+[data-ff-flag="p50"] .ff-knob--p50,
+[data-ff-flag="p100"] .ff-knob--p100,
+[data-ff-flag="kill"] .ff-knob--kill {
+  opacity: 1;
+}
+
+/* A killed switch is not an idle one. The knob is in the same place as `off`
+   and everything around it says why it got there. */
+[data-ff-flag="kill"] .ff-plate {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+[data-ff-flag="kill"] .ff-knob--kill {
+  fill: var(--state-open);
+}
+
+/*
+ * The switch that is not there. A dashed hollow plate with a bar where the rail
+ * would be: absence drawn as absence, in the colour of what it means. Amber
+ * before the flag exists, because a deploy that is a release is a problem
+ * waiting; green once the flag has been removed, because that is the job
+ * finished.
+ */
+.ff-absent-plate {
+  fill: none;
+  stroke-width: 3;
+  stroke-dasharray: 18 12;
+}
+
+.ff-absent-bar {
+  stroke-width: 5;
+  stroke-dasharray: 14 12;
+  stroke-linecap: round;
+}
+
+.ff-absent--ghost .ff-absent-plate,
+.ff-absent--ghost .ff-absent-bar {
+  stroke: var(--state-half);
+}
+
+.ff-absent--removed .ff-absent-plate,
+.ff-absent--removed .ff-absent-bar {
+  stroke: var(--state-closed);
+}
+
+/* The word the switch is set to, and the word that stands in for it having
+   gone. Every one of them is on the fixed label list. */
+.ff-word {
+  fill: var(--fg);
+  font-size: 42px;
+  letter-spacing: 1px;
+}
+
+.ff-word--none {
+  fill: var(--state-half);
+}
+
+.ff-word--off {
+  fill: var(--fg-soft);
+}
+
+.ff-word--p10,
+.ff-word--p50,
+.ff-word--p100 {
+  fill: var(--cpu);
+}
+
+.ff-word--kill {
+  fill: var(--state-open);
+}
+
+[data-ff-flag="none"] .ff-word--none,
+[data-ff-flag="off"] .ff-word--off,
+[data-ff-flag="p10"] .ff-word--p10,
+[data-ff-flag="p50"] .ff-word--p50,
+[data-ff-flag="p100"] .ff-word--p100,
+[data-ff-flag="kill"] .ff-word--kill {
+  opacity: 1;
+}
+
+/* Once the switch has been taken out, the unconditional path is the finished
+   job rather than the first step's accident, and the word says so. */
+[data-ff-switch="removed"] .ff-word--none {
+  fill: var(--state-closed);
+}
+
+/*
+ * The band of buckets the setting admits. It rises from the strip's baseline to
+ * the percentage, so the callers under it are the callers on the new code — and
+ * a reader can count them rather than take the number on trust.
+ */
+.ff-band {
+  opacity: 0;
+}
+
+[data-ff-flag="off"] .ff-band--off,
+[data-ff-flag="p10"] .ff-band--p10,
+[data-ff-flag="p50"] .ff-band--p50,
+[data-ff-flag="p100"] .ff-band--p100,
+[data-ff-flag="kill"] .ff-band--kill {
+  opacity: 1;
+}
+
+.ff-band-fill {
+  fill: var(--cpu);
+  opacity: 0.14;
+}
+
+.ff-band-edge {
+  stroke: var(--cpu);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+/* --- the two paths ------------------------------------------------------ */
+
+/*
+ * Both paths stand the whole time. That is the argument: the code that is not
+ * being reached has not gone anywhere, which is why taking a release back costs
+ * a flip rather than a build. What changes is which one is holding traffic.
+ */
+.ff-served-v1,
+.ff-served-v2 {
+  fill: var(--fg-soft);
+  font-size: 36px;
+}
+
+[data-ff-v1="0"] .ff-served-v1--0,
+[data-ff-v1="1"] .ff-served-v1--1,
+[data-ff-v1="2"] .ff-served-v1--2,
+[data-ff-v1="3"] .ff-served-v1--3,
+[data-ff-v1="4"] .ff-served-v1--4,
+[data-ff-v1="5"] .ff-served-v1--5,
+[data-ff-v1="6"] .ff-served-v1--6,
+[data-ff-v1="7"] .ff-served-v1--7,
+[data-ff-v1="8"] .ff-served-v1--8,
+[data-ff-v1="9"] .ff-served-v1--9,
+[data-ff-v1="10"] .ff-served-v1--10,
+[data-ff-v1="11"] .ff-served-v1--11,
+[data-ff-v1="12"] .ff-served-v1--12,
+[data-ff-v1="13"] .ff-served-v1--13,
+[data-ff-v1="14"] .ff-served-v1--14,
+[data-ff-v1="15"] .ff-served-v1--15,
+[data-ff-v1="16"] .ff-served-v1--16,
+[data-ff-v1="17"] .ff-served-v1--17,
+[data-ff-v1="18"] .ff-served-v1--18,
+[data-ff-v1="19"] .ff-served-v1--19,
+[data-ff-v1="20"] .ff-served-v1--20,
+[data-ff-v1="21"] .ff-served-v1--21,
+[data-ff-v2="0"] .ff-served-v2--0,
+[data-ff-v2="1"] .ff-served-v2--1,
+[data-ff-v2="2"] .ff-served-v2--2,
+[data-ff-v2="3"] .ff-served-v2--3,
+[data-ff-v2="4"] .ff-served-v2--4,
+[data-ff-v2="5"] .ff-served-v2--5,
+[data-ff-v2="6"] .ff-served-v2--6,
+[data-ff-v2="7"] .ff-served-v2--7,
+[data-ff-v2="8"] .ff-served-v2--8,
+[data-ff-v2="9"] .ff-served-v2--9,
+[data-ff-v2="10"] .ff-served-v2--10,
+[data-ff-v2="11"] .ff-served-v2--11,
+[data-ff-v2="12"] .ff-served-v2--12,
+[data-ff-v2="13"] .ff-served-v2--13 {
+  opacity: 1;
+}
+
+/* The path a setting is sending people to says so on its own frame. */
+[data-ff-flag="off"] .ff-path--v1 > .scene-box,
+[data-ff-flag="kill"] .ff-path--v1 > .scene-box {
+  stroke: var(--request);
+}
+
+[data-ff-flag="p10"] .ff-path--v2 > .scene-box,
+[data-ff-flag="p50"] .ff-path--v2 > .scene-box,
+[data-ff-flag="p100"] .ff-path--v2 > .scene-box,
+[data-ff-flag="none"] .ff-path--v2 > .scene-box {
+  stroke: var(--cpu);
+}
+
+/*
+ * The lamp on v2, three ways. Never lit is a small hollow grey dot; lit is a
+ * solid red disc inside a red ring; lit and quiet again is a hollow green disc
+ * inside a green ring, which is a different thing from never having fired.
+ */
+.ff-lamp {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 6 6;
+}
+
+.ff-lamp-ring {
+  fill: none;
+  stroke-width: 4;
+  opacity: 0;
+}
+
+.ff-errors {
+  fill: var(--fg-soft);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+[data-ff-errors="on"] .ff-lamp {
+  fill: var(--state-open);
+  stroke: var(--state-open);
+  stroke-dasharray: none;
+}
+
+[data-ff-errors="on"] .ff-lamp-ring {
+  stroke: var(--state-open);
+  stroke-dasharray: 6 10;
+  opacity: 0.9;
+}
+
+[data-ff-errors="on"] .ff-errors {
+  fill: var(--state-open);
+}
+
+[data-ff-errors="clear"] .ff-lamp {
+  fill: none;
+  stroke: var(--state-closed);
+  stroke-width: 5;
+  stroke-dasharray: none;
+}
+
+[data-ff-errors="clear"] .ff-lamp-ring {
+  stroke: var(--state-closed);
+  stroke-dasharray: 14 10;
+  opacity: 0.9;
+}
+
+[data-ff-errors="clear"] .ff-errors {
+  fill: var(--state-closed);
+}
+
+/* --- what travels ------------------------------------------------------- */
+
+/*
+ * An assignment is drawn as the side it belongs to, so a dot leaving the switch
+ * has already answered the question before it lands. A request on its way to
+ * the switch has not been answered yet and stays the ordinary request colour.
+ */
+.ff-to-v1 .scene-req-dot {
+  fill: var(--request);
+}
+
+.ff-to-v2 .scene-req-dot {
+  fill: var(--cpu);
+  stroke: var(--bg);
+  stroke-width: 4;
+}
+
+/* --- what the scene holds up -------------------------------------------- */
+
+/* The only way back is another deploy, which is the first step's whole fear. */
+[data-ff-mark="noway"] .ff-absent--ghost .ff-absent-plate,
+[data-ff-mark="noway"] .ff-absent--ghost .ff-absent-bar {
+  stroke: var(--state-open);
+}
+
+[data-ff-mark="noway"] .ff-word--none {
+  fill: var(--state-open);
+}
+
+[data-ff-mark="noway"] .ff-dep-bg--on {
+  stroke: var(--state-open);
+}
+
+/* Everybody moved at once and nobody chose to, which is the part the callers
+   themselves have to say. */
+[data-ff-mark="noway"] .ff-dot--user {
+  stroke: var(--state-open);
+  stroke-width: 4;
+}
+
+/* Shipped dark: the code is on the servers and the switch is holding it shut. */
+[data-ff-mark="dark"] .ff-dep-bg--on {
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+[data-ff-mark="dark"] .ff-dep-text--on {
+  fill: var(--state-half);
+}
+
+/* The switch decides, not the ship. */
+[data-ff-mark="decides"] .ff-plate {
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+[data-ff-mark="decides"] .ff-word {
+  fill: var(--state-half);
+}
+
+/* A bucket, not a coin: the strip is what is held up, because the strip is the
+   reason the same caller keeps landing on the same side. */
+[data-ff-mark="bucket"] .ff-band-edge {
+  stroke: var(--state-half);
+  stroke-dasharray: none;
+}
+
+[data-ff-mark="bucket"] .ff-dot--bucket {
+  stroke: var(--state-half);
+  stroke-width: 4;
+}
+
+/* No build and no deploy: the flip, and the code still sitting there unreached. */
+[data-ff-mark="cheap"] .ff-plate {
+  stroke: var(--state-open);
+  stroke-width: 5;
+}
+
+[data-ff-mark="cheap"] .ff-dep-bg--on {
+  stroke: var(--state-open);
+}
+
+/* Fixed and verified, which is what earns the last widening. */
+[data-ff-mark="fixed"] .ff-lamp-ring {
+  stroke: var(--state-closed);
+  opacity: 1;
+}
+
+[data-ff-mark="fixed"] .ff-path--v2 > .scene-box {
+  stroke: var(--state-closed);
+  stroke-width: 5;
+}
+
+/* Every flag doubles the paths through the code, so both paths are held up. */
+[data-ff-mark="debt"] .ff-path--v1 > .scene-box,
+[data-ff-mark="debt"] .ff-path--v2 > .scene-box {
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+[data-ff-mark="debt"] .ff-plate {
+  stroke: var(--state-half);
+  stroke-width: 5;
+}
+
+/* --- settled ------------------------------------------------------------ */
+
+/* One path, reached without asking anything, and the counts that got it there. */
+[data-ff-settled="on"] .ff-served-v1,
+[data-ff-settled="on"] .ff-served-v2 {
+  fill: var(--fg);
+}
+
+[data-ff-settled="on"] .ff-path--v2 > .scene-box {
+  stroke: var(--state-closed);
+}
+
+[data-ff-settled="on"] .ff-absent--removed .ff-absent-plate {
+  stroke-width: 5;
+}

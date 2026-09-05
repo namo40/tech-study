@@ -1,0 +1,275 @@
+/* ---------------------------------------------------------------- */
+/* Fallback stage                                                    */
+/* ---------------------------------------------------------------- */
+
+/*
+ * A service assembling an answer out of parts, some of which may be missing.
+ * Nothing here is drawn as "the degraded page": it is two rows on a card, four
+ * chips that name the modes the service can be running in, and two badges. Every
+ * row name, every chip word, every badge word and both readouts are stacks of
+ * text on one spot with the widget class hiding all of them, so the state picks
+ * the one that shows and nothing ever interpolates between two colours.
+ *
+ * The colours carry the argument. A row filled from the live source is the
+ * colour of traffic, because that is the answer the reader asked for; a row
+ * filled from the copy is amber, because it is an answer that is real but old;
+ * a row switched off is the muted grey of something deliberately absent rather
+ * than the red of something broken. That distinction is the whole scene: the
+ * recommendations row never turns red, because it never fails — the service
+ * decided what to put there.
+ *
+ * The mode chips are lamps with names on them. Unlit they are the same soft grey
+ * as any other label, so the four of them read as a list of what the service
+ * could do; lit they take the colour of what they cost. `fallback` is amber
+ * because it is serving something older than it would like. `throttle` and
+ * `shed` are red because somebody is being turned away. `core only` is the
+ * violet used elsewhere for work the system chose not to do, because switching a
+ * feature off is a decision rather than a failure.
+ *
+ * `503` and `rps` are both counters of the offered load and share the mono face
+ * for that reason: they describe traffic, not the state of the service, and the
+ * lane below them shows one request of it at a time.
+ */
+
+/* The rate the clients are offering. */
+.fb-rps {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 34px;
+}
+
+.fb-rps--5,
+.fb-rps--6,
+.fb-rps--7,
+.fb-rps--8 {
+  fill: var(--state-half);
+}
+[data-rps="0"] .fb-rps--0,
+[data-rps="1"] .fb-rps--1,
+[data-rps="2"] .fb-rps--2,
+[data-rps="3"] .fb-rps--3,
+[data-rps="4"] .fb-rps--4,
+[data-rps="5"] .fb-rps--5,
+[data-rps="6"] .fb-rps--6,
+[data-rps="7"] .fb-rps--7,
+[data-rps="8"] .fb-rps--8 {
+  opacity: 1;
+}
+
+/* The card the answer is composed on. */
+.fb-card .fb-card-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+/* One row: a square that fills, and the name of the part it holds. */
+.fb-slot {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+}
+
+[data-core="live"] .fb-slot-core,
+[data-recs="live"] .fb-slot-recs {
+  fill: var(--request);
+  stroke: var(--request);
+}
+
+[data-recs="cached"] .fb-slot-recs {
+  fill: var(--state-half);
+  stroke: var(--state-half);
+}
+
+/* Switched off, not empty: the row is drawn open and the outline breaks up. */
+[data-recs="off"] .fb-slot-recs {
+  fill: none;
+  stroke: var(--muted);
+  stroke-dasharray: 7 7;
+}
+
+.fb-row-core,
+.fb-row-recs {
+  fill: var(--fg-soft);
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+.fb-row-core--live,
+.fb-row-recs--live {
+  fill: var(--request);
+}
+
+.fb-row-recs--cached {
+  fill: var(--state-half);
+}
+
+.fb-row-recs--off {
+  fill: var(--muted);
+}
+[data-core="empty"] .fb-row-core--empty,
+[data-core="live"] .fb-row-core--live,
+[data-recs="empty"] .fb-row-recs--empty,
+[data-recs="live"] .fb-row-recs--live,
+[data-recs="cached"] .fb-row-recs--cached,
+[data-recs="off"] .fb-row-recs--off {
+  opacity: 1;
+}
+
+/* What the row is holding when it is not the live answer. */
+.fb-cached {
+  --flash-color: var(--state-half);
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 400;
+}
+[data-recs="cached"] .fb-cached {
+  opacity: 1;
+}
+
+/* The modes. Each chip is a lamp with its own name written on it. */
+.fb-chip-fallback-bg,
+.fb-chip-throttle-bg,
+.fb-chip-shed-bg,
+.fb-chip-coreonly-bg {
+  fill: var(--surface);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-fallback="on"] .fb-chip-fallback .fb-chip-fallback-bg,
+[data-coreonly="on"] .fb-chip-coreonly .fb-chip-coreonly-bg {
+  stroke: var(--fg-soft);
+}
+
+[data-throttle="on"] .fb-chip-throttle .fb-chip-throttle-bg,
+[data-shed="on"] .fb-chip-shed .fb-chip-shed-bg {
+  stroke: var(--state-open);
+}
+
+.fb-mode-fallback,
+.fb-mode-throttle,
+.fb-mode-shed,
+.fb-mode-coreonly {
+  fill: var(--muted);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.fb-mode-fallback--on {
+  fill: var(--state-half);
+}
+
+.fb-mode-throttle--on,
+.fb-mode-shed--on {
+  fill: var(--state-open);
+}
+
+.fb-mode-coreonly--on {
+  fill: var(--cpu);
+}
+[data-fallback="off"] .fb-mode-fallback--off,
+[data-fallback="on"] .fb-mode-fallback--on,
+[data-throttle="off"] .fb-mode-throttle--off,
+[data-throttle="on"] .fb-mode-throttle--on,
+[data-shed="off"] .fb-mode-shed--off,
+[data-shed="on"] .fb-mode-shed--on,
+[data-coreonly="off"] .fb-mode-coreonly--off,
+[data-coreonly="on"] .fb-mode-coreonly--on {
+  opacity: 1;
+}
+
+/* How many requests the service turned away at the door. */
+.fb-refused {
+  fill: var(--fg-soft);
+  font-family: var(--font-mono);
+  font-size: 34px;
+}
+
+.fb-refused--0 {
+  fill: var(--muted);
+}
+
+.fb-refused--4,
+.fb-refused--5,
+.fb-refused--6,
+.fb-refused--7,
+.fb-refused--8,
+.fb-refused--9,
+.fb-refused--10 {
+  fill: var(--state-open);
+}
+[data-refused="0"] .fb-refused--0,
+[data-refused="1"] .fb-refused--1,
+[data-refused="2"] .fb-refused--2,
+[data-refused="3"] .fb-refused--3,
+[data-refused="4"] .fb-refused--4,
+[data-refused="5"] .fb-refused--5,
+[data-refused="6"] .fb-refused--6,
+[data-refused="7"] .fb-refused--7,
+[data-refused="8"] .fb-refused--8,
+[data-refused="9"] .fb-refused--9,
+[data-refused="10"] .fb-refused--10 {
+  opacity: 1;
+}
+
+/* The two dependencies, and whether each of them is answering. */
+.fb-dep > .scene-box {
+  stroke-width: 3;
+}
+
+.fb-dep-box {
+  fill: var(--surface);
+}
+
+[data-dep-recs="down"] .fb-dep-box--recs {
+  stroke: var(--state-open);
+  stroke-dasharray: 12 10;
+}
+
+[data-dep-recs="down"] .fb-dep--recs .scene-node-title {
+  fill: var(--fg-soft);
+}
+
+.fb-dep .scene-node-title {
+  letter-spacing: 2px;
+}
+
+.fb-badge-plate-data-bg,
+.fb-badge-plate-recs-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-dep-recs="down"] .fb-badge-plate-recs .fb-badge-plate-recs-bg {
+  stroke: var(--state-open);
+}
+
+.fb-badge-data,
+.fb-badge-recs {
+  fill: var(--fg-soft);
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.fb-badge-data--up,
+.fb-badge-recs--up {
+  fill: var(--state-closed);
+}
+
+.fb-badge-data--down,
+.fb-badge-recs--down {
+  fill: var(--state-open);
+}
+[data-dep-data="up"] .fb-badge-data--up,
+[data-dep-data="down"] .fb-badge-data--down,
+[data-dep-recs="up"] .fb-badge-recs--up,
+[data-dep-recs="down"] .fb-badge-recs--down {
+  opacity: 1;
+}
+
+/* A call the service made, told apart from the request that caused it. */
+.fb-call {
+  stroke: var(--fg-soft);
+}

@@ -1,0 +1,340 @@
+/* ---------------------------------------------------------------- */
+/* Isolation Level stage                                             */
+/* ---------------------------------------------------------------- */
+
+/*
+ * Two transactions, two colours, and one rule about where each colour goes.
+ * T1 is the request blue and T2 the warning amber, and everything that belongs
+ * to one of them takes its colour from `--lane-color`: the dot on its lane, the
+ * ring it wears while it waits, the chip it carries, the padlock on the row it
+ * is holding and the outline of the plate that row's value sits on. That is
+ * what lets the reader answer "who is holding this row" without a legend.
+ *
+ * Everything the reader reads off this stage is a stack of text on one spot,
+ * hidden by `.scene-counter`, with exactly one variant revealed by the `data-*`
+ * value the timeline wrote. The gauge is a stack too: one rectangle per value
+ * the counter can hold, so the bar and the number cannot disagree.
+ */
+.il-txn--1,
+.il-req--t1,
+[data-rowlock="t1"] .il-lock,
+[data-rowlock="t1"] .il-stock {
+  --lane-color: var(--request);
+}
+
+.il-txn--2,
+.il-req--t2,
+[data-rowlock="t2"] .il-lock,
+[data-rowlock="t2"] .il-stock {
+  --lane-color: var(--state-half);
+}
+
+.il-req--t1 .scene-req-dot,
+.il-req--t2 .scene-req-dot {
+  fill: var(--lane-color);
+}
+
+.il-req--t1 .scene-req-halo,
+.il-req--t2 .scene-req-halo {
+  stroke: var(--lane-color);
+  stroke-dasharray: 10 10;
+}
+
+/* What a traveller is carrying: the value it was served, the version its
+   change is conditional on, or both, stacked either side of the dot. */
+.il-chip-box {
+  fill: var(--surface-2);
+  stroke: var(--lane-color);
+  stroke-width: 3;
+}
+
+.il-chip-box--stock {
+  stroke-dasharray: none;
+}
+
+.il-chip-box--version {
+  stroke-dasharray: 8 6;
+}
+
+.il-chip-text {
+  fill: var(--fg);
+  font-size: 22px;
+}
+
+.il-chip-text--stock {
+  font-weight: 700;
+}
+
+.il-chip-text--version {
+  fill: var(--fg-soft);
+  font-size: 20px;
+}
+
+/* The statement a transaction is running, on a plate that is only there while
+   there is a statement to name. */
+.il-stmt-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.il-stmt[data-stmt="none"] .il-stmt-bg {
+  opacity: 0;
+}
+
+.il-stmt-text {
+  fill: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 26px;
+}
+
+.il-stmt[data-stmt="begin"] .il-stmt-text--begin,
+.il-stmt[data-stmt="update"] .il-stmt-text--update,
+.il-stmt[data-stmt="select"] .il-stmt-text--select,
+.il-stmt[data-stmt="commit"] .il-stmt-text--commit,
+.il-stmt[data-stmt="rollback"] .il-stmt-text--rollback {
+  opacity: 1;
+}
+
+/* The state the transaction is in, which is the one word a reader checks when
+   the dot has stopped moving. */
+.il-status-text {
+  fill: var(--fg-soft);
+  font-size: 24px;
+}
+
+.il-status-text--waiting {
+  fill: var(--state-half);
+}
+
+.il-status-text--committed {
+  fill: var(--state-closed);
+}
+
+.il-status-text--rolled-back {
+  fill: var(--state-open);
+}
+
+.il-status[data-st="running"] .il-status-text--running,
+.il-status[data-st="waiting"] .il-status-text--waiting,
+.il-status[data-st="committed"] .il-status-text--committed,
+.il-status[data-st="rolled-back"] .il-status-text--rolled-back {
+  opacity: 1;
+}
+
+/* The lock on the row. Free it is a dashed outline nobody is meant to read;
+   held it fills with the colour of whoever is holding it. */
+.il-lock-body {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-dasharray: 8 8;
+}
+
+.il-lock-shackle {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+[data-rowlock="free"] .il-lock {
+  opacity: 0.5;
+}
+
+[data-rowlock="t1"] .il-lock-body,
+[data-rowlock="t2"] .il-lock-body {
+  fill: var(--lane-color);
+  stroke: var(--lane-color);
+  stroke-dasharray: none;
+}
+
+[data-rowlock="t1"] .il-lock-shackle,
+[data-rowlock="t2"] .il-lock-shackle {
+  stroke: var(--lane-color);
+}
+
+/* The value on the row, and the version stamped on that value. The plate is
+   outlined in the lane colour while somebody is writing it. */
+.il-stock,
+.il-version {
+  --plate-stroke: var(--border);
+}
+
+[data-rowlock="t1"] .il-stock,
+[data-rowlock="t2"] .il-stock {
+  --plate-stroke: var(--lane-color);
+}
+
+.il-stock-bg,
+.il-version-bg {
+  fill: var(--surface-2);
+  stroke: var(--plate-stroke);
+  stroke-width: 3;
+}
+
+.il-stock-text {
+  fill: var(--fg);
+  font-size: 60px;
+}
+
+.il-version-text {
+  fill: var(--fg-soft);
+  font-size: 32px;
+}
+
+[data-version="none"] .il-version {
+  opacity: 0;
+}
+
+[data-stock="1"] .il-stock-text--1,
+[data-stock="2"] .il-stock-text--2,
+[data-stock="3"] .il-stock-text--3,
+[data-stock="5"] .il-stock-text--5,
+[data-stock="6"] .il-stock-text--6,
+[data-version="7"] .il-version-text--7,
+[data-version="8"] .il-version-text--8,
+[data-version="9"] .il-version-text--9 {
+  opacity: 1;
+}
+
+/* The dial: the level in force, over the four positions it can be turned to. */
+.il-dial-text {
+  fill: var(--fg);
+  font-size: 28px;
+  letter-spacing: 1px;
+}
+
+.il-tick {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+[data-level="rc"] .il-dial-text--rc,
+[data-level="rr"] .il-dial-text--rr,
+[data-level="snap"] .il-dial-text--snap,
+[data-level="ser"] .il-dial-text--ser {
+  opacity: 1;
+}
+
+[data-level="rc"] .il-tick--rc,
+[data-level="rr"] .il-tick--rr,
+[data-level="snap"] .il-tick--snap,
+[data-level="ser"] .il-tick--ser {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+/* The table. Every cell was worked out from the same rules the simulation runs
+   on, so a ✓ here and a wait out there can never tell different stories. */
+.il-table text {
+  font-weight: 600;
+}
+
+.il-head {
+  fill: var(--fg-soft);
+  font-size: 20px;
+}
+
+.il-level {
+  fill: var(--muted);
+  font-size: 22px;
+}
+
+[data-level="rc"] .il-level--rc,
+[data-level="rr"] .il-level--rr,
+[data-level="snap"] .il-level--snap,
+[data-level="ser"] .il-level--ser {
+  fill: var(--fg);
+}
+
+.il-cell-text {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.il-cell-text--allow {
+  fill: var(--state-open);
+}
+
+.il-cell-text--block {
+  fill: var(--state-closed);
+}
+
+.il-cell[data-cell="allow"] .il-cell-text--allow,
+.il-cell[data-cell="block"] .il-cell-text--block {
+  opacity: 1;
+}
+
+/* The stripe under the level the dial is set to, and the ring around the
+   anomaly a statement has just demonstrated. */
+.il-rowhl {
+  fill: var(--surface-2);
+  opacity: 0;
+}
+
+[data-level="rc"] .il-rowhl--rc,
+[data-level="rr"] .il-rowhl--rr,
+[data-level="snap"] .il-rowhl--snap,
+[data-level="ser"] .il-rowhl--ser {
+  opacity: 1;
+}
+
+.il-colhl {
+  fill: none;
+  stroke: var(--state-half);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+  opacity: 0;
+}
+
+[data-seam="dirty"] .il-colhl--dirty,
+[data-seam="nonrep"] .il-colhl--nonrep,
+[data-seam="phantom"] .il-colhl--phantom {
+  opacity: 1;
+}
+
+/* The waits gauge: the number, and the bar that is the same number drawn. */
+.il-waits {
+  fill: var(--fg-soft);
+  font-size: 26px;
+}
+
+.il-gauge-track {
+  stroke: var(--border);
+}
+
+.il-gaugefill {
+  --fill-color: var(--state-half);
+
+  opacity: 0;
+}
+
+[data-waits="0"] .il-waits--0,
+[data-waits="40"] .il-waits--40,
+[data-waits="80"] .il-waits--80,
+[data-waits="120"] .il-waits--120,
+[data-waits="160"] .il-waits--160,
+[data-waits="200"] .il-waits--200,
+[data-waits="240"] .il-waits--240,
+[data-waits="280"] .il-waits--280,
+[data-waits="320"] .il-waits--320,
+[data-waits="360"] .il-waits--360,
+[data-waits="400"] .il-waits--400 {
+  opacity: 1;
+}
+
+[data-waits="0"] .il-gaugefill--0,
+[data-waits="40"] .il-gaugefill--40,
+[data-waits="80"] .il-gaugefill--80,
+[data-waits="120"] .il-gaugefill--120,
+[data-waits="160"] .il-gaugefill--160,
+[data-waits="200"] .il-gaugefill--200,
+[data-waits="240"] .il-gaugefill--240,
+[data-waits="280"] .il-gaugefill--280,
+[data-waits="320"] .il-gaugefill--320,
+[data-waits="360"] .il-gaugefill--360,
+[data-waits="400"] .il-gaugefill--400 {
+  opacity: 1;
+}

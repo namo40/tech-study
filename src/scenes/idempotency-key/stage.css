@@ -1,0 +1,193 @@
+/* ---------------------------------------------------------------- */
+/* Idempotency-Key stage                                             */
+/* ---------------------------------------------------------------- */
+
+/* The client. It shows the body it is about to send, because the one thing two
+   otherwise identical requests can differ by is what is inside them, and it
+   says `retry` on the frames where it is sending the same POST again. */
+.ik-amount {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-weight: 400;
+}
+
+[data-amount="40"] .ik-amount--40,
+[data-amount="90"] .ik-amount--90 {
+  opacity: 1;
+}
+
+.ik-retry {
+  --flash-color: var(--state-half);
+
+  font-size: 26px;
+  letter-spacing: 1px;
+}
+
+[data-retry="on"] .ik-retry {
+  opacity: 1;
+}
+
+/* What the lookup found. Three answers, one spot, and only ever one of them
+   on the stage at a time. */
+.ik-flash {
+  font-size: 26px;
+  letter-spacing: 1px;
+}
+
+.ik-flash--hit {
+  --flash-color: var(--state-closed);
+}
+
+.ik-flash--miss {
+  --flash-color: var(--state-half);
+}
+
+.ik-flash--progress {
+  --flash-color: var(--request);
+}
+
+[data-flash="hit"] .ik-flash--hit,
+[data-flash="miss"] .ik-flash--miss,
+[data-flash="progress"] .ik-flash--progress {
+  opacity: 1;
+}
+
+/* The store. The table is on the stage from the first frame with nothing in
+   it, so a row appearing is a key being claimed rather than furniture arriving. */
+.ik-store-label {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.ik-ttl {
+  font-family: var(--font-mono);
+}
+
+.ik-row-bg {
+  fill: var(--surface-2);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.ik-row[data-row="progress"] .ik-row-bg {
+  stroke: var(--request);
+}
+
+.ik-row[data-row="hit"] .ik-row-bg {
+  stroke: var(--state-closed);
+  stroke-width: 4;
+}
+
+.ik-row[data-row="clash"] .ik-row-bg {
+  stroke: var(--state-open);
+  stroke-width: 4;
+}
+
+.ik-key,
+.ik-status,
+.ik-response {
+  opacity: 0;
+}
+
+.ik-key {
+  fill: var(--fg);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.ik-row[data-key="a1f3"] .ik-key--a1f3,
+.ik-row[data-key="b7c2"] .ik-key--b7c2,
+.ik-row[data-key="c9d4"] .ik-key--c9d4 {
+  opacity: 1;
+}
+
+.ik-status {
+  fill: var(--fg-soft);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.ik-status--progress {
+  fill: var(--request);
+}
+
+.ik-status--done {
+  fill: var(--state-closed);
+}
+
+.ik-row[data-row="progress"] .ik-status--progress,
+.ik-row[data-row="done"] .ik-status--done,
+.ik-row[data-row="hit"] .ik-status--done,
+.ik-row[data-row="clash"] .ik-status--done {
+  opacity: 1;
+}
+
+/* The answer the row will replay, with the body it was claimed for. A key that
+   comes back with a different body is refused, and this is where the reader
+   can see the difference. */
+.ik-response {
+  fill: var(--fg-soft);
+  font-size: 22px;
+}
+
+.ik-row[data-body="40"] .ik-response--40,
+.ik-row[data-body="90"] .ik-response--90 {
+  opacity: 1;
+}
+
+/* The Payments box. The counter is the only number in the scene that is
+   supposed to stand still while requests keep arriving. */
+.ik-charged {
+  fill: var(--fg-soft);
+  font-size: 26px;
+}
+
+[data-charged="0"] .ik-charged--0,
+[data-charged="1"] .ik-charged--1,
+[data-charged="2"] .ik-charged--2,
+[data-charged="3"] .ik-charged--3 {
+  opacity: 1;
+}
+
+[data-alarm="on"] .ik-charged {
+  fill: var(--state-open);
+}
+
+/* One receipt per charge that actually happened. */
+.ik-receipt {
+  opacity: 0;
+}
+
+.ik-receipt[data-receipt="on"] {
+  opacity: 1;
+}
+
+.ik-receipt-bg {
+  fill: var(--surface);
+  stroke: var(--fg-soft);
+  stroke-width: 3;
+}
+
+.ik-receipt-line {
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+[data-alarm="on"] .ik-receipt-bg {
+  stroke: var(--state-open);
+}
+
+/* What a request carries above the dot: the key on the way down, the status
+   code it was refused with on the way up. */
+.ik-carry {
+  fill: var(--fg-soft);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.ik-carry--code {
+  fill: var(--state-open);
+}
