@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the allowed extension under the bottom box because the comparison the scene
  * ends on is a pair of measured bars rather than a widget inside a node:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     the Caller: the Task it is holding, the catch it has
  *                    armed, the token it can cancel with, and a dot that says
  *                    it is still doing its own work while it waits

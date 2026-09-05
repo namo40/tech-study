@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * a strip hung under the node because the scene has to show both what the
  * authorization server is doing right now and what it has already handed out:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Browser and App, one box each, one lane each
  *   - y 880..1270    Authorization server: the `/authorize` cell the user logs
  *                    in at, and the `/token` cell everything is redeemed at

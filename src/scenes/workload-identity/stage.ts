@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Four bands, one per party to a
  * credential nobody ever stored:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Pods: two capsules, `pod A` and `pod B`, each with one
  *                    credential slot and one lifetime bar. The slot is empty at
  *                    rest, holds the `secret` chip while the first step's ghost

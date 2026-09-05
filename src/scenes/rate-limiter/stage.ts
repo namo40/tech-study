@@ -3,7 +3,8 @@
  *
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Bands match the other scenes:
- *   - y 0..440      kept empty for the step title card
+ *   - y 0..400      above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440    the frame's top padding; nothing is drawn here
  *   - y 440..680    Client box, with the Retry-After timer just below it
  *   - y 880..1270   Rate Limiter node: token bucket, refill drip, 429 label
  *   - y 1500..1740  Service box with a health dot

@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the bottom one split in two because the whole point of the pattern is that
  * one box shrinks while the other grows:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Client box, one lane out of it
  *   - y 880..1270    Router node: the route table, the migration meter, and
  *                    the two traffic tallies

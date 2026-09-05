@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. Four bands, arranged around the one
  * question this scene is about — not "who is calling" but "may this caller do
  * this, to this":
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     the Users: two capsules, `A` and `B`, each carrying the
  *                    role badge it was granted (`editor`, `viewer`). The badge
  *                    is the only thing the gate knows about a caller before it

@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Three bands, one per party to a
  * credential that is meant to be replaced rather than kept:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Callers: two capsules, each showing the one key it is
  *                    currently holding (`key A`, `key B`, `key C`). A caller
  *                    changes key on a deploy, and the two deploys are apart.

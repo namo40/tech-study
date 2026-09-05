@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the bottom box given the allowed extension because the server has a policy
  * table to show as well as a counter:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     the Browser, with its two tabs, and `curl` beside it
  *   - y 880..1270    the same-origin policy: the gate a response has to come
  *                    back through, what the browser recorded on the way out,

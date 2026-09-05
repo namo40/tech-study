@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the node stretched and the bottom box extended because both of them hold a
  * table rather than a widget:
- *   - y 0..440      kept empty for the step title card
+ *   - y 0..400      above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440    the frame's top padding; nothing is drawn here
  *   - y 440..680    Code: four rows of a snippet and the cursor on the one the
  *                   reader is on
  *   - y 820..1330   DbContext: the lifetime it was given, the memory it is

@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Four boxes, arranged around the one
  * thing the scene is about — the log:
- *   - y 0..440        kept empty for the step title card
+ *   - y 0..400        above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440      the frame's top padding; nothing is drawn here
  *   - y 440..680      App: the two commands it can send, `add` and `pay`
  *   - y 880..1270     Order on the left, which is the aggregate: the state card
  *                     `items n`, the `paid` badge, and the `replaying` badge it

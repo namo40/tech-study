@@ -3,7 +3,8 @@
  *
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Bands match the other scenes:
- *   - y 0..440      kept empty for the step title card
+ *   - y 0..400      above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440    the frame's top padding; nothing is drawn here
  *   - y 440..680    App box, holding the result list
  *   - y 880..1270   EF Core node: the query log and the query counter
  *   - y 1500..1740  Database box, with the round trip counter

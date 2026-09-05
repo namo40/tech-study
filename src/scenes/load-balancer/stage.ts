@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the server row hanging a little lower than its neighbours' because a server
  * here carries three things under the row its connections rest on:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Clients, with the one lane every request leaves on
  *   - y 880..1270    Load balancer: the policy chip, the table of open
  *                    connections it routes from, and the probe interval

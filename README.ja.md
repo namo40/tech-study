@@ -9,7 +9,7 @@ Tech Study は、サーバー技術のキーワードを短いモーショング
 ## 技術構成
 
 - **Astro** が静的出力、コンテンツコレクション、言語プレフィックス付きのルーティングを担当します。
-- **SVG と GSAP** でシーンを作ります。1 つのシーンは 9:16 のキャンバス 1 つとタイムライン 1 本で構成し、再生、一時停止、ステップ移動、スクラブの操作を備えます。
+- **SVG と GSAP** でシーンを作ります。1 つのシーンは 1080×1520 のキャンバス 1 つとタイムライン 1 本で構成し、再生、一時停止、ステップ移動、スクラブの操作を備えます。
 - **TypeScript** でプレーヤー、効果音、テーマ切り替えを実装します。UI フレームワークは使いません。
 - ページ本文は Markdown のコンテンツコレクションに置き、インターフェイス文字列は型の付いた TypeScript モジュールに置きます。
 - 効果音は Web Audio API で合成するため、音声ファイルは配布しません。
@@ -67,7 +67,7 @@ src/
 
 1 つのシーンは `src/scenes/<id>/` フォルダーで、その中にモジュールを 2 つ置きます。
 
-`stage.ts` は、ページにそのまま載る静的な SVG である `stageMarkup` を公開します。`src/scenes/shared/stage.ts` の共通ビルダーで組み立ててください。`clientBox`、`nodeFrame`、`serviceBox`、`verticalLink`、`healthDot`、`slotRow`、`counterVariants`、`timerRing`、`trackAndFill`、`chip`、`requestsLayer` があります。座標はすべて引数なので、シーンごとに自分の数値を保ったまま、隣のシーンと同じ図として読めます。このモジュールはサーバー側で import されるため GSAP を持ち込んではならず、プレーヤーが実行時に埋める空の `scene-requests` レイヤーで終わる必要があります。
+`stage.ts` は、ページにそのまま載る静的な SVG である `stageMarkup` を公開します。`src/scenes/shared/stage.ts` の共通ビルダーで組み立ててください。`clientBox`、`nodeFrame`、`serviceBox`、`verticalLink`、`healthDot`、`slotRow`、`counterVariants`、`timerRing`、`trackAndFill`、`chip`、`requestsLayer` があります。座標はすべて引数なので、シーンごとに自分の数値を保ったまま、隣のシーンと同じ図として読めます。座標は 1080 × 1920 の空間に書きますが、共通の `VIEWBOX` がこの空間を `0 400 1080 1520` に切り取ります。そのため `y` 0..400 はキャンバスの外で、`y` 400..440 は最初のボックスの上に残したフレームの余白です。このモジュールはサーバー側で import されるため GSAP を持ち込んではならず、プレーヤーが実行時に埋める空の `scene-requests` レイヤーで終わる必要があります。
 
 `scene.ts` は既定の export として `SceneModule` を公開し、タイムラインを組み立てます。始めは `src/scenes/shared/timeline.ts` の `createSceneTimeline()`、終わりは `finishSceneTimeline(tl, SCENE_DURATION)` です。前者は停止したタイムラインを返し、後者は長さを固定したうえでタイムラインを前後 1 往復ぶん温めます。こうしておくと、まだ順方向に通っていない状態変化を逆方向にスクラブしても正しく戻ります。仕上がったシーンは `src/scenes/registry.ts` に登録します。
 

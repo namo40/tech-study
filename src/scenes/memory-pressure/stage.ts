@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Three bands, one per party to the
  * thing that kills the container:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     App: the rate it allocates at, and the `pooled` chip that
  *                    says where its big buffers come from
  *   - y 880..1270    Heap: the gauge that is the whole scene — how much of the

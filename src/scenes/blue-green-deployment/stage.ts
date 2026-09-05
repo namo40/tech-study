@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the middle one split into two boxes, because the whole point of the pattern is
  * that there are two of everything except the database:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Router: the weight it splits traffic by, the readout that
  *                    says so in words, and the control it is moved with
  *   - y 880..1270    Blue and Green, side by side: the version each one runs,

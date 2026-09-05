@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Three bands, read as one sentence
  * about what a network partition takes away and what it leaves you to decide:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Clients (x 130..950): the `write` and `read` chips that
  *                    light while a request of that kind is outstanding, the
  *                    `ok n` readout counting reads that came back with an

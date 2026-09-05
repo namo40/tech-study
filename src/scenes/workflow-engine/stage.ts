@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. Three boxes, stacked in the order
  * the argument is made — something wakes the work, something keeps its place,
  * something actually does it:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Schedule: the clock card `daily 02:00`, the `due` lamp it
  *                    lights when the hour comes round, and the `next run` lamp
  *                    it lights again once an instance has closed

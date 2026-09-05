@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the bottom box given the allowed extension because the Trace panel has to
  * hold a name column, a millisecond axis and ten rows of bars:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     the Client, and beside it the broker a message is left in
  *   - y 880..1100    gateway, orders, payments and worker, side by side, each
  *                    with the line it logged

@@ -6,7 +6,8 @@
  * move this scene owns — the moment the thing being acted on becomes an input to
  * the decision, so that the same caller asking for the same verb gets a
  * different answer depending on which document arrived with the request:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Users (x 130..950): the two callers, `A` and `B`, each a
  *                    capsule holding its name and the action tag it is asking
  *                    for (`edit`, later `share`). `B` picks up an `admin` badge

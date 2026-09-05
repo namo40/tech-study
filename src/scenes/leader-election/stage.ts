@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the store on top because the thing being competed for has to sit above the
  * instances competing for it:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Lease: the record card `workers/leader`, who holds it, the
  *                    epoch it was granted under, and the arc counting it down
  *   - y 880..1270    the three instances, one box and one lane each, each

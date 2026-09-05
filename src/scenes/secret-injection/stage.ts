@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Four bands, one per stop on the
  * road a credential travels when it is not allowed to live in the artifact:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Image (x 130..950): the layer strip the artifact is made
  *                    of, the `secret` the first step shows baked into it, and
  *                    the copies that spread the moment anything pulls the

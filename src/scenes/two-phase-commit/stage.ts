@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. Four boxes in three bands, laid out
  * as the protocol is: one thing that decides, two things that promise, and the
  * caller that has to be told a single answer.
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Coordinator: the phase it is in (`prepare`, `commit`,
  *                    `abort`), the `votes n/2` readout, and the `down` plate it
  *                    shows when the process is gone. The phase plate is also

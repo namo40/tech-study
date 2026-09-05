@@ -3,7 +3,8 @@
  *
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. The bands are the usual ones:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Client box, one lane per request kind
  *   - y 880..1270    the application band, which starts as one box and becomes
  *                    Commands and Queries side by side

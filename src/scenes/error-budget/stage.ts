@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Three bands, one per party to the
  * argument about when to ship:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Traffic: the measured good-rate, which is the SLI. It is
  *                    the only thing on this stage that is observed rather than
  *                    computed, and everything below it is arithmetic on it

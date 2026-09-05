@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. Four bands, arranged around the one
  * question the whole framework answers — how does an app act for you without
  * becoming you:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     the App, with the token wallet (`access`, `refresh`, `id`)
  *                    and the `expires` bar that says how much life the access
  *                    token has left, plus the `password` the old way handed over

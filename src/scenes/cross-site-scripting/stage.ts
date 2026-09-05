@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. Three bands, read top to bottom as
  * the people who write and read, the application that keeps and serves what they
  * wrote, and the browser the answer finally lands in:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Users (x 130..950): the author's capsule with the comment
  *                    being written in it, three reader capsules, and the running
  *                    `ok n` readout of pages served without anything executing

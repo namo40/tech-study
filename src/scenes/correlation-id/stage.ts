@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the middle panel given the allowed extension because a log pane whose rows
  * are content rather than texture cannot be squeezed:
- *   - y 0..440      kept empty for the step title card
+ *   - y 0..400      above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440    the frame's top padding; nothing is drawn here
  *   - y 440..680    Web, Orders and Payments side by side, with the queue
  *                   glyph standing in the gap between the last two
  *   - y 756..820    what the id rides on between them: the header chip under

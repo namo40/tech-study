@@ -9,7 +9,7 @@ Tech Study는 서버 기술 키워드를 짧은 모션 그래픽으로 설명하
 ## 기술 구성
 
 - **Astro**로 정적 출력, 콘텐츠 컬렉션, 언어 접두사 라우팅을 처리합니다.
-- **SVG와 GSAP**으로 장면을 만듭니다. 장면 하나는 9:16 캔버스 하나와 타임라인 하나로 이루어지며, 재생, 일시정지, 단계 이동, 스크럽 컨트롤을 제공합니다.
+- **SVG와 GSAP**으로 장면을 만듭니다. 장면 하나는 1080×1520 캔버스 하나와 타임라인 하나로 이루어지며, 재생, 일시정지, 단계 이동, 스크럽 컨트롤을 제공합니다.
 - **TypeScript**로 플레이어, 효과음, 테마 전환을 구현합니다. UI 프레임워크는 쓰지 않습니다.
 - 페이지 본문은 Markdown 콘텐츠 컬렉션에 두고, 인터페이스 문자열은 타입이 붙은 TypeScript 모듈에 둡니다.
 - 효과음은 Web Audio API로 합성하므로 오디오 파일을 배포하지 않습니다.
@@ -67,7 +67,7 @@ src/
 
 장면 하나는 `src/scenes/<id>/` 폴더이고, 그 안에 모듈 두 개를 둡니다.
 
-`stage.ts`는 페이지에 그대로 실리는 정적 SVG인 `stageMarkup`을 내보냅니다. `src/scenes/shared/stage.ts`의 공용 빌더로 조립하세요. `clientBox`, `nodeFrame`, `serviceBox`, `verticalLink`, `healthDot`, `slotRow`, `counterVariants`, `timerRing`, `trackAndFill`, `chip`, `requestsLayer`가 있습니다. 좌표는 전부 인자이므로 장면마다 자기 숫자를 그대로 쓰면서도 옆 장면과 같은 그림으로 읽힙니다. 이 모듈은 서버에서 import되므로 GSAP을 끌어오면 안 되고, 플레이어가 실행 시점에 채우는 빈 `scene-requests` 레이어로 끝나야 합니다.
+`stage.ts`는 페이지에 그대로 실리는 정적 SVG인 `stageMarkup`을 내보냅니다. `src/scenes/shared/stage.ts`의 공용 빌더로 조립하세요. `clientBox`, `nodeFrame`, `serviceBox`, `verticalLink`, `healthDot`, `slotRow`, `counterVariants`, `timerRing`, `trackAndFill`, `chip`, `requestsLayer`가 있습니다. 좌표는 전부 인자이므로 장면마다 자기 숫자를 그대로 쓰면서도 옆 장면과 같은 그림으로 읽힙니다. 좌표는 1080 × 1920 공간에 적지만 공용 `VIEWBOX`가 이 공간을 `0 400 1080 1520`으로 잘라냅니다. 따라서 `y` 0..400은 캔버스 밖이고, `y` 400..440은 첫 상자 위에 남겨 둔 프레임 여백입니다. 이 모듈은 서버에서 import되므로 GSAP을 끌어오면 안 되고, 플레이어가 실행 시점에 채우는 빈 `scene-requests` 레이어로 끝나야 합니다.
 
 `scene.ts`는 기본 export로 `SceneModule`을 내보내며 타임라인을 만듭니다. 시작은 `src/scenes/shared/timeline.ts`의 `createSceneTimeline()`으로, 마무리는 `finishSceneTimeline(tl, SCENE_DURATION)`으로 합니다. 앞쪽은 정지 상태의 타임라인을 주고, 뒤쪽은 길이를 고정한 뒤 타임라인을 양방향으로 한 번씩 예열합니다. 그래야 한 번도 정방향으로 지나지 않은 상태 변화를 역방향으로 스크럽해도 제대로 되돌아갑니다. 완성한 장면은 `src/scenes/registry.ts`에 등록합니다.
 

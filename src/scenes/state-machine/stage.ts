@@ -6,7 +6,8 @@
  * the node band taken down to y 1450 because the machine is a diagram rather
  * than a single widget, and the bottom band taken down to y 1830 because the
  * engine keeps a history under its timer:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Events: the alphabet of the machine, and the one outlet
  *                    every event leaves by
  *   - y 790          the event rail, and the three drops that reach a column

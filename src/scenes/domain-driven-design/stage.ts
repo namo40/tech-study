@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Four bands, one per thing a border
  * is drawn around:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Domain: the word `Order` on its card, the first step's
  *                    ghost — the same card grown until it serves everybody —
  *                    and the fourth step's `event`, which is the only thing

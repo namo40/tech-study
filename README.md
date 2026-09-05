@@ -9,7 +9,7 @@ Tech Study is a static site that explains server technology keywords with short 
 ## Stack
 
 - **Astro** for static output, content collections, and locale-prefixed routing.
-- **SVG and GSAP** for the scenes. Each scene is one 9:16 canvas driven by a single timeline, with play, pause, step, and scrub controls.
+- **SVG and GSAP** for the scenes. Each scene is one 1080×1520 canvas driven by a single timeline, with play, pause, step, and scrub controls.
 - **TypeScript** for the player, the sound cues, and the theme toggle. There is no UI framework.
 - Markdown content collections hold the page prose. Interface strings live in typed TypeScript modules.
 - Sound effects are synthesized with the Web Audio API, so no audio files are shipped.
@@ -67,7 +67,7 @@ src/
 
 A scene is a folder under `src/scenes/<id>/` holding two modules.
 
-`stage.ts` exports `stageMarkup`, the static SVG the page ships with. Build it from the shared builders in `src/scenes/shared/stage.ts`: `clientBox`, `nodeFrame`, `serviceBox`, `verticalLink`, `healthDot`, `slotRow`, `counterVariants`, `timerRing`, `trackAndFill`, `chip`, `requestsLayer`. Every coordinate is an argument, so a stage keeps its own numbers and still reads as the same diagram as its neighbours. The module is imported on the server, so it must not pull in GSAP, and it has to end with the empty `scene-requests` layer the player fills at run time.
+`stage.ts` exports `stageMarkup`, the static SVG the page ships with. Build it from the shared builders in `src/scenes/shared/stage.ts`: `clientBox`, `nodeFrame`, `serviceBox`, `verticalLink`, `healthDot`, `slotRow`, `counterVariants`, `timerRing`, `trackAndFill`, `chip`, `requestsLayer`. Every coordinate is an argument, so a stage keeps its own numbers and still reads as the same diagram as its neighbours. Coordinates are written in a 1080 × 1920 space that the shared `VIEWBOX` crops to `0 400 1080 1520`, so `y` 0..400 is outside the canvas and `y` 400..440 is the frame's top padding above the first box. The module is imported on the server, so it must not pull in GSAP, and it has to end with the empty `scene-requests` layer the player fills at run time.
 
 `scene.ts` exports the default `SceneModule` and builds the timeline. Open with `createSceneTimeline()` and close with `finishSceneTimeline(tl, SCENE_DURATION)` from `src/scenes/shared/timeline.ts`: the first gives you a paused timeline, and the second pins the length and warms the timeline up in both directions so a state change scrubbed backwards for the first time still reverts. Register the finished scene in `src/scenes/registry.ts`.
 

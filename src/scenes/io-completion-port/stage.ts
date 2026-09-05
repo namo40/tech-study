@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Three bands, read as one sentence
  * about what a waiting operation costs:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Requests (x 130..950): the `ok n` readout counting work
  *                    that came back, and the backlog of requests that arrived
  *                    with nothing left to serve them

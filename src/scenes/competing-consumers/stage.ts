@@ -11,7 +11,8 @@
  * simulation runs here, once, and both the markup and `scene.ts` read it.
  *
  * The bands:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Producer, with the arrival lane at x 540
  *   - y 880..1220    Queue: the depth counter, the track, the latency meter
  *   - y 1400         the fan rail, which every message crosses

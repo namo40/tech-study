@@ -3,7 +3,8 @@
  *
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Bands match the other scenes:
- *   - y 0..440      kept empty for the step title card
+ *   - y 0..400      above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440    the frame's top padding; nothing is drawn here
  *   - y 440..680    Client box, with a lane per dependency
  *   - y 880..1270   Bulkhead node: six slots, the wall, the labels
  *   - y 1500..1740  Service A and Service B, each with a health dot

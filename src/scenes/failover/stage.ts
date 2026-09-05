@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the two machines in the middle because the thing the scene is about is a role
  * moving between them:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     App, and the connection it writes through: the host name
  *                    it always asks for, and the machine that name resolves to
  *   - y 880..1270    A on the left and B on the right, each saying the one word

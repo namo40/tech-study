@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * a strip hung under the service band because the scene has to show both what
  * the report says now and the order the writes arrived in:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     `inst A` and `inst B`, one box each, one lane each
  *   - y 880..1270    Lock service: the one row the key is held in, and the arc
  *                    that counts the lease down

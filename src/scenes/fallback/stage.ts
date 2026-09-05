@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the answer being assembled in the middle because what the scene is about is
  * what the service says when one of the parts is missing:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Clients, and the rate they are offering
  *   - y 880..1270    Service: the card the answer is composed on, the four
  *                    modes it can be running in, and how many requests it has

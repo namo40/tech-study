@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * each database box writing what it holds under itself, because a request
  * stands on the centre column of the box it reached:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     App, the one lane every request leaves on, and the chip
  *                    that remembers the write this session just made
  *   - y 880..1270    Router: the rules it routes by, the one it is using right

@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. Four bands, arranged around the one
  * thing the scene is about — a message that fails every time it is handled, and
  * what that costs everyone standing behind it:
- *   - y 0..440        kept empty for the step title card
+ *   - y 0..400        above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440      the frame's top padding; nothing is drawn here
  *   - y 440..680      the Queue, drawn as a row of message cells with the head
  *                     on the LEFT, the poison cell marked `bad`, and the two
  *                     readings that say what the blockage costs: `depth n` and

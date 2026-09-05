@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands match the Circuit Breaker
  * stage so the two scenes read as the same diagram with a different middle
  * node:
- *   - y 0..440      kept empty for the step title card
+ *   - y 0..400      above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440    the frame's top padding; nothing is drawn here
  *   - y 440..680    Client box
  *   - y 880..1270   Retry node: attempt pills, backoff bar, labels
  *   - y 1500..1740  Service box with a health dot

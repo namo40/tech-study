@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. Four bands, and the middle one is a
  * fleet rather than a single instance, because that is the whole difference
  * between this scene and a shutdown seen from inside one process:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Drain: the `drain node` card that asks for the pods, how
  *                    many it `want`s gone, and how many evictions the budget is
  *                    holding back

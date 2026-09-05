@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. Three bands, read top to bottom as
  * the traffic, the two versions it is offered to, and the world outside the
  * process that only one of them is allowed to touch:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Traffic (x 130..950): the running `ok n` count of answers
  *                    users actually received, and the first step's ghost — the
  *                    six even bars of a synthetic load, the deploy plate, and

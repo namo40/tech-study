@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. Three bands, read top to bottom as
  * the traffic offered, the geometry that judges it, and the shape of what came
  * out the other side:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Requests (x 130..950): one chip per request in arrival
  *                    order, and the running `ok n` and `drop n` readouts
  *   - y 880..1270    Window (x 130..950): the `limit 4` gauge, the `now` mark

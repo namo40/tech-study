@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the database hanging lower than its neighbours' because it holds two rows
  * rather than one store:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     T1 and T2, one box each, one lane each
  *   - y 880..1270    Lock manager: the wait-for graph, the verdict it reaches,
  *                    and the lock order the third step imposes

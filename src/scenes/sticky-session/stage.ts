@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * a fourth box hung under the service band because the scene has four layers
  * rather than three:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Users box: two users, each with the cookie they hold
  *   - y 880..1270    Load balancer node: the affinity switch and the cookie map
  *   - y 1500..1740   the three instances, each with a session slot and a meter

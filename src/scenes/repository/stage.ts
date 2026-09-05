@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Four bands, read top to bottom as
  * one sentence about where persistence is allowed to live:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Domain: the `Service` capsule, and the first step's ghost —
  *                    query fragments lodging inside that capsule until the
  *                    capsule itself is drawn as flooded

@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the node stretched because it is not a diagram here but a chart:
- *   - y 0..440      kept empty for the step title card
+ *   - y 0..400      above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440    the frame's top padding; nothing is drawn here
  *   - y 440..680    Load generator: the virtual user count, the ramp stage it
  *                   is in, and the two arrival models step 4 compares
  *   - y 820..1330   Service: three readouts and the chart they are plotted on,

@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. Four bands, arranged around the one
  * thing the pattern separates — putting code on a server and letting people see
  * it:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     the Users: ten sample callers drawn as dots, each carrying
  *                    the side it is currently on, and the badge that says
  *                    whether v2 is on the servers at all

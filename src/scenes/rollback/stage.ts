@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Three bands, read top to bottom as
  * the return road and the two things that never take it:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Traffic (x 130..950): the `err n` readout over the last
  *                    three answers, the running `ok n` count, and the three
  *                    answer chips those two numbers are read off

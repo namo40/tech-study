@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Three bands, one per party to a list
  * that is handed out a slice at a time:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Client: what the reader asked for, as one of `page n` or
  *                    `after k`, and the band of pages it is holding
  *   - y 880..1270    Table: the rows in sort order as one long strip, `rows n`,

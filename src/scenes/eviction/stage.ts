@@ -3,7 +3,8 @@
  *
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Three bands and one column:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     App: which key it is asking for, and how many of its reads
  *                    were answered from the cache and how many were not
  *   - y 880..1270    Cache: six item cells, how many of them are taken, which

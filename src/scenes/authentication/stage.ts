@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. Four bands, arranged around the one
  * question this scene is about — not what a caller may do, but whether it is
  * who it says it is:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     the Clients: two capsules, `user` and `service`, each
  *                    carrying the evidence it is presenting right now
  *                    (`password`, `stolen`, `api key`, `cert`, or nothing at

@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Three bands, one per place a
  * capacity conversation actually happens:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Arrivals: the gauge that says how hard work is coming in,
  *                    with the ceiling line drawn on it at the rate the Server
  *                    can retire, plus the `in n/s` reading

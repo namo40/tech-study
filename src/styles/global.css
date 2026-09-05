@@ -285,14 +285,14 @@ kbd {
   flex-direction: column;
   gap: var(--space-5);
   /* Stacked, the stage takes the column width; a tablet is wide enough that
-     an uncapped 9:16 card would be taller than two screens. */
+     an uncapped card would be taller than a screen. */
   max-width: 26rem;
 }
 
 /*
  * Nothing in the theater is allowed to be squeezed: on a short viewport the
  * column scrolls inside itself rather than flattening the stage out of its
- * 9:16 canvas.
+ * 1080:1520 canvas.
  */
 .home-theater > * {
   flex: none;
@@ -336,13 +336,13 @@ kbd {
 }
 
 /*
- * The stage keeps the 9:16 canvas every scene is drawn on. It is framed by the
- * card rather than by a border of its own, so `.stage-frame` is left alone.
+ * The stage keeps the 1080:1520 canvas every scene is drawn on. It is framed by
+ * the card rather than by a border of its own, so `.stage-frame` is left alone.
  */
 .home-stage {
   flex: none;
   width: 100%;
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 1080 / 1520;
   margin-top: var(--space-3);
   overflow: hidden;
 }
@@ -938,7 +938,7 @@ kbd {
  *
  * Below 48rem one centred column: the step card, the stage, the controls, and
  * the keyboard hint. `--stage-width` is derived from the capped stage height so
- * the card, the controls, and the hint all line up with the 9:16 canvas.
+ * the card, the controls, and the hint all line up with the 1080:1520 canvas.
  */
 .player {
   --stage-width: min(100%, 22rem);
@@ -956,7 +956,7 @@ kbd {
 }
 
 .stage-frame {
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 1080 / 1520;
   width: var(--stage-width);
   max-height: 76vh;
   border: 1px solid var(--border);
@@ -1109,16 +1109,18 @@ kbd {
 
 @media (min-width: 48rem) {
   /*
-   * Wide enough for two columns: the caption pane and, beside it, the 9:16
-   * stage with its controls under it. The pair is centred as one block.
+   * Wide enough for two columns: the caption pane and, beside it, the stage
+   * with its controls under it. The pair is centred as one block.
    *
-   * The card used to be overlaid on the band the SVG keeps empty at its top,
-   * which read well but bounded the caption by a band of 140..210 px depending
-   * on the window height. Measured in a browser, nine in ten cards spilled over
-   * the diagram at every window 900 px tall or shorter: the band grows with the
-   * viewport height while the text wraps on the card width, so a laptop had the
-   * least room and the same caption to fit. Beside the stage the caption shares
-   * no bound with the drawing — a long one only makes its own column taller.
+   * The card used to be overlaid on the band the SVG then kept empty at its
+   * top, which read well but bounded the caption by 140..210 px depending on
+   * the window height. Measured in a browser, nine in ten cards spilled over
+   * the diagram at every window 900 px tall or shorter: the band grew with the
+   * viewport height while the text wrapped on the card width, so a laptop had
+   * the least room and the same caption to fit. Beside the stage the caption
+   * shares no bound with the drawing — a long one only makes its own column
+   * taller. The band has since been cropped out of the shared viewBox, so the
+   * stage is all diagram.
    */
   .player {
     display: grid;
@@ -1187,7 +1189,7 @@ kbd {
 @media (min-width: 60rem) {
   .player {
     --stage-height: min(85vh, 960px);
-    --stage-width: calc(var(--stage-height) * 9 / 16);
+    --stage-width: calc(var(--stage-height) * 1080 / 1520);
   }
 
   .stage-frame {
@@ -1198,7 +1200,7 @@ kbd {
   /*
    * Theater on the left, index on the right. The theater column stretches to
    * the height of the index, which is what gives the sticky card room to
-   * travel. A 9:16 stage plus its controls is taller than a short viewport, so
+   * travel. The stage plus its controls is taller than a short viewport, so
    * the theater scrolls inside itself once it runs out of room instead of
    * hiding its own scene list below the fold.
    */
@@ -1255,7 +1257,7 @@ kbd {
   }
 
   /*
-   * A 9:16 stage plus its controls and scene list is taller than a short
+   * The stage plus its controls and scene list is taller than a short
    * viewport, so the column cannot simply pin under the header: it would hide
    * its own bottom for the whole scroll. `--home-theater-height` is the
    * measured column height plus the gap wanted below it, written by the page

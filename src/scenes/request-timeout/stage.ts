@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the bottom one split in two because a request timeout is only interesting
  * when the caller has more than one dependency to bound:
- *   - y 0..440      kept empty for the step title card
+ *   - y 0..400      above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440    the frame's top padding; nothing is drawn here
  *   - y 440..680    Client box, and under it the meter that measures how long
  *                   the person in front of the screen has been waiting
  *   - y 880..1270   Service node: the threads it is holding, the deadline the

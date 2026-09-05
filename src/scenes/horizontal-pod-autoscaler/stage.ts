@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the pod row given the allowed extension because the backlog the pods have not
  * got to yet is drawn under them:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     the latency panel, and the Clients box traffic leaves from
  *   - y 880..1270    the autoscaler: what it is configured with, the formula it
  *                    evaluates with the values it read, and the window that

@@ -21,8 +21,21 @@
  * in the stage template, and the builder indents its remaining lines to match.
  */
 
-/** The canvas every stage is drawn on. */
-export const VIEWBOX = '0 0 1080 1920';
+/**
+ * The canvas every stage is drawn on.
+ *
+ * Coordinates are still written in a 1080 x 1920 space, but the band above
+ * y 440 was only ever there for the step title card to sit on. The card now
+ * lives beside the stage, so the viewBox crops that band away: nothing moves,
+ * the frame just stops showing empty room at the top.
+ *
+ * It starts at y 400 rather than y 440 because every stage puts its first box
+ * at exactly 440. Cropping to the box would set its upper edge on the frame
+ * border, where `overflow: hidden` shaves the rounded corners off and the box
+ * reads as open at the top. The 40 units kept above it are the frame's own
+ * padding, part of the picture rather than room anything may be laid over.
+ */
+export const VIEWBOX = '0 400 1080 1520';
 
 /** Corner radius shared by the client, node, service and database boxes. */
 const BOX_RADIUS = 28;

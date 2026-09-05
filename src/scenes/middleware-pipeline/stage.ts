@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. This stage is laid out differently
  * from the others, because the middle of it is a stack rather than a node:
- *   - y 0..440      kept empty for the step title card
+ *   - y 0..400      above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440    the frame's top padding; nothing is drawn here
  *   - y 440..640    Client box
  *   - y 760..1560   Pipeline: five middleware layers, top to bottom
  *   - y 1620..1800  Endpoint box

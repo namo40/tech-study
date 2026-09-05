@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the node stretched and the bottom box extended because both of them hold a
  * table of small parts rather than a single widget:
- *   - y 0..440      kept empty for the step title card
+ *   - y 0..400      above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440    the frame's top padding; nothing is drawn here
  *   - y 440..680    Threads: the allocation rate the request lanes are
  *                   producing, the code the hot path is running, and the hatch
  *                   that falls over the lanes while the collector has them

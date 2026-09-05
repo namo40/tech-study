@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * three service boxes side by side because a saga is one business transaction
  * split across three owners:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Client, the lane every order leaves on
  *   - y 880..1270    the coordination band, drawn twice over: the Event bus and
  *                    its subscriptions while the services call each other, the

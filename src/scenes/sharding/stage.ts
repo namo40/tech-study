@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. Four bands, arranged around the one
  * question the scene asks — where does a key live, and what does it cost to
  * change the answer:
- *   - y 0..440        kept empty for the step title card
+ *   - y 0..400        above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440      the frame's top padding; nothing is drawn here
  *   - y 440..680      the Router: the rule it routes by (`mod 2`, the `mod 3`
  *                     ghost, then `ring`) and `keys n`, how many keys the map
  *                     holds. The rule is the whole of the routing: nothing else

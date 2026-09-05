@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Three bands, one per party to the
  * bargain the scene is about:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Producer: the rate it is achieving, how many it may have
  *                    outstanding at once, and whether it is being made to wait
  *   - y 880..1270    Queue: the bounded buffer itself, eight cells wide, with

@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. The bands are the usual ones, with
  * one seat in the middle and two private services under it:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Clients, all of them leaving on the one public lane
  *   - y 880..1270    Reverse Proxy: the route card it matches paths against,
  *                    the boundary work it does (TLS, forwarded header, auth,

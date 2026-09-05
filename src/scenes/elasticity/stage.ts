@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Three bands, one per layer that can
  * stretch, because the argument of the scene is that they stretch together:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     Load: the demand gauge, which is the only thing in the
  *                    picture nobody in the cluster controls
  *   - y 880..1270    Pods: six capsule positions, the two readouts the

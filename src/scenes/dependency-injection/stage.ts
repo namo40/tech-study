@@ -4,7 +4,8 @@
  * Imported on the server so the diagram is in the HTML before any script runs;
  * it must stay free of animation libraries. Three bands, read top to bottom as
  * one sentence about who does the making:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     App (x 130..950): the two request slots the caller uses in
  *                    turn, and the running `ok n` count of answers
  *   - y 880..1270    Container (x 130..950): three registration rows, each a

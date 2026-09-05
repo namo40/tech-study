@@ -5,7 +5,8 @@
  * it must stay free of animation libraries. The bands are the usual ones, with
  * the pod row given the allowed extension because a pod says four things about
  * itself and the schema panel next to it carries a whole table:
- *   - y 0..440       kept empty for the step title card
+ *   - y 0..400       above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440     the frame's top padding; nothing is drawn here
  *   - y 440..680     the Clients box every request leaves from
  *   - y 880..1270    the Service: what the endpoints list currently holds, the
  *                    two numbers the rollout is bounded by, and how far it got

@@ -6,8 +6,8 @@
  * parts live in `scene.ts`.
  *
  * Layout of the 1080 x 1920 canvas:
- *   - y 0..440      kept empty, so the step title card can sit over the top of
- *                   the stage without covering any of the diagram
+ *   - y 0..400      above the cropped viewBox (see shared VIEWBOX)
+ *   - y 400..440    the frame's top padding; nothing is drawn here
  *   - y 440..680    Client box
  *   - y 880..1270   breaker node: switch, state badge, timer ring, meter
  *   - y 1500..1740  Service box with a health dot
