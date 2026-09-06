@@ -45,6 +45,15 @@ const concepts = defineCollection({
      */
     tags: z.array(z.enum(TAGS)).max(3).default([]),
     /**
+     * Difficulty from 1 to 10, standing for how much a reader has to know
+     * before the page makes sense. Written in the English file only and joined
+     * in at build time the way tags are, so one page carries one level in all
+     * three locales and a `level` in a Korean or Japanese file is ignored.
+     * Optional while the pages are still being rated: one without it shows no
+     * level at all.
+     */
+    level: z.number().int().min(1).max(10).optional(),
+    /**
      * Identifier of the animated scene, when the page has one. Three kinds of
      * page name a scene. The page that owns it names its own slug and writes
      * the steps. A sub-keyword page names the owning page and adds `sceneStep`,

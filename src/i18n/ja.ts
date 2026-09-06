@@ -43,6 +43,15 @@ const ja: Messages = {
   'tag.overload': '過負荷',
   'tag.queue': 'キュー',
 
+  'level.short': 'レベル {level}',
+  'level.of': '難易度 10 段階中 {level}',
+  'level.bandLabel': '難易度',
+  'level.band.1': '1～2 基礎',
+  'level.band.2': '3～4 実務の基本',
+  'level.band.3': '5～6 組み合わせ',
+  'level.band.4': '7～8 分散と整合性',
+  'level.band.5': '9～10 内部',
+
   'lang.label': '言語',
   'lang.en': 'English',
   'lang.ko': '한국어',

@@ -43,6 +43,15 @@ const ko: Messages = {
   'tag.overload': '과부하',
   'tag.queue': '큐',
 
+  'level.short': '레벨 {level}',
+  'level.of': '난이도 10단계 중 {level}',
+  'level.bandLabel': '난이도',
+  'level.band.1': '1~2 기초',
+  'level.band.2': '3~4 실무 기본',
+  'level.band.3': '5~6 조합',
+  'level.band.4': '7~8 분산·일관성',
+  'level.band.5': '9~10 내부',
+
   'lang.label': '언어',
   'lang.en': 'English',
   'lang.ko': '한국어',

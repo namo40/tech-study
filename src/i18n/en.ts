@@ -47,6 +47,18 @@ const en = {
   'tag.overload': 'Overload',
   'tag.queue': 'Queues',
 
+  // Difficulty, 1 to 10. The short form is what a chip shows and `level.of`
+  // is how it reads out loud. The index groups the ten into five bands of
+  // two, named here in the order they run.
+  'level.short': 'Lv {level}',
+  'level.of': 'Level {level} of 10',
+  'level.bandLabel': 'Difficulty',
+  'level.band.1': '1–2 Basics',
+  'level.band.2': '3–4 Everyday',
+  'level.band.3': '5–6 Combinations',
+  'level.band.4': '7–8 Distributed',
+  'level.band.5': '9–10 Internals',
+
   'lang.label': 'Language',
   'lang.en': 'English',
   'lang.ko': '한국어',
