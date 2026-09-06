@@ -3,6 +3,7 @@ title: "Rebalancing"
 summary: "Rebalancing is what happens to partitioned data when the node set changes: whole partitions move — not rows one by one — a good scheme moves the minimum and nothing else, and the system keeps answering while ownership shifts, because the map, not the node, is the truth."
 category: "Data distribution and consistency"
 tags: ["database", "consistency"]
+level: 6
 scene: rebalancing
 steps:
   - title: "Adding a node does nothing until data follows it"

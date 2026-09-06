@@ -3,6 +3,7 @@ title: "Pre-Stop Hook"
 summary: "A command the platform runs inside the container immediately before SIGTERM. It exists to hold the pod still while the routing tables that still name it catch up, which is the one thing the application cannot do for itself."
 category: "Containers and orchestration"
 tags: ["kubernetes"]
+level: 4
 scene: pod-disruption-budget
 sceneStep: 2
 related:

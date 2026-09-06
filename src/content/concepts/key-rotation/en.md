@@ -3,6 +3,7 @@ title: "Key Rotation"
 summary: "Key rotation replaces credentials on a schedule with an overlap: two keys stay valid while callers migrate, signing uses one key while verification keeps a ring, and a leaked key stops being a permanent identity and becomes a closing window."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 4
 scene: key-rotation
 steps:
   - title: "A key that never changes is a password you can never reset"

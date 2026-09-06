@@ -3,6 +3,7 @@ title: "MassTransit"
 summary: "MassTransit is an application framework that sits on top of a message broker: consumers, retry policies, redelivery and sagas are written once as .NET code, and the transport underneath is a configuration line rather than the shape of your application."
 category: "Messaging and event processing"
 tags: ["queue"]
+level: 4
 related:
   - label: Web Queue Worker
     slug: web-queue-worker

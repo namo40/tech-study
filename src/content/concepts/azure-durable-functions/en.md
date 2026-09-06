@@ -2,6 +2,7 @@
 title: "Azure Durable Functions"
 summary: "Azure Durable Functions is the serverless way to write a workflow as ordinary C#: the orchestrator's awaits are checkpoints, the runtime unloads the function between them and replays it from an event-sourced history, so the process survives crashes, scale-in and waits measured in days."
 category: "Scheduled work and workflows"
+level: 5
 related:
   - label: Durable Workflow
     slug: durable-workflow

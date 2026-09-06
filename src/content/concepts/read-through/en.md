@@ -2,6 +2,7 @@
 title: "Read-Through"
 summary: "Read-through moves the fill onto the cache. The application asks for a key and gets a value; whether that value came from memory or from the database on the way through is the cache layer's business, not the call site's."
 category: "Caching"
+level: 4
 scene: cache-aside
 sceneStep: 1
 related:

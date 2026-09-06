@@ -3,6 +3,7 @@ title: "DbContext Pool"
 summary: "AddDbContextPool applies borrow-and-return to DbContext instances instead of connections. It is a second pool sitting above the connection pool and saving a different cost, the per-instance setup of a context, and its price is that a pooled context must carry no state of its own."
 category: "Pools and resources"
 tags: ["ef-core", "database"]
+level: 4
 scene: database-connection-pool
 sceneStep: 2
 related:

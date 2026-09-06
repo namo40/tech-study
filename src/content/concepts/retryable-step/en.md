@@ -3,6 +3,7 @@ title: "Retryable Step"
 summary: "A step an engine is allowed to run again: running it twice leaves the world in the same state as running it once, which is what makes both retry after a failure and resume after a crash safe."
 category: "Scheduled work and workflows"
 tags: ["duplicates"]
+level: 6
 scene: workflow-engine
 sceneStep: 3
 related:

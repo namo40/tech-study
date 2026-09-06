@@ -2,6 +2,7 @@
 title: "Layer 4 Load Balancing"
 summary: "Balancing at the transport layer: the balancer picks a backend for a connection by looking at addresses and ports, forwards the bytes without reading them, and never learns what any request was. That is what makes it fast, protocol-agnostic and blind."
 category: "Edge, routing and service networking"
+level: 5
 scene: load-balancer
 sceneStep: 1
 related:

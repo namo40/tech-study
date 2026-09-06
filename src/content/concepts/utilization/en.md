@@ -3,6 +3,7 @@ title: "Utilization"
 summary: "The share of a resource that is in use. It is the cheapest early signal you have, because it says how much ceiling is left before waiting time starts to climb."
 category: "Requirements and quality attributes"
 tags: ["metric"]
+level: 3
 scene: throughput
 sceneStep: 2
 related:

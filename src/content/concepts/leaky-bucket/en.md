@@ -3,6 +3,7 @@ title: "Leaky Bucket"
 summary: "A leaky bucket holds arrivals and releases them at one fixed rate, so a bursty input leaves as a steady drip: it shapes traffic rather than counting it, its queue is where the delay comes from, and what arrives at a full bucket is dropped."
 category: "Resilience"
 tags: ["overload", "queue"]
+level: 4
 scene: sliding-window
 sceneStep: 4
 related:

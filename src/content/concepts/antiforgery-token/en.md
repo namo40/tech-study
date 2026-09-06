@@ -2,6 +2,7 @@
 title: "Antiforgery Token"
 summary: "An antiforgery token is a value the server puts in the page and expects back with the next state-changing request, paired with a second half kept in a cookie of its own. A forged page can make the browser send cookies, but it cannot read your page, so it cannot echo the half that has to match."
 category: "Application security"
+level: 6
 scene: cookie-authentication
 sceneStep: 4
 related:

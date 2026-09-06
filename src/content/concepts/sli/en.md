@@ -3,6 +3,7 @@ title: "SLI"
 summary: "An SLI is the measurement itself: the ratio of good events to valid events that stands in for how the service felt to use. Everything downstream inherits its blind spots, so where you measure it decides whether the budget is telling you the truth."
 category: "Observability and operations"
 tags: ["metric"]
+level: 4
 scene: error-budget
 sceneStep: 2
 related:

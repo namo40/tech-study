@@ -3,6 +3,7 @@ title: "Rollback"
 summary: "Rollback is the return journey you prepare before you need it: keep the previous revision warm, make going back a pointer switch instead of a rebuild, and know in advance what cannot go back, because data, schemas and side effects only move forward."
 category: "Containers and orchestration"
 tags: ["deployment"]
+level: 4
 scene: rollback
 steps:
   - title: "The way back is built before it is needed"

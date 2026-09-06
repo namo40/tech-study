@@ -2,6 +2,7 @@
 title: "Half-Open State"
 summary: "Half-Open is the trial state of a circuit breaker: after the break duration it lets a single call through to test whether the dependency has recovered."
 category: "Resilience"
+level: 6
 scene: circuit-breaker
 sceneStep: 3
 related:

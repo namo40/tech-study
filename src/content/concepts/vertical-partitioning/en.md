@@ -3,6 +3,7 @@ title: "Vertical Partitioning"
 summary: "Vertical partitioning splits a table by columns: the narrow fields every request reads go one way, the wide ones almost nothing reads go the other, and the two halves rejoin by id. It buys speed on the hot path rather than capacity, and it is paid for on the rare full-row read."
 category: "Data distribution and consistency"
 tags: ["database"]
+level: 4
 scene: partitioning
 sceneStep: 3
 related:

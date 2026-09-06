@@ -3,6 +3,7 @@ title: "LRU"
 summary: "LRU evicts the entry that has gone longest without a reader. It is the rule that turns access history into a policy: what you touched recently is what you are assumed to want next, and everything else is spending space on a guess that did not pay off."
 category: "Caching"
 tags: ["memory"]
+level: 5
 scene: eviction
 sceneStep: 2
 related:

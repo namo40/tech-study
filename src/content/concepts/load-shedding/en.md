@@ -3,6 +3,7 @@ title: "Load Shedding"
 summary: "Dropping some of the work before saturation, on purpose. When more is offered than the service can do, a fast refusal to a few is cheaper than a slow failure for everyone."
 category: "Resilience"
 tags: ["overload"]
+level: 5
 scene: fallback
 sceneStep: 3
 related:

@@ -3,6 +3,7 @@ title: "Liveness Probe"
 summary: "A liveness probe is the check whose answer is a restart: it asks whether the process should keep existing at all, and when it has been refused enough times in a row the kubelet kills the container and starts it again. That is a violent remedy, which is why it should only ever ask about the process itself."
 category: "Containers and orchestration"
 tags: ["kubernetes"]
+level: 4
 scene: readiness-probe
 sceneStep: 3
 related:

@@ -2,6 +2,7 @@
 title: "Health Check"
 summary: "A health check is a small endpoint a supervisor calls on a schedule to decide something about the instance behind it, and the mechanism is always the same: ask, wait, count the answer. What differs, and what matters, is which question you asked and what the caller does with the answer."
 category: "Containers and orchestration"
+level: 2
 scene: readiness-probe
 sceneStep: 1
 related:

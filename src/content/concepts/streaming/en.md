@@ -3,6 +3,7 @@ title: "Streaming"
 summary: "Streaming means the consumer starts seeing the answer before the producer has finished making it. It trades a buffer for a flow, which changes what memory costs and when the first byte arrives, and it is why cancellation and backpressure become the two things you have to handle."
 category: "Edge, routing and service networking"
 tags: ["latency"]
+level: 6
 scene: multiplexing
 related:
   - label: Multiplexing

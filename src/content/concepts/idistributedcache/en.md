@@ -2,6 +2,7 @@
 title: "IDistributedCache"
 summary: "IDistributedCache is the ASP.NET Core abstraction over a cache shared between processes: four operations on a string key, with byte[] as the value. Serialization is the caller's job, and the implementation behind it is chosen at startup rather than at the call site."
 category: "Caching"
+level: 2
 scene: cache-aside
 sceneStep: 1
 related:

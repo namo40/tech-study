@@ -3,6 +3,7 @@ title: "Memory Pressure"
 summary: "Memory pressure is the heap living near its limit: allocations arrive faster than collections free space, the collector runs harder and pauses longer, and past the limit there is no error to catch — the container is simply killed."
 category: "Containers and orchestration"
 tags: ["memory"]
+level: 5
 scene: memory-pressure
 steps:
   - title: "A heap far from its limit barely notices the GC"

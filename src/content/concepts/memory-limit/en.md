@@ -3,6 +3,7 @@ title: "Memory Limit"
 summary: "The ceiling a container is held to. Over the CPU limit a process is throttled; over the memory limit it is killed, with no exception to catch and no line in the log."
 category: "Containers and orchestration"
 tags: ["memory", "kubernetes"]
+level: 5
 scene: memory-pressure
 sceneStep: 3
 related:

@@ -3,6 +3,7 @@ title: "Thread Pool Starvation"
 summary: "Thread pool starvation is when the pool has threads but they are all blocked instead of working, so the queue grows and latency climbs in steps while the CPU sits idle."
 category: "Pools and resources"
 tags: ["overload"]
+level: 7
 scene: thread-pool
 sceneStep: 2
 related:

@@ -3,6 +3,7 @@ title: "HybridCache"
 summary: "HybridCache is one .NET caching API laid over two layers: a fast in-process L1 and an optional shared L2, with stampede protection built into the single call you make, so concurrent misses for the same key collapse into one factory run instead of a thundering herd."
 category: "Caching"
 tags: ["memory"]
+level: 5
 related:
   - label: Cache-Aside
     slug: cache-aside

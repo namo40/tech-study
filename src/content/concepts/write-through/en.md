@@ -3,6 +3,7 @@ title: "Write-Through"
 summary: "A write-through write is not finished until both the cache and the record of truth have it. The caller waits for both, which buys an entry that is never stale by omission and costs two latencies on every write, including writes nobody will ever read."
 category: "Caching"
 tags: ["consistency"]
+level: 5
 scene: cache-aside
 sceneStep: 4
 related:

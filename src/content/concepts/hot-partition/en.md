@@ -3,6 +3,7 @@ title: "Hot Partition"
 summary: "One shard taking most of the traffic while its neighbours idle: the key distribution, not the cluster size, sets the ceiling — and when the key is also the thing guaranteeing order, no number of consumers can be added to the lane that is behind."
 category: "Messaging and event processing"
 tags: ["queue", "overload"]
+level: 7
 scene: ordering
 sceneStep: 3
 related:

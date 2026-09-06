@@ -3,6 +3,7 @@ title: "Idle Timeout"
 summary: "Idle timeout reclaims a pooled connection that nobody has used for a while. It measures disuse rather than age, which makes it the setting that decides how cheap a quiet service is for the database, and how likely the pool is to hold a connection something else has already closed."
 category: "Pools and resources"
 tags: ["database"]
+level: 4
 scene: database-connection-pool
 sceneStep: 2
 related:

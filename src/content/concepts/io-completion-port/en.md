@@ -3,6 +3,7 @@ title: "I/O Completion Port"
 summary: "An I/O completion port lets waiting cost no thread: the operating system runs the I/O, drops a completion packet on the port when it finishes, and a pool thread picks the continuation up. A handful of threads can serve thousands of in-flight operations that way, unless the code re-blocks what the port set free."
 category: "Pools and resources"
 tags: ["memory", "latency"]
+level: 9
 scene: io-completion-port
 steps:
   - title: "Waiting eats threads"

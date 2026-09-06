@@ -2,6 +2,7 @@
 title: "Load Balancer"
 summary: "A load balancer spreads requests across several servers. Which server gets the next request is a policy: round robin when the work is uniform, least connections when it is not, and only ever a server that has passed its health check."
 category: "Edge, routing and service networking"
+level: 4
 scene: load-balancer
 steps:
   - title: "Round robin"

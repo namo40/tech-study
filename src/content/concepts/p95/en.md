@@ -3,6 +3,7 @@ title: "p95"
 summary: "p95 is the latency the slowest one request in twenty sees. It moves early enough to be a useful warning and has enough samples behind it to stay steady, which is why alerts are usually set on it."
 category: "Requirements and quality attributes"
 tags: ["metric", "latency"]
+level: 3
 scene: tail-latency
 sceneStep: 1
 related:

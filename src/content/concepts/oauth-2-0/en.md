@@ -3,6 +3,7 @@ title: "OAuth 2.0"
 summary: "OAuth 2.0 replaces handing over your password with delegated, scoped, expiring tokens. The app gets a key that opens one door for a while, rotation turns a stolen token into a detectable event, and OpenID Connect adds the answer to \"who are you\" on top."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 5
 scene: oauth-2-0
 steps:
   - title: "Don't hand over the key to your whole house"

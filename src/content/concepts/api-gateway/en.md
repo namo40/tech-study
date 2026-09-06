@@ -2,6 +2,7 @@
 title: "API Gateway"
 summary: "An API gateway is a reverse proxy that has taken on product concerns: the same single entry point, now also refusing requests without a token, trimming traffic over the limit, and composing one API surface out of several services."
 category: "Edge, routing and service networking"
+level: 5
 scene: reverse-proxy
 sceneStep: 4
 related:

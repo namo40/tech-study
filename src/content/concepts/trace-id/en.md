@@ -2,6 +2,7 @@
 title: "Trace ID"
 summary: "A trace id is the 16-byte value every span in one trace carries, so that spans recorded by different processes can be gathered back into a single request. It travels in the W3C `traceparent` header and belongs in every log line the request produces."
 category: "Observability and operations"
+level: 5
 scene: distributed-tracing
 sceneStep: 2
 related:

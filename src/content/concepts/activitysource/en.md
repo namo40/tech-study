@@ -2,6 +2,7 @@
 title: "ActivitySource"
 summary: "ActivitySource is the .NET object that creates spans: a named factory you construct once and keep in a static field, whose name is the string a collector subscribes to. When nobody is subscribed, StartActivity returns null, so instrumentation left in the code costs almost nothing."
 category: "Observability and operations"
+level: 4
 scene: distributed-tracing
 sceneStep: 2
 related:

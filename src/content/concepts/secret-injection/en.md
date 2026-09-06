@@ -3,6 +3,7 @@ title: "Secret Injection"
 summary: "Secret injection is how a credential reaches a workload without living in the artifact: the image stays clean, the platform delivers the secret at start — as environment or as a mounted file — and what was delivered can be rotated and scoped without rebuilding anything."
 category: "Containers and orchestration"
 tags: ["kubernetes"]
+level: 3
 scene: secret-injection
 steps:
   - title: "A secret baked into the image goes everywhere the image goes"

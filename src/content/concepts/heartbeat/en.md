@@ -2,6 +2,7 @@
 title: "Heartbeat"
 summary: "A periodic signal whose only content is that it arrived. Nothing a heartbeat says is information; the information is in the one that does not come, which is why every detector is really choosing a length of silence."
 category: "Data distribution and consistency"
+level: 4
 scene: failover
 sceneStep: 2
 related:

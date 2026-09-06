@@ -2,6 +2,7 @@
 title: "Key Ring"
 summary: "The key ring is the rotating set of keys ASP.NET Core Data Protection uses to protect cookies, antiforgery tokens and short-lived payloads: one key is current, the older ones stay for decryption, and every instance of the application has to be looking at the same ring."
 category: "Application security"
+level: 6
 related:
   - label: Key Rotation
     slug: key-rotation

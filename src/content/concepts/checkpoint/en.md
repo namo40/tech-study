@@ -3,6 +3,7 @@ title: "Checkpoint"
 summary: "An offset written down somewhere durable, so a restart knows where to land. It is what turns a crash into lost time instead of lost work, and how often you write it is a straight trade between storage round trips and how much gets reprocessed."
 category: "Messaging and event processing"
 tags: ["queue"]
+level: 6
 scene: publish-subscribe
 sceneStep: 3
 related:

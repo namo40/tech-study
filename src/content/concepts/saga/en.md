@@ -3,6 +3,7 @@ title: "Saga"
 summary: "A saga is a business transaction spread across services as a sequence of local transactions. There is no rollback across them: when a step fails, the earlier steps are undone by compensating actions, and past the pivot the only way is forward."
 category: "Distributed transactions and message consistency"
 tags: ["consistency"]
+level: 7
 scene: saga
 steps:
   - title: "Choreography"

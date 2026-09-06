@@ -3,6 +3,7 @@ title: "PACELC"
 summary: "PACELC extends the CAP theorem with the half you meet every day: if there is a Partition, the choice is Availability against Consistency, Else the choice is Latency against Consistency. Since most days have no partition, the Else branch is where a system's real character lives."
 category: "Data distribution and consistency"
 tags: ["consistency", "latency"]
+level: 8
 scene: cap-theorem
 sceneStep: 4
 related:

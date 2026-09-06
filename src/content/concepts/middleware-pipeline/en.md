@@ -2,6 +2,7 @@
 title: "Middleware Pipeline"
 summary: "The middleware pipeline is a chain of components that each see the request on the way in and the response on the way out, in reverse order. Any of them can stop the chain, and their order is the design of the application's edge."
 category: ".NET runtime and hosting"
+level: 3
 scene: middleware-pipeline
 steps:
   - title: "In, then out"

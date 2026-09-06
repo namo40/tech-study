@@ -3,6 +3,7 @@ title: "Data Warehouse"
 summary: "A data warehouse is a separate database built for asking questions. Data is copied out of the operational stores, remodelled around history and columns, and queried there, so the heavy analytical work never lands on the traffic that serves customers."
 category: "Data storage"
 tags: ["database"]
+level: 3
 related:
   - label: Materialized View
     slug: materialized-view

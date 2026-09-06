@@ -3,6 +3,7 @@ title: "Idempotent Consumer"
 summary: "An idempotent consumer is one that can be handed the same message twice and leave the system in the state it would have been in after handling it once, which is what makes at-least-once delivery survivable."
 category: "Messaging and event processing"
 tags: ["duplicates", "queue"]
+level: 6
 scene: competing-consumers
 sceneStep: 3
 related:

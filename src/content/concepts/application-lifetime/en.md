@@ -3,6 +3,7 @@ title: "Application Lifetime"
 summary: "The application's lifetime is the container's lifetime: it is built once at startup, it opens and closes a scope around every unit of work, and at shutdown it releases what it is still holding in reverse order of creation — so where a thing is created decides when it dies."
 category: ".NET runtime and hosting"
 tags: ["queue"]
+level: 5
 scene: dependency-injection
 sceneStep: 4
 related:

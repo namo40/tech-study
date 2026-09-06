@@ -3,6 +3,7 @@ title: "Retry Budget"
 summary: "A retry budget caps how much of your traffic may be retries, so a failing dependency cannot be handed several times the load it is already struggling with."
 category: "Resilience"
 tags: ["overload"]
+level: 2
 scene: retry
 sceneStep: 4
 related:

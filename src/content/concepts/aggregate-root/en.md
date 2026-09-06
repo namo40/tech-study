@@ -3,6 +3,7 @@ title: "Aggregate Root"
 summary: "The one door into a consistency boundary. Every change goes through it, it checks the invariant on the way through, and everything outside holds its id rather than a reference to anything inside."
 category: "Application architecture"
 tags: ["consistency"]
+level: 6
 scene: domain-driven-design
 sceneStep: 3
 related:

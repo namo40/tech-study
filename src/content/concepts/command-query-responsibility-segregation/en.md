@@ -3,6 +3,7 @@ title: "CQRS"
 summary: "CQRS separates the model that changes data from the model that answers questions about it: commands go through the rules, and queries read a shape built for the screen. Split the stores only when reads and writes need to scale apart, and accept the lag that comes with it."
 category: "Application architecture"
 tags: ["consistency"]
+level: 6
 scene: command-query-responsibility-segregation
 steps:
   - title: "One model for everything"

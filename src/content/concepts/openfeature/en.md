@@ -3,6 +3,7 @@ title: "OpenFeature"
 summary: "OpenFeature is a vendor-neutral API for evaluating feature flags: your code asks a client for a value and a provider answers, so the checks scattered through a codebase stop naming whoever happens to be storing the flags."
 category: "Containers and orchestration"
 tags: ["deployment"]
+level: 3
 scene: feature-flag
 sceneStep: 4
 related:

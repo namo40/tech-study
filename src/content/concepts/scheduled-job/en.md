@@ -2,6 +2,7 @@
 title: "Scheduled Job"
 summary: "A scheduled job is work that starts because the clock said so rather than because somebody asked. The schedule owns when it fires; something else has to own whether it finished."
 category: "Scheduled work and workflows"
+level: 5
 scene: workflow-engine
 sceneStep: 1
 related:

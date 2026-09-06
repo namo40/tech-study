@@ -2,6 +2,7 @@
 title: "Cookie Authentication"
 summary: "Cookie authentication signs a user in by setting a cookie the browser then attaches to every request for that site, automatically, whether the request came from your page or from someone else's. That automation is the convenience, and it is exactly what cross-site request forgery exploits."
 category: "Authentication and authorization"
+level: 5
 scene: cookie-authentication
 steps:
   - title: "Signed in by a cookie"

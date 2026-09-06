@@ -3,6 +3,7 @@ title: "Dependency Injection"
 summary: "Dependency injection separates asking from making: classes declare what they need, one container knows how to build everything, and each request gets a graph assembled to order — with every instance's lifetime (singleton, scoped, transient) decided by registration, not by whoever called new first."
 category: ".NET runtime and hosting"
 tags: ["ef-core"]
+level: 4
 scene: dependency-injection
 steps:
   - title: "new wires your design by hand"

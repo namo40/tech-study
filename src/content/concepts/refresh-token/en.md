@@ -3,6 +3,7 @@ title: "Refresh Token"
 summary: "A refresh token is what an app redeems for a new access token when the old one expires, without sending the user through a login again. It never leaves the back channel, it is rotated on every use, and a replay of an old one is treated as theft."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 6
 scene: authorization-code
 sceneStep: 4
 related:

@@ -3,6 +3,7 @@ title: "Worker Service"
 summary: "A worker service is the same background loop moved into a process of its own: it deploys on its own schedule, scales on queue depth rather than on web traffic, and keeps running while the app it used to live inside is restarting."
 category: "Scheduled work and workflows"
 tags: ["queue"]
+level: 4
 scene: background-service
 sceneStep: 3
 related:

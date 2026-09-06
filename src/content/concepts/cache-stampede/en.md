@@ -3,6 +3,7 @@ title: "Cache Stampede"
 summary: "A cache stampede is what happens when a popular key expires: every request misses at once, and they all charge the origin together for the same value. The fixes all share one idea, which is to make sure only one of them goes."
 category: "Caching"
 tags: ["overload"]
+level: 6
 scene: cache-stampede
 steps:
   - title: "One hot key, every request a hit"

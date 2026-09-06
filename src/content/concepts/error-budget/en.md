@@ -3,6 +3,7 @@ title: "Error Budget"
 summary: "An error budget is the failure you are allowed: the gap between a 100% dream and the SLO you actually promised, spent down by every bad minute, and whoever holds the budget holds the argument about when to ship and when to stop."
 category: "Observability and operations"
 tags: ["metric"]
+level: 5
 scene: error-budget
 steps:
   - title: "Flip the goal over and it becomes a budget"

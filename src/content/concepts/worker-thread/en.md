@@ -2,6 +2,7 @@
 title: "Worker Thread"
 summary: "A worker thread is one of the pool’s general-purpose threads, the ones that run queued work items. I/O completion threads are a separate set that pick up operations the operating system has finished."
 category: "Pools and resources"
+level: 5
 scene: thread-pool
 sceneStep: 1
 related:

@@ -3,6 +3,7 @@ title: "HttpClient Connection Pool"
 summary: "The connections an HttpClient reuses live in its handler, not in the client: SocketsHttpHandler keeps a pool per endpoint and lends connections out. Getting the pool right is mostly two decisions, how long a pooled connection may live and how many there may be, plus the rule that the handler is the thing you are supposed to share."
 category: "Edge, routing and service networking"
 tags: ["latency"]
+level: 4
 scene: multiplexing
 sceneStep: 1
 related:

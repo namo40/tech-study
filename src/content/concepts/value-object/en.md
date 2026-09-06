@@ -3,6 +3,7 @@ title: "Value Object"
 summary: "An immutable object whose equality is defined by its content. It has no id, no history and no repository: you never modify one, you replace it with a new value, and it is stored as columns on the entity that carries it."
 category: ".NET data access"
 tags: ["database"]
+level: 3
 scene: repository
 sceneStep: 4
 related:

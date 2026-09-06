@@ -3,6 +3,7 @@ title: "Object Pool"
 summary: "Keep a set of expensive objects and lend them out instead of making new ones. It does not make allocation cheaper — it removes the allocation, which is the only move that changes what the collector has to do."
 category: "Containers and orchestration"
 tags: ["memory"]
+level: 4
 scene: memory-pressure
 sceneStep: 4
 related:

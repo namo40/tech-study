@@ -2,6 +2,7 @@
 title: "Configuration"
 summary: "Configuration in .NET is a stack of providers merged into one key-value view: files, environment variables and command-line arguments layered in a fixed order where the later provider wins, so the same binary runs everywhere and only the layers underneath it change."
 category: ".NET runtime and hosting"
+level: 3
 related:
   - label: Environment Variable
     slug: environment-variable

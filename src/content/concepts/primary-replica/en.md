@@ -3,6 +3,7 @@ title: "Primary-Replica"
 summary: "One machine takes the writes and the others copy what it did. The split is a word rather than a wire, which is exactly why the word can be moved to a different machine when the first one stops."
 category: "Data distribution and consistency"
 tags: ["database"]
+level: 4
 scene: failover
 sceneStep: 1
 related:

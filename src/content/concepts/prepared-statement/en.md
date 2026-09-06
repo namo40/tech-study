@@ -3,6 +3,7 @@ title: "Prepared Statement"
 summary: "A prepared statement sends the query as a fixed skeleton and the values as pure data: injection dies because input can no longer become code, and the plan cache warms because one text means one plan — security and speed from the same decision."
 category: ".NET data access"
 tags: ["database"]
+level: 4
 scene: prepared-statement
 steps:
   - title: "String concatenation turns values into code"

@@ -2,6 +2,7 @@
 title: "Layer 7 Load Balancing"
 summary: "Balancing at the application layer: the balancer terminates the connection, reads the request, and decides per request rather than per connection. Everything it can do that layer 4 cannot follows from having parsed the message."
 category: "Edge, routing and service networking"
+level: 4
 scene: load-balancer
 sceneStep: 2
 related:

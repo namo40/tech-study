@@ -3,6 +3,7 @@ title: "Deadline"
 summary: "A deadline is one point in time that the whole request is measured against, so every call underneath it is given what is left rather than a fresh timeout of its own."
 category: "Resilience"
 tags: ["latency"]
+level: 4
 scene: request-timeout
 sceneStep: 3
 related:

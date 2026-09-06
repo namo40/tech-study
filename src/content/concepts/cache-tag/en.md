@@ -3,6 +3,7 @@ title: "Cache Tag"
 summary: "A cache tag is a group label you attach to cache entries so that invalidation can name a subject instead of a key. One call drops everything tagged \"product 42\", including the entries whose keys you could never have listed."
 category: "Caching"
 tags: ["consistency"]
+level: 5
 related:
   - label: Cache Invalidation
     slug: cache-invalidation

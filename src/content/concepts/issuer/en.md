@@ -3,6 +3,7 @@ title: "Issuer"
 summary: "The issuer is the party that minted a token, named by the iss claim. Validating it is not a string comparison but a trust chain: the issuer identifies a discovery document, the document names the signing keys, and the keys are what the signature is checked against."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 5
 scene: workload-identity
 sceneStep: 3
 related:

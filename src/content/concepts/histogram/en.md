@@ -3,6 +3,7 @@ title: "Histogram"
 summary: "A histogram stores a measurement as counts per bucket rather than as individual observations, which is what makes percentiles computable at fixed cost. Bucket boundaries set the precision, and because counts add across instances, a fleet percentile is read from merged buckets rather than from averaged percentiles."
 category: "Requirements and quality attributes"
 tags: ["metric"]
+level: 4
 scene: tail-latency
 sceneStep: 4
 related:

@@ -3,6 +3,7 @@ title: "Head-of-Line Blocking"
 summary: "Head-of-line blocking is the delay a queue passes on: when the item at the front cannot be finished, everything behind it waits, however cheap and however ready it is. It is a property of ordering, not of load."
 category: "Edge, routing and service networking"
 tags: ["latency"]
+level: 6
 scene: multiplexing
 sceneStep: 2
 related:

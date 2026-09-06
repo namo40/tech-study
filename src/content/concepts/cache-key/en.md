@@ -2,6 +2,7 @@
 title: "Cache Key"
 summary: "The cache key decides what counts as the same question. Every distinct key is a separate entry competing for the same space, so cardinality is eviction pressure and the key is where you design it."
 category: "Caching"
+level: 4
 scene: eviction
 sceneStep: 3
 related:

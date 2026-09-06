@@ -3,6 +3,7 @@ title: "Bounded Context"
 summary: "The border of a model, drawn where the language changes. Inside it one word means exactly one thing, and outside it the same word belongs to somebody else's model."
 category: "Application architecture"
 tags: ["consistency"]
+level: 5
 scene: domain-driven-design
 sceneStep: 2
 related:

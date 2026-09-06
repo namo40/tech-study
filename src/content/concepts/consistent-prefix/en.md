@@ -3,6 +3,7 @@ title: "Consistent Prefix"
 summary: "Consistent prefix guarantees that a reader sees writes in the order they happened, with nothing skipped and nothing reordered, while saying nothing about how far behind that view is. It is the guarantee that makes a stale answer coherent rather than merely old."
 category: "Data distribution and consistency"
 tags: ["consistency"]
+level: 7
 scene: cap-theorem
 sceneStep: 3
 related:

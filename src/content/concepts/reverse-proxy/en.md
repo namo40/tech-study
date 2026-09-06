@@ -2,6 +2,7 @@
 title: "Reverse Proxy"
 summary: "A reverse proxy is the one public front door for many private services: it accepts every request on the clients' behalf, does the boundary work — TLS, routing, forwarded headers, health — and passes the rest inside."
 category: "Edge, routing and service networking"
+level: 4
 scene: reverse-proxy
 steps:
   - title: "One address, many services"

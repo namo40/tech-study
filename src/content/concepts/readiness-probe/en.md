@@ -3,6 +3,7 @@ title: "Readiness Probe"
 summary: "A readiness probe answers one question every few seconds: should this instance receive traffic right now? Fail it and the pod is quietly taken out of rotation, pass it and traffic returns — while liveness asks the harsher question, whether the process should keep existing at all, and answers with a restart."
 category: "Containers and orchestration"
 tags: ["kubernetes"]
+level: 2
 scene: readiness-probe
 steps:
   - title: "Two questions, two answers"

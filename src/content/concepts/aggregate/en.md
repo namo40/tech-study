@@ -2,6 +2,7 @@
 title: "Aggregate"
 summary: "The unit one transaction is allowed to cover. It takes a command, checks the rules it alone is responsible for, and produces the events that follow — which is why consistency is guaranteed inside it and negotiated outside it."
 category: "Application architecture"
+level: 7
 scene: event-sourcing
 sceneStep: 1
 related:

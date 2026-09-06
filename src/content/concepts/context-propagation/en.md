@@ -2,6 +2,7 @@
 title: "Context Propagation"
 summary: "Context propagation is copying the trace context onto whatever leaves the process: an HTTP header, a gRPC metadata entry, a message property. It is the only reason a trace survives a process boundary, and the first hop that skips it cuts the trace in half."
 category: "Observability and operations"
+level: 6
 scene: distributed-tracing
 sceneStep: 3
 related:

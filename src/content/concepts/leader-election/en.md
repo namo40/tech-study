@@ -2,6 +2,7 @@
 title: "Leader Election"
 summary: "Leader election picks exactly one instance out of many identical ones to hold a named role — not by configuration, but by competing for a lease that expires unless renewed, so the role survives any single machine."
 category: "Distributed coordination"
+level: 6
 scene: leader-election
 steps:
   - title: "Three start, one leads"

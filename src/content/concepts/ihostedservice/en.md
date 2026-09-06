@@ -3,6 +3,7 @@ title: "IHostedService"
 summary: "IHostedService is the contract that ties a long-running piece of work to the host's lifetime: the host calls StartAsync when it comes up and StopAsync when it goes down, and everything graceful shutdown means is what the service does with the token it is given."
 category: "Scheduled work and workflows"
 tags: ["queue"]
+level: 3
 scene: background-service
 sceneStep: 2
 related:

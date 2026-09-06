@@ -3,6 +3,7 @@ title: "Distributed Transaction"
 summary: "One unit of work that has to commit or roll back across more than one store. The ambition is ordinary; what is hard is that no single store can decide the outcome on its own."
 category: "Transactions and concurrency"
 tags: ["database"]
+level: 8
 scene: two-phase-commit
 sceneStep: 1
 related:

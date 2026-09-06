@@ -3,6 +3,7 @@ title: "Deduplication"
 summary: "Deduplication is remembering which ids have already been handled and dropping the arrivals that repeat one, which is how at-least-once delivery is turned into one effect per intent."
 category: "APIs and real-time communication"
 tags: ["duplicates"]
+level: 5
 scene: idempotency-key
 sceneStep: 2
 related:

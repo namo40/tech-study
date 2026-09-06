@@ -2,6 +2,7 @@
 title: "Async/Await"
 summary: "`await` is the point where a method gives its thread back: the I/O starts, the method returns an unfinished Task to its caller, and the rest of the method is queued to run when the I/O completes, on whatever thread is free then."
 category: "Pools and resources"
+level: 4
 scene: async-await
 steps:
   - title: "What await does"

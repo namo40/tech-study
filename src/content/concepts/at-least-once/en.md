@@ -3,6 +3,7 @@ title: "At-Least-Once"
 summary: "At-least-once is the delivery contract that chooses duplicates over loss: the broker keeps handing a message out until somebody acknowledges it, so a crash costs a repeat rather than a hole. Redelivery is the guarantee working, not the guarantee failing."
 category: "Messaging and event processing"
 tags: ["queue", "duplicates"]
+level: 7
 scene: dead-letter-queue
 sceneStep: 1
 related:

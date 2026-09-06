@@ -2,6 +2,7 @@
 title: "Negative Cache"
 summary: "A negative cache stores the answer \"there is nothing here\" as well as the answers that have something in them, so a flood of lookups for a key that does not exist is served from memory instead of reaching the database every single time."
 category: "Caching"
+level: 5
 scene: cache-stampede
 sceneStep: 4
 related:

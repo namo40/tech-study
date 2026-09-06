@@ -3,6 +3,7 @@ title: "gRPC"
 summary: "gRPC is an RPC framework where a protobuf file is the contract: it generates the client and the server from the same definition, serializes to a compact binary form, and runs over HTTP/2 so that unary calls and streams share one connection."
 category: "APIs and real-time communication"
 tags: ["latency"]
+level: 5
 related:
   - label: REST
     slug: rest

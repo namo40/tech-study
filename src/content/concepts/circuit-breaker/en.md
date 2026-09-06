@@ -2,6 +2,7 @@
 title: Circuit Breaker
 summary: "A circuit breaker stops calls to a dependency that keeps failing, so callers fail fast and the dependency gets time to recover."
 category: Resilience
+level: 5
 scene: circuit-breaker
 steps:
   - title: "Closed"

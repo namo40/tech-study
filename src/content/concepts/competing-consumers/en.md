@@ -3,6 +3,7 @@ title: "Competing Consumers"
 summary: "Competing consumers share one queue, so each message goes to exactly one of them and throughput grows by adding consumers; the price is at-least-once delivery and the loss of global order, which handlers safe to repeat and partitioning by key buy back."
 category: "Messaging and event processing"
 tags: ["queue"]
+level: 5
 scene: competing-consumers
 steps:
   - title: "One consumer"

@@ -3,6 +3,7 @@ title: "Token Revocation"
 summary: "Revocation is how a token stops working before it expires, and a signature cannot be taken back, so it has to be a lookup the API agrees to pay for. That makes it the exceptional path: short lifetimes handle the ordinary case, and a deny list handles the tokens you actually had to kill."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 5
 scene: bearer-token
 sceneStep: 4
 related:

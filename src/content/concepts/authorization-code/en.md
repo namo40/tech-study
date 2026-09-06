@@ -3,6 +3,7 @@ title: "Authorization Code"
 summary: "The authorization code flow is how an app gets tokens without ever seeing the user's password. The browser is sent to the authorization server to log in and comes back carrying a one-time code, and the app trades that code for tokens on a back channel the browser never touches."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 5
 scene: authorization-code
 steps:
   - title: "The dance"

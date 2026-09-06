@@ -2,6 +2,7 @@
 title: "Lease Renewal"
 summary: "Lease renewal is the loop that keeps refilling a countdown the leader would otherwise lose. Its two rules are how often it runs relative to the TTL, and what the holder does the moment a renewal fails — which has to be standing down, not trying harder."
 category: "Distributed coordination"
+level: 7
 scene: leader-election
 sceneStep: 2
 related:

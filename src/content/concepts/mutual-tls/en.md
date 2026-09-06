@@ -3,6 +3,7 @@ title: "Mutual TLS"
 summary: "Mutual TLS makes the proof go both ways: each end presents a certificate signed by an authority the other trusts, so the connection itself carries the identity and no secret ever crosses the wire."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 5
 scene: authentication
 sceneStep: 4
 related:

@@ -2,6 +2,7 @@
 title: "Stateful Server"
 summary: "A stateful server keeps data in its own process between requests, which binds those requests to that one instance. The property is sometimes deliberate and valuable, and sometimes accidental, and the difference decides whether deploys, scale-in and failover are routine or painful."
 category: "Server state management"
+level: 5
 scene: sticky-session
 sceneStep: 1
 related:

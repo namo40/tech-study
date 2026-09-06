@@ -2,6 +2,7 @@
 title: "Health-Based Routing"
 summary: "Health-based routing is the balancer deciding, from probes and from what its own forwarded requests did, which destinations still exist. It is what turns a failed machine into a shorter rotation instead of a share of failed requests."
 category: "Edge, routing and service networking"
+level: 5
 scene: load-balancer
 sceneStep: 3
 related:

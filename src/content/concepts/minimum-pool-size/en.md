@@ -3,6 +3,7 @@ title: "Minimum Pool Size"
 summary: "Minimum pool size is the floor the pool keeps warm: connections it opens and refuses to close no matter how idle they get. It buys away the handshake on a cold start and on the first wave of a spike, and it is paid for on the database, which holds those connections open forever."
 category: "Pools and resources"
 tags: ["database"]
+level: 3
 scene: database-connection-pool
 sceneStep: 2
 related:

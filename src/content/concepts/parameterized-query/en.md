@@ -3,6 +3,7 @@ title: "Parameterized Query"
 summary: "A parameterized query sends the statement and the values as two separate things, so the value is bound after the text has already been parsed. The boundary is structural rather than a list of characters to be careful about."
 category: ".NET data access"
 tags: ["database"]
+level: 4
 scene: prepared-statement
 sceneStep: 2
 related:

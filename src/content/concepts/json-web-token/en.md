@@ -3,6 +3,7 @@ title: "JSON Web Token"
 summary: "A JWT is three base64 segments joined by dots: a header saying how it was signed, a payload of claims, and a signature over both. The signature makes it unforgeable without making it secret, which is why anyone holding one can read every claim inside it."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 4
 scene: bearer-token
 sceneStep: 2
 related:

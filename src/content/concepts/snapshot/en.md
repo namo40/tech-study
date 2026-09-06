@@ -2,6 +2,7 @@
 title: "Snapshot"
 summary: "A stored copy of the state as of one sequence number, kept so a rebuild can start there and replay only what came after. It is a cache over the log, never a second source of truth, and it can always be deleted and made again."
 category: "Application architecture"
+level: 6
 scene: event-sourcing
 sceneStep: 3
 related:

@@ -3,6 +3,7 @@ title: "Exponential Backoff"
 summary: "Exponential backoff multiplies the wait between attempts, so a struggling dependency gets a longer gap with every retry."
 category: "Resilience"
 tags: ["overload"]
+level: 4
 scene: retry
 sceneStep: 2
 related:

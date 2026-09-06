@@ -3,6 +3,7 @@ title: "SIGTERM"
 summary: "The signal that asks a process to stop. It is a request rather than an execution: the process is told, it decides what to finish, and only if it takes too long does something less polite arrive."
 category: "Containers and orchestration"
 tags: ["kubernetes"]
+level: 3
 scene: pod-disruption-budget
 sceneStep: 2
 related:

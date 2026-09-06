@@ -3,6 +3,7 @@ title: "Termination Grace Period"
 summary: "The time a pod is given between being told to stop and being killed outright. It is a deadline rather than an allowance: whatever has not finished when it expires does not get to finish."
 category: "Containers and orchestration"
 tags: ["kubernetes"]
+level: 3
 scene: pod-disruption-budget
 sceneStep: 3
 related:

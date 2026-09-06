@@ -3,6 +3,7 @@ title: "Multiplexing"
 summary: "Multiplexing lets many streams share one connection at the same time: requests no longer queue behind each other, a slow response blocks only itself, and the order answers arrive in stops being the order they were asked in."
 category: "Edge, routing and service networking"
 tags: ["latency"]
+level: 6
 scene: multiplexing
 steps:
   - title: "One connection, one question at a time"

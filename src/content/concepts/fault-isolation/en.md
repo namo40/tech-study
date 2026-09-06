@@ -2,6 +2,7 @@
 title: "Fault Isolation"
 summary: "Deciding at design time how far a failure is allowed to travel. The boundary has to be drawn before the incident, it has to divide something finite, and everything on the far side of it survives by not sharing."
 category: "Resilience"
+level: 5
 scene: bulkhead
 sceneStep: 3
 related:

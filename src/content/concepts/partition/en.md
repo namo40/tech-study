@@ -3,6 +3,7 @@ title: "Partition"
 summary: "The unit a log is divided into. Each partition is an independent append-only lane, which makes it the thing that carries order, the thing that sets the consumer parallelism ceiling, and a number that is hard to change afterwards."
 category: "Messaging and event processing"
 tags: ["queue"]
+level: 6
 scene: ordering
 sceneStep: 2
 related:

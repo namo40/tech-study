@@ -3,6 +3,7 @@ title: "Claims"
 summary: "Claims are the key-value statements a token makes about who it is for, what it allows, and how long any of it is true. Validation is not a general reading of them: it is a fixed set of gates, each one comparing a named claim against something the API already knows."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 4
 scene: bearer-token
 sceneStep: 2
 related:

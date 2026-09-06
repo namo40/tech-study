@@ -2,6 +2,7 @@
 title: "Open State"
 summary: "Open is the state in which a circuit breaker rejects calls immediately, giving the failing dependency time to recover."
 category: "Resilience"
+level: 3
 scene: circuit-breaker
 sceneStep: 2
 related:

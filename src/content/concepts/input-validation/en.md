@@ -3,6 +3,7 @@ title: "Input Validation"
 summary: "Input validation checks shape, length and range at the boundary, so obvious nonsense is refused before it costs anything. It is a filter that reduces noise and blast radius, not the thing that makes a query safe — parameterization is."
 category: "Application security"
 tags: ["database"]
+level: 3
 scene: sql-injection
 sceneStep: 3
 related:

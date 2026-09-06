@@ -3,6 +3,7 @@ title: "Pessimistic Concurrency"
 summary: "Pessimistic concurrency locks first: a transaction claims the rows it is about to change and holds them until it commits, so a second writer waits rather than fails. It fits when conflicts are frequent and the work between the lock and the commit is short."
 category: "Transactions and concurrency"
 tags: ["database", "consistency"]
+level: 5
 scene: deadlock
 sceneStep: 3
 related:

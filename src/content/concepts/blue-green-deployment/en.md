@@ -3,6 +3,7 @@ title: "Blue-Green Deployment"
 summary: "Blue-green deployment keeps two identical environments and moves traffic between them in one switch: the new version proves itself beside production, the cutover is instant, and so is the way back — as long as the database is changed with the same care."
 category: "Containers and orchestration"
 tags: ["deployment"]
+level: 4
 scene: blue-green-deployment
 steps:
   - title: "Two environments, one taking traffic"

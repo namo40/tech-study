@@ -3,6 +3,7 @@ title: "Ordering"
 summary: "Message ordering is a promise with a scope: global order dies the moment consumption goes parallel, so systems guarantee order only within a key — and choosing that key is choosing both what stays ordered and what can still scale."
 category: "Messaging and event processing"
 tags: ["queue", "consistency"]
+level: 7
 scene: ordering
 steps:
   - title: "Publish order is not processing order"

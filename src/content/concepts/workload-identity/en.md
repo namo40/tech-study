@@ -3,6 +3,7 @@ title: "Workload Identity"
 summary: "Workload identity gives a running workload its own credential without anyone storing a secret: the platform issues short-lived proof at birth, the cloud verifies issuer and audience before exchanging it, and each workload holds exactly its own narrow role."
 category: "Authentication and authorization"
 tags: ["oauth", "kubernetes"]
+level: 5
 scene: workload-identity
 steps:
   - title: "A stored secret is debt from the moment it is written"

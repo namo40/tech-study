@@ -3,6 +3,7 @@ title: "CPU Limit"
 summary: "The CPU limit is the memory limit's opposite number. Over the memory limit a container is killed; over the CPU limit it is throttled — de-scheduled until the next period, so the failure arrives as latency with nothing in the log and no exception to catch."
 category: "Containers and orchestration"
 tags: ["kubernetes"]
+level: 6
 scene: memory-pressure
 sceneStep: 3
 related:

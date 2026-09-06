@@ -3,6 +3,7 @@ title: "SQL Injection"
 summary: "SQL injection is what happens when user input is executed as code: a query built by gluing strings hands the keyboard to the caller. The fix is to keep code and data on separate channels, treat validation as a second line, and cap what any stolen query can reach."
 category: "Application security"
 tags: ["database", "ef-core"]
+level: 4
 scene: sql-injection
 steps:
   - title: "A query built by gluing strings hands your keyboard to the caller"

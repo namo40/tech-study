@@ -2,6 +2,7 @@
 title: "Power of Two Choices"
 summary: "Power of two choices samples two servers at random and sends the request to whichever is less busy. It is a probabilistic stand-in for least connections that needs no global view, and the second sample is where almost all of the benefit comes from."
 category: "Edge, routing and service networking"
+level: 6
 scene: load-balancer
 sceneStep: 2
 related:

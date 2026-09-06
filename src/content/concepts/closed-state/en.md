@@ -2,6 +2,7 @@
 title: "Closed State"
 summary: "Closed is the normal state of a circuit breaker: calls pass through to the dependency while the breaker counts how many of them fail."
 category: "Resilience"
+level: 3
 scene: circuit-breaker
 sceneStep: 1
 related:

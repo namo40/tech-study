@@ -2,6 +2,7 @@
 title: "Same-Origin Policy"
 summary: "The same-origin policy is the browser's default boundary between one site and another: a page may read what its own origin returns, and may not read another origin's. It restricts reading, not sending, which is why a form on any page can still post to your site."
 category: "Application security"
+level: 4
 scene: cookie-authentication
 sceneStep: 2
 related:

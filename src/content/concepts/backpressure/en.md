@@ -3,6 +3,7 @@ title: "Backpressure"
 summary: "Backpressure couples the producer's pace to the consumer's: a bounded buffer between them fills, pushes back, and slows the input — because a queue only buys time, and a bigger queue is just a longer lie."
 category: "Resilience"
 tags: ["overload", "queue"]
+level: 4
 scene: backpressure
 steps:
   - title: "In balance, the queue is nearly empty"

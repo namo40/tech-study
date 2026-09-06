@@ -3,6 +3,7 @@ title: "Pod Disruption Budget"
 summary: "A pod disruption budget limits how many pods may be voluntarily taken down at once, and each pod that does go down leaves through a ritual — preStop, SIGTERM, a grace period — so that planned maintenance never looks like an outage."
 category: "Containers and orchestration"
 tags: ["kubernetes", "deployment"]
+level: 5
 scene: pod-disruption-budget
 steps:
   - title: 'The budget turns "take them down" into "one at a time"'

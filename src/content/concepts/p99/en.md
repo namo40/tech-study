@@ -3,6 +3,7 @@ title: "p99"
 summary: "p99 is the latency the slowest one request in a hundred sees. A latency objective usually belongs here, and it needs enough samples in the window to mean anything at all."
 category: "Requirements and quality attributes"
 tags: ["metric", "latency"]
+level: 3
 scene: tail-latency
 sceneStep: 1
 related:

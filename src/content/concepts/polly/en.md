@@ -2,6 +2,7 @@
 title: "Polly"
 summary: "Polly is the .NET resilience library, and since v8 its unit is the ResiliencePipeline: a chain of strategies wrapped around the call you execute. The order they are added in is the order they nest, which is why a retry and a timeout mean different things depending on which one is outside."
 category: "Resilience"
+level: 4
 scene: circuit-breaker
 sceneStep: 1
 related:

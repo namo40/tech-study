@@ -3,6 +3,7 @@ title: "Cluster Autoscaler"
 summary: "The Cluster Autoscaler watches for pods that cannot be scheduled and adds machines for them, then drains and returns nodes that nothing needs any more. It plans from requests rather than usage, so the fleet it buys is only as honest as the numbers on the pods."
 category: "Containers and orchestration"
 tags: ["kubernetes"]
+level: 5
 scene: elasticity
 sceneStep: 4
 related:

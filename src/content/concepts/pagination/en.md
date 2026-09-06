@@ -3,6 +3,7 @@ title: "Pagination"
 summary: "Pagination hands out a big result in slices: offset counts from the top and drifts when rows move, while a cursor remembers the row you actually saw and is stable and cheap at any depth but can only go forward. The choice is which promise your list makes."
 category: ".NET data access"
 tags: ["database", "latency"]
+level: 4
 scene: pagination
 steps:
   - title: "Nobody needs the whole table — and no phone can hold it"

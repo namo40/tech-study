@@ -3,6 +3,7 @@ title: "Offset Pagination"
 summary: "Ask for page five hundred and the database counts past the first five thousand rows in order to discard them. The page you get is right; the cost grows with how deep you are, and the rows can shift under you between pages."
 category: ".NET data access"
 tags: ["database", "latency"]
+level: 4
 scene: database-index
 sceneStep: 4
 related:

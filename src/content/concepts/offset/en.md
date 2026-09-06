@@ -3,6 +3,7 @@ title: "Offset"
 summary: "A bookmark in a shared log: the position one subscription has read up to. It belongs to the reader, not to the log, which is why two readers can be at two different places in the same events and neither one holds the other up."
 category: "Messaging and event processing"
 tags: ["queue"]
+level: 5
 scene: publish-subscribe
 sceneStep: 2
 related:

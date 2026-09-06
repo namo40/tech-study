@@ -3,6 +3,7 @@ title: "Row Version"
 summary: "A row version is a value the database changes every time the row changes, so two reads of the same row can be compared without comparing the row itself. It is what lets a writer ask whether the thing it read is still the thing on disk, and what lets a reader be served a consistent past instead of waiting for the present."
 category: "Transactions and concurrency"
 tags: ["database", "consistency"]
+level: 6
 scene: isolation-level
 sceneStep: 3
 related:

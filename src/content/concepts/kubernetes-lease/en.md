@@ -3,6 +3,7 @@ title: "Kubernetes Lease"
 summary: "A Lease is an ordinary Kubernetes object in the coordination.k8s.io API group whose spec records who holds it and when they last renewed. The control plane runs its own node heartbeats and leader elections on it, and applications borrow the same object through client libraries."
 category: "Distributed coordination"
 tags: ["kubernetes"]
+level: 6
 scene: leader-election
 sceneStep: 2
 related:

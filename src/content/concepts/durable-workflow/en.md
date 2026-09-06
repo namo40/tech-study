@@ -2,6 +2,7 @@
 title: "Durable Workflow"
 summary: "A durable workflow is a process whose progress is written down as it happens, so it can be rebuilt after a crash and carry on from where it stopped. The code reads as a sequence; the engine turns it into a record."
 category: "Scheduled work and workflows"
+level: 6
 scene: state-machine
 sceneStep: 4
 related:

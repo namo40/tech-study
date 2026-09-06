@@ -3,6 +3,7 @@ title: "Event Sourcing"
 summary: "Event sourcing stores what happened instead of what is: every change is an appended event, the current state is a replay of the log, and the log itself — never updated, never deleted — becomes the one record everything else is derived from."
 category: "Application architecture"
 tags: ["consistency"]
+level: 7
 scene: event-sourcing
 steps:
   - title: "Write down what happened, not what is"

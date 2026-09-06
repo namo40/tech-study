@@ -3,6 +3,7 @@ title: "Secret Management"
 summary: "A secret should have exactly one home and every other place should hold a reference to it. Deliver by reference and rotation is a data change rather than a release; audit every read and a leak has a blast radius you can actually measure."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 4
 scene: key-rotation
 sceneStep: 4
 related:

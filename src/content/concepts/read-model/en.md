@@ -3,6 +3,7 @@ title: "Read Model"
 summary: "A read model is data kept in the shape a screen asks for, so a query is a lookup rather than a reconstruction. It is derived, never authoritative, and it can be thrown away and built again."
 category: "Application architecture"
 tags: ["consistency"]
+level: 6
 scene: command-query-responsibility-segregation
 sceneStep: 2
 related:

@@ -3,6 +3,7 @@ title: "Redis"
 summary: "Redis is an in-memory data structure server that instances share: one fast process holding strings, hashes, sorted sets and streams, which is what makes it the usual answer for a distributed cache, a session store, a rate counter, a lock and a lightweight queue."
 category: "Caching"
 tags: ["memory"]
+level: 3
 related:
   - label: Cache-Aside
     slug: cache-aside

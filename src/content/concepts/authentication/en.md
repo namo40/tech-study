@@ -3,6 +3,7 @@ title: "Authentication"
 summary: "Authentication is proving an identity claim: a claim plus evidence, verified fresh at the door — passwords with defenses for people, keys for machines, certificates for both sides — and the system is exactly as strong as the weakest evidence it accepts."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 4
 scene: authentication
 steps:
   - title: "A claim is free; authentication is the evidence check"

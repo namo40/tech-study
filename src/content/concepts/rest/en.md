@@ -2,6 +2,7 @@
 title: "REST"
 summary: "REST is a set of constraints for using HTTP as the contract itself: resources have addresses, the standard methods carry the meaning of what you are doing to them, and status codes, cache headers and content negotiation are part of the API rather than plumbing under it."
 category: "APIs and real-time communication"
+level: 3
 related:
   - label: gRPC
     slug: grpc

@@ -3,6 +3,7 @@ title: "Bounded Staleness"
 summary: "Bounded staleness is eventual consistency with a number attached: reads may lag the primary, but never by more than an agreed amount of time or an agreed number of writes. It turns an open-ended window into a budget a router can act on."
 category: "Data distribution and consistency"
 tags: ["consistency"]
+level: 7
 scene: eventual-consistency
 sceneStep: 4
 related:

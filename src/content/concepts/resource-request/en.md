@@ -3,6 +3,7 @@ title: "Resource Request"
 summary: "A resource request is what a container asks for: the CPU and memory the scheduler reserves for it on a node. It decides where the pod lands, what share of a busy node it is entitled to, and what the autoscaler's CPU percentage is a percentage of."
 category: "Containers and orchestration"
 tags: ["kubernetes"]
+level: 3
 scene: horizontal-pod-autoscaler
 sceneStep: 4
 related:

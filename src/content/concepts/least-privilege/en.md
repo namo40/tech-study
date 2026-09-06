@@ -3,6 +3,7 @@ title: "Least Privilege"
 summary: "Least privilege grants each identity only what it needs and nothing more, so that a compromise leaks that identity's share of the system rather than the whole of it. It is a design decision about how permissions are shaped, not a review you pass."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 4
 scene: workload-identity
 sceneStep: 4
 related:

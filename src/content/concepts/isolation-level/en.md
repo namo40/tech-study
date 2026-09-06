@@ -3,6 +3,7 @@ title: "Isolation Level"
 summary: "An isolation level is the database's answer to what two concurrent transactions may see of each other, traded against how often they must wait. Each level permits a named set of anomalies; picking one is choosing which anomalies your code is prepared to meet."
 category: "Transactions and concurrency"
 tags: ["database"]
+level: 7
 scene: isolation-level
 steps:
   - title: "Committed or nothing"

@@ -2,6 +2,7 @@
 title: "Cache-Aside"
 summary: "Cache-aside keeps the application in charge of the cache: read the cache first, fall back to the database on a miss and store the result, and invalidate the entry when the data changes."
 category: "Caching"
+level: 3
 scene: cache-aside
 steps:
   - title: "Miss"

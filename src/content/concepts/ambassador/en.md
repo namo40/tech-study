@@ -3,6 +3,7 @@ title: "Ambassador"
 summary: "An ambassador is a sidecar facing outward: the app calls a port on localhost and believes it is talking to the service, while the container beside it does the discovery, the retries, the timeouts and the failover, and hands back one clean answer."
 category: "Application architecture"
 tags: ["kubernetes"]
+level: 5
 scene: sidecar
 sceneStep: 4
 related:

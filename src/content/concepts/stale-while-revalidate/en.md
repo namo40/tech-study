@@ -3,6 +3,7 @@ title: "Stale-While-Revalidate"
 summary: "Stale-while-revalidate answers the request that arrives just after an entry expires with the old value, and refreshes the entry in the background instead of making anybody wait. It turns a latency spike into a bounded window of staleness, and the length of that window is the whole decision."
 category: "Caching"
 tags: ["consistency"]
+level: 6
 scene: cache-stampede
 sceneStep: 3
 related:

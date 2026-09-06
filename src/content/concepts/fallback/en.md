@@ -2,6 +2,7 @@
 title: "Fallback"
 summary: "A fallback is the answer you give when the right answer is unavailable: a cached copy, a default, a smaller page — degraded on purpose, so the failure stays inside the service instead of reaching the user."
 category: "Resilience"
+level: 4
 scene: fallback
 steps:
   - title: "The full answer, while everything is up"

@@ -2,6 +2,7 @@
 title: "Span ID"
 summary: "A span id is the eight-byte name of one span. Paired with a trace id it addresses a single operation, copied into a child's parent field it draws one edge of the tree, and carried on a log line it says which part of the request wrote it."
 category: "Observability and operations"
+level: 5
 scene: distributed-tracing
 sceneStep: 2
 related:

@@ -2,6 +2,7 @@
 title: "Span"
 summary: "A span is one unit of work inside a trace: a name, a start, an end, the span that called it, and a handful of attributes. It is the only thing a service actually records, and everything a trace viewer shows is assembled from them."
 category: "Observability and operations"
+level: 4
 scene: distributed-tracing
 sceneStep: 2
 related:

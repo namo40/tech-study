@@ -3,6 +3,7 @@ title: "Role-Based Access Control"
 summary: "Role-based access control grants permissions to named bundles rather than to people: a caller carries a role, the role lists the verbs, and the gate decides from the badge alone."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 4
 scene: authorization
 sceneStep: 2
 related:

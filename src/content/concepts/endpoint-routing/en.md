@@ -2,6 +2,7 @@
 title: "Endpoint Routing"
 summary: "Endpoint routing splits routing in two: `UseRouting` decides which endpoint will run and attaches its metadata to the request, and the endpoint itself runs at the end of the pipeline."
 category: ".NET runtime and hosting"
+level: 4
 scene: middleware-pipeline
 sceneStep: 1
 related:

@@ -3,6 +3,7 @@ title: "Canary Release"
 summary: "A canary release sends a small share of real traffic to the new version, watches what that share does, and widens or rolls back on the answer. The percentage is not a schedule; it is the size of the damage you have agreed to accept."
 category: "Containers and orchestration"
 tags: ["deployment", "metric"]
+level: 4
 scene: blue-green-deployment
 sceneStep: 3
 related:

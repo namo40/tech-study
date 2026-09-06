@@ -3,6 +3,7 @@ title: "Bearer Token"
 summary: "A bearer token means possession is authority: the API serves whoever presents it and asks nothing else. Everything about handling one follows from that sentence, so carry it carefully, keep it short-lived and narrow, and plan for the day one leaks."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 4
 scene: bearer-token
 steps:
   - title: "Possession is authority"

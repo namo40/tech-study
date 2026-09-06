@@ -2,6 +2,7 @@
 title: "Cross-Site Request Forgery"
 summary: "A cross-site request forgery is a page you did not write making your browser send an authenticated request to a site you are logged into. The browser attaches the cookie because the request goes to that site, not because the page asking for it belongs there, and the server runs the call before anyone has looked at where it came from."
 category: "Application security"
+level: 5
 scene: cors
 sceneStep: 4
 related:

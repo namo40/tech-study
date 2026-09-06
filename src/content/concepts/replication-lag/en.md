@@ -3,6 +3,7 @@ title: "Replication Lag"
 summary: "Replication lag is the delay between a write landing on the primary and the same change appearing on a replica. A read served by the replica inside that window sees the past, and the fix is routing rather than hoping the lag stays small."
 category: "Data distribution and consistency"
 tags: ["database", "consistency"]
+level: 7
 scene: replication-lag
 steps:
   - title: "Primary and replica"

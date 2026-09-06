@@ -3,6 +3,7 @@ title: "Authorization"
 summary: "Authorization is the question after login: authentication proves who is calling, roles bundle what they may do, policies decide against the resource itself, and the safe default is that silence means no."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 4
 scene: authorization
 steps:
   - title: "Logging in opens the door, not every drawer"

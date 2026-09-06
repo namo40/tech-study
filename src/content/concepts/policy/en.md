@@ -3,6 +3,7 @@ title: "Policy"
 summary: "A policy is an authorization rule evaluated at decision time against the caller and the resource together, so the same badge can get a different answer for two different rows."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 4
 scene: authorization
 sceneStep: 3
 related:

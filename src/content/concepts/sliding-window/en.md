@@ -3,6 +3,7 @@ title: "Sliding Window"
 summary: "A sliding window counts the last N seconds from now rather than from the top of the clock: a fixed window leaks a double burst across its boundary, the sliding window closes that seam, and a leaky bucket goes one step further and smooths what passes into a steady drip."
 category: "Resilience"
 tags: ["overload", "latency"]
+level: 4
 scene: sliding-window
 steps:
   - title: "A fixed window's limit doubles at the seam"

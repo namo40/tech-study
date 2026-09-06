@@ -3,6 +3,7 @@ title: "Output Encoding"
 summary: "Output encoding turns characters that mean something to a parser into characters that only mean themselves. It happens at the moment a value is written out, and it is chosen by where the value lands: HTML body, attribute, URL and script each have their own rules."
 category: "Application security"
 tags: []
+level: 3
 scene: cross-site-scripting
 sceneStep: 3
 related:

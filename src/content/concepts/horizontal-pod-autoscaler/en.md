@@ -3,6 +3,7 @@ title: "Horizontal Pod Autoscaler"
 summary: "The Horizontal Pod Autoscaler changes how many replicas of a workload run, from a metric and a target: desired = ceil(current × actual / target). It reacts after the fact, new pods take time to become ready, and it is only as good as the metric it watches."
 category: "Containers and orchestration"
 tags: ["kubernetes", "overload"]
+level: 5
 scene: horizontal-pod-autoscaler
 steps:
   - title: "Steady"

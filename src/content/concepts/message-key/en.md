@@ -3,6 +3,7 @@ title: "Message Key"
 summary: "A message key is the value that says which sequence a message belongs to: the broker hashes it onto a partition, so the same key always lands in the same place and is handled in order. Choosing it is one decision that fixes both the unit of ordering and the distribution of load."
 category: "Messaging and event processing"
 tags: ["queue"]
+level: 6
 scene: competing-consumers
 sceneStep: 4
 related:

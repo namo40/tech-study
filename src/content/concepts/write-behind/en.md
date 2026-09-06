@@ -3,6 +3,7 @@ title: "Write-Behind"
 summary: "Write-behind acknowledges the write at the cache and updates the origin later. It absorbs write latency and collapses repeated updates into one, and in exchange the cache is the record of truth until the flush lands — which is the whole risk, stated plainly."
 category: "Caching"
 tags: ["consistency"]
+level: 6
 scene: cache-aside
 sceneStep: 4
 related:

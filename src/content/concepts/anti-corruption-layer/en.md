@@ -3,6 +3,7 @@ title: "Anti-Corruption Layer"
 summary: "An anti-corruption layer is the translation a new system puts between itself and the old model it still has to read, so that the old model stops at the boundary instead of spreading into the code that was meant to replace it."
 category: "Application architecture"
 tags: ["deployment"]
+level: 4
 scene: strangler-fig
 sceneStep: 2
 related:

@@ -3,6 +3,7 @@ title: "Adapter"
 summary: "An adapter is the translator that sits between a port and the world: one face speaks HTTP, SQL or a vendor SDK, the other speaks only the contract the domain owns — and the fact that you can unplug one and plug in another is what makes everything behind it a detail."
 category: "Application architecture"
 tags: ["ef-core"]
+level: 4
 scene: hexagonal-architecture
 sceneStep: 3
 related:

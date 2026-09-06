@@ -2,6 +2,7 @@
 title: "Human Approval"
 summary: "A human approval is a step in a process that waits for a person to decide. It is an external event with no service level agreement, so it needs a state to wait in, a deadline, and something to do when the deadline passes."
 category: "Scheduled work and workflows"
+level: 4
 scene: state-machine
 sceneStep: 4
 related:

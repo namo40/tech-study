@@ -3,6 +3,7 @@ title: "Clean Architecture"
 summary: "Clean architecture draws the same rule as concentric rings: entities in the middle, use cases around them, adapters and frameworks on the outside, and source-code dependencies that only ever point toward the centre — the hexagon and the onion are the same rule with a different picture."
 category: "Application architecture"
 tags: ["ef-core"]
+level: 4
 scene: hexagonal-architecture
 sceneStep: 4
 related:

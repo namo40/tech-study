@@ -2,6 +2,7 @@
 title: "Session State"
 summary: "Session state is the per-user data a server keeps between one request and the next, addressed by an opaque id the browser carries in a cookie. Where that data lives is the architectural decision: in the process, and one instance owns the user; in a shared store, and any instance will do."
 category: "Server state management"
+level: 3
 scene: sticky-session
 sceneStep: 1
 related:
