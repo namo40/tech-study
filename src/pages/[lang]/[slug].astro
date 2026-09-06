@@ -1,5 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
+import ReadingControls from '../../components/ReadingControls.astro';
 import ScenePlayer from '../../components/ScenePlayer.astro';
 import Base from '../../layouts/Base.astro';
 import { localePath, t, toLocale, tSplit, type MessageKey } from '../../i18n';
@@ -88,34 +89,13 @@ const { Content } = await render(entry);
             {t(locale, 'level.short', { level })}
           </a>
         )}
-        <span class="concept__actions" data-reading data-slug={slug} data-lang={locale} data-rev={revision}>
-          <button
-            type="button"
-            class="concept-action"
-            data-read-toggle
-            aria-pressed="false"
-            data-label-unread={t(locale, 'reading.markRead')}
-            data-label-read={t(locale, 'reading.state.read')}
-            data-label-updated={t(locale, 'reading.markReadAgain')}
-            data-title-read={t(locale, 'reading.markUnread')}
-          >
-            <span class="concept-action__symbol" data-read-symbol aria-hidden="true"></span>
-            <span data-read-label>{t(locale, 'reading.markRead')}</span>
-          </button>
-          <span class="concept-action__note" data-updated-note hidden>{t(locale, 'reading.updatedNote')}</span>
-          <button
-            type="button"
-            class="concept-action"
-            data-bookmark-toggle
-            aria-pressed="false"
-            data-label-off={t(locale, 'reading.bookmark')}
-            data-label-on={t(locale, 'reading.bookmarked')}
-            data-title-on={t(locale, 'reading.removeBookmark')}
-          >
-            <span class="concept-action__symbol" data-bookmark-symbol aria-hidden="true">☆</span>
-            <span data-bookmark-label>{t(locale, 'reading.bookmark')}</span>
-          </button>
-        </span>
+        <ReadingControls
+          slug={slug}
+          locale={locale}
+          revision={revision}
+          bookmark
+          class="concept__actions"
+        />
       </p>
       <h1 class="concept__title">{entry.data.title}</h1>
       <p class="concept__summary">{entry.data.summary}</p>
@@ -148,6 +128,18 @@ const { Content } = await render(entry);
 
     <div class="prose">
       <Content />
+
+      {/*
+        A reader finishes at the bottom, so the toggle is offered again where
+        they end up rather than only on the line they scrolled past.
+      */}
+      <ReadingControls
+        slug={slug}
+        locale={locale}
+        revision={revision}
+        placement="end"
+        class="concept__done"
+      />
 
       {
         entry.data.related.length > 0 && (

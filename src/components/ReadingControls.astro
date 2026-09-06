@@ -1,0 +1,89 @@
+---
+import { t } from '../i18n';
+import type { Locale } from '../i18n';
+
+interface Props {
+  slug: string;
+  locale: Locale;
+  revision: string;
+  /**
+   * Where on the page the row sits. The meta line is itself a `<p>`, which may
+   * hold nothing but phrasing content, so the row there is a `<span>`; the row
+   * that closes the body is a paragraph of its own. The closing row is also the
+   * one marked `data-reading-end`, because where it sits, rather than what it
+   * is styled as, is what anything looking for it actually means.
+   */
+  placement?: 'meta' | 'end';
+  /** The star belongs with the state at the top of the page, not at the end of it. */
+  bookmark?: boolean;
+  class?: string;
+}
+
+const {
+  slug,
+  locale,
+  revision,
+  placement = 'meta',
+  bookmark = false,
+  class: className,
+} = Astro.props;
+
+/*
+ * A page carries this row twice: once on the meta line, where it is the state
+ * at a glance, and once under the body, where a reader who has just finished
+ * is. Both name the same slug and the same revision, and `reading.ts` redraws
+ * every instance from one stored state, so a press on either is answered by
+ * both.
+ *
+ * The labels travel in `data-label-*` attributes because the page is built once
+ * per locale and the script that swaps them is not.
+ */
+const Wrapper = placement === 'end' ? 'p' : 'span';
+
+/*
+ * The wrapper's tag is decided here, and an element named by a variable takes
+ * its attributes through the spread path, where an empty string is what renders
+ * a bare attribute and nothing at all is what drops one. Writing `data-reading`
+ * on its own there would put the word `true` in the markup instead.
+ */
+const marker = '';
+const endMarker = placement === 'end' ? marker : undefined;
+---
+
+<Wrapper
+  class={className}
+  data-reading={marker}
+  data-reading-end={endMarker}
+  data-slug={slug}
+  data-lang={locale}
+  data-rev={revision}
+>
+  <button
+    type="button"
+    class="concept-action"
+    data-read-toggle
+    aria-pressed="false"
+    data-label-unread={t(locale, 'reading.markRead')}
+    data-label-read={t(locale, 'reading.state.read')}
+    data-label-updated={t(locale, 'reading.markReadAgain')}
+    data-title-read={t(locale, 'reading.markUnread')}
+  >
+    <span class="concept-action__symbol" data-read-symbol aria-hidden="true"></span>
+    <span data-read-label>{t(locale, 'reading.markRead')}</span>
+  </button>
+  <span class="concept-action__note" data-updated-note hidden>{t(locale, 'reading.updatedNote')}</span>
+  {bookmark && (
+    <button
+      type="button"
+      class="concept-action"
+      data-bookmark-toggle
+      aria-pressed="false"
+      data-label-off={t(locale, 'reading.bookmark')}
+      data-label-on={t(locale, 'reading.bookmarked')}
+      data-title-on={t(locale, 'reading.removeBookmark')}
+    >
+      <span class="concept-action__symbol" data-bookmark-symbol aria-hidden="true">☆</span>
+      <span data-bookmark-label>{t(locale, 'reading.bookmark')}</span>
+    </button>
+  )}
+</Wrapper>

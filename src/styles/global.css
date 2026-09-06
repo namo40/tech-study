@@ -985,6 +985,22 @@ kbd {
 }
 
 /*
+ * The same row again where the reading ends, ruled off from the body so it
+ * reads as the end of it rather than as one more paragraph. It is a `<p>`
+ * inside the prose, whose only claim on it is a bottom margin, and that is
+ * the gap wanted here anyway.
+ */
+.concept__done {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+/*
  * A long English title has no break opportunity between its words' letters, so
  * on a narrow screen — or with the body text turned up — the heading follows
  * the viewport width instead of splitting a word or reaching past the edge.

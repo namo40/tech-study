@@ -170,52 +170,49 @@ const READ_SYMBOL: Record<ReadState, string> = {
 
 const BOOKMARK_SYMBOL = { off: '☆', on: '★' };
 
-/**
- * Wires the read and bookmark buttons on a concept page, and does nothing on a
- * page that has none. The buttons keep their labels in `data-label-*`
- * attributes: the page is built once per locale but this script is not, so the
- * translations have to travel in the markup.
- *
- * A press writes and then leaves the redraw to the change event, so the
- * buttons always show what is stored rather than what was assumed, and a
- * second tab redraws by the same path.
- */
-export function initReadingControls(): void {
-  const root = document.querySelector<HTMLElement>('[data-reading]');
-  if (!root) return;
+/** A title is the extra sentence for the pressed state only, so the unpressed state drops it. */
+function setTitle(button: HTMLButtonElement, title: string | undefined): void {
+  if (title) button.setAttribute('title', title);
+  else button.removeAttribute('title');
+}
 
+/**
+ * Wires one set of controls and hands back the function that redraws it, or
+ * nothing when the element is missing a part it cannot work without. The read
+ * toggle is required; the bookmark button is not, because the row that closes
+ * the body offers the toggle alone.
+ *
+ * A press only writes. The redraw arrives through the change event, which is
+ * what keeps a second row on the same page, and a second tab, in step with it.
+ */
+function wireControls(root: HTMLElement): ((state: ReadingState) => void) | undefined {
   const readButton = root.querySelector<HTMLButtonElement>('[data-read-toggle]');
   const readSymbol = root.querySelector<HTMLElement>('[data-read-symbol]');
   const readLabel = root.querySelector<HTMLElement>('[data-read-label]');
   const updatedNote = root.querySelector<HTMLElement>('[data-updated-note]');
+  if (!readButton || !readSymbol || !readLabel || !updatedNote) return undefined;
+
   const bookmarkButton = root.querySelector<HTMLButtonElement>('[data-bookmark-toggle]');
   const bookmarkSymbol = root.querySelector<HTMLElement>('[data-bookmark-symbol]');
   const bookmarkLabel = root.querySelector<HTMLElement>('[data-bookmark-label]');
-  if (
-    !readButton ||
-    !readSymbol ||
-    !readLabel ||
-    !updatedNote ||
-    !bookmarkButton ||
-    !bookmarkSymbol ||
-    !bookmarkLabel
-  ) {
-    return;
-  }
 
   const slug = root.dataset.slug ?? '';
   const lang = root.dataset.lang ?? '';
   const rev = root.dataset.rev ?? '';
 
-  /** A title is the extra sentence for the pressed state only, so the unpressed state drops it. */
-  const setTitle = (button: HTMLButtonElement, title: string | undefined): void => {
-    if (title) button.setAttribute('title', title);
-    else button.removeAttribute('title');
-  };
+  readButton.addEventListener('click', () => {
+    // Read at the press rather than trusting the drawn state, which another tab may have moved on from.
+    if (readStateOf(loadState(), slug, lang, rev) === 'read') markUnread(slug);
+    else markRead(slug, lang, rev);
+  });
 
-  const render = (): void => {
-    const state = loadState();
+  if (bookmarkButton) {
+    bookmarkButton.addEventListener('click', () => {
+      toggleBookmark(slug);
+    });
+  }
 
+  return (state) => {
     const read = readStateOf(state, slug, lang, rev);
     const labels = readButton.dataset;
     const label =
@@ -230,6 +227,7 @@ export function initReadingControls(): void {
     setTitle(readButton, read === 'read' ? labels.titleRead : undefined);
     updatedNote.hidden = read !== 'updated';
 
+    if (!bookmarkButton || !bookmarkSymbol || !bookmarkLabel) return;
     const marked = isBookmarked(state, slug);
     bookmarkSymbol.textContent = marked ? BOOKMARK_SYMBOL.on : BOOKMARK_SYMBOL.off;
     bookmarkLabel.textContent =
@@ -237,17 +235,26 @@ export function initReadingControls(): void {
     bookmarkButton.setAttribute('aria-pressed', String(marked));
     setTitle(bookmarkButton, marked ? bookmarkButton.dataset.titleOn : undefined);
   };
+}
 
-  readButton.addEventListener('click', () => {
-    // Read at the press rather than trusting the drawn state, which another tab may have moved on from.
-    if (readStateOf(loadState(), slug, lang, rev) === 'read') markUnread(slug);
-    else markRead(slug, lang, rev);
-  });
+/**
+ * Wires every set of controls on the page, and does nothing on a page with
+ * none. A concept page carries two, one on the meta line and one under the
+ * body, and they share a single subscription and a single read of the stored
+ * state so that they can never disagree about it.
+ */
+export function initReadingControls(): void {
+  const renders = Array.from(
+    document.querySelectorAll<HTMLElement>('[data-reading]'),
+    wireControls,
+  ).filter((render): render is (state: ReadingState) => void => render !== undefined);
+  if (renders.length === 0) return;
 
-  bookmarkButton.addEventListener('click', () => {
-    toggleBookmark(slug);
-  });
+  const renderAll = (): void => {
+    const state = loadState();
+    for (const render of renders) render(state);
+  };
 
-  onReadingChange(render);
-  render();
+  onReadingChange(renderAll);
+  renderAll();
 }
