@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { TAGS } from '../../content.config';
 import { localePath, locales, t, toLocale, tSplit, type MessageKey } from '../../i18n';
+import { FEATURED_SCENES } from '../../scenes/featured';
 import { getSceneAsset } from '../../scenes/registry';
 import '../../styles/scene.css';
 
@@ -64,9 +65,9 @@ const sections = Array.from(grouped, ([name, items]) => ({ name, items }))
 
 /*
  * The theater opens on the first of these and can switch to any of the others
- * without leaving the page, so every one of them ships its stage markup.
+ * without leaving the page. Only the one it opens on is drawn here; the rest
+ * arrive from the browser, stage and stylesheet together, on the first click.
  */
-const featuredIds = ['circuit-breaker', 'retry', 'garbage-collection', 'load-test', 'async-await'];
 const featured: {
   id: string;
   title: string;
@@ -75,7 +76,7 @@ const featured: {
   css: string;
   duration: number;
 }[] = [];
-for (const id of featuredIds) {
+for (const id of FEATURED_SCENES) {
   const asset = getSceneAsset(id);
   const entry = entries.find((item) => item.id === `${id}/${locale}`);
   if (!asset || !entry) continue;
@@ -124,12 +125,10 @@ const [stepLabelBefore, stepLabelAfter] = tSplit(locale, 'player.goToStep', 'n')
         {active && (
           <section class="home__theater" aria-label={t(locale, 'player.region')}>
             {/*
-              The theater can switch to any of the five without leaving the
-              page, so all five stylesheets ship, once each, ahead of the stage.
+              One stylesheet for the one stage on the page. The browser writes
+              the next scene's rules into it when the reader switches.
             */}
-            {featured.map((scene) => (
-              <style is:inline set:html={scene.css} />
-            ))}
+            <style is:inline data-scene-css set:html={active.css} />
 
             <div class="home-theater">
               <div class="home-stage-card">
@@ -237,10 +236,6 @@ const [stepLabelBefore, stepLabelAfter] = tSplit(locale, 'player.goToStep', 'n')
                 </ul>
               </div>
             </div>
-
-            {featured.map((scene) => (
-              <template data-scene-markup={scene.id} set:html={scene.markup} />
-            ))}
           </section>
         )}
 

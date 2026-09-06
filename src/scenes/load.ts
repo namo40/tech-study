@@ -1,3 +1,4 @@
+import { FEATURED_SCENES } from './featured';
 import type { SceneModule } from './types';
 
 /**
@@ -189,6 +190,55 @@ export async function loadScene(id: string): Promise<SceneModule | null> {
     case 'cross-site-scripting':
       return (await import('./cross-site-scripting/scene')).default;
     default:
+      return null;
+  }
+}
+
+/** A stage fetched in the browser: the markup it draws and the rules it draws with. */
+export interface SceneStage {
+  markup: string;
+  css: string;
+}
+
+/**
+ * Loads the stage of a featured scene: its markup and the rules for that stage
+ * alone. Only the concept index swaps stages this way, so the branches cover
+ * the featured scenes and nothing else, and the index ships the markup of the
+ * one scene it opens on instead of all five. Static import specifiers again,
+ * so each stage lands in its own chunk.
+ *
+ * Narrowing the id against `FEATURED_SCENES` first is what keeps the two in
+ * step: the switch is then exhaustive over the list, and a scene added there
+ * without a branch here fails the build.
+ */
+export async function loadStage(id: string): Promise<SceneStage | null> {
+  switch (FEATURED_SCENES.find((scene) => scene === id)) {
+    case 'circuit-breaker':
+      return {
+        markup: (await import('./circuit-breaker/stage')).stageMarkup,
+        css: (await import('./circuit-breaker/stage.css?raw')).default,
+      };
+    case 'retry':
+      return {
+        markup: (await import('./retry/stage')).stageMarkup,
+        css: (await import('./retry/stage.css?raw')).default,
+      };
+    case 'garbage-collection':
+      return {
+        markup: (await import('./garbage-collection/stage')).stageMarkup,
+        css: (await import('./garbage-collection/stage.css?raw')).default,
+      };
+    case 'load-test':
+      return {
+        markup: (await import('./load-test/stage')).stageMarkup,
+        css: (await import('./load-test/stage.css?raw')).default,
+      };
+    case 'async-await':
+      return {
+        markup: (await import('./async-await/stage')).stageMarkup,
+        css: (await import('./async-await/stage.css?raw')).default,
+      };
+    case undefined:
       return null;
   }
 }

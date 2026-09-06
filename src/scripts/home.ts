@@ -1,4 +1,4 @@
-import { loadScene } from '../scenes/load';
+import { loadScene, loadStage, type SceneStage } from '../scenes/load';
 import type { SceneInstance, SceneStep } from '../scenes/types';
 import { formatSpeed, getSpeed, nextSpeed, setSpeed } from './speed';
 
@@ -6,10 +6,11 @@ import { formatSpeed, getSpeed, nextSpeed, setSpeed } from './speed';
  * Concept index.
  *
  * Two independent pieces of behaviour. The theater drives one scene timeline
- * at a time and can swap the scene in place: the markup of every featured
- * scene ships with the page, so switching is a clone plus a fresh timeline and
- * never a navigation. The filter narrows the index by title and by tag and
- * hides the sections it empties.
+ * at a time and can swap the scene in place: only the scene it opens on ships
+ * with the page, and the others are fetched on the click that asks for them,
+ * so switching is a download plus a fresh timeline and never a navigation. The
+ * filter narrows the index by title and by tag and hides the sections it
+ * empties.
  *
  * The theater borrows the driving pattern of the scene player: the scene owns
  * the timeline, this module only mirrors its position into the controls. There
@@ -38,6 +39,7 @@ function stepIndexAt(steps: SceneStep[], time: number): number {
 
 function initTheater(root: HTMLElement): void {
   const stage = root.querySelector<HTMLElement>('[data-stage]');
+  const stageCss = root.querySelector<HTMLStyleElement>('[data-scene-css]');
   const controls = root.querySelector<HTMLElement>('[data-controls]');
   const sceneTitle = root.querySelector<HTMLElement>('[data-scene-title]');
   const cta = root.querySelector<HTMLAnchorElement>('[data-scene-cta]');
@@ -48,6 +50,7 @@ function initTheater(root: HTMLElement): void {
   const stepBar = root.querySelector<HTMLElement>('[data-steps]');
   if (
     !stage ||
+    !stageCss ||
     !controls ||
     !sceneTitle ||
     !cta ||
@@ -76,6 +79,16 @@ function initTheater(root: HTMLElement): void {
   let speed = getSpeed();
   let activeId =
     rows.find((row) => row.getAttribute('aria-current') === 'true')?.dataset.sceneRow ?? '';
+
+  /**
+   * The stages already in hand, so a scene that ran before comes back without
+   * a second download. The scene the page was built with is read off the
+   * document, before any timeline has touched it.
+   */
+  const stages = new Map<string, SceneStage>();
+  if (activeId) {
+    stages.set(activeId, { markup: stage.innerHTML, css: stageCss.textContent ?? '' });
+  }
 
   const applyStep = (index: number): void => {
     for (const button of stepButtons) {
@@ -179,10 +192,15 @@ function initTheater(root: HTMLElement): void {
       // The first scene is already on the page, drawn at build time.
       serverRendered = false;
     } else {
-      const template = document.querySelector<HTMLTemplateElement>(`[data-scene-markup="${id}"]`);
-      if (!template) return;
-      // Always clone, so a scene that ran before comes back on a clean stage.
-      stage.replaceChildren(template.content.cloneNode(true));
+      const next = stages.get(id) ?? (await loadStage(id).catch(() => null));
+      if (ticket !== switchToken) return;
+      // A stage that never arrives leaves the one on screen where it is,
+      // rather than emptying the theater.
+      if (!next) return;
+      stages.set(id, next);
+      // Always rewrite, so a scene that ran before comes back on a clean stage.
+      stage.innerHTML = next.markup;
+      stageCss.textContent = next.css;
     }
 
     const scene = await loadScene(id);
