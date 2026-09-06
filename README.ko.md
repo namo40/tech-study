@@ -2,6 +2,8 @@
 
 [English](README.md) | **한국어** | [日本語](README.ja.md)
 
+**사이트:** https://namo40.github.io/tech-study/ko/
+
 > [!NOTE]
 > 이 프로젝트는 AI(Claude)와 함께 제작했습니다.
 
