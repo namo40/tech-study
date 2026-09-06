@@ -817,9 +817,13 @@ kbd {
   color: var(--fg-soft);
 }
 
-/* Concept page */
+/*
+ * Concept page.
+ *
+ * The header and the prose take the whole page width instead of a narrower
+ * measure of their own, so the body lines up with the player above it.
+ */
 .concept__header {
-  max-width: var(--content-width);
   margin-bottom: var(--space-6);
 }
 
@@ -872,7 +876,6 @@ kbd {
 }
 
 .prose {
-  max-width: var(--content-width);
   margin-top: var(--space-8);
 }
 
