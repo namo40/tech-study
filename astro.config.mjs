@@ -1,4 +1,5 @@
 // @ts-check
+import sitemap from '@astrojs/sitemap';
 import { defineConfig } from 'astro/config';
 
 /**
@@ -9,11 +10,37 @@ import { defineConfig } from 'astro/config';
 const site = process.env.SITE_URL ?? 'http://localhost:4321';
 const base = process.env.SITE_BASE ?? '/';
 
+/** The site root as a path, carrying the trailing slash the sitemap URLs use. */
+const rootPath = base.endsWith('/') ? base : `${base}/`;
+
 export default defineConfig({
   site,
   base,
   output: 'static',
   trailingSlash: 'ignore',
+  integrations: [
+    sitemap({
+      // Every page exists in all three languages, so each entry names the
+      // other two as alternates under the language code the markup uses.
+      i18n: {
+        defaultLocale: 'en',
+        locales: { en: 'en', ko: 'ko', ja: 'ja' },
+      },
+      /*
+       * The root only forwards to the default locale, and the 404 stands in
+       * for addresses that have no page. Neither is somewhere a reader should
+       * land from a search result.
+       */
+      filter: (page) => {
+        const { pathname } = new URL(page);
+        return (
+          pathname !== rootPath &&
+          pathname !== `${rootPath}404` &&
+          pathname !== `${rootPath}404/`
+        );
+      },
+    }),
+  ],
   markdown: {
     shikiConfig: {
       // Dual themes emit CSS variables instead of baked-in colours, so code

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://namo40.github.io/tech-study/sitemap-index.xml

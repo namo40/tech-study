@@ -9,6 +9,9 @@ const ko: Messages = {
   'nav.skipToContent': '본문으로 건너뛰기',
   'nav.home': '홈',
 
+  'notFound.title': '페이지를 찾을 수 없습니다',
+  'notFound.body': '요청한 주소에는 페이지가 없습니다.',
+
   'home.heading': '개념 목록',
   'home.intro':
     '키워드 하나에 페이지 하나를 씁니다. 각 페이지는 짧은 장면으로 시작해 개념을 단계별로 설명하고, .NET에서 어떻게 쓰는지 보여 줍니다.',

@@ -11,6 +11,9 @@ const en = {
   'nav.skipToContent': 'Skip to content',
   'nav.home': 'Home',
 
+  'notFound.title': 'Page not found',
+  'notFound.body': 'The page you asked for is not here.',
+
   'home.heading': 'Concepts',
   'home.intro':
     'One keyword, one page. Each page opens with a short animated scene, then explains the idea step by step and shows how it looks in .NET.',
