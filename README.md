@@ -2,6 +2,9 @@
 
 **English** | [한국어](README.ko.md) | [日本語](README.ja.md)
 
+> [!NOTE]
+> This project was built together with AI (Claude).
+
 Motion explainers for server technology.
 
 Tech Study is a static site that explains server technology keywords with short animated scenes. One keyword gets one page, and every page is published in English, Korean, and Japanese. Each concept is explained in general terms first, then shown the way it looks in .NET.
