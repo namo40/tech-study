@@ -13,6 +13,7 @@ Tech Study is a static site that explains server technology keywords with short 
 - **TypeScript** for the player, the sound cues, and the theme toggle. There is no UI framework.
 - Markdown content collections hold the page prose. Interface strings live in typed TypeScript modules.
 - Sound effects are synthesized with the Web Audio API, so no audio files are shipped.
+- The Noto faces are fetched at build time and served from the same origin as the site, so a page makes no request to Google Fonts.
 
 ## Getting started
 
