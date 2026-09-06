@@ -1,18 +1,15 @@
 # Builds the static site and publishes it to GitHub Pages. The repository is
 # private; only the built site is public, so nothing here reads the source at
-# runtime.
+# runtime. A pull request runs the build alone as a check: nothing is published
+# until the change is on `main`.
 name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
-
-# One deployment at a time. A queued run waits for the one in flight instead of
-# cancelling it, so a half-published site is never left behind.
-concurrency:
-  group: pages
-  cancel-in-progress: false
 
 jobs:
   build:
@@ -60,12 +57,22 @@ jobs:
   deploy:
     name: Deploy
     needs: build
+    # A pull request stops after the build. Only `main` and a manual run reach
+    # the live site.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       # `pages: write` creates the deployment; `id-token: write` mints the OIDC
       # token the Pages API checks it against.
       pages: write
       id-token: write
+    # One deployment at a time, and a queued one waits for the run in flight
+    # instead of cancelling it, so a half-published site is never left behind.
+    # The group sits on this job rather than on the workflow so that a pull
+    # request's build, which never gets here, cannot hold a deployment back.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
