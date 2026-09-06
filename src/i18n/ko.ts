@@ -65,7 +65,7 @@ const ko: Messages = {
     '플레이어에 초점이 있을 때 Space로 재생과 일시정지를 전환하고, 좌우 화살표 키로 단계를 옮기며, Home으로 처음으로 돌아갑니다.',
   'player.stageLabel': '개념을 설명하는 애니메이션 그림',
 
-  'concept.partOf': '{parent}의 한 단계입니다',
+  'concept.partOf': '{parent} 장면의 일부입니다',
 
   'section.whenToUse': '언제 쓰나',
   'section.cautions': '주의점',

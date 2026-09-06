@@ -44,11 +44,19 @@ const concepts = defineCollection({
      * tags on the same page.
      */
     tags: z.array(z.enum(TAGS)).max(3).default([]),
-    /** Identifier of the animated scene, when the page has one. */
+    /**
+     * Identifier of the animated scene, when the page has one. Three kinds of
+     * page name a scene. The page that owns it names its own slug and writes
+     * the steps. A sub-keyword page names the owning page and adds `sceneStep`,
+     * so the player opens on that step. An alias page, whose concept is the
+     * whole scene, names the owning page and leaves `sceneStep` out, so the
+     * player runs from the first step. The last two borrow the owner's steps.
+     */
     scene: z.string().optional(),
     /**
-     * Step of the scene this page is about. Sub-keyword pages set it so the
-     * player opens on that step and reuses the parent page's step text.
+     * Step of the scene this page is about. A sub-keyword page sets it so the
+     * player opens on that step and reuses the parent page's step text. A page
+     * that owns its scene, or that borrows a parent scene whole, leaves it out.
      */
     sceneStep: z.number().int().min(1).max(8).optional(),
     /**

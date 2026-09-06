@@ -35,9 +35,9 @@ const concepts = entries
       summary: entry.data.summary,
       category: entry.data.category,
       tags: tagsBySlug.get(slug) ?? [],
-      // A sub-keyword page borrows its parent's scene, so only the page that
-      // owns the scene gets the play glyph.
-      ownsScene: Boolean(entry.data.scene) && entry.data.sceneStep === undefined,
+      // A sub-keyword page and an alias page both borrow a parent scene, so
+      // only the page that owns the scene gets the play glyph.
+      ownsScene: entry.data.scene === slug,
     };
   })
   .sort((a, b) => a.title.localeCompare(b.title, locale));

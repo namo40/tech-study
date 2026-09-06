@@ -63,6 +63,8 @@ src/
   styles/               Design tokens, global styles, shared scene widgets
 ```
 
+A page either owns a scene, points at one step of a parent scene with `sceneStep`, or borrows the whole parent scene as an alias; the last two reuse the parent's step text.
+
 ## Adding a scene
 
 A scene is a folder under `src/scenes/<id>/` holding two modules and a stylesheet.
