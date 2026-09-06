@@ -1,0 +1,68 @@
+---
+import { t } from '../i18n';
+import type { Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+
+/** The cycle the button walks, and the name each step answers to. */
+const order = ['normal', 'large', 'larger', 'xlarge', 'largest'] as const;
+const names = {
+  normal: t(locale, 'textSize.normal'),
+  large: t(locale, 'textSize.large'),
+  larger: t(locale, 'textSize.larger'),
+  xlarge: t(locale, 'textSize.xlarge'),
+  largest: t(locale, 'textSize.largest'),
+};
+
+/** One label per step: what the text size is now, and what pressing does. */
+const label = (size: (typeof order)[number]): string =>
+  t(locale, 'textSize.switch', {
+    current: names[size],
+    next: names[order[(order.indexOf(size) + 1) % order.length]],
+  });
+---
+
+<!--
+  Three states, so `aria-pressed` would say the wrong thing; the label carries
+  the state instead and `text-size.ts` swaps it on every press.
+
+  The face is the theme toggle's kind of line icon: a large A beside a small
+  one, with a dot under them for each of the five steps. The dots are filled up
+  to the step in force, which is a signal the letters themselves cannot give,
+  since the button's own type does not grow with the setting. Both are drawn
+  here in the same 24-unit box as every other button icon, and the row of dots
+  spans exactly the width of the letters above it.
+
+  The server renders the normal step because that is the default; the script
+  fills the dots in and corrects the label on load if the reader stored a
+  larger one.
+-->
+<button
+  type="button"
+  class="btn btn--text-size"
+  data-text-size-toggle
+  aria-label={label('normal')}
+  data-label-normal={label('normal')}
+  data-label-large={label('large')}
+  data-label-larger={label('larger')}
+  data-label-xlarge={label('xlarge')}
+  data-label-largest={label('largest')}
+>
+  <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="m3 14 4.5-9 4.5 9"></path>
+    <path d="M4 12h7"></path>
+    <path d="M16 14v-3.5a2.5 2.5 0 0 1 5 0V14"></path>
+    <path d="M21 12h-5"></path>
+    <g data-text-size-dots>
+      <circle class="btn__dot is-on" cx="3" cy="20" r="1.45"></circle>
+      <circle class="btn__dot" cx="7.5" cy="20" r="1.45"></circle>
+      <circle class="btn__dot" cx="12" cy="20" r="1.45"></circle>
+      <circle class="btn__dot" cx="16.5" cy="20" r="1.45"></circle>
+      <circle class="btn__dot" cx="21" cy="20" r="1.45"></circle>
+    </g>
+  </svg>
+</button>

@@ -55,7 +55,7 @@ const canonical = new URL(localePath(locale, path), Astro.site).href;
     <meta property="og:url" content={canonical} />
     <meta property="og:locale" content={htmlLang[locale]} />
 
-    <!-- Applies the stored or preferred theme before the first paint. -->
+    <!-- Applies the stored theme and text size before the first paint. -->
     <script is:inline>
       (function () {
         var root = document.documentElement;
@@ -71,6 +71,16 @@ const canonical = new URL(localePath(locale, path), Astro.site).href;
           theme = 'dark';
         }
         root.dataset.theme = theme;
+
+        try {
+          var sizes = ['large', 'larger', 'xlarge', 'largest'];
+          var size = localStorage.getItem('text-size');
+          if (sizes.indexOf(size) !== -1) {
+            root.dataset.textSize = size;
+          }
+        } catch (error) {
+          // Blocked storage: the normal size, which is the absence of the attribute.
+        }
       })();
     </script>
   </head>
@@ -90,8 +100,10 @@ const canonical = new URL(localePath(locale, path), Astro.site).href;
 
     <script>
       import { initThemeToggles } from '../scripts/theme';
+      import { initTextSizeToggles } from '../scripts/text-size';
 
       initThemeToggles();
+      initTextSizeToggles();
     </script>
   </body>
 </html>

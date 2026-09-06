@@ -1,5 +1,6 @@
 ---
 import LangSwitcher from './LangSwitcher.astro';
+import TextSizeToggle from './TextSizeToggle.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import { localePath, t } from '../i18n';
 import type { Locale } from '../i18n';
@@ -20,6 +21,7 @@ const { locale, path = '' } = Astro.props;
     </a>
     <div class="header__tools">
       <LangSwitcher locale={locale} path={path} />
+      <TextSizeToggle locale={locale} />
       <ThemeToggle locale={locale} />
     </div>
   </div>

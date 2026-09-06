@@ -49,6 +49,14 @@ const ko: Messages = {
   'theme.toLight': '라이트 테마로 전환',
   'theme.toDark': '다크 테마로 전환',
 
+  'textSize.label': '글자 크기',
+  'textSize.normal': '보통 크기',
+  'textSize.large': '큰 크기',
+  'textSize.larger': '가장 큰 크기',
+  'textSize.xlarge': '아주 큰 크기',
+  'textSize.largest': '최대 크기',
+  'textSize.switch': '글자 크기: {current}. 누르면 {next}로 바뀝니다',
+
   'player.region': '장면 플레이어',
   'player.play': '재생',
   'player.pause': '일시정지',

@@ -18,11 +18,18 @@
  * ahead of that inline block, so a scene still overrides a widget as before.
  */
 
+/*
+ * The stage pins its font size instead of inheriting the page's. Scene
+ * coordinates are viewBox units written against a 16px root, so the reader's
+ * text size setting must not reach inside the drawing; 1rem is what the stage
+ * already resolved to, so the default step renders exactly as before.
+ */
 .scene-stage {
   display: block;
   width: 100%;
   height: 100%;
   font-family: var(--font-sans);
+  font-size: 1rem;
 }
 
 .scene-stage text {

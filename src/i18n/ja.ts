@@ -49,6 +49,14 @@ const ja: Messages = {
   'theme.toLight': 'ライトテーマに切り替える',
   'theme.toDark': 'ダークテーマに切り替える',
 
+  'textSize.label': '文字サイズ',
+  'textSize.normal': '標準',
+  'textSize.large': '大きめ',
+  'textSize.larger': 'さらに大きめ',
+  'textSize.xlarge': '特大',
+  'textSize.largest': '最大',
+  'textSize.switch': '現在の文字サイズは{current}です。押すと{next}に切り替わります',
+
   'player.region': 'シーンプレーヤー',
   'player.play': '再生',
   'player.pause': '一時停止',

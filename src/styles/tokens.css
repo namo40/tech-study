@@ -43,13 +43,14 @@
   /* Typography. */
   --font-sans: system-ui, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.375rem;
-  --text-2xl: 1.75rem;
-  --text-3xl: 2.25rem;
+  --text-scale: 1;
+  --text-xs: calc(0.75rem * var(--text-scale));
+  --text-sm: calc(0.875rem * var(--text-scale));
+  --text-base: calc(1rem * var(--text-scale));
+  --text-lg: calc(1.125rem * var(--text-scale));
+  --text-xl: calc(1.375rem * var(--text-scale));
+  --text-2xl: calc(1.75rem * var(--text-scale));
+  --text-3xl: calc(2.25rem * var(--text-scale));
   --leading-tight: 1.25;
   --leading-normal: 1.7;
 
@@ -62,6 +63,29 @@
   /* Layout. */
   --content-width: 46rem;
   --page-width: 76rem;
+}
+
+/*
+ * Reader-chosen text size, put on the root by an inline script before the
+ * first paint. Only the type scale moves. Spacing, widths and the breakpoints
+ * keep their values, so a larger size grows the words inside the same layout
+ * instead of rebuilding it, and the stage pins its own font size so the
+ * drawings are identical at every step.
+ */
+:root[data-text-size='large'] {
+  --text-scale: 1.15;
+}
+
+:root[data-text-size='larger'] {
+  --text-scale: 1.3;
+}
+
+:root[data-text-size='xlarge'] {
+  --text-scale: 1.5;
+}
+
+:root[data-text-size='largest'] {
+  --text-scale: 1.75;
 }
 
 :root[data-theme='light'] {

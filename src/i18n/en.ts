@@ -53,6 +53,14 @@ const en = {
   'theme.toLight': 'Switch to the light theme',
   'theme.toDark': 'Switch to the dark theme',
 
+  'textSize.label': 'Text size',
+  'textSize.normal': 'Normal',
+  'textSize.large': 'Large',
+  'textSize.larger': 'Larger',
+  'textSize.xlarge': 'Extra large',
+  'textSize.largest': 'Largest',
+  'textSize.switch': 'Text size: {current}. Switch to {next}',
+
   'player.region': 'Scene player',
   'player.play': 'Play',
   'player.pause': 'Pause',
