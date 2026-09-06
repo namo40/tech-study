@@ -12,9 +12,11 @@ interface Props {
   description?: string;
   /** Path below the locale segment, used for canonical and alternate URLs. */
   path?: string;
+  /** Keeps the page out of search results and out of the alternate-URL set. */
+  noindex?: boolean;
 }
 
-const { locale, title, description, path = '' } = Astro.props;
+const { locale, title, description, path = '', noindex = false } = Astro.props;
 
 const siteName = t(locale, 'site.name');
 const pageTitle = title === siteName ? siteName : `${title} · ${siteName}`;
@@ -31,17 +33,28 @@ const canonical = new URL(localePath(locale, path), Astro.site).href;
     <title>{pageTitle}</title>
     <meta name="description" content={pageDescription} />
     <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
-    <link rel="canonical" href={canonical} />
     {
-      alternates.map(({ locale: other, path: href }) => (
-        <link rel="alternate" hreflang={htmlLang[other]} href={new URL(href, Astro.site).href} />
-      ))
+      /*
+       * A page held back from search results drops the canonical and hreflang
+       * links with it: the 404 stands in for every unknown address, so it has
+       * no page of its own to name and no translations to point at.
+       */
+      noindex ? (
+        <meta name="robots" content="noindex" />
+      ) : (
+        <Fragment>
+          <link rel="canonical" href={canonical} />
+          {alternates.map(({ locale: other, path: href }) => (
+            <link rel="alternate" hreflang={htmlLang[other]} href={new URL(href, Astro.site).href} />
+          ))}
+          <link
+            rel="alternate"
+            hreflang="x-default"
+            href={new URL(localePath(defaultLocale, path), Astro.site).href}
+          />
+        </Fragment>
+      )
     }
-    <link
-      rel="alternate"
-      hreflang="x-default"
-      href={new URL(localePath(defaultLocale, path), Astro.site).href}
-    />
 
     <!-- Only the face this locale needs is requested. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -52,7 +65,7 @@ const canonical = new URL(localePath(locale, path), Astro.site).href;
     <meta property="og:site_name" content={siteName} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={pageDescription} />
-    <meta property="og:url" content={canonical} />
+    {!noindex && <meta property="og:url" content={canonical} />}
     <meta property="og:locale" content={htmlLang[locale]} />
 
     <!-- Applies the stored theme and text size before the first paint. -->

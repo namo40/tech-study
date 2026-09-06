@@ -47,6 +47,12 @@ SITE_URL=https://example.com SITE_BASE=/tech-study/ npm run build
 
 内部リンクとアセットはすべて base path を通るので、ドメイン直下とサブパスを行き来してもソースを直す必要はありません。
 
+サイトは `.github/workflows/deploy.yml` が `https://namo40.github.io/tech-study/` に公開します。このワークフローは `main` への push のたびに走り、Actions タブから手動で実行することもできます。型チェックとシーンの検証を行ったあと、`SITE_URL=https://namo40.github.io`、`SITE_BASE=/tech-study/` でビルドし、その結果を GitHub Pages に渡します。`gh-pages` ブランチには何もコミットしないため、リポジトリの Pages のソースはブランチではなく **GitHub Actions** に設定します。
+
+`public/robots.txt` はそのままサイトへコピーされ、その中の `Sitemap:` 行がサイトマップインデックスの完全なアドレスを書き出します。公開アドレスを手で書く場所はこの行だけなので、`SITE_URL` や `SITE_BASE` を変えたときはこの行も直します。
+
+サイトマップ自体は `site` の値から生成します。`SITE_URL` がないとこの値は `http://localhost:4321` になるため、変数なしのローカルビルドは `sitemap-0.xml` に localhost のアドレスを書きます。2 つの変数を両方指定したビルドだけが、公開できるサイトマップを作ります。
+
 ## プロジェクト構成
 
 ```
@@ -56,7 +62,7 @@ src/
   content/concepts/     キーワードごとの言語別マークダウン
   i18n/                 インターフェイス文字列、英語がキー集合を定義
   layouts/              文書の骨格: head、フォント、テーマ、ヘッダー、フッター
-  pages/                ルートのリダイレクト、/{lang}/、/{lang}/{slug}
+  pages/                ルートのリダイレクト、404、/{lang}/、/{lang}/{slug}
   components/           ヘッダー、言語切り替え、テーマ切り替え、シーンプレーヤー
   scenes/               ステージのマークアップ、ステージのスタイル、GSAP タイムライン
   scripts/              プレーヤー、効果音、テーマ切り替え

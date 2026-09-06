@@ -9,6 +9,9 @@ const ja: Messages = {
   'nav.skipToContent': '本文へスキップ',
   'nav.home': 'ホーム',
 
+  'notFound.title': 'ページが見つかりません',
+  'notFound.body': '指定されたアドレスにページはありません。',
+
   'home.heading': '概念一覧',
   'home.intro':
     'キーワード 1 つにつき 1 ページです。各ページは短いシーンから始まり、概念を段階ごとに説明し、.NET での書き方を示します。',

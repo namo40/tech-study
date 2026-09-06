@@ -1,0 +1,42 @@
+---
+import Base from '../layouts/Base.astro';
+import { defaultLocale, htmlLang, localeName, localePath, locales, t } from '../i18n';
+
+/**
+ * GitHub Pages answers every unknown address under the site with this one
+ * file, so the page cannot know which language was meant. It renders in the
+ * default locale and offers the three home pages, each named in its own
+ * language.
+ */
+const homes = locales.map((locale) => ({
+  locale,
+  href: localePath(locale),
+  name: localeName(locale, locale),
+}));
+---
+
+<Base locale={defaultLocale} title={t(defaultLocale, 'notFound.title')} noindex>
+  <section class="not-found">
+    <p class="not-found__site">{t(defaultLocale, 'site.name')}</p>
+    <h1 class="not-found__title">{t(defaultLocale, 'notFound.title')}</h1>
+    <p class="not-found__body">{t(defaultLocale, 'notFound.body')}</p>
+    <nav aria-label={t(defaultLocale, 'lang.label')}>
+      <ul class="not-found__homes">
+        {
+          homes.map(({ locale, href, name }) => (
+            <li>
+              <a
+                class="not-found__home"
+                href={href}
+                hreflang={htmlLang[locale]}
+                lang={htmlLang[locale]}
+              >
+                {name}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </section>
+</Base>
