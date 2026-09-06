@@ -6,7 +6,10 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "predev": "node scripts/fetch-fonts.mjs",
     "build": "astro build",
+    "prebuild": "node scripts/fetch-fonts.mjs",
+    "fonts": "node scripts/fetch-fonts.mjs",
     "preview": "astro preview",
     "check": "astro check",
     "verify": "node scripts/scene-baseline.mjs --verify",
