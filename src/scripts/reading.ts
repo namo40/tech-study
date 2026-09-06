@@ -51,7 +51,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isState(value: unknown): value is ReadingState {
   if (!isRecord(value)) return false;
-  return value.v === 1 && isRecord(value.read) && isRecord(value.bookmarks);
+  if (value.v !== 1 || !isRecord(value.read) || !isRecord(value.bookmarks)) return false;
+  return (
+    Object.values(value.read).every(
+      (entry) => isRecord(entry) && typeof entry.at === 'number' && isRecord(entry.rev),
+    ) &&
+    Object.values(value.bookmarks).every((at) => typeof at === 'number')
+  );
 }
 
 /** Anything the store cannot be trusted to hold reads as nothing at all. */
