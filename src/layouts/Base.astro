@@ -1,7 +1,6 @@
 ---
-import { Font } from 'astro:assets';
 import Header from '../components/Header.astro';
-import { alternatePaths, defaultLocale, fontFamily, fontVariable, htmlLang, localePath, t } from '../i18n';
+import { alternatePaths, defaultLocale, fontFamily, fontStylesheet, htmlLang, localePath, t } from '../i18n';
 import type { Locale } from '../i18n';
 import { withBase } from '../utils/base';
 import '../styles/tokens.css';
@@ -58,12 +57,12 @@ const canonical = new URL(localePath(locale, path), Astro.site).href;
     }
 
     <!--
-      Only the face this locale needs is declared, and the files come from this
-      site. Preloading is left off: the CJK families are cut into more than a
-      hundred unicode ranges each, and the browser is the one that knows which
-      of them the page actually needs.
+      Only the face this locale needs is linked, and it is served from this
+      site. The stylesheet is cut into one `@font-face` per unicode range, so
+      the browser asks for the files the page's characters fall into and
+      nothing else.
     -->
-    <Font cssVariable={fontVariable[locale]} />
+    <link rel="stylesheet" href={withBase(fontStylesheet[locale])} />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={siteName} />

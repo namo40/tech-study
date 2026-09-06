@@ -19,24 +19,22 @@ export const htmlLang: Record<Locale, string> = {
 };
 
 /**
- * The `cssVariable` each font family is registered under in the Astro config.
- * A page loads the one its locale needs, so a reader never downloads a CJK
- * face they have no use for.
+ * One font stylesheet per locale, so a reader never downloads the CJK face
+ * they do not need. `scripts/fetch-fonts.mjs` writes these files into
+ * `public/fonts/` before a build, and the paths go through `withBase()` like
+ * every other asset.
  */
-export const fontVariable: Record<Locale, import('astro:assets').CssVariable> = {
-  en: '--font-noto-sans',
-  ko: '--font-noto-sans-kr',
-  ja: '--font-noto-sans-jp',
+export const fontStylesheet: Record<Locale, string> = {
+  en: '/fonts/en.css',
+  ko: '/fonts/ko.css',
+  ja: '/fonts/ja.css',
 };
 
-/**
- * CSS `font-family` stack for each locale. The variable already carries the
- * family name and the fallbacks behind it, so nothing is repeated here.
- */
+/** CSS `font-family` stack for each locale. */
 export const fontFamily: Record<Locale, string> = {
-  en: 'var(--font-noto-sans)',
-  ko: 'var(--font-noto-sans-kr)',
-  ja: 'var(--font-noto-sans-jp)',
+  en: "'Noto Sans', system-ui, sans-serif",
+  ko: "'Noto Sans KR', system-ui, sans-serif",
+  ja: "'Noto Sans JP', system-ui, sans-serif",
 };
 
 export function isLocale(value: string | undefined): value is Locale {
