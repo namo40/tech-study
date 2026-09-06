@@ -3,6 +3,7 @@ title: "Roll-Forward"
 summary: "Rolling forward is fixing with a new release instead of an old one: the answer when the damage has already left your process, when the previous revision cannot read what the bad one wrote, or when the schema has moved on and the way back is no longer a way back at all."
 category: "Containers and orchestration"
 tags: ["deployment"]
+level: 5
 scene: rollback
 sceneStep: 4
 related:

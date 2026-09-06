@@ -3,6 +3,7 @@ title: "Token Bucket"
 summary: "A token bucket allows a burst up to its capacity and a sustained rate equal to its refill rate, which is what makes it the usual algorithm behind a rate limiter."
 category: "Resilience"
 tags: ["overload"]
+level: 3
 scene: rate-limiter
 related:
   - label: Rate Limiter

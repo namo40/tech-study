@@ -3,6 +3,7 @@ title: "Two-Phase Commit"
 summary: "Two-phase commit makes several stores act as one transaction: a coordinator collects prepare votes, and only when every participant has promised does anyone commit — atomicity bought at the price of locks held while everyone waits for everyone."
 category: "Transactions and concurrency"
 tags: ["database", "consistency"]
+level: 9
 scene: two-phase-commit
 steps:
   - title: "Two stores, one promise"

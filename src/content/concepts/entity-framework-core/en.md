@@ -3,6 +3,7 @@ title: "Entity Framework Core"
 summary: "EF Core is .NET's default ORM: it translates LINQ into SQL, tracks what changed on the objects you loaded, and writes the updates for you. The price of that convenience is understanding the translation and the tracking."
 category: ".NET data access"
 tags: ["ef-core", "database"]
+level: 3
 related:
   - label: N+1 Query
     slug: n-plus-1-query

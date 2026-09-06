@@ -3,6 +3,7 @@ title: "DbContext"
 summary: "A DbContext is one session with the database: the connection it borrows, the entities it is tracking, and the unit of work it will commit. It is cheap to create, not thread-safe, and meant to live for one request."
 category: ".NET data access"
 tags: ["ef-core", "database"]
+level: 5
 scene: change-tracking
 sceneStep: 3
 related:

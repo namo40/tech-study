@@ -3,6 +3,7 @@ title: "OpenTelemetry"
 summary: "OpenTelemetry is the vendor-neutral standard for traces, metrics and logs: one set of APIs, one wire format and one propagated context, so instrumentation is written once and the backend that stores it stays a deployment-time choice."
 category: "Observability and operations"
 tags: ["metric"]
+level: 4
 related:
   - label: Distributed Tracing
     slug: distributed-tracing

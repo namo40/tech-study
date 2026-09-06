@@ -3,6 +3,7 @@ title: "Fencing Token"
 summary: "A fencing token is a number handed out with every lock acquisition that only ever increases. The holder attaches it to each write, and the resource refuses anything carrying a token lower than the highest it has already accepted."
 category: "Distributed coordination"
 tags: ["consistency"]
+level: 8
 scene: distributed-lock
 sceneStep: 4
 related:

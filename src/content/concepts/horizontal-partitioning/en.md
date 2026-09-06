@@ -3,6 +3,7 @@ title: "Horizontal Partitioning"
 summary: "Horizontal partitioning splits a table by rows: every part keeps the same schema and holds a different subset, chosen by a key. It is the cut that buys capacity, and the key that chooses is the whole of the decision."
 category: "Data distribution and consistency"
 tags: ["database"]
+level: 5
 scene: partitioning
 sceneStep: 2
 related:

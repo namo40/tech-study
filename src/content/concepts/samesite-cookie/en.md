@@ -2,6 +2,7 @@
 title: "SameSite Cookie"
 summary: "SameSite is the attribute that tells the browser whether a cookie may travel on a request started by another site. Lax keeps it off everything except top-level navigations, Strict keeps it off those too, and None puts it back on everything and demands Secure in return."
 category: "Application security"
+level: 5
 scene: cors
 sceneStep: 4
 related:

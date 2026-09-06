@@ -3,6 +3,7 @@ title: "Sidecar"
 summary: "A sidecar rides next to the application — same pod, same lifecycle, separate container — taking over what every service needs (TLS, logs, retries) so the app keeps none of it in its code, in any of its languages."
 category: "Application architecture"
 tags: ["kubernetes"]
+level: 5
 scene: sidecar
 steps:
   - title: "Everything every service needs, every service rewrites"

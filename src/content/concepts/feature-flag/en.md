@@ -3,6 +3,7 @@ title: "Feature Flag"
 summary: "A feature flag separates deploying code from releasing it: the switch decides who sees what, percentages turn blast radius into a dial, and the kill switch is the cheapest rollback ever built — which is why a flag that is always on is debt to remove."
 category: "Containers and orchestration"
 tags: ["deployment"]
+level: 4
 scene: feature-flag
 steps:
   - title: "Deploying is not releasing"

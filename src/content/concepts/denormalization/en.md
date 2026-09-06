@@ -3,6 +3,7 @@ title: "Denormalization"
 summary: "Denormalization is keeping a copy of data in the shape the read wants, updated a little on every write, so the question lands in one place instead of being assembled from several. What you manage afterwards is the number of copies and how stale you will let them get."
 category: "Data distribution and consistency"
 tags: ["database", "consistency"]
+level: 5
 scene: cross-shard-query
 sceneStep: 4
 related:

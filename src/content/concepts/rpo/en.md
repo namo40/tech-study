@@ -2,6 +2,7 @@
 title: "RPO"
 summary: "The recovery point objective is how much data the business agrees it can lose: the age of the newest surviving copy after a disaster. It is a decision made by the people who own the data, and it is the decision that picks your replication mode and your backup interval."
 category: "Requirements and quality attributes"
+level: 3
 related:
   - label: Replication
     slug: replication

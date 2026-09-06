@@ -3,6 +3,7 @@ title: "Modular Monolith"
 summary: "A modular monolith ships as one deployable and is built out of modules that reach each other only through published contracts. It buys the benefit of boundaries without the network, the operational surface and the partial failures that come with splitting the deployment, and it leaves the split available later."
 category: "Application architecture"
 tags: ["deployment"]
+level: 4
 related:
   - label: Strangler Fig
     slug: strangler-fig

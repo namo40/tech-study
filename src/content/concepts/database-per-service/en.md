@@ -3,6 +3,7 @@ title: "Database per Service"
 summary: "Database per service is the rule that every service owns its own store and reaches another service's data only through that service's API. It is where a service boundary stops being a diagram and becomes something the schema enforces, because data ownership is the part of a boundary that is hard to talk your way around."
 category: "Application architecture"
 tags: ["database"]
+level: 6
 related:
   - label: Anti-Corruption Layer
     slug: anti-corruption-layer

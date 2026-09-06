@@ -3,6 +3,7 @@ title: "Graceful Shutdown"
 summary: "A graceful shutdown is what a process does between being asked to stop and stopping: it reports itself unavailable, stops accepting new work, finishes what it already has, releases what it holds, and exits before the deadline. SIGTERM is the request; the termination grace period is the deadline."
 category: "Containers and orchestration"
 tags: ["kubernetes", "deployment"]
+level: 4
 scene: rolling-update
 sceneStep: 3
 related:

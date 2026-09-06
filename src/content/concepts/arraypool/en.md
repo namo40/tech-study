@@ -3,6 +3,7 @@ title: "ArrayPool"
 summary: "ArrayPool<T> lends out arrays that already exist instead of allocating new ones, so a hot path that needs a buffer per request stops filling gen0 and the large object heap. You rent, you use, and you must return, which is the part that goes wrong."
 category: "Performance and optimization"
 tags: ["memory"]
+level: 4
 scene: garbage-collection
 sceneStep: 3
 related:

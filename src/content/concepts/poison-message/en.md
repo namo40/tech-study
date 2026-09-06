@@ -3,6 +3,7 @@ title: "Poison Message"
 summary: "A poison message fails every time it is processed, and at-least-once delivery keeps bringing it back: without a plan it blocks the queue and burns the consumer, so the plan is delays, a retry budget, and finally the dead-letter drawer."
 category: "Messaging and event processing"
 tags: ["queue"]
+level: 6
 scene: poison-message
 steps:
   - title: "One bad message, and the whole line waits"

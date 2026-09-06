@@ -2,6 +2,7 @@
 title: "Workflow Engine"
 summary: "A workflow engine runs a multi-step process and keeps its progress outside the process that runs it: steps are recorded as they complete, so the work survives crashes, retries its failures, and can wait — for a timer or a human — without holding anything in memory."
 category: "Scheduled work and workflows"
+level: 6
 scene: workflow-engine
 steps:
   - title: "The schedule wakes it; the record keeps it"

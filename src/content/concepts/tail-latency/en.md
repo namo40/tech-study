@@ -3,6 +3,7 @@ title: "Tail Latency"
 summary: "Tail latency is what the slowest few percent of requests experience. The average hides it, p99 measures it, and fan-out turns it into the latency most users actually feel."
 category: "Requirements and quality attributes"
 tags: ["latency", "metric"]
+level: 3
 scene: tail-latency
 steps:
   - title: "One slow request in a hundred"

@@ -3,6 +3,7 @@ title: "Graceful Degradation"
 summary: "A planned mode that keeps the core and folds everything else away. The skill is knowing how to be partially alive, so a system that loses a part does not have to lose itself."
 category: "Resilience"
 tags: ["overload"]
+level: 5
 scene: fallback
 sceneStep: 4
 related:

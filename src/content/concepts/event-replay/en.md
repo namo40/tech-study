@@ -2,6 +2,7 @@
 title: "Event Replay"
 summary: "Playing stored events through a fold, in order, to arrive at a state. It is how an aggregate rebuilds itself after a restart, how a read model is regenerated from scratch, and how you look at what something used to be."
 category: "Application architecture"
+level: 7
 scene: event-sourcing
 sceneStep: 2
 related:

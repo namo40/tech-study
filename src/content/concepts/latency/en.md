@@ -3,6 +3,7 @@ title: "Latency"
 summary: "Latency is what one request took, from the moment the caller sent it to the moment the answer arrived. Because every request has its own, what you actually hold is a distribution, and every single number quoted from it is a lossy summary."
 category: "Requirements and quality attributes"
 tags: ["latency"]
+level: 4
 scene: tail-latency
 sceneStep: 1
 related:

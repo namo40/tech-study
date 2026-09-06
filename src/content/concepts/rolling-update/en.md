@@ -3,6 +3,7 @@ title: "Rolling Update"
 summary: "A rolling update replaces pods one batch at a time: a new one starts, passes its readiness probe, takes traffic, and only then is an old one told to stop and drain. Nobody notices, provided the two versions can run side by side."
 category: "Containers and orchestration"
 tags: ["kubernetes", "deployment"]
+level: 3
 scene: rolling-update
 steps:
   - title: "One at a time"

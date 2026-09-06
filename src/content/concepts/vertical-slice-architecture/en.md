@@ -2,6 +2,7 @@
 title: "Vertical Slice Architecture"
 summary: "Vertical slice architecture groups code by feature rather than by technical layer: everything one request needs lives in one folder. It changes the axis the code is organized on, so coupling is trapped inside a feature instead of running along a layer that every feature shares."
 category: "Application architecture"
+level: 3
 related:
   - label: CQRS
     slug: command-query-responsibility-segregation

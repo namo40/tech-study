@@ -3,6 +3,7 @@ title: "Output Cache"
 summary: "Output caching stores whole responses in the server and replays them from middleware, so a hit never reaches the endpoint at all. It caches bytes rather than data, which makes its key space the request's varying axes and its default audience anonymous callers."
 category: "Caching"
 tags: ["memory"]
+level: 4
 related:
   - label: Cache-Aside
     slug: cache-aside

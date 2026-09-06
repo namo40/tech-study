@@ -3,6 +3,7 @@ title: "Role"
 summary: "A role is a named bundle of grants attached to a person rather than to a thing. It makes a cheap, readable outer gate that keeps obvious strangers out, and it is worth most when it is layered in front of a check that looks at the resource."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 3
 scene: resource-based-authorization
 sceneStep: 3
 related:

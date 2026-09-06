@@ -3,6 +3,7 @@ title: "Noisy Neighbor"
 summary: "A noisy neighbour is one tenant or workload consuming enough of a shared resource that the others degrade. Every symptom appears on the victim and every cause sits outside it, which is why the work is diagnosis — measuring the shared resource per consumer — before it is remedy."
 category: "Resilience"
 tags: ["overload"]
+level: 4
 scene: bulkhead
 sceneStep: 2
 related:

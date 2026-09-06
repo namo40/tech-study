@@ -3,6 +3,7 @@ title: "Signature"
 summary: "A signature is proof of origin that cannot be forged: it says a particular key produced these exact bytes and nothing has changed since. The `kid` header names which key, so a verifier can hold a ring of them and rotation never invalidates what is already in flight."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 4
 scene: key-rotation
 sceneStep: 3
 related:

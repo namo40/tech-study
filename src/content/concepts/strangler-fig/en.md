@@ -3,6 +3,7 @@ title: "Strangler Fig"
 summary: "The strangler fig replaces a system one capability at a time: a routing facade sits in front of the old system, each capability is rebuilt and its route flipped to the new one, and the old system shrinks until nothing is left behind the facade."
 category: "Application architecture"
 tags: ["deployment"]
+level: 4
 scene: strangler-fig
 steps:
   - title: "A facade first"

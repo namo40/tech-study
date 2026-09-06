@@ -3,6 +3,7 @@ title: "Split Brain"
 summary: "A split brain is two nodes that both believe they hold the same exclusive role, and both act on it. Leader election cannot make the belief impossible; the fencing check at the resource prevents the damage instead, by refusing the writes of whichever node is wrong."
 category: "Distributed coordination"
 tags: ["consistency"]
+level: 8
 scene: leader-election
 sceneStep: 3
 related:

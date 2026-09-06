@@ -3,6 +3,7 @@ title: "Aggregator"
 summary: "An aggregator is the component that fans a request out to several services and joins the answers into one. The join is where the latency arithmetic turns against you: the caller waits for the slowest branch, so the aggregator's job is deciding what to do about that branch rather than making it faster."
 category: "Requirements and quality attributes"
 tags: ["latency"]
+level: 5
 scene: tail-latency
 sceneStep: 2
 related:

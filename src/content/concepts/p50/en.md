@@ -3,6 +3,7 @@ title: "p50"
 summary: "p50 is the median: half of the requests are faster than it and half are slower. It describes the typical request and says nothing about the slow ones."
 category: "Requirements and quality attributes"
 tags: ["metric", "latency"]
+level: 2
 scene: tail-latency
 sceneStep: 1
 related:

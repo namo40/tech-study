@@ -2,6 +2,7 @@
 title: "ASP.NET Core Data Protection"
 summary: "Data Protection is the cryptographic API the framework itself uses to protect cookies, antiforgery tokens and TempData: `IDataProtector` encrypts and authenticates a payload, a purpose string isolates one consumer from another, and the key ring supplies the keys underneath."
 category: "Application security"
+level: 4
 related:
   - label: Key Ring
     slug: key-ring

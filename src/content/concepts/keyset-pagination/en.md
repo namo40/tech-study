@@ -3,6 +3,7 @@ title: "Keyset Pagination"
 summary: "Instead of asking for the five thousand and first row, ask for the rows after the last key you saw. The index seeks straight to that key and reads forward, so every page costs the same and nothing shifts underneath the reader."
 category: ".NET data access"
 tags: ["database", "latency"]
+level: 5
 scene: database-index
 sceneStep: 4
 related:

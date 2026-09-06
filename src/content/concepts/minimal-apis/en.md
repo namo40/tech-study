@@ -2,6 +2,7 @@
 title: "Minimal APIs"
 summary: "Minimal APIs are ASP.NET Core's low-ceremony endpoint model: a route and a handler are joined in one call, there is no controller class in between, and the endpoint you read is the code that runs."
 category: ".NET runtime and hosting"
+level: 3
 related:
   - label: Controllers
     slug: controllers

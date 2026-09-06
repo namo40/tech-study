@@ -3,6 +3,7 @@ title: "Elasticity"
 summary: "Elasticity is capacity that follows demand: replicas multiply when load rises, pods are re-sized when their requests are wrong, and the node pool beneath grows and shrinks to fit, so you pay for what runs rather than for what might."
 category: "Containers and orchestration"
 tags: ["kubernetes"]
+level: 5
 scene: elasticity
 steps:
   - title: "Fixed capacity fails twice a day"

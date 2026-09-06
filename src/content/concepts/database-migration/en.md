@@ -3,6 +3,7 @@ title: "Database Migration"
 summary: "A database migration is a deploy in which old code and new schema must coexist: every change ships as steps both app versions survive — expand, backfill, switch, contract — so the schema evolves without a stop-the-world moment."
 category: ".NET data access"
 tags: ["database", "deployment"]
+level: 6
 scene: database-migration
 steps:
   - title: "A rename is instant; a deployment is not"

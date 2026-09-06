@@ -2,6 +2,7 @@
 title: "Least Connections"
 summary: "Least connections sends the next request to whichever server is holding the fewest in flight. It replaces the assumption that every request costs the same with a measurement the balancer already has, which is why it is the policy to reach for when the work is uneven."
 category: "Edge, routing and service networking"
+level: 5
 scene: load-balancer
 sceneStep: 2
 related:

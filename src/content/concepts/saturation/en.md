@@ -3,6 +3,7 @@ title: "Saturation"
 summary: "The queue that forms when arrivals outrun capacity. Throughput has already stopped rising by then, so everything extra becomes waiting time, and saturation is where latency actually lives."
 category: "Requirements and quality attributes"
 tags: ["metric", "overload"]
+level: 4
 scene: throughput
 sceneStep: 3
 related:

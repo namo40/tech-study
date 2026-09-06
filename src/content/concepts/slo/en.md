@@ -3,6 +3,7 @@ title: "SLO"
 summary: "An SLO is the reliability target you set for yourself: a number, a window and a threshold that together say how good is good enough. It is the promise the error budget is the change from, which is why picking it is an engineering decision rather than an aspiration."
 category: "Observability and operations"
 tags: ["metric"]
+level: 5
 scene: error-budget
 sceneStep: 1
 related:

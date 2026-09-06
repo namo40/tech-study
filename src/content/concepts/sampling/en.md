@@ -2,6 +2,7 @@
 title: "Sampling"
 summary: "Sampling is the decision to keep some traces and throw the rest away, because recording every request costs more than the system being watched. Head sampling decides at the start and is cheap; tail sampling decides at the end and keeps the interesting ones."
 category: "Observability and operations"
+level: 5
 scene: correlation-id
 sceneStep: 4
 related:

@@ -3,6 +3,7 @@ title: "Retry Queue"
 summary: "A retry queue is the side road a failed message is put on so the main line can keep moving: it holds the message for a delay that grows with each attempt, then puts it back at the tail, and it is what turns head-of-line blocking into a background cost."
 category: "Messaging and event processing"
 tags: ["queue"]
+level: 6
 scene: poison-message
 sceneStep: 3
 related:

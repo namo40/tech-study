@@ -3,6 +3,7 @@ title: "Throttling"
 summary: "Slowing the rate, and shrinking the feature set, to protect the service. The limit is a design value chosen from what the system can actually do, not a number that appears once it is already failing."
 category: "Resilience"
 tags: ["overload"]
+level: 4
 scene: fallback
 sceneStep: 3
 related:

@@ -3,6 +3,7 @@ title: "Message ID"
 summary: "A message id is the identity a sender puts on a message once and never changes, so the same message sent twice arrives twice under one name. It is what turns a duplicate from an indistinguishable second event into something a consumer can recognise and drop."
 category: "Distributed transactions and message consistency"
 tags: ["duplicates"]
+level: 6
 scene: transactional-outbox
 sceneStep: 3
 related:

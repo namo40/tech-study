@@ -3,6 +3,7 @@ title: "Lost Update"
 summary: "A lost update is two transactions reading the same row, each computing a new value from what it read, and the second write quietly replacing the first. Nothing fails and nothing is logged: the first change is simply gone."
 category: "Transactions and concurrency"
 tags: ["database", "consistency"]
+level: 6
 scene: deadlock
 sceneStep: 4
 related:

@@ -3,6 +3,7 @@ title: "Repository"
 summary: "A repository gives the domain a collection-like door to persistence: the domain asks for entities by identity and never sees SQL, entities are equal by id, value objects are equal by content, and storage becomes a detail that lives at the edge."
 category: ".NET data access"
 tags: ["database"]
+level: 4
 scene: repository
 steps:
   - title: "Persistence leaking into the domain is a slow flood"

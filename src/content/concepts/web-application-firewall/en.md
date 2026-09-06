@@ -2,6 +2,7 @@
 title: "Web Application Firewall"
 summary: "A web application firewall inspects HTTP traffic in front of the application and turns away requests that match known attack patterns. It is a defence you stand in front of the code rather than one you build into it, which is exactly why it is an extra layer and never a replacement for the defences inside."
 category: "Application security"
+level: 3
 related:
   - label: Cross-Site Scripting
     slug: cross-site-scripting

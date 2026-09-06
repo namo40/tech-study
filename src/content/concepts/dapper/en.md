@@ -3,6 +3,7 @@ title: "Dapper"
 summary: "Dapper is a micro ORM: you write the SQL, it maps the result rows onto objects, and that is all it does. There is no translation and no change tracking, which is why it is fast and why the discipline stays with you."
 category: ".NET data access"
 tags: ["database"]
+level: 3
 related:
   - label: Entity Framework Core
     slug: entity-framework-core

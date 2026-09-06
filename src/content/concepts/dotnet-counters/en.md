@@ -3,6 +3,7 @@ title: "dotnet-counters"
 summary: "dotnet-counters is a command-line tool that reads the counters a running .NET process already publishes: attach to a live process, watch GC, thread pool and exception rates update in the terminal, or collect them to a file, with nothing installed into the application."
 category: "Performance and optimization"
 tags: ["metric"]
+level: 2
 related:
   - label: Garbage Collection
     slug: garbage-collection

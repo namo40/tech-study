@@ -3,6 +3,7 @@ title: "Database Connection Pool"
 summary: "A connection pool keeps a few open database connections and lends them out, so requests skip the slow handshake. Its size is a concurrency budget: when every connection is busy, the next request waits, and waiting too long fails."
 category: "Pools and resources"
 tags: ["database"]
+level: 3
 scene: database-connection-pool
 steps:
   - title: "Opening is slow"

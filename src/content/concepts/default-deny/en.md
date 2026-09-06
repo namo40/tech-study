@@ -3,6 +3,7 @@ title: "Default Deny"
 summary: "Default deny is the rule that an action nothing granted is refused. It turns a forgotten handler into a closed door instead of an open one, which is why it is worth paying for with a little friction on every new endpoint."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 3
 scene: resource-based-authorization
 sceneStep: 4
 related:

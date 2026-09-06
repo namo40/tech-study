@@ -3,6 +3,7 @@ title: "Query Plan"
 summary: "A query plan is the compiled program the server builds from a statement, cached against the exact text it came from. Reuse is where the speed is, and keeping the text stable is the price of admission."
 category: ".NET data access"
 tags: ["database"]
+level: 5
 scene: prepared-statement
 sceneStep: 3
 related:

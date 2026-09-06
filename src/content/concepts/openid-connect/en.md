@@ -3,6 +3,7 @@ title: "OpenID Connect"
 summary: "A thin identity layer on top of OAuth 2.0. Asking for the openid scope adds an ID token beside the access token: a signed statement about who signed in, addressed to the app rather than to any API."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 5
 scene: oauth-2-0
 sceneStep: 4
 related:

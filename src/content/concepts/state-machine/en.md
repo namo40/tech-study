@@ -2,6 +2,7 @@
 title: "State Machine"
 summary: "A state machine names the states a thing can be in and the events that move it between them. Anything not in the table cannot happen, the current state can be stored and resumed, and a long-running process becomes a machine that waits, times out, and retries one step at a time."
 category: "Scheduled work and workflows"
+level: 5
 scene: state-machine
 steps:
   - title: "States and events"

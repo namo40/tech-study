@@ -3,6 +3,7 @@ title: "Environment Variable"
 summary: "An environment variable is the most universal injection path there is: the platform fills it before the process starts and every runtime can read it without a library. It also inherits, dumps and prints itself, and its value is frozen until the next restart."
 category: "Containers and orchestration"
 tags: ["kubernetes"]
+level: 2
 scene: secret-injection
 sceneStep: 2
 related:

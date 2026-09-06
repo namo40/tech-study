@@ -3,6 +3,7 @@ title: "Cache Invalidation"
 summary: "Cache invalidation is how a cache learns that its copy is no longer true: by time, by an explicit delete or message when data changes, or by changing the key so old entries are simply never read again."
 category: "Caching"
 tags: ["consistency"]
+level: 4
 scene: cache-invalidation
 steps:
   - title: "Time alone"

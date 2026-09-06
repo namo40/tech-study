@@ -3,6 +3,7 @@ title: "Hexagonal Architecture"
 summary: "Hexagonal architecture points every dependency inward: the domain sits in the middle knowing no outside name, ports are the contracts it speaks, adapters translate the world into those contracts — and because the contract is the boundary, the web, the database and the test harness become swappable details."
 category: "Application architecture"
 tags: ["ef-core"]
+level: 4
 scene: hexagonal-architecture
 steps:
   - title: "Without direction, the outside cracks the inside"

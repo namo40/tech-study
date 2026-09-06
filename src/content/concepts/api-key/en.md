@@ -3,6 +3,7 @@ title: "API Key"
 summary: "An API key is a machine's evidence of identity: a long secret issued once, presented on every call, and checked against a registry. Possession is the whole proof, which is why a leaked key is a leaked identity."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 3
 scene: authentication
 sceneStep: 3
 related:

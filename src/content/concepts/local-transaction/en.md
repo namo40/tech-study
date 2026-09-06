@@ -3,6 +3,7 @@ title: "Local Transaction"
 summary: "A local transaction is a unit of work that begins and ends inside one resource, usually one database on one connection, so a single commit decides the fate of everything in it. That single decision point is what makes atomicity cheap, and it is the stage every isolation level is played on."
 category: "Transactions and concurrency"
 tags: ["database"]
+level: 5
 scene: isolation-level
 sceneStep: 1
 related:

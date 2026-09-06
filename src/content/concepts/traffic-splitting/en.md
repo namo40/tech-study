@@ -3,6 +3,7 @@ title: "Traffic Splitting"
 summary: "Traffic splitting sends a chosen share of requests down the new path and the rest down the old one. The share is not a schedule; it is the ceiling on how much the new path is allowed to break."
 category: "Containers and orchestration"
 tags: ["deployment"]
+level: 4
 scene: feature-flag
 sceneStep: 2
 related:

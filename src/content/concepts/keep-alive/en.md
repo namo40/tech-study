@@ -3,6 +3,7 @@ title: "Keep-Alive"
 summary: "Keep-alive is the agreement that a connection outlives the request that opened it, so the next request skips the handshake. It is default behaviour in HTTP/1.1, and almost everything interesting about it is the idle lifetime: how long each end keeps a quiet connection, and what happens when they disagree."
 category: "Edge, routing and service networking"
 tags: ["latency"]
+level: 3
 scene: multiplexing
 sceneStep: 1
 related:

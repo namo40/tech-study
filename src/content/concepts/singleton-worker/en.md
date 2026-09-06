@@ -3,6 +3,7 @@ title: "Singleton Worker"
 summary: "A singleton worker is background work that runs on exactly one instance out of the whole fleet at any moment, no matter how many replicas are deployed. It is the reason leader election exists, and the work strip is where you check whether it is really working."
 category: "Distributed coordination"
 tags: ["queue"]
+level: 6
 scene: leader-election
 sceneStep: 4
 related:

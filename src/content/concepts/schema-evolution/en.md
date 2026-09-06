@@ -3,6 +3,7 @@ title: "Schema Evolution"
 summary: "Schema evolution is treating a schema as something that walks rather than jumps: every change decomposes into steps that are individually deployable and individually reversible, so the shape of a live database can keep moving without any single moment where it has to be right."
 category: ".NET data access"
 tags: ["database"]
+level: 6
 scene: database-migration
 sceneStep: 4
 related:

@@ -2,6 +2,7 @@
 title: "Distributed Lease"
 summary: "A distributed lease is a lock with an expiry attached. The holder gets the key for a fixed time and has to keep asking for more; if it stops asking, for any reason at all, the key goes back to whoever wants it next."
 category: "Distributed coordination"
+level: 7
 scene: distributed-lock
 sceneStep: 2
 related:

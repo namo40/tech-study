@@ -2,6 +2,7 @@
 title: "Cancellation Token"
 summary: "A cancellation token is how the decision to stop waiting reaches the work itself, which is what turns a timeout from a message to the caller into a cut that the dependency also sees."
 category: "Resilience"
+level: 3
 scene: request-timeout
 sceneStep: 4
 related:

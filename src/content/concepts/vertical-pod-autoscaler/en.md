@@ -3,6 +3,7 @@ title: "Vertical Pod Autoscaler"
 summary: "The Vertical Pod Autoscaler watches what a container actually uses and re-writes its CPU and memory requests to match. It buys accuracy with a restart, and the honest numbers it produces are what the scheduler and the cluster autoscaler plan from."
 category: "Containers and orchestration"
 tags: ["kubernetes"]
+level: 5
 scene: elasticity
 sceneStep: 3
 related:

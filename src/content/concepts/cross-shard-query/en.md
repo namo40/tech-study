@@ -3,6 +3,7 @@ title: "Cross-Shard Query"
 summary: "A query that does not carry the partition key must ask every shard: scatter the question, wait for the slowest answer, gather and merge. So you route by key when you can, budget the fan-out when you must, and reshape the data so the question you ask most becomes a one-shard question."
 category: "Data distribution and consistency"
 tags: ["database", "latency"]
+level: 5
 scene: cross-shard-query
 steps:
   - title: "A question without the key must be asked of everyone"

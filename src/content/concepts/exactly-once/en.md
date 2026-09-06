@@ -3,6 +3,7 @@ title: "Exactly-Once"
 summary: "Exactly-once is a property of a boundary, not of a network: inside one transactional scope a broker can make a read, a write and an acknowledgement atomic, but the moment a side effect leaves that scope the guarantee you actually have is at-least-once plus a handler that can survive being run twice."
 category: "Messaging and event processing"
 tags: ["queue", "duplicates"]
+level: 8
 scene: poison-message
 sceneStep: 2
 related:

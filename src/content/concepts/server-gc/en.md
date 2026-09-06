@@ -3,6 +3,7 @@ title: "Server GC"
 summary: "Server GC spreads the heap across several collector threads and collects them in parallel, which shortens the pause a collection costs at the price of a larger footprint. It is the default for ASP.NET Core, and in a container it is also the setting most often left wrong."
 category: "Performance and optimization"
 tags: ["memory"]
+level: 9
 scene: garbage-collection
 sceneStep: 4
 related:

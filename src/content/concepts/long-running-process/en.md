@@ -2,6 +2,7 @@
 title: "Long-Running Process"
 summary: "A long-running process is work that outlives the request that started it, and usually the process that started it too. Its state has to live outside memory, its waits have to be deadlines rather than blocked threads, and every step has to be safe to run again."
 category: "Scheduled work and workflows"
+level: 5
 scene: state-machine
 sceneStep: 4
 related:

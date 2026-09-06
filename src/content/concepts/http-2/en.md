@@ -3,6 +3,7 @@ title: "HTTP/2"
 summary: "HTTP/2 keeps HTTP's semantics and replaces its wire format: text lines become binary frames, headers become a compressed table, and one connection carries many independent streams at once instead of one request at a time."
 category: "Edge, routing and service networking"
 tags: ["latency"]
+level: 6
 related:
   - label: Multiplexing
     slug: multiplexing

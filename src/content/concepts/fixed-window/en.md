@@ -3,6 +3,7 @@ title: "Fixed Window"
 summary: "A fixed window counts requests inside clock-aligned buckets and resets on the clock, which makes it the cheapest limiter there is and the reason a burst scheduled across a boundary gets through at twice the configured limit."
 category: "Resilience"
 tags: ["overload"]
+level: 4
 scene: sliding-window
 sceneStep: 1
 related:

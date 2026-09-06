@@ -3,6 +3,7 @@ title: "Retry Storm"
 summary: "A retry storm is the surge of synchronized retries that knocks a dependency over just as it starts to recover."
 category: "Resilience"
 tags: ["overload"]
+level: 4
 scene: retry
 sceneStep: 3
 related:

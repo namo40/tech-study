@@ -3,6 +3,7 @@ title: "Idempotency Key"
 summary: "An Idempotency-Key lets a client retry a request that changes something without changing it twice: the server remembers the key, does the work once, and replays the same response for every repeat."
 category: "APIs and real-time communication"
 tags: ["duplicates"]
+level: 5
 scene: idempotency-key
 steps:
   - title: "A retry without a key"

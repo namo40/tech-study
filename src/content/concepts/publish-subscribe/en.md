@@ -3,6 +3,7 @@ title: "Publish/Subscribe"
 summary: "Publish-subscribe delivers one event as a copy to every subscription: each subscriber reads at its own pace from its own position, crashes and rejoins where it left off, and the publisher never knows any of them exist."
 category: "Messaging and event processing"
 tags: ["queue"]
+level: 4
 scene: publish-subscribe
 steps:
   - title: "One event, a copy each"

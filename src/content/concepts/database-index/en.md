@@ -3,6 +3,7 @@ title: "Database Index"
 summary: "A database index is a sorted copy of one or more columns with pointers back to the rows: reads stop scanning and start seeking, writes pay a little extra to keep it sorted, and the same structure quietly powers uniqueness and fast pagination."
 category: ".NET data access"
 tags: ["database", "latency"]
+level: 4
 scene: database-index
 steps:
   - title: "Scanning counts; seeking navigates"

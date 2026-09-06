@@ -3,6 +3,7 @@ title: "Pipelining"
 summary: "Pipelining sends the next request without waiting for the previous response, so questions stop taking turns. Responses still have to come back in the order they were asked, which is why it moved the blocking rather than removing it."
 category: "Edge, routing and service networking"
 tags: ["latency"]
+level: 4
 scene: multiplexing
 sceneStep: 3
 related:

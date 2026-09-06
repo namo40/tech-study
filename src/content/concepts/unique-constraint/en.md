@@ -3,6 +3,7 @@ title: "Unique Constraint"
 summary: "A rule hung off a sorted index: while inserting, if the position this value belongs in is already taken, refuse. The check and the claim happen at one point inside one structure, which is why two racing inserts cannot both win."
 category: ".NET data access"
 tags: ["database", "duplicates"]
+level: 5
 scene: database-index
 sceneStep: 3
 related:

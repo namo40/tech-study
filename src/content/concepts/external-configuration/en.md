@@ -3,6 +3,7 @@ title: "External Configuration"
 summary: "External configuration is everything the build does not carry: the settings that arrive from outside the artefact at start-up, so one image behaves differently in every environment it runs in — and so a shadow deployment can be caged without becoming a different build."
 category: "Containers and orchestration"
 tags: ["deployment"]
+level: 3
 scene: shadow-deployment
 sceneStep: 3
 related:

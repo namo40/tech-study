@@ -3,6 +3,7 @@ title: "Event Stream"
 summary: "A partitioned log that events keep being appended to: each partition is an ordered sequence nothing is ever taken out of, so a stream is not a queue that empties but a history that grows — and the partition is where per-key order physically lives."
 category: "Messaging and event processing"
 tags: ["queue"]
+level: 6
 scene: ordering
 sceneStep: 2
 related:

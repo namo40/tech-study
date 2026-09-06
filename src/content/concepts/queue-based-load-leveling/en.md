@@ -3,6 +3,7 @@ title: "Queue-Based Load Leveling"
 summary: "Putting a queue between a bursty producer and a steady consumer, so the burst is absorbed rather than felt. It levels the rate, not the total, and only a bounded queue turns that into a promise."
 category: "Resilience"
 tags: ["queue", "overload"]
+level: 4
 scene: backpressure
 sceneStep: 2
 related:

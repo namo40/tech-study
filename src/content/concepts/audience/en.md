@@ -3,6 +3,7 @@ title: "Audience"
 summary: "The audience is the name a token is addressed to. Validating it is what stops a receiver from accepting proof that was minted for somebody else, which is the difference between a signature that is valid and a signature that is valid here."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 4
 scene: workload-identity
 sceneStep: 3
 related:

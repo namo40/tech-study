@@ -2,6 +2,7 @@
 title: "LINQ"
 summary: "LINQ is the query surface built into C#: the same operators filter a list in memory and a table in a database. Deferred execution and the IQueryable boundary are what decide which of those two is happening."
 category: ".NET data access"
+level: 3
 related:
   - label: Entity Framework Core
     slug: entity-framework-core

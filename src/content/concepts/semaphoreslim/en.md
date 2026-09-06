@@ -3,6 +3,7 @@ title: "SemaphoreSlim"
 summary: "SemaphoreSlim is the concurrency gate of the asynchronous world: WaitAsync waits without holding a thread, so bounding how many operations start at once turns a wave into a queue without giving back the thread you just saved."
 category: "Pools and resources"
 tags: ["overload"]
+level: 4
 scene: io-completion-port
 sceneStep: 4
 related:

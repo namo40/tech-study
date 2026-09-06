@@ -3,6 +3,7 @@ title: "Onion Architecture"
 summary: "Onion architecture draws the application as concentric circles with the domain model at the centre and infrastructure at the rim, and states one rule: all coupling points inward. Its particular emphasis is that the domain model is a first-class citizen rather than a layer above the database."
 category: "Application architecture"
 tags: ["ef-core"]
+level: 4
 scene: hexagonal-architecture
 sceneStep: 4
 related:

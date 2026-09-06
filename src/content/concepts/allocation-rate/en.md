@@ -3,6 +3,7 @@ title: "Allocation Rate"
 summary: "How many bytes a second the process asks the allocator for. It is not a cost in itself — it is the input that decides how often the collector runs, and therefore what pressure the heap is under."
 category: "Containers and orchestration"
 tags: ["memory"]
+level: 6
 scene: memory-pressure
 sceneStep: 2
 related:

@@ -3,6 +3,7 @@ title: "Eviction"
 summary: "Eviction is what a full cache does to stay useful: when space runs out a policy picks a victim, the victim's next reader pays a miss, and both the policy and the keys that fill the space are design decisions rather than defaults."
 category: "Caching"
 tags: ["memory"]
+level: 4
 scene: eviction
 steps:
   - title: "A cache remembers what you touched, and when"

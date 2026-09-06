@@ -3,6 +3,7 @@ title: "Bulkhead"
 summary: "A bulkhead gives each dependency its own pool of slots, so a slow or failing dependency can exhaust only its own compartment and the rest of the service keeps working."
 category: "Resilience"
 tags: ["overload"]
+level: 4
 scene: bulkhead
 steps:
   - title: "One shared pool"

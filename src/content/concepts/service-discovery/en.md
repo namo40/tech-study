@@ -3,6 +3,7 @@ title: "Service Discovery"
 summary: "Service discovery is how a caller turns a service's name into an address it can actually connect to. Either the caller reads the current list of instances from a registry or from DNS and picks one, or something standing in front of the service picks for it."
 category: "Edge, routing and service networking"
 tags: ["kubernetes"]
+level: 5
 related:
   - label: Load Balancer
     slug: load-balancer

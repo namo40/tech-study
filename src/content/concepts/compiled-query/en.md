@@ -3,6 +3,7 @@ title: "Compiled Query"
 summary: "A compiled query freezes the preparation step of an EF Core query so that the same LINQ expression does not have to be recognised and looked up again on every call. The SQL does not get faster; the hand that builds the SQL does."
 category: ".NET data access"
 tags: ["ef-core"]
+level: 4
 related:
   - label: Entity Framework Core
     slug: entity-framework-core

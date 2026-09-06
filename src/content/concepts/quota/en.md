@@ -3,6 +3,7 @@ title: "Quota"
 summary: "A quota is an allowance spent over a long window — a day, a month, a billing period. A rate limit protects the service in the moment; a quota holds a client to what it agreed to consume, and the two refuse for entirely different reasons."
 category: "Resilience"
 tags: ["overload"]
+level: 4
 scene: rate-limiter
 sceneStep: 4
 related:

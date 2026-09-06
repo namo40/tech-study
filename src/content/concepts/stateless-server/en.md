@@ -2,6 +2,7 @@
 title: "Stateless Server"
 summary: "A stateless server holds nothing between requests that a replacement instance would miss. The state has not disappeared, it has moved to a store, a cache or the request itself, and what that buys is that any instance can serve any request."
 category: "Server state management"
+level: 5
 scene: sticky-session
 sceneStep: 4
 related:

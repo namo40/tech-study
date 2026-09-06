@@ -2,6 +2,7 @@
 title: "Baggage"
 summary: "Baggage is a small set of key-values that travels with the trace context, so a value set at the edge is readable everywhere downstream without being added to every method signature. It is convenient, it is broadcast to everyone you call, and it should stay tiny."
 category: "Observability and operations"
+level: 5
 scene: distributed-tracing
 sceneStep: 3
 related:

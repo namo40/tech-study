@@ -3,6 +3,7 @@ title: "Background Service"
 summary: "A background service is a loop that lives inside the host: it starts when the app starts, drains a queue at its own pace, and when shutdown comes it finishes the job in hand before it exits — so no request waits for slow work and no accepted work is lost."
 category: "Scheduled work and workflows"
 tags: ["queue"]
+level: 3
 scene: background-service
 steps:
   - title: "No request should wait for slow work"

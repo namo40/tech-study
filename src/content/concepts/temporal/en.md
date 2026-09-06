@@ -2,6 +2,7 @@
 title: "Temporal"
 summary: "Temporal is a durable execution platform you run: your workers execute the workflow code, the Temporal server keeps its event history, and a crash, a deploy or a week-long wait is just a gap between two entries in that history rather than lost work."
 category: "Scheduled work and workflows"
+level: 5
 related:
   - label: Durable Workflow
     slug: durable-workflow

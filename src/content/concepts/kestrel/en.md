@@ -2,6 +2,7 @@
 title: "Kestrel"
 summary: "Kestrel is the cross-platform web server built into ASP.NET Core: it is the in-process gate every request reaches first, it is already running whether or not you configured it, and its endpoints, protocols and limits are settings rather than infrastructure you install."
 category: ".NET runtime and hosting"
+level: 2
 related:
   - label: Middleware Pipeline
     slug: middleware-pipeline

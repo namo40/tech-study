@@ -3,6 +3,7 @@ title: "Resource-Based Authorization"
 summary: "Resource-based authorization decides with the resource in hand: not \"can this user edit documents\" but \"can this user edit this document\". Ownership and state live on the thing being acted on, roles stay as the coarse outer gate, and when no rule says yes the answer is no."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 4
 scene: resource-based-authorization
 steps:
   - title: "A role check never looks at the document"

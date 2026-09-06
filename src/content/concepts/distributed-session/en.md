@@ -2,6 +2,7 @@
 title: "Distributed Session"
 summary: "A distributed session keeps session state in a store every instance can read, so any instance can serve any user and a restart loses nothing."
 category: "Server state management"
+level: 4
 scene: sticky-session
 sceneStep: 4
 related:

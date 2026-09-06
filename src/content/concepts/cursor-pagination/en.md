@@ -3,6 +3,7 @@ title: "Cursor Pagination"
 summary: "A cursor names the last row the reader actually saw, so the next page is a seek to the row after it: the same cost at any depth, and immune to rows appearing above. The price is that it goes next, never to page 57."
 category: ".NET data access"
 tags: ["database"]
+level: 5
 scene: pagination
 sceneStep: 3
 related:

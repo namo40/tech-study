@@ -3,6 +3,7 @@ title: "Failover"
 summary: "Failover moves a role, not a machine: when the primary stops answering, the beats stop, a majority agrees it is gone, and the replica is promoted — trading the last unreplicated moments for the service staying up."
 category: "Data distribution and consistency"
 tags: ["database"]
+level: 6
 scene: failover
 steps:
   - title: "One writes, one follows"

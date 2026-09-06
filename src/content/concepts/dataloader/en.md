@@ -3,6 +3,7 @@ title: "DataLoader"
 summary: "A DataLoader collects the individual lookups that scatter across one request, fetches them as a single batch, and remembers each answer for the lifetime of that request. It is the standard prescription for the N+1 that a GraphQL resolver graph produces by construction."
 category: "APIs and real-time communication"
 tags: ["latency"]
+level: 5
 related:
   - label: N+1 Query
     slug: n-plus-1-query

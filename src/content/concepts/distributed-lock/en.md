@@ -2,6 +2,7 @@
 title: "Distributed Lock"
 summary: "A distributed lock lets only one instance at a time do some piece of work. It is really a lease with an expiry, so the holder can lose it without knowing, and only a fencing token makes the resource itself refuse the stale holder's writes."
 category: "Distributed coordination"
+level: 7
 scene: distributed-lock
 steps:
   - title: "Two instances, one job"

@@ -2,6 +2,7 @@
 title: "CORS"
 summary: "CORS is the browser asking a server whether a page from another origin may read its response. The request usually still reaches the server, and what CORS controls is whether the page gets to see the answer, which is why it is not a security boundary for anything that is not a browser."
 category: "Application security"
+level: 4
 scene: cors
 steps:
   - title: "Request out, answer blocked"

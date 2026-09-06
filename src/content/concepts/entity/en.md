@@ -3,6 +3,7 @@ title: "Entity"
 summary: "A domain object whose equality is defined by identity rather than by attributes. Two entities with the same id are the same thing at two moments of its life, and the attributes are just today's state."
 category: ".NET data access"
 tags: ["database"]
+level: 3
 scene: repository
 sceneStep: 3
 related:

@@ -2,6 +2,7 @@
 title: "Task"
 summary: "A Task is a promise object for work that has not finished yet: it holds the state, the result or the exception, and the continuations waiting on it. It is a handle, not a thread, and returning one says nothing about whether any thread is occupied."
 category: "Pools and resources"
+level: 4
 scene: async-await
 sceneStep: 1
 related:

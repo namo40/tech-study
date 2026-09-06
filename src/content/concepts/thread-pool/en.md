@@ -2,6 +2,7 @@
 title: "Thread Pool"
 summary: "The thread pool is a small, shared set of worker threads that run queued work. It stays healthy only when threads are returned quickly: block one on I/O and it is gone until the wait ends; await instead, and the thread serves someone else meanwhile."
 category: "Pools and resources"
+level: 5
 scene: thread-pool
 steps:
   - title: "Short work"

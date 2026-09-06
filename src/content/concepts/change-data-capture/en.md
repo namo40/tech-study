@@ -3,6 +3,7 @@ title: "Change Data Capture"
 summary: "Change data capture reads the log a database already writes for its own recovery and turns each committed row change into an event. Nothing polls a table and nothing is written twice: the change is the message, and the pipeline reads it from where the database put it."
 category: "Distributed transactions and message consistency"
 tags: ["database", "consistency"]
+level: 8
 scene: transactional-outbox
 sceneStep: 4
 related:

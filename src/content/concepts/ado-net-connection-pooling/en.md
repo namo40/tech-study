@@ -3,6 +3,7 @@ title: "ADO.NET Connection Pooling"
 summary: "ADO.NET connection pooling is the layer that actually implements the pool in .NET: Open rents a connection and Dispose returns it, pools are keyed by the exact connection string, and everything above it, Dapper and EF Core included, inherits that machinery whether or not it mentions it."
 category: "Pools and resources"
 tags: ["database"]
+level: 2
 scene: database-connection-pool
 sceneStep: 2
 related:

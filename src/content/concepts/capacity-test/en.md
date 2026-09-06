@@ -3,6 +3,7 @@ title: "Capacity Test"
 summary: "A capacity test answers one question: what is the highest load at which the service still meets its objective? That number, not the peak, is what you can promise."
 category: "Testing and verification"
 tags: ["overload"]
+level: 3
 scene: load-test
 sceneStep: 3
 related:

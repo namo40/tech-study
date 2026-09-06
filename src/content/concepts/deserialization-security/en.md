@@ -2,6 +2,7 @@
 title: "Deserialization Security"
 summary: "Deserialization turns bytes you did not write into live objects, and the moment of construction is the attack surface: the defense is to refuse formats that let the payload name its own types, and to treat every deserialization point as a trust boundary."
 category: "Application security"
+level: 4
 related:
   - label: Input Validation
     slug: input-validation

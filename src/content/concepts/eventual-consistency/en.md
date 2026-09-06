@@ -3,6 +3,7 @@ title: "Eventual Consistency"
 summary: "Eventual consistency is the promise that once updates stop, every replica converges to the same value, with no bound on when. What you design for is the window in between: what readers may see, what they must never see, and which reads need something stronger."
 category: "Data distribution and consistency"
 tags: ["consistency"]
+level: 7
 scene: eventual-consistency
 steps:
   - title: "Convergence"

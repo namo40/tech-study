@@ -2,6 +2,7 @@
 title: "Structured Logging"
 summary: "Structured logging writes a log line as a message template plus named values rather than as a finished sentence, so the store keeps `OrderId` and `CorrelationId` as fields it can index. It is what turns a log search from a substring scan into a query."
 category: "Observability and operations"
+level: 4
 scene: correlation-id
 sceneStep: 2
 related:

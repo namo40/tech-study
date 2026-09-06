@@ -3,6 +3,7 @@ title: "Stateful Shard"
 summary: "A shard that owns state cannot be moved by pointing at another node: a replica has to be filled, the writes that happened while it was filling have to be replayed, and only then does ownership flip. What callers feel is the length of the switch, not the length of the copy."
 category: "Data distribution and consistency"
 tags: ["database"]
+level: 7
 scene: rebalancing
 sceneStep: 4
 related:

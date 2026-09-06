@@ -2,6 +2,7 @@
 title: "Weighted Round Robin"
 summary: "Weighted round robin is the same rotation with a number attached to each server, so a destination with twice the weight comes up twice as often. The weight is a static claim about capacity, which makes going stale its characteristic failure rather than a rare one."
 category: "Edge, routing and service networking"
+level: 4
 scene: load-balancer
 sceneStep: 1
 related:

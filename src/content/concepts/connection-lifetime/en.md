@@ -3,6 +3,7 @@ title: "Connection Lifetime"
 summary: "Connection lifetime is the retirement age of a pooled connection: on return, one older than the limit is destroyed instead of being put back. Its reason for existing is redistribution, because a connection that never retires stays bound to the server node it was opened against."
 category: "Pools and resources"
 tags: ["database"]
+level: 4
 scene: database-connection-pool
 related:
   - label: Database Connection Pool

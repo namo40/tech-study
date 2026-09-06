@@ -3,6 +3,7 @@ title: "Transactional Outbox"
 summary: "The transactional outbox writes the business change and the message it implies in one local transaction, and a relay publishes the message afterwards. The broker may be down and the relay may crash and retry; the message is never lost and never invented, only sometimes repeated."
 category: "Distributed transactions and message consistency"
 tags: ["consistency", "queue"]
+level: 8
 scene: transactional-outbox
 steps:
   - title: "Two writes, no transaction"

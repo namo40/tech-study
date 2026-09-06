@@ -3,6 +3,7 @@ title: "Sharding"
 summary: "Sharding splits one database into many by key: the shard key decides where every row lives, adding a shard forces data to move, and consistent hashing keeps that move small — so growth becomes a bounded, predictable event instead of an emergency."
 category: "Data distribution and consistency"
 tags: ["database"]
+level: 5
 scene: sharding
 steps:
   - title: "One database, until it isn't"

@@ -3,6 +3,7 @@ title: "Horizontal Scaling"
 summary: "Adding capacity by adding instances rather than by making one instance bigger. The arithmetic is easy; the precondition is not, because it only works if any instance can serve any request and if the work actually divides."
 category: "Containers and orchestration"
 tags: ["kubernetes"]
+level: 3
 scene: horizontal-pod-autoscaler
 sceneStep: 2
 related:

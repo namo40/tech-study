@@ -3,6 +3,7 @@ title: "Strong Consistency"
 summary: "Strong consistency is the promise that every read sees the most recent completed write, as though the system held one copy instead of several. It is bought twice: with refusals on the minority side of a partition, and with a round trip on every ordinary read."
 category: "Data distribution and consistency"
 tags: ["consistency"]
+level: 8
 scene: cap-theorem
 sceneStep: 2
 related:

@@ -3,6 +3,7 @@ title: "Attribute-Based Access Control"
 summary: "ABAC decides access by evaluating attributes of the subject, the resource, the action and the environment rather than by looking up a role name. It is the model that answers questions roles cannot phrase, and it composes where roles multiply."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 5
 scene: authorization
 sceneStep: 3
 related:

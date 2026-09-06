@@ -3,6 +3,7 @@ title: "Partitioning"
 summary: "Partitioning decides along which axis data splits: rows apart so each part carries a share of the load, or columns apart so the hot narrow fields stop hauling the cold wide ones. The partition key then decides whether the load actually spreads or piles onto one hot part."
 category: "Data distribution and consistency"
 tags: ["database"]
+level: 4
 scene: partitioning
 steps:
   - title: "One blob that holds everything grows every cost together"

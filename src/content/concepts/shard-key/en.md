@@ -3,6 +3,7 @@ title: "Shard Key"
 summary: "The shard key is the column the router hashes to decide which shard a row lives in. It fixes two things at once — whether a query can be answered by one box, and whether the data spreads evenly — and it is close to unchangeable once data exists."
 category: "Data distribution and consistency"
 tags: ["database"]
+level: 5
 scene: sharding
 sceneStep: 2
 related:

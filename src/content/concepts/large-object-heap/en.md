@@ -3,6 +3,7 @@ title: "Large Object Heap"
 summary: "Any allocation of 85,000 bytes or more goes on the large object heap instead of gen0. It is collected only when gen2 is collected, it is not compacted by default, and the holes it accumulates are why a process can hold far more memory than it is using."
 category: "Performance and optimization"
 tags: ["memory"]
+level: 9
 scene: garbage-collection
 sceneStep: 2
 related:

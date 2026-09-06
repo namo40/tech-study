@@ -2,6 +2,7 @@
 title: "Round Robin"
 summary: "Round robin hands each request to the next server in a fixed rotation. It needs no state beyond a cursor and no measurement of anything, which makes it the right default exactly when every request costs about the same."
 category: "Edge, routing and service networking"
+level: 3
 scene: load-balancer
 sceneStep: 1
 related:

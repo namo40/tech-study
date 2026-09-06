@@ -3,6 +3,7 @@ title: "Throughput"
 summary: "Throughput is how much work finishes per second, which is a different axis from latency: utilization says how busy the resource is, saturation is the queue that forms when arrivals outrun capacity, and near the ceiling latency explodes long before throughput gains another unit."
 category: "Requirements and quality attributes"
 tags: ["metric", "overload"]
+level: 4
 scene: throughput
 steps:
   - title: "Throughput and latency are different axes"

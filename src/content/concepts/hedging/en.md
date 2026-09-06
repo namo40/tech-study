@@ -3,6 +3,7 @@ title: "Hedging"
 summary: "Hedging sends a second copy of a slow call to another replica after a short wait and uses whichever answer comes back first."
 category: "Requirements and quality attributes"
 tags: ["latency"]
+level: 4
 scene: tail-latency
 sceneStep: 3
 related:

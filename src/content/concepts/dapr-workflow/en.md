@@ -2,6 +2,7 @@
 title: "Dapr Workflow"
 summary: "Dapr Workflow is the durable workflow building block of the Dapr runtime: you write the orchestration in your own language SDK, the sidecar persists its progress to a configured state store, and the replay-based execution model is the same one Durable Functions and Temporal use."
 category: "Scheduled work and workflows"
+level: 5
 related:
   - label: Durable Workflow
     slug: durable-workflow

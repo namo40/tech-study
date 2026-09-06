@@ -3,6 +3,7 @@ title: "Backward-Compatible Migration"
 summary: "A backward-compatible migration is a schema change both the running version and the next one can live with. Adding is compatible, removing and renaming are not, and the rule is what makes the version-overlap window survivable rather than merely short."
 category: ".NET data access"
 tags: ["deployment"]
+level: 6
 scene: database-migration
 sceneStep: 2
 related:

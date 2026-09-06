@@ -74,6 +74,8 @@ src/
 
 A page either owns a scene, points at one step of a parent scene with `sceneStep`, or borrows the whole parent scene as an alias; the last two reuse the parent's step text.
 
+A page can also carry a difficulty `level` from 1 to 10, written in the English file only the way tags are, so every locale reads the same number from there. The page shows it as a chip beside the category, and the index groups the ten levels into five bands and filters on them.
+
 ## Adding a scene
 
 A scene is a folder under `src/scenes/<id>/` holding two modules and a stylesheet.

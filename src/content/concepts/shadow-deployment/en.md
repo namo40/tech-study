@@ -3,6 +3,7 @@ title: "Shadow Deployment"
 summary: "A shadow deployment answers a copy of production traffic into the void: real requests prove the new version's behaviour and capacity while users only ever see the old one — as long as its side effects are caged by configuration and its answers are compared rather than served."
 category: "Containers and orchestration"
 tags: ["deployment"]
+level: 5
 scene: shadow-deployment
 steps:
   - title: "Synthetic load never knows the shape of the real thing"

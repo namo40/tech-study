@@ -3,6 +3,7 @@ title: "Schema Registry"
 summary: "A schema registry is the central store for event schemas: producers register a version and get an id, consumers resolve the id back to a schema, and the registry refuses a version that would break the compatibility rule the subject was configured with."
 category: "Messaging and event processing"
 tags: ["queue"]
+level: 5
 related:
   - label: Schema Evolution
     slug: schema-evolution

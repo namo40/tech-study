@@ -2,6 +2,7 @@
 title: "Lease TTL"
 summary: "A lease TTL is how long a held lease stays valid without being renewed. It is the one number that decides both how fast a dead leader's seat frees up and how easily a living one loses its seat to a pause, which is why it is a trade rather than a setting."
 category: "Distributed coordination"
+level: 7
 scene: leader-election
 sceneStep: 2
 related:

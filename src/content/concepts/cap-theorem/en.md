@@ -3,6 +3,7 @@ title: "CAP Theorem"
 summary: "The CAP theorem says that when a network partition cuts your replicas apart you must choose: keep answering with data that may not be the latest, or refuse to answer until agreement returns. PACELC adds the everyday half, because with no partition anywhere you are still trading latency against consistency on every read."
 category: "Data distribution and consistency"
 tags: ["consistency", "database"]
+level: 8
 scene: cap-theorem
 steps:
   - title: "Partitions happen; not choosing splits you in two"

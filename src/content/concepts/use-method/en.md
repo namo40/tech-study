@@ -3,6 +3,7 @@ title: "USE Method"
 summary: "A checklist for finding a bottleneck: list every resource that can run out, then ask each one the same three questions about utilization, saturation and errors. Its value is coverage, because it makes you look where no dashboard was pointing."
 category: "Requirements and quality attributes"
 tags: ["metric"]
+level: 3
 scene: throughput
 sceneStep: 2
 related:

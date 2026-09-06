@@ -3,6 +3,7 @@ title: "Dead Letter Queue"
 summary: "A dead-letter queue is where the broker sets aside a message it has tried to deliver too many times, so one poison message stops costing throughput and starts waiting for a person. Nothing is lost: it is parked, with its history attached."
 category: "Messaging and event processing"
 tags: ["queue"]
+level: 5
 scene: dead-letter-queue
 steps:
   - title: "One poison message costs the whole line"

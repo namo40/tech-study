@@ -3,6 +3,7 @@ title: "Cross-Site Scripting"
 summary: "Cross-site scripting is user text rendered as code: a stored comment carrying a script runs in every reader's browser, with that reader's session. The fix is to encode every value for the context it lands in, keep the raw-output hatches shut, and hang a content security policy under both."
 category: "Application security"
 tags: []
+level: 4
 scene: cross-site-scripting
 steps:
   - title: "In the reader's browser, with the reader's power"

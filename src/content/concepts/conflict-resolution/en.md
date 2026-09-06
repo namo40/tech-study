@@ -3,6 +3,7 @@ title: "Conflict Resolution"
 summary: "Conflict resolution is what a system does with two writes that were both accepted and disagree. Convergence is not a property replicas have; it is a rule somebody chose, and every rule either discards a write or asks the domain what the combination means."
 category: "Data distribution and consistency"
 tags: ["consistency"]
+level: 8
 scene: cap-theorem
 sceneStep: 3
 related:

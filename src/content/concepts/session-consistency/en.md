@@ -3,6 +3,7 @@ title: "Session Consistency"
 summary: "Session consistency is the guarantee that one session sees a single, self-consistent view of the data: its own writes, and never a value older than one it has already been shown. It is the level most applications actually want, and the cheapest one that fixes the bug users report."
 category: "Data distribution and consistency"
 tags: ["consistency"]
+level: 7
 scene: eventual-consistency
 sceneStep: 3
 related:

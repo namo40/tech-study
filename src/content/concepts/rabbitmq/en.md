@@ -3,6 +3,7 @@ title: "RabbitMQ"
 summary: "RabbitMQ is an open-source broker you run yourself: publishers send to an exchange, bindings decide which queues get a copy, and routing is something you declare in the broker over a standard protocol rather than something a cloud service decides for you."
 category: "Messaging and event processing"
 tags: ["queue"]
+level: 4
 related:
   - label: Work Queue
     slug: work-queue

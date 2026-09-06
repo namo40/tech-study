@@ -2,6 +2,7 @@
 title: "Trace"
 summary: "A trace is everything one request set off, gathered under a single id. It is a tree of spans with one root, and drawn against a clock it becomes the waterfall that says which hop the time went into."
 category: "Observability and operations"
+level: 5
 scene: distributed-tracing
 sceneStep: 2
 related:

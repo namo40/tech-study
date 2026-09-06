@@ -3,6 +3,7 @@ title: "Proof Key for Code Exchange"
 summary: "PKCE binds an authorization code to the client that asked for it. The client invents a random verifier per login, sends its hash when requesting the code, and sends the verifier itself when redeeming it, so a stolen code is useless to anyone who does not have the original."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 5
 scene: authorization-code
 sceneStep: 3
 related:

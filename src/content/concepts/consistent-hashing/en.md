@@ -3,6 +3,7 @@ title: "Consistent Hashing"
 summary: "Consistent hashing places nodes and keys on the same ring, so a key belongs to the next node clockwise. Adding or removing a node reassigns only its neighbourhood, which turns scaling from a mass migration into a move proportional to what changed."
 category: "Data distribution and consistency"
 tags: ["database"]
+level: 6
 scene: sharding
 sceneStep: 3
 related:

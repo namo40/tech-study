@@ -3,6 +3,7 @@ title: "Work Queue"
 summary: "A work queue is the buffer between the tier that accepts a request and the tier that does the work, so each of them runs at its own speed and a peak turns into a backlog rather than a failure."
 category: "Application architecture"
 tags: ["queue"]
+level: 6
 scene: web-queue-worker
 sceneStep: 2
 related:

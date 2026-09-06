@@ -3,6 +3,7 @@ title: "Linearizability"
 summary: "Linearizability is the formal version of strong consistency: every operation appears to take effect at one instant between its call and its return, and those instants respect real time. It is a single-object property, it is not serializability, and it is checkable from a recorded history."
 category: "Data distribution and consistency"
 tags: ["consistency"]
+level: 10
 scene: cap-theorem
 sceneStep: 2
 related:

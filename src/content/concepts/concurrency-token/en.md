@@ -3,6 +3,7 @@ title: "Concurrency Token"
 summary: "A concurrency token is a property the data access layer adds to the WHERE clause of every update and delete, so a write lands only if the row still holds the value that was read. It turns a silent lost update into an exception the application can answer, without holding a lock across the time it took to decide."
 category: "Transactions and concurrency"
 tags: ["ef-core", "database"]
+level: 5
 scene: isolation-level
 sceneStep: 3
 related:

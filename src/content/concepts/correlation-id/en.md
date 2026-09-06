@@ -2,6 +2,7 @@
 title: "Correlation ID"
 summary: "A correlation id is one value stamped on everything a single business flow touches — every log line, every message, every hop — so that one search returns the whole story in order. Tracing may be sampled away; the id in the logs is what always remains."
 category: "Observability and operations"
+level: 4
 scene: correlation-id
 steps:
   - title: "Three services, one story, no thread"

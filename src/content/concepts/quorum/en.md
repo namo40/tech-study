@@ -3,6 +3,7 @@ title: "Quorum"
 summary: "The smallest group that cannot exist twice. Requiring a majority before anything is decided is not a formality; it is arithmetic that makes two simultaneous primaries impossible, at the price of stopping when the majority cannot be reached."
 category: "Data distribution and consistency"
 tags: ["consistency"]
+level: 8
 scene: failover
 sceneStep: 3
 related:

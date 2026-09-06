@@ -2,6 +2,7 @@
 title: "Retry"
 summary: "Retry repeats a failed call after a short wait, on the bet that the failure was transient. It only helps when the wait grows, is randomized, and is bounded."
 category: "Resilience"
+level: 3
 scene: retry
 steps:
   - title: "Retry"

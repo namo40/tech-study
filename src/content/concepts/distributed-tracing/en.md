@@ -2,6 +2,7 @@
 title: "Distributed Tracing"
 summary: "Distributed tracing follows one request across every service it touches. A trace id travels with the request, each hop records a span with its own start and end, and the spans assemble into a timeline that shows where the time actually went."
 category: "Observability and operations"
+level: 5
 scene: distributed-tracing
 steps:
   - title: "Three logs, no answer"

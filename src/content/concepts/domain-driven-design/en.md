@@ -3,6 +3,7 @@ title: "Domain-Driven Design"
 summary: "Domain-driven design draws borders where the language changes: inside a bounded context one word means one thing, the aggregate root guards the invariants at the door, and contexts talk through translation instead of sharing a model."
 category: "Application architecture"
 tags: ["consistency"]
+level: 5
 scene: domain-driven-design
 steps:
   - title: "A model everyone shares is a model no one owns"

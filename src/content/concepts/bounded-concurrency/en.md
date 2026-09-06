@@ -3,6 +3,7 @@ title: "Bounded Concurrency"
 summary: "Fixing how many operations may be in flight at once. It is the channel backpressure travels up: when the limit is reached, the next caller waits, and the wait is what reaches the source."
 category: "Resilience"
 tags: ["overload"]
+level: 5
 scene: backpressure
 sceneStep: 3
 related:

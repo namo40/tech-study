@@ -3,6 +3,7 @@ title: "Expand-Contract Migration"
 summary: "An expand-contract migration splits a schema change into two releases with a period of coexistence between them: expand adds the new shape while the old one still works, and contract removes the old shape only once nothing is left that reads it."
 category: "Containers and orchestration"
 tags: ["deployment", "database"]
+level: 5
 scene: blue-green-deployment
 sceneStep: 4
 related:

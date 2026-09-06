@@ -3,6 +3,7 @@ title: "Batching"
 summary: "Collecting several items and handling them in one trip. It buys throughput with latency, so the batch needs a size cap and a delay cap — and it is the fix a queue can never be."
 category: "Resilience"
 tags: ["queue"]
+level: 4
 scene: backpressure
 sceneStep: 4
 related:

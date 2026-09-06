@@ -3,6 +3,7 @@ title: "Azure Service Bus"
 summary: "Azure Service Bus is Azure's managed message broker: queues for commands, topics and subscriptions for fan-out, and a lock-based consumption model where redelivery, dead-lettering and ordered sessions are equipment that ships with the service rather than code you write."
 category: "Messaging and event processing"
 tags: ["queue"]
+level: 4
 related:
   - label: Work Queue
     slug: work-queue

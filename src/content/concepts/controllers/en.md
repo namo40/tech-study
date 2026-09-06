@@ -2,6 +2,7 @@
 title: "Controllers"
 summary: "Controllers are ASP.NET Core's class-based API model: actions grouped on a type, attribute routing on top of the same endpoint routing, and a filter pipeline where authentication, validation and error handling become layers rather than repeated code."
 category: ".NET runtime and hosting"
+level: 3
 related:
   - label: Minimal APIs
     slug: minimal-apis

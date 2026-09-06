@@ -2,6 +2,7 @@
 title: "Sticky Session"
 summary: "A sticky session pins each user to the instance that holds their in-memory state, which makes a stateful app scale at the price of uneven load and a session that dies with its instance. Moving the session to a shared store removes the need for it."
 category: "Server state management"
+level: 5
 scene: sticky-session
 steps:
   - title: "Round robin, in-memory session"

@@ -3,6 +3,7 @@ title: "Token Rotation"
 summary: "A refresh token is replaced every time it is redeemed, so each one works exactly once. That makes the second use of a spent token evidence of theft, and the server's answer is to revoke the whole family rather than the single token."
 category: "Authentication and authorization"
 tags: ["oauth"]
+level: 6
 scene: oauth-2-0
 sceneStep: 3
 related:

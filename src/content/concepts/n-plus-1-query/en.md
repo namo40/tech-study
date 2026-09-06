@@ -3,6 +3,7 @@ title: "N+1 Query"
 summary: "The N+1 query problem is one query for a list followed by one more query per row in it. It is invisible with five rows and fatal with five thousand, because the cost is round trips, not data."
 category: ".NET data access"
 tags: ["ef-core", "database", "latency"]
+level: 4
 scene: n-plus-1-query
 steps:
   - title: "N+1"

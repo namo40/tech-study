@@ -2,6 +2,7 @@
 title: "Asynchronous I/O"
 summary: "Asynchronous I/O is a read or a write the operating system accepts now and reports on later, so nothing has to sit and wait for it. The request is handed to the device or the network stack, the calling thread is released, and the completion arrives as an event."
 category: "Pools and resources"
+level: 5
 scene: async-await
 sceneStep: 1
 related:

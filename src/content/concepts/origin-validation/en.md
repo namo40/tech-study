@@ -2,6 +2,7 @@
 title: "Origin Validation"
 summary: "Origin validation is the server checking, on its own, which site a request was started from, by reading the Origin header the browser attaches and refusing anything that does not name a host it expects. It is the third line behind SameSite and an antiforgery token, and it fails in a different way from both."
 category: "Application security"
+level: 5
 scene: cookie-authentication
 sceneStep: 4
 related:
