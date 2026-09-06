@@ -33,6 +33,8 @@ related:
     slug: reverse-proxy
   - label: YARP
     slug: yarp
+  - label: Service Discovery
+    slug: service-discovery
   - label: Sticky Session
     slug: sticky-session
   - label: Readiness Probe

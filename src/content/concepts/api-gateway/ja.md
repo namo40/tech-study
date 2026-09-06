@@ -11,6 +11,8 @@ related:
     slug: yarp
   - label: Load Balancer
     slug: load-balancer
+  - label: Service Discovery
+    slug: service-discovery
   - label: Facade
     slug: facade
   - label: Strangler Fig

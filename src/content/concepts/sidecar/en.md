@@ -20,6 +20,8 @@ related:
     slug: api-gateway
   - label: Reverse Proxy
     slug: reverse-proxy
+  - label: Service Discovery
+    slug: service-discovery
   - label: Secret Injection
     slug: secret-injection
   - label: Workload Identity
