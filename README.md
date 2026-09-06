@@ -13,7 +13,7 @@ Tech Study is a static site that explains server technology keywords with short 
 - **TypeScript** for the player, the sound cues, and the theme toggle. There is no UI framework.
 - Markdown content collections hold the page prose. Interface strings live in typed TypeScript modules.
 - Sound effects are synthesized with the Web Audio API, so no audio files are shipped.
-- The Noto faces are fetched at build time and served from the same origin as the site, so a page makes no request to Google Fonts.
+- The Noto faces are served from the same origin as the site. `scripts/fetch-fonts.mjs` downloads them into `public/fonts/` before a build, so a page makes no request to Google Fonts.
 
 ## Getting started
 
@@ -49,6 +49,8 @@ SITE_URL=https://example.com SITE_BASE=/tech-study/ npm run build
 Every internal link and asset goes through the base path, so moving between a domain root and a sub-path needs no source changes.
 
 The site is published at `https://namo40.github.io/tech-study/` by `.github/workflows/deploy.yml`, which runs on every push to `main` and can also be started by hand from the Actions tab. It type checks the project, verifies the scenes, builds with `SITE_URL=https://namo40.github.io` and `SITE_BASE=/tech-study/`, and hands the result to GitHub Pages. Nothing is committed to a `gh-pages` branch, so the repository's Pages source has to be set to **GitHub Actions** rather than to a branch.
+
+`npm run build` runs `scripts/fetch-fonts.mjs` first, which writes `public/fonts/` — one stylesheet per language and the woff2 files it points at. Those files are build output rather than source, so they are not committed; the script leaves whatever is already on disk alone, and `npm run fonts -- --force` fetches the set again. The stylesheets address their font files relatively, so they need no base path of their own.
 
 `public/robots.txt` is copied to the site as it is, and its `Sitemap:` line spells out the full address of the sitemap index. That line is the one place the published address is written by hand, so changing `SITE_URL` or `SITE_BASE` means editing it as well.
 
