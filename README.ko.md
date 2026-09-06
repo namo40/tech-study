@@ -47,6 +47,12 @@ SITE_URL=https://example.com SITE_BASE=/tech-study/ npm run build
 
 모든 내부 링크와 에셋이 base path를 거치므로, 도메인 루트와 하위 경로 사이를 오갈 때 소스를 고칠 필요가 없습니다.
 
+사이트는 `.github/workflows/deploy.yml`이 `https://namo40.github.io/tech-study/`에 게시합니다. 이 워크플로는 `main`에 push할 때마다 돌고, Actions 탭에서 직접 실행할 수도 있습니다. 타입 검사와 장면 검증을 거친 뒤 `SITE_URL=https://namo40.github.io`, `SITE_BASE=/tech-study/`로 빌드해 결과를 GitHub Pages에 넘깁니다. `gh-pages` 브랜치에는 아무것도 커밋하지 않으므로, 저장소의 Pages 소스는 브랜치가 아니라 **GitHub Actions**로 설정해야 합니다.
+
+`public/robots.txt`는 사이트에 그대로 복사되고, 그 안의 `Sitemap:` 줄이 사이트맵 색인의 전체 주소를 적어 둡니다. 게시 주소를 손으로 적는 자리는 이 줄뿐이므로, `SITE_URL`이나 `SITE_BASE`를 바꾸면 이 줄도 함께 고쳐야 합니다.
+
+사이트맵 자체는 `site` 값에서 생성하는데, `SITE_URL`이 없으면 이 값은 `http://localhost:4321`이 됩니다. 그래서 변수 없이 돌린 로컬 빌드는 `sitemap-0.xml`에 localhost 주소를 씁니다. 두 변수를 모두 지정한 빌드만 게시할 만한 사이트맵을 만듭니다.
+
 ## 프로젝트 구조
 
 ```
@@ -56,7 +62,7 @@ src/
   content/concepts/     키워드마다 언어별 마크다운 파일
   i18n/                 인터페이스 문자열, 영어가 키 집합을 정의
   layouts/              문서 골격: head, 폰트, 테마, 헤더, 푸터
-  pages/                루트 리다이렉트, /{lang}/, /{lang}/{slug}
+  pages/                루트 리다이렉트, 404, /{lang}/, /{lang}/{slug}
   components/           헤더, 언어 전환, 테마 전환, 장면 플레이어
   scenes/               무대 마크업, 무대 스타일, GSAP 타임라인
   scripts/              플레이어, 효과음, 테마 전환

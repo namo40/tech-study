@@ -47,6 +47,12 @@ SITE_URL=https://example.com SITE_BASE=/tech-study/ npm run build
 
 Every internal link and asset goes through the base path, so moving between a domain root and a sub-path needs no source changes.
 
+The site is published at `https://namo40.github.io/tech-study/` by `.github/workflows/deploy.yml`, which runs on every push to `main` and can also be started by hand from the Actions tab. It type checks the project, verifies the scenes, builds with `SITE_URL=https://namo40.github.io` and `SITE_BASE=/tech-study/`, and hands the result to GitHub Pages. Nothing is committed to a `gh-pages` branch, so the repository's Pages source has to be set to **GitHub Actions** rather than to a branch.
+
+`public/robots.txt` is copied to the site as it is, and its `Sitemap:` line spells out the full address of the sitemap index. That line is the one place the published address is written by hand, so changing `SITE_URL` or `SITE_BASE` means editing it as well.
+
+The sitemap itself is generated from `site`, which falls back to `http://localhost:4321` when `SITE_URL` is unset. A plain local build therefore writes localhost URLs into `sitemap-0.xml`; only a build with both variables set produces a sitemap worth publishing.
+
 ## Project structure
 
 ```
@@ -56,7 +62,7 @@ src/
   content/concepts/     One markdown file per locale, per keyword
   i18n/                 Interface strings; English defines the key set
   layouts/              Document shell: head, fonts, theme, header, footer
-  pages/                Root redirect, /{lang}/, /{lang}/{slug}
+  pages/                Root redirect, 404, /{lang}/, /{lang}/{slug}
   components/           Header, language switcher, theme toggle, scene player
   scenes/               Stage markup, stage styles, and GSAP timelines
   scripts/              Player, sound cues, theme toggle
