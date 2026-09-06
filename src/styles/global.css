@@ -834,8 +834,13 @@ kbd {
   color: var(--fg-soft);
 }
 
+/*
+ * A long English title has no break opportunity between its words' letters, so
+ * on a narrow screen — or with the body text turned up — the heading follows
+ * the viewport width instead of splitting a word or reaching past the edge.
+ */
 .concept__title {
-  font-size: var(--text-3xl);
+  font-size: min(var(--text-3xl), 11vw);
   margin-block: var(--space-2) var(--space-3);
 }
 
@@ -918,6 +923,17 @@ kbd {
   padding: 0.1em 0.35em;
   border-radius: var(--radius-sm);
   background: var(--surface-2);
+}
+
+/*
+ * A package name, a path or a URL carries no break opportunity of its own, so
+ * inline code and links are allowed to break mid-token rather than push the
+ * body past a narrow viewport or past the edge at a large text size; a code
+ * block stays out of this, because it scrolls on its own instead.
+ */
+.prose :not(pre) > code,
+.prose a {
+  overflow-wrap: anywhere;
 }
 
 .prose pre {
