@@ -19,20 +19,24 @@ export const htmlLang: Record<Locale, string> = {
 };
 
 /**
- * One Google Fonts stylesheet per locale, so a reader never downloads the CJK
- * face they do not need.
+ * The `cssVariable` each font family is registered under in the Astro config.
+ * A page loads the one its locale needs, so a reader never downloads a CJK
+ * face they have no use for.
  */
-export const fontStylesheet: Record<Locale, string> = {
-  en: 'https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&display=swap',
-  ko: 'https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap',
-  ja: 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap',
+export const fontVariable: Record<Locale, import('astro:assets').CssVariable> = {
+  en: '--font-noto-sans',
+  ko: '--font-noto-sans-kr',
+  ja: '--font-noto-sans-jp',
 };
 
-/** CSS `font-family` stack for each locale. */
+/**
+ * CSS `font-family` stack for each locale. The variable already carries the
+ * family name and the fallbacks behind it, so nothing is repeated here.
+ */
 export const fontFamily: Record<Locale, string> = {
-  en: "'Noto Sans', system-ui, sans-serif",
-  ko: "'Noto Sans KR', system-ui, sans-serif",
-  ja: "'Noto Sans JP', system-ui, sans-serif",
+  en: 'var(--font-noto-sans)',
+  ko: 'var(--font-noto-sans-kr)',
+  ja: 'var(--font-noto-sans-jp)',
 };
 
 export function isLocale(value: string | undefined): value is Locale {
