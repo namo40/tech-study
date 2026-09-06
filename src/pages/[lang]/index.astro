@@ -4,6 +4,7 @@ import Base from '../../layouts/Base.astro';
 import { TAGS } from '../../content.config';
 import { localePath, locales, t, toLocale, tSplit, type MessageKey } from '../../i18n';
 import { FEATURED_SCENES } from '../../scenes/featured';
+import { LEVEL_BANDS, levelBand } from '../../utils/level';
 import { getSceneAsset } from '../../scenes/registry';
 import '../../styles/scene.css';
 
@@ -16,13 +17,17 @@ const locale = toLocale(Astro.params.lang);
 const entries = await getCollection('concepts');
 
 /*
- * Tags are written in the English file only, so every locale reads them from
- * there and the same page carries the same tags in all three.
+ * Tags and the difficulty level are written in the English file only, so every
+ * locale reads them from there and the same page carries the same ones in all
+ * three.
  */
 const tagsBySlug = new Map<string, readonly string[]>();
+const levelBySlug = new Map<string, number>();
 for (const entry of entries) {
   if (!entry.id.endsWith('/en')) continue;
-  tagsBySlug.set(entry.id.split('/')[0] ?? entry.id, entry.data.tags);
+  const slug = entry.id.split('/')[0] ?? entry.id;
+  tagsBySlug.set(slug, entry.data.tags);
+  if (entry.data.level !== undefined) levelBySlug.set(slug, entry.data.level);
 }
 
 const concepts = entries
@@ -35,6 +40,7 @@ const concepts = entries
       summary: entry.data.summary,
       category: entry.data.category,
       tags: tagsBySlug.get(slug) ?? [],
+      level: levelBySlug.get(slug),
       // A sub-keyword page and an alias page both borrow a parent scene, so
       // only the page that owns the scene gets the play glyph.
       ownsScene: entry.data.scene === slug,
@@ -48,6 +54,18 @@ const tagChips = TAGS.map((tag) => ({
   label: t(locale, `tag.${tag}` as MessageKey),
   count: concepts.filter((concept) => concept.tags.includes(tag)).length,
 })).filter((tag) => tag.count > 0);
+
+/*
+ * One chip per band of two levels, counted and dropped when empty on the same
+ * rule as the tags. While no page has been rated the whole row is empty and
+ * the index shows no difficulty filter at all.
+ */
+const levelChips = LEVEL_BANDS.map((band) => ({
+  band,
+  label: t(locale, `level.band.${band}` as MessageKey),
+  count: concepts.filter((concept) => concept.level !== undefined && levelBand(concept.level) === band)
+    .length,
+})).filter((chip) => chip.count > 0);
 
 /*
  * Category sections, biggest first. Ties fall back to the locale-aware name
@@ -281,6 +299,27 @@ const [stepLabelBefore, stepLabelAfter] = tSplit(locale, 'player.goToStep', 'n')
           </div>
         )}
 
+        {levelChips.length > 0 && (
+          <div
+            class="home__levels"
+            role="group"
+            aria-label={t(locale, 'level.bandLabel')}
+            data-levels-row
+          >
+            {levelChips.map((chip) => (
+              <button
+                type="button"
+                class="home-tag"
+                data-level-band={chip.band}
+                aria-pressed="false"
+              >
+                {chip.label}
+                <span class="home-tag__count">{chip.count}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         <div class="home__index" id="home-index">
           <h2 class="visually-hidden">{t(locale, 'home.heading')}</h2>
           <p class="home-empty" data-empty hidden>{t(locale, 'home.noMatches')}</p>
@@ -293,7 +332,12 @@ const [stepLabelBefore, stepLabelAfter] = tSplit(locale, 'player.goToStep', 'n')
               </div>
               <ul class="home-section__grid">
                 {section.items.map((item) => (
-                  <li data-entry data-title={item.title} data-tags={item.tags.join(' ')}>
+                  <li
+                    data-entry
+                    data-title={item.title}
+                    data-tags={item.tags.join(' ')}
+                    data-level={item.level}
+                  >
                     <a class="home-entry" href={localePath(locale, item.slug)}>
                       <span class="home-entry__head">
                         <span class="home-entry__title">{item.title}</span>
@@ -306,6 +350,14 @@ const [stepLabelBefore, stepLabelAfter] = tSplit(locale, 'player.goToStep', 'n')
                           >
                             <path d="M8 5.5v13l11-6.5z" />
                           </svg>
+                        )}
+                        {item.level !== undefined && (
+                          <span
+                            class="home-entry__level"
+                            title={t(locale, 'level.of', { level: item.level })}
+                          >
+                            {t(locale, 'level.short', { level: item.level })}
+                          </span>
                         )}
                       </span>
                       <span class="home-entry__summary">{item.summary}</span>

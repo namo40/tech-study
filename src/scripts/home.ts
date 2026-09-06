@@ -1,5 +1,6 @@
 import { loadScene, loadStage, type SceneStage } from '../scenes/load';
 import type { SceneInstance, SceneStep } from '../scenes/types';
+import { bandRange, levelBand, rangeBand } from '../utils/level';
 import { formatSpeed, getSpeed, nextSpeed, setSpeed } from './speed';
 
 /**
@@ -9,8 +10,8 @@ import { formatSpeed, getSpeed, nextSpeed, setSpeed } from './speed';
  * at a time and can swap the scene in place: only the scene it opens on ships
  * with the page, and the others are fetched on the click that asks for them,
  * so switching is a download plus a fresh timeline and never a navigation. The
- * filter narrows the index by title and by tag and hides the sections it
- * empties.
+ * filter narrows the index by title, by tag, and by difficulty band, and hides
+ * the sections it empties.
  *
  * The theater borrows the driving pattern of the scene player: the scene owns
  * the timeline, this module only mirrors its position into the controls. There
@@ -285,12 +286,14 @@ function initTheater(root: HTMLElement): void {
 }
 
 /**
- * Narrows the index by name and by tag at once. The two conditions are an AND,
- * so a tag plus a query is the intersection of the two, and there is only ever
- * one tag active: clicking the one already pressed clears it.
+ * Narrows the index by name, by tag, and by difficulty band at once. The three
+ * conditions are an AND, so a tag plus a band plus a query is the intersection
+ * of all three, and each of the two chip rows holds at most one choice:
+ * clicking the chip already pressed clears it.
  *
- * The active tag is mirrored into `?tag=`, which makes the filtered index a
- * link the tag chips of a concept page can point at.
+ * Both choices are mirrored into `?tag=` and `?level=`, which makes the
+ * filtered index a link the chips of a concept page can point at. A band goes
+ * into the address as its range, so `?level=5-6` picks the third band.
  */
 function initFilter(root: HTMLElement): void {
   const input = root.querySelector<HTMLInputElement>('[data-filter]');
@@ -299,6 +302,9 @@ function initFilter(root: HTMLElement): void {
   const empty = root.querySelector<HTMLElement>('[data-empty]');
   const tagButtons = Array.from(
     root.querySelectorAll<HTMLButtonElement>('[data-tags-row] [data-tag]'),
+  );
+  const levelButtons = Array.from(
+    root.querySelectorAll<HTMLButtonElement>('[data-levels-row] [data-level-band]'),
   );
   const sections = Array.from(root.querySelectorAll<HTMLElement>('[data-section]')).map(
     (section) => ({
@@ -309,11 +315,16 @@ function initFilter(root: HTMLElement): void {
         title: (row.dataset.title ?? '').toLowerCase(),
         // Tag slugs are English in every locale, so they need no folding.
         tags: (row.dataset.tags ?? '').split(' ').filter(Boolean),
+        // Band 0 stands for a page nobody has rated, which no chip matches:
+        // picking a band hides it rather than showing it under a difficulty
+        // it does not claim.
+        band: row.dataset.level ? levelBand(Number(row.dataset.level)) : 0,
       })),
     }),
   );
 
   let activeTag = '';
+  let activeBand = 0;
 
   const apply = (): void => {
     const query = input.value.trim().toLowerCase();
@@ -324,7 +335,8 @@ function initFilter(root: HTMLElement): void {
       for (const item of group.rows) {
         const hit =
           (query === '' || item.title.includes(query)) &&
-          (activeTag === '' || item.tags.includes(activeTag));
+          (activeTag === '' || item.tags.includes(activeTag)) &&
+          (activeBand === 0 || item.band === activeBand);
         item.row.hidden = !hit;
         if (hit) visible += 1;
       }
@@ -336,9 +348,13 @@ function initFilter(root: HTMLElement): void {
     if (empty) empty.hidden = matches > 0;
   };
 
-  const syncTags = (): void => {
+  /** Mirrors both chip rows, so a click on either shows up on the pressed one. */
+  const syncChips = (): void => {
     for (const button of tagButtons) {
       button.setAttribute('aria-pressed', String(button.dataset.tag === activeTag));
+    }
+    for (const button of levelButtons) {
+      button.setAttribute('aria-pressed', String(Number(button.dataset.levelBand) === activeBand));
     }
   };
 
@@ -347,6 +363,8 @@ function initFilter(root: HTMLElement): void {
     const url = new URL(window.location.href);
     if (activeTag) url.searchParams.set('tag', activeTag);
     else url.searchParams.delete('tag');
+    if (activeBand) url.searchParams.set('level', bandRange(activeBand));
+    else url.searchParams.delete('level');
     window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
   };
 
@@ -354,7 +372,17 @@ function initFilter(root: HTMLElement): void {
     button.addEventListener('click', () => {
       const tag = button.dataset.tag ?? '';
       activeTag = tag === activeTag ? '' : tag;
-      syncTags();
+      syncChips();
+      syncUrl();
+      apply();
+    });
+  }
+
+  for (const button of levelButtons) {
+    button.addEventListener('click', () => {
+      const band = Number(button.dataset.levelBand);
+      activeBand = band === activeBand ? 0 : band;
+      syncChips();
       syncUrl();
       apply();
     });
@@ -362,12 +390,22 @@ function initFilter(root: HTMLElement): void {
 
   input.addEventListener('input', apply);
 
-  // A `?tag=` the page was opened with picks that chip, and a slug no chip
-  // carries is left alone: the index simply opens unfiltered.
-  const requested = new URLSearchParams(window.location.search).get('tag') ?? '';
-  if (tagButtons.some((button) => button.dataset.tag === requested)) activeTag = requested;
+  // A `?tag=` or `?level=` the page was opened with picks that chip, and a
+  // value no chip carries is left alone: the index simply opens unfiltered on
+  // that axis.
+  const params = new URLSearchParams(window.location.search);
+  const requestedTag = params.get('tag') ?? '';
+  if (tagButtons.some((button) => button.dataset.tag === requestedTag)) activeTag = requestedTag;
 
-  syncTags();
+  const requestedBand = rangeBand(params.get('level') ?? '');
+  if (
+    requestedBand !== undefined &&
+    levelButtons.some((button) => Number(button.dataset.levelBand) === requestedBand)
+  ) {
+    activeBand = requestedBand;
+  }
+
+  syncChips();
   apply();
 }
 

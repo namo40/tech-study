@@ -676,7 +676,8 @@ kbd {
  * under the category chips and stays deliberately quieter: an outline on the
  * page background, with the accent held back for the one that is active.
  */
-.home__tags {
+.home__tags,
+.home__levels {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
@@ -804,6 +805,19 @@ kbd {
   stroke-linejoin: round;
 }
 
+/*
+ * The difficulty on an index row is a number, not a colour, so it reads the
+ * same in either theme and to anyone who cannot tell the two apart. It stays
+ * quieter than the title it follows.
+ */
+.home-entry__level {
+  flex: none;
+  margin-left: auto;
+  font-size: var(--text-xs);
+  font-weight: 400;
+  color: var(--fg-soft);
+}
+
 .home-entry__summary {
   display: block;
   font-size: var(--text-sm);
@@ -827,11 +841,41 @@ kbd {
   margin-bottom: var(--space-6);
 }
 
+/* Category and difficulty share one line above the title. */
+.concept__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 .concept__category {
   font-size: var(--text-xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--fg-soft);
+}
+
+/*
+ * The difficulty chip speaks the outline language of the tag chips below the
+ * summary, only smaller, because it sits on the category line. The number is
+ * the whole message, so nothing here depends on colour.
+ */
+.concept-level {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--fg-soft);
+  font-size: var(--text-xs);
+  line-height: 1.7;
+  text-decoration: none;
+}
+
+.concept-level:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 /*
@@ -1325,10 +1369,11 @@ kbd {
     display: grid;
     grid-template-columns: 20.625rem minmax(0, 1fr) 15rem;
     grid-template-areas:
-      'theater head  filter'
-      'theater chips chips'
-      'theater tags  tags'
-      'theater index index';
+      'theater head   filter'
+      'theater chips  chips'
+      'theater tags   tags'
+      'theater levels levels'
+      'theater index  index';
     column-gap: var(--space-6);
     row-gap: var(--space-5);
   }
@@ -1354,6 +1399,11 @@ kbd {
 
   .home__tags {
     grid-area: tags;
+    align-self: start;
+  }
+
+  .home__levels {
+    grid-area: levels;
     align-self: start;
   }
 

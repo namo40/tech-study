@@ -3,6 +3,7 @@ import { getCollection, render } from 'astro:content';
 import ScenePlayer from '../../components/ScenePlayer.astro';
 import Base from '../../layouts/Base.astro';
 import { localePath, t, toLocale, tSplit, type MessageKey } from '../../i18n';
+import { bandRange, levelBand } from '../../utils/level';
 
 export async function getStaticPaths() {
   const entries = await getCollection('concepts');
@@ -50,13 +51,35 @@ const tags = (englishEntry ?? entry).data.tags.map((tag) => ({
   href: `${localePath(locale)}?tag=${tag}`,
 }));
 
+/*
+ * Difficulty is read from the English file for the same reason, and a page
+ * that borrows a parent's scene still carries its own number rather than
+ * inheriting one. The chip opens the index on the band the level falls in, so
+ * it is the same kind of way in as a tag chip. Pages that have not been rated
+ * yet leave the chip out entirely.
+ */
+const level = (englishEntry ?? entry).data.level;
+const levelLabel = level === undefined ? '' : t(locale, 'level.of', { level });
+
 const { Content } = await render(entry);
 ---
 
 <Base locale={locale} title={entry.data.title} description={entry.data.summary} path={slug}>
   <article>
     <header class="concept__header">
-      <p class="concept__category">{entry.data.category}</p>
+      <p class="concept__meta">
+        <span class="concept__category">{entry.data.category}</span>
+        {level !== undefined && (
+          <a
+            class="concept-level"
+            href={`${localePath(locale)}?level=${bandRange(levelBand(level))}`}
+            title={levelLabel}
+            aria-label={levelLabel}
+          >
+            {t(locale, 'level.short', { level })}
+          </a>
+        )}
+      </p>
       <h1 class="concept__title">{entry.data.title}</h1>
       <p class="concept__summary">{entry.data.summary}</p>
       {tags.length > 0 && (
