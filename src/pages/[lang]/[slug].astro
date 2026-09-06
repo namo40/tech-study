@@ -55,8 +55,9 @@ const tags = (englishEntry ?? entry).data.tags.map((tag) => ({
  * Difficulty is read from the English file for the same reason, and a page
  * that borrows a parent's scene still carries its own number rather than
  * inheriting one. The chip opens the index on the band the level falls in, so
- * it is the same kind of way in as a tag chip. Pages that have not been rated
- * yet leave the chip out entirely.
+ * it is the same kind of way in as a tag chip. Every page has a level, and the
+ * value is still read as optional only because the schema has to let a Korean
+ * or Japanese file through without one.
  */
 const level = (englishEntry ?? entry).data.level;
 const levelLabel = level === undefined ? '' : t(locale, 'level.of', { level });

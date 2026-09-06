@@ -1,4 +1,4 @@
-import { glob } from 'astro/loaders';
+import { glob, type Loader } from 'astro/loaders';
 import { defineCollection } from 'astro:content';
 import { z } from 'astro/zod';
 
@@ -30,8 +30,31 @@ export type Tag = (typeof TAGS)[number];
  * derives the entry id from that path, so `circuit-breaker/ko` identifies the
  * Korean version of the `circuit-breaker` page.
  */
+const files = glob({ base: './src/content/concepts', pattern: '**/*.md' });
+
+/**
+ * Every page has to carry a difficulty level, and the level lives in the
+ * English file. The schema cannot say so on its own: it validates one file at
+ * a time and a Korean or Japanese file looks the same to it, so demanding a
+ * level there would reject every translation. The rule is checked here
+ * instead, once the whole collection has been read.
+ */
+const conceptFiles: Loader = {
+  name: 'concept-files',
+  load: async (context) => {
+    await files.load(context);
+    const unrated = context.store
+      .entries()
+      .filter(([id, entry]) => id.endsWith('/en') && entry.data.level === undefined)
+      .map(([id]) => id);
+    if (unrated.length > 0) {
+      throw new Error(`Pages without a level: ${unrated.join(', ')}`);
+    }
+  },
+};
+
 const concepts = defineCollection({
-  loader: glob({ base: './src/content/concepts', pattern: '**/*.md' }),
+  loader: conceptFiles,
   schema: z.object({
     title: z.string(),
     /** One sentence definition shown under the heading. */
@@ -49,8 +72,9 @@ const concepts = defineCollection({
      * before the page makes sense. Written in the English file only and joined
      * in at build time the way tags are, so one page carries one level in all
      * three locales and a `level` in a Korean or Japanese file is ignored.
-     * Optional while the pages are still being rated: one without it shows no
-     * level at all.
+     * Every page carries one, which is why the loader above refuses an English
+     * file that leaves it out. It is spelled optional only so that the Korean
+     * and Japanese files, which never carry it, still validate.
      */
     level: z.number().int().min(1).max(10).optional(),
     /**

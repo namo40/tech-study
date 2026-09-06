@@ -57,8 +57,9 @@ const tagChips = TAGS.map((tag) => ({
 
 /*
  * One chip per band of two levels, counted and dropped when empty on the same
- * rule as the tags. While no page has been rated the whole row is empty and
- * the index shows no difficulty filter at all.
+ * rule as the tags. Every page is rated, so a band drops out only when no page
+ * falls in it. The level is still read as optional because the schema has to
+ * let a Korean or Japanese file through without one.
  */
 const levelChips = LEVEL_BANDS.map((band) => ({
   band,
