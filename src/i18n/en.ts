@@ -59,6 +59,25 @@ const en = {
   'level.band.4': '7–8 Distributed',
   'level.band.5': '9–10 Internals',
 
+  // Reading state, kept only in the reader's own browser. Each state names
+  // itself in words and carries a symbol as well, so it still reads when the
+  // colours are taken away.
+  'reading.stateLabel': 'Reading state',
+  'reading.state.unread': 'Unread',
+  'reading.state.read': 'Read',
+  'reading.state.updated': 'Updated',
+  'reading.state.bookmarked': 'Bookmarked',
+  'reading.markRead': 'Mark as read',
+  'reading.markReadAgain': 'Mark as read again',
+  'reading.markUnread': 'Mark as unread',
+  'reading.updatedNote': 'Updated since last read',
+  'reading.bookmark': 'Bookmark',
+  'reading.bookmarked': 'Bookmarked',
+  'reading.removeBookmark': 'Remove bookmark',
+  'reading.bookmarkTitle': 'Bookmark {title}',
+  'reading.progress': '{read} of {total} read · {bookmarks} bookmarked',
+  'reading.sectionProgress': '{read} of {total} read',
+
   'lang.label': 'Language',
   'lang.en': 'English',
   'lang.ko': '한국어',

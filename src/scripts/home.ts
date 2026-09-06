@@ -1,6 +1,14 @@
 import { loadScene, loadStage, type SceneStage } from '../scenes/load';
 import type { SceneInstance, SceneStep } from '../scenes/types';
 import { bandRange, levelBand, rangeBand } from '../utils/level';
+import {
+  isBookmarked,
+  loadState,
+  onReadingChange,
+  readStateOf,
+  toggleBookmark,
+  type ReadState,
+} from './reading';
 import { formatSpeed, getSpeed, nextSpeed, setSpeed } from './speed';
 
 /**
@@ -285,30 +293,75 @@ function initTheater(root: HTMLElement): void {
   void activate(activeId);
 }
 
+/** The marks a concept page shows for the same states, so a row and its page agree. */
+const STATE_MARK: Record<ReadState, string> = {
+  unread: '',
+  read: '✓',
+  updated: '↻',
+};
+
 /**
- * Narrows the index by name, by tag, and by difficulty band at once. The three
- * conditions are an AND, so a tag plus a band plus a query is the intersection
- * of all three, and each of the two chip rows holds at most one choice:
- * clicking the chip already pressed clears it.
+ * Fills the `{name}` placeholders of a message the page carried over in a data
+ * attribute. The message sets live on the server side of the build, so a count
+ * only the browser can work out has to be poured into the template here.
+ */
+function fillTemplate(template: string, values: Record<string, number>): string {
+  return template.replace(/\{(\w+)\}/g, (match, name: string) => {
+    const value = values[name];
+    return value === undefined ? match : String(value);
+  });
+}
+
+/**
+ * Narrows the index by name, by tag, by difficulty band, and by reading state
+ * at once. The conditions are an AND, so a tag plus a band plus a state plus a
+ * query is the intersection of all of them, and each of the three chip rows
+ * holds at most one choice: clicking the chip already pressed clears it.
  *
- * Both choices are mirrored into `?tag=` and `?level=`, which makes the
+ * The tag and the band are mirrored into `?tag=` and `?level=`, which makes the
  * filtered index a link the chips of a concept page can point at. A band goes
  * into the address as its range, so `?level=5-6` picks the third band.
+ *
+ * Reading state stays out of the address, because it is the one axis that
+ * describes the reader rather than the pages. It comes from this browser and
+ * nowhere else, so a link carrying it would hand whoever opened it a filter
+ * drawn from somebody else's history. For the same reason it is read back from
+ * storage rather than remembered here: another tab can mark a page read while
+ * this one is open.
  */
 function initFilter(root: HTMLElement): void {
   const input = root.querySelector<HTMLInputElement>('[data-filter]');
   if (!input) return;
 
   const empty = root.querySelector<HTMLElement>('[data-empty]');
+  const index = root.querySelector<HTMLElement>('#home-index');
+  const progress = root.querySelector<HTMLElement>('[data-progress]');
   const tagButtons = Array.from(
     root.querySelectorAll<HTMLButtonElement>('[data-tags-row] [data-tag]'),
   );
   const levelButtons = Array.from(
     root.querySelectorAll<HTMLButtonElement>('[data-levels-row] [data-level-band]'),
   );
+  const stateButtons = Array.from(
+    root.querySelectorAll<HTMLButtonElement>('[data-states-row] [data-state]'),
+  );
+
+  /*
+   * The locale decides which stored revision a row is measured against, and it
+   * is also why the two state words travel in the markup: the page is built per
+   * locale and this script is not.
+   */
+  const lang = index?.dataset.lang ?? '';
+  const stateLabel: Record<ReadState, string> = {
+    unread: '',
+    read: index?.dataset.labelRead ?? '',
+    updated: index?.dataset.labelUpdated ?? '',
+  };
+
   const sections = Array.from(root.querySelectorAll<HTMLElement>('[data-section]')).map(
     (section) => ({
       section,
+      count: section.querySelector<HTMLElement>('[data-section-count]'),
       rows: Array.from(section.querySelectorAll<HTMLElement>('[data-entry]')).map((row) => ({
         row,
         // Titles are matched as the locale wrote them, only case folded.
@@ -319,12 +372,21 @@ function initFilter(root: HTMLElement): void {
         // picking a band hides it rather than showing it under a difficulty
         // it does not claim.
         band: row.dataset.level ? levelBand(Number(row.dataset.level)) : 0,
+        slug: row.dataset.slug ?? '',
+        rev: row.dataset.rev ?? '',
+        mark: row.querySelector<HTMLElement>('[data-entry-state]'),
+        bookmark: row.querySelector<HTMLButtonElement>('[data-bookmark-toggle]'),
+        // Both are rewritten from storage before the first draw.
+        state: 'unread' as ReadState,
+        bookmarked: false,
       })),
     }),
   );
+  const total = sections.reduce((sum, group) => sum + group.rows.length, 0);
 
   let activeTag = '';
   let activeBand = 0;
+  let activeState = '';
 
   const apply = (): void => {
     const query = input.value.trim().toLowerCase();
@@ -336,7 +398,9 @@ function initFilter(root: HTMLElement): void {
         const hit =
           (query === '' || item.title.includes(query)) &&
           (activeTag === '' || item.tags.includes(activeTag)) &&
-          (activeBand === 0 || item.band === activeBand);
+          (activeBand === 0 || item.band === activeBand) &&
+          (activeState === '' ||
+            (activeState === 'bookmarked' ? item.bookmarked : item.state === activeState));
         item.row.hidden = !hit;
         if (hit) visible += 1;
       }
@@ -348,13 +412,89 @@ function initFilter(root: HTMLElement): void {
     if (empty) empty.hidden = matches > 0;
   };
 
-  /** Mirrors both chip rows, so a click on either shows up on the pressed one. */
+  /**
+   * Rereads the stored state and redraws everything that depends on it: every
+   * row's mark and star, the four chip counts, the progress line, and the tally
+   * on each section head. It ends in `apply()` because a row's state is one of
+   * the filter conditions, so a change of state can change what is on screen.
+   */
+  const refreshReading = (): void => {
+    const stored = loadState();
+    const counts: Record<string, number> = { unread: 0, read: 0, updated: 0, bookmarked: 0 };
+
+    for (const group of sections) {
+      let done = 0;
+      for (const item of group.rows) {
+        item.state = readStateOf(stored, item.slug, lang, item.rev);
+        item.bookmarked = isBookmarked(stored, item.slug);
+        item.row.dataset.state = item.state;
+        item.row.dataset.bookmarked = String(item.bookmarked);
+
+        if (item.mark) {
+          item.mark.hidden = item.state === 'unread';
+          item.mark.textContent =
+            item.state === 'unread' ? '' : `${STATE_MARK[item.state]} ${stateLabel[item.state]}`;
+        }
+
+        if (item.bookmark) {
+          const symbol = item.bookmark.querySelector<HTMLElement>('[data-bookmark-symbol]');
+          if (symbol) symbol.textContent = item.bookmarked ? '★' : '☆';
+          item.bookmark.setAttribute('aria-pressed', String(item.bookmarked));
+          const removeLabel = item.bookmark.dataset.titleOn;
+          if (item.bookmarked && removeLabel) item.bookmark.setAttribute('title', removeLabel);
+          else item.bookmark.removeAttribute('title');
+        }
+
+        counts[item.state] = (counts[item.state] ?? 0) + 1;
+        if (item.bookmarked) counts.bookmarked = (counts.bookmarked ?? 0) + 1;
+        if (item.state !== 'unread') done += 1;
+      }
+
+      /*
+       * A section shows its plain size until there is something to report, so
+       * an index nobody has read yet reads exactly as it did before.
+       */
+      if (group.count) {
+        const size = Number(group.count.dataset.total ?? group.rows.length);
+        const template = group.count.dataset.template ?? '';
+        if (done > 0) {
+          group.count.textContent = `${done} / ${size}`;
+          group.count.setAttribute('title', fillTemplate(template, { read: done, total: size }));
+        } else {
+          group.count.textContent = String(size);
+          group.count.removeAttribute('title');
+        }
+      }
+    }
+
+    for (const button of stateButtons) {
+      const cell = button.querySelector<HTMLElement>('[data-state-count]');
+      if (cell) cell.textContent = String(counts[button.dataset.state ?? ''] ?? 0);
+    }
+
+    if (progress) {
+      // A page rewritten since it was read has still been read, so it counts
+      // towards the progress even though its own chip has moved on.
+      progress.textContent = fillTemplate(progress.dataset.template ?? '', {
+        read: (counts.read ?? 0) + (counts.updated ?? 0),
+        total,
+        bookmarks: counts.bookmarked ?? 0,
+      });
+    }
+
+    apply();
+  };
+
+  /** Mirrors all three chip rows, so a click on any of them shows up on the pressed one. */
   const syncChips = (): void => {
     for (const button of tagButtons) {
       button.setAttribute('aria-pressed', String(button.dataset.tag === activeTag));
     }
     for (const button of levelButtons) {
       button.setAttribute('aria-pressed', String(Number(button.dataset.levelBand) === activeBand));
+    }
+    for (const button of stateButtons) {
+      button.setAttribute('aria-pressed', String(button.dataset.state === activeState));
     }
   };
 
@@ -388,6 +528,27 @@ function initFilter(root: HTMLElement): void {
     });
   }
 
+  // The state chips are a single-choice row like the other two, and the only
+  // one that leaves the address alone.
+  for (const button of stateButtons) {
+    button.addEventListener('click', () => {
+      const state = button.dataset.state ?? '';
+      activeState = state === activeState ? '' : state;
+      syncChips();
+      apply();
+    });
+  }
+
+  // A star only writes. Every redraw arrives through the change event, which is
+  // also how a press in another tab reaches this one.
+  for (const group of sections) {
+    for (const item of group.rows) {
+      item.bookmark?.addEventListener('click', () => {
+        toggleBookmark(item.slug);
+      });
+    }
+  }
+
   input.addEventListener('input', apply);
 
   // A `?tag=` or `?level=` the page was opened with picks that chip, and a
@@ -406,7 +567,8 @@ function initFilter(root: HTMLElement): void {
   }
 
   syncChips();
-  apply();
+  onReadingChange(refreshReading);
+  refreshReading();
 }
 
 /** Gap kept below the theater when it is taller than the viewport and pins to the bottom. */

@@ -5,6 +5,7 @@ import { TAGS } from '../../content.config';
 import { localePath, locales, t, toLocale, tSplit, type MessageKey } from '../../i18n';
 import { FEATURED_SCENES } from '../../scenes/featured';
 import { LEVEL_BANDS, levelBand } from '../../utils/level';
+import { pageRevision } from '../../utils/revision';
 import { getSceneAsset } from '../../scenes/registry';
 import '../../styles/scene.css';
 
@@ -41,6 +42,9 @@ const concepts = entries
       category: entry.data.category,
       tags: tagsBySlug.get(slug) ?? [],
       level: levelBySlug.get(slug),
+      // The row carries the revision of the locale file it links to, so the
+      // browser can mark a page the reader has read as rewritten since.
+      rev: pageRevision(entry),
       // A sub-keyword page and an alias page both borrow a parent scene, so
       // only the page that owns the scene gets the play glyph.
       ownsScene: entry.data.scene === slug,
@@ -67,6 +71,20 @@ const levelChips = LEVEL_BANDS.map((band) => ({
   count: concepts.filter((concept) => concept.level !== undefined && levelBand(concept.level) === band)
     .length,
 })).filter((chip) => chip.count > 0);
+
+/*
+ * Reading state is a fourth way into the index, and the only one the server
+ * cannot answer: the site is built once for everyone, so what is rendered
+ * here is what a first-time reader sees and the browser corrects the counts
+ * from that reader's own storage. The row is always drawn, because a reader
+ * who has read nothing yet is exactly the one being invited to start.
+ */
+const stateChips = [
+  { state: 'unread', label: t(locale, 'reading.state.unread'), count: concepts.length },
+  { state: 'read', label: t(locale, 'reading.state.read'), count: 0 },
+  { state: 'updated', label: t(locale, 'reading.state.updated'), count: 0 },
+  { state: 'bookmarked', label: t(locale, 'reading.state.bookmarked'), count: 0 },
+];
 
 /*
  * Category sections, biggest first. Ties fall back to the locale-aware name
@@ -321,20 +339,58 @@ const [stepLabelBefore, stepLabelAfter] = tSplit(locale, 'player.goToStep', 'n')
           </div>
         )}
 
-        <div class="home__index" id="home-index">
+        {/*
+          Reading state belongs to the reader, so unlike a tag or a band it
+          never reaches the address: a filtered index passed on as a link
+          would tell the next reader something about themselves that is not
+          true.
+        */}
+        <div
+          class="home__states"
+          role="group"
+          aria-label={t(locale, 'reading.stateLabel')}
+          data-states-row
+        >
+          {stateChips.map((chip) => (
+            <button type="button" class="home-tag" data-state={chip.state} aria-pressed="false">
+              {chip.label}
+              <span class="home-tag__count" data-state-count>{chip.count}</span>
+            </button>
+          ))}
+        </div>
+
+        <p class="home__progress" data-progress data-template={t(locale, 'reading.progress')}>
+          {t(locale, 'reading.progress', { read: 0, total: concepts.length, bookmarks: 0 })}
+        </p>
+
+        <div
+          class="home__index"
+          id="home-index"
+          data-lang={locale}
+          data-label-read={t(locale, 'reading.state.read')}
+          data-label-updated={t(locale, 'reading.state.updated')}
+        >
           <h2 class="visually-hidden">{t(locale, 'home.heading')}</h2>
           <p class="home-empty" data-empty hidden>{t(locale, 'home.noMatches')}</p>
           {sections.map((section) => (
             <section class="home-section" id={section.id} data-section>
               <div class="home-section__head">
                 <h3 class="home-section__title">{section.name}</h3>
-                <span class="home-section__count">{section.items.length}</span>
+                <span
+                  class="home-section__count"
+                  data-section-count
+                  data-total={section.items.length}
+                  data-template={t(locale, 'reading.sectionProgress')}
+                >{section.items.length}</span>
                 <span class="home-section__rule"></span>
               </div>
               <ul class="home-section__grid">
                 {section.items.map((item) => (
                   <li
+                    class="home-item"
                     data-entry
+                    data-slug={item.slug}
+                    data-rev={item.rev}
                     data-title={item.title}
                     data-tags={item.tags.join(' ')}
                     data-level={item.level}
@@ -360,9 +416,24 @@ const [stepLabelBefore, stepLabelAfter] = tSplit(locale, 'player.goToStep', 'n')
                             {t(locale, 'level.short', { level: item.level })}
                           </span>
                         )}
+                        <span class="home-entry__state" data-entry-state hidden></span>
                       </span>
                       <span class="home-entry__summary">{item.summary}</span>
                     </a>
+                    {/*
+                      The star sits beside the link rather than inside it, so
+                      pressing it marks the row instead of opening the page.
+                    */}
+                    <button
+                      type="button"
+                      class="home-entry__bookmark"
+                      data-bookmark-toggle
+                      aria-pressed="false"
+                      aria-label={t(locale, 'reading.bookmarkTitle', { title: item.title })}
+                      data-title-on={t(locale, 'reading.removeBookmark')}
+                    >
+                      <span data-bookmark-symbol aria-hidden="true">☆</span>
+                    </button>
                   </li>
                 ))}
               </ul>

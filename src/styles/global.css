@@ -677,7 +677,8 @@ kbd {
  * page background, with the accent held back for the one that is active.
  */
 .home__tags,
-.home__levels {
+.home__levels,
+.home__states {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
@@ -716,6 +717,16 @@ kbd {
 
 .home-tag[aria-pressed='true'] .home-tag__count {
   color: inherit;
+}
+
+/*
+ * How much of the index has been read is a sentence rather than a bar,
+ * because the numbers are the point and a bar would have to be read as a
+ * colour. It sits under the state chips it summarises.
+ */
+.home__progress {
+  font-size: var(--text-sm);
+  color: var(--fg-soft);
 }
 
 /* Index */
@@ -771,6 +782,11 @@ kbd {
   min-width: 0;
 }
 
+/* The star is placed against the row, not against the link it sits beside. */
+.home-item {
+  position: relative;
+}
+
 .home-section__grid > li[hidden] {
   display: none;
 }
@@ -793,6 +809,8 @@ kbd {
   align-items: center;
   gap: var(--space-2);
   font-weight: 600;
+  /* Room at the right end for the star, which overlaps the link. */
+  padding-right: 1.75rem;
 }
 
 .home-entry__glyph {
@@ -816,6 +834,43 @@ kbd {
   font-size: var(--text-xs);
   font-weight: 400;
   color: var(--fg-soft);
+}
+
+/*
+ * The reading mark follows the difficulty at the right end of the head and
+ * carries its own word, so a read row and an updated one are told apart by
+ * what they say rather than by how they are coloured.
+ */
+.home-entry__state {
+  flex: none;
+  font-size: var(--text-xs);
+  font-weight: 400;
+  color: var(--fg-soft);
+}
+
+/*
+ * The star is a control inside a row whose whole surface is a link, so it is
+ * lifted out of the link and laid over its corner instead.
+ */
+.home-entry__bookmark {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.home-entry__bookmark:hover,
+.home-entry__bookmark[aria-pressed='true'] {
+  color: var(--accent);
 }
 
 .home-entry__summary {
@@ -876,6 +931,73 @@ kbd {
 .concept-level:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+/*
+ * Reading state and bookmark close the meta line from the right, so the
+ * category and the difficulty keep the reading order and the two controls
+ * stay out of the way until they are wanted. They borrow the difficulty
+ * chip so the line stays one row of pills, and each says its state in a word
+ * and a symbol, which is what carries it when the accent colour does not.
+ */
+.concept__actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.concept-action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--fg-soft);
+  font: inherit;
+  font-size: var(--text-xs);
+  line-height: 1.7;
+  cursor: pointer;
+}
+
+.concept-action:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.concept-action[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* The unread state has no symbol, so the empty span gives back its gap. */
+.concept-action__symbol:empty {
+  display: none;
+}
+
+.concept-action__note {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+/*
+ * The same row again where the reading ends, ruled off from the body so it
+ * reads as the end of it rather than as one more paragraph. It is a `<p>`
+ * inside the prose, whose only claim on it is a bottom margin, and that is
+ * the gap wanted here anyway.
+ */
+.concept__done {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
 }
 
 /*
@@ -1373,6 +1495,8 @@ kbd {
       'theater chips  chips'
       'theater tags   tags'
       'theater levels levels'
+      'theater states states'
+      'theater read   read'
       'theater index  index';
     column-gap: var(--space-6);
     row-gap: var(--space-5);
@@ -1404,6 +1528,16 @@ kbd {
 
   .home__levels {
     grid-area: levels;
+    align-self: start;
+  }
+
+  .home__states {
+    grid-area: states;
+    align-self: start;
+  }
+
+  .home__progress {
+    grid-area: read;
     align-self: start;
   }
 

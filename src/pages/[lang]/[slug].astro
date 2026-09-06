@@ -1,9 +1,11 @@
 ---
 import { getCollection, render } from 'astro:content';
+import ReadingControls from '../../components/ReadingControls.astro';
 import ScenePlayer from '../../components/ScenePlayer.astro';
 import Base from '../../layouts/Base.astro';
 import { localePath, t, toLocale, tSplit, type MessageKey } from '../../i18n';
 import { bandRange, levelBand } from '../../utils/level';
+import { pageRevision } from '../../utils/revision';
 
 export async function getStaticPaths() {
   const entries = await getCollection('concepts');
@@ -62,6 +64,13 @@ const tags = (englishEntry ?? entry).data.tags.map((tag) => ({
 const level = (englishEntry ?? entry).data.level;
 const levelLabel = level === undefined ? '' : t(locale, 'level.of', { level });
 
+/*
+ * The revision travels with the page so the browser can tell a reader who
+ * marked it as read that it has been rewritten since. It is per locale file,
+ * which is why it is taken from this entry rather than from the English one.
+ */
+const revision = pageRevision(entry);
+
 const { Content } = await render(entry);
 ---
 
@@ -80,6 +89,13 @@ const { Content } = await render(entry);
             {t(locale, 'level.short', { level })}
           </a>
         )}
+        <ReadingControls
+          slug={slug}
+          locale={locale}
+          revision={revision}
+          bookmark
+          class="concept__actions"
+        />
       </p>
       <h1 class="concept__title">{entry.data.title}</h1>
       <p class="concept__summary">{entry.data.summary}</p>
@@ -112,6 +128,18 @@ const { Content } = await render(entry);
 
     <div class="prose">
       <Content />
+
+      {/*
+        A reader finishes at the bottom, so the toggle is offered again where
+        they end up rather than only on the line they scrolled past.
+      */}
+      <ReadingControls
+        slug={slug}
+        locale={locale}
+        revision={revision}
+        placement="end"
+        class="concept__done"
+      />
 
       {
         entry.data.related.length > 0 && (
@@ -154,3 +182,9 @@ const { Content } = await render(entry);
     </div>
   </article>
 </Base>
+
+<script>
+  import { initReadingControls } from '../../scripts/reading';
+
+  initReadingControls();
+</script>
