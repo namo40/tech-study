@@ -35,6 +35,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # The build fetches the web fonts first and skips whatever is already on
+      # disk, so a cache hit turns that step into a no-op. The key is the
+      # script, because the script decides which files are asked for.
+      - name: Cache the web fonts
+        uses: actions/cache@v5
+        with:
+          path: public/fonts
+          key: fonts-${{ hashFiles('scripts/fetch-fonts.mjs') }}
+
       - name: Type check
         run: npm run check
 

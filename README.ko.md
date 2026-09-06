@@ -13,6 +13,7 @@ Tech Study는 서버 기술 키워드를 짧은 모션 그래픽으로 설명하
 - **TypeScript**로 플레이어, 효과음, 테마 전환을 구현합니다. UI 프레임워크는 쓰지 않습니다.
 - 페이지 본문은 Markdown 콘텐츠 컬렉션에 두고, 인터페이스 문자열은 타입이 붙은 TypeScript 모듈에 둡니다.
 - 효과음은 Web Audio API로 합성하므로 오디오 파일을 배포하지 않습니다.
+- Noto 글꼴은 사이트와 같은 오리진에서 제공합니다. `scripts/fetch-fonts.mjs`가 빌드 전에 `public/fonts/`로 내려받으므로, 페이지가 Google Fonts에 요청을 보내지 않습니다.
 
 ## 시작하기
 
@@ -48,6 +49,8 @@ SITE_URL=https://example.com SITE_BASE=/tech-study/ npm run build
 모든 내부 링크와 에셋이 base path를 거치므로, 도메인 루트와 하위 경로 사이를 오갈 때 소스를 고칠 필요가 없습니다.
 
 사이트는 `.github/workflows/deploy.yml`이 `https://namo40.github.io/tech-study/`에 게시합니다. 이 워크플로는 `main`에 push할 때마다 돌고, Actions 탭에서 직접 실행할 수도 있습니다. 타입 검사와 장면 검증을 거친 뒤 `SITE_URL=https://namo40.github.io`, `SITE_BASE=/tech-study/`로 빌드해 결과를 GitHub Pages에 넘깁니다. `gh-pages` 브랜치에는 아무것도 커밋하지 않으므로, 저장소의 Pages 소스는 브랜치가 아니라 **GitHub Actions**로 설정해야 합니다.
+
+`npm run build`는 먼저 `scripts/fetch-fonts.mjs`를 실행해 `public/fonts/`를 만듭니다. 여기에 언어별 스타일시트 하나와 그 스타일시트가 가리키는 woff2 파일이 들어갑니다. 이 파일들은 소스가 아니라 빌드 산출물이므로 저장소에 커밋하지 않습니다. 스크립트는 이미 있는 파일을 건드리지 않고, `npm run fonts -- --force`로 전체를 다시 받습니다. 스타일시트가 폰트 파일을 상대 경로로 가리키므로 base path를 따로 넣을 필요가 없습니다.
 
 `public/robots.txt`는 사이트에 그대로 복사되고, 그 안의 `Sitemap:` 줄이 사이트맵 색인의 전체 주소를 적어 둡니다. 게시 주소를 손으로 적는 자리는 이 줄뿐이므로, `SITE_URL`이나 `SITE_BASE`를 바꾸면 이 줄도 함께 고쳐야 합니다.
 

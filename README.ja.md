@@ -13,6 +13,7 @@ Tech Study は、サーバー技術のキーワードを短いモーショング
 - **TypeScript** でプレーヤー、効果音、テーマ切り替えを実装します。UI フレームワークは使いません。
 - ページ本文は Markdown のコンテンツコレクションに置き、インターフェイス文字列は型の付いた TypeScript モジュールに置きます。
 - 効果音は Web Audio API で合成するため、音声ファイルは配布しません。
+- Noto フォントはサイトと同じオリジンから配信します。`scripts/fetch-fonts.mjs` がビルドの前に `public/fonts/` へダウンロードするため、ページから Google Fonts へのリクエストは発生しません。
 
 ## はじめかた
 
@@ -48,6 +49,8 @@ SITE_URL=https://example.com SITE_BASE=/tech-study/ npm run build
 内部リンクとアセットはすべて base path を通るので、ドメイン直下とサブパスを行き来してもソースを直す必要はありません。
 
 サイトは `.github/workflows/deploy.yml` が `https://namo40.github.io/tech-study/` に公開します。このワークフローは `main` への push のたびに走り、Actions タブから手動で実行することもできます。型チェックとシーンの検証を行ったあと、`SITE_URL=https://namo40.github.io`、`SITE_BASE=/tech-study/` でビルドし、その結果を GitHub Pages に渡します。`gh-pages` ブランチには何もコミットしないため、リポジトリの Pages のソースはブランチではなく **GitHub Actions** に設定します。
+
+`npm run build` は最初に `scripts/fetch-fonts.mjs` を実行し、`public/fonts/` を作ります。ここには言語ごとのスタイルシート 1 つと、そのスタイルシートが指す woff2 ファイルが入ります。これらはソースではなくビルドの生成物なので、リポジトリにはコミットしません。スクリプトはすでにあるファイルには手を付けず、`npm run fonts -- --force` で一式を取り直します。スタイルシートはフォントファイルを相対パスで指すため、base path を別に入れる必要はありません。
 
 `public/robots.txt` はそのままサイトへコピーされ、その中の `Sitemap:` 行がサイトマップインデックスの完全なアドレスを書き出します。公開アドレスを手で書く場所はこの行だけなので、`SITE_URL` や `SITE_BASE` を変えたときはこの行も直します。
 

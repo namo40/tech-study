@@ -56,10 +56,13 @@ const canonical = new URL(localePath(locale, path), Astro.site).href;
       )
     }
 
-    <!-- Only the face this locale needs is requested. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href={fontStylesheet[locale]} />
+    <!--
+      Only the face this locale needs is linked, and it is served from this
+      site. The stylesheet is cut into one `@font-face` per unicode range, so
+      the browser asks for the files the page's characters fall into and
+      nothing else.
+    -->
+    <link rel="stylesheet" href={withBase(fontStylesheet[locale])} />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={siteName} />

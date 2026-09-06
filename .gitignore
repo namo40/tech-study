@@ -5,6 +5,7 @@ CLAUDE.local.md
 AGENTS.override.md
 node_modules/
 dist/
+public/fonts/
 .astro/
 .env
 npm-debug.log*

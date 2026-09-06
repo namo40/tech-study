@@ -19,13 +19,15 @@ export const htmlLang: Record<Locale, string> = {
 };
 
 /**
- * One Google Fonts stylesheet per locale, so a reader never downloads the CJK
- * face they do not need.
+ * One font stylesheet per locale, so a reader never downloads the CJK face
+ * they do not need. `scripts/fetch-fonts.mjs` writes these files into
+ * `public/fonts/` before a build, and the paths go through `withBase()` like
+ * every other asset.
  */
 export const fontStylesheet: Record<Locale, string> = {
-  en: 'https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&display=swap',
-  ko: 'https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap',
-  ja: 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap',
+  en: '/fonts/en.css',
+  ko: '/fonts/ko.css',
+  ja: '/fonts/ja.css',
 };
 
 /** CSS `font-family` stack for each locale. */
