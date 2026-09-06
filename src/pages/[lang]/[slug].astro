@@ -4,6 +4,7 @@ import ScenePlayer from '../../components/ScenePlayer.astro';
 import Base from '../../layouts/Base.astro';
 import { localePath, t, toLocale, tSplit, type MessageKey } from '../../i18n';
 import { bandRange, levelBand } from '../../utils/level';
+import { pageRevision } from '../../utils/revision';
 
 export async function getStaticPaths() {
   const entries = await getCollection('concepts');
@@ -62,6 +63,13 @@ const tags = (englishEntry ?? entry).data.tags.map((tag) => ({
 const level = (englishEntry ?? entry).data.level;
 const levelLabel = level === undefined ? '' : t(locale, 'level.of', { level });
 
+/*
+ * The revision travels with the page so the browser can tell a reader who
+ * marked it as read that it has been rewritten since. It is per locale file,
+ * which is why it is taken from this entry rather than from the English one.
+ */
+const revision = pageRevision(entry);
+
 const { Content } = await render(entry);
 ---
 
@@ -80,6 +88,34 @@ const { Content } = await render(entry);
             {t(locale, 'level.short', { level })}
           </a>
         )}
+        <span class="concept__actions" data-reading data-slug={slug} data-lang={locale} data-rev={revision}>
+          <button
+            type="button"
+            class="concept-action"
+            data-read-toggle
+            aria-pressed="false"
+            data-label-unread={t(locale, 'reading.markRead')}
+            data-label-read={t(locale, 'reading.state.read')}
+            data-label-updated={t(locale, 'reading.markReadAgain')}
+            data-title-read={t(locale, 'reading.markUnread')}
+          >
+            <span class="concept-action__symbol" data-read-symbol aria-hidden="true"></span>
+            <span data-read-label>{t(locale, 'reading.markRead')}</span>
+          </button>
+          <span class="concept-action__note" data-updated-note hidden>{t(locale, 'reading.updatedNote')}</span>
+          <button
+            type="button"
+            class="concept-action"
+            data-bookmark-toggle
+            aria-pressed="false"
+            data-label-off={t(locale, 'reading.bookmark')}
+            data-label-on={t(locale, 'reading.bookmarked')}
+            data-title-on={t(locale, 'reading.removeBookmark')}
+          >
+            <span class="concept-action__symbol" data-bookmark-symbol aria-hidden="true">☆</span>
+            <span data-bookmark-label>{t(locale, 'reading.bookmark')}</span>
+          </button>
+        </span>
       </p>
       <h1 class="concept__title">{entry.data.title}</h1>
       <p class="concept__summary">{entry.data.summary}</p>
@@ -154,3 +190,9 @@ const { Content } = await render(entry);
     </div>
   </article>
 </Base>
+
+<script>
+  import { initReadingControls } from '../../scripts/reading';
+
+  initReadingControls();
+</script>
