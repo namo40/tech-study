@@ -193,6 +193,15 @@
   opacity: 1;
 }
 
+/* The Client only ever gets a cross when a saga was undone rather than lost, so
+   the marker is amber here: the order did not happen, and nothing is left half
+   done. The glyph still says failure, so the colour is not carrying it alone.
+   `data-pivot` sits on this stage's root and on no other, so the selector
+   starts there and leaves every other stage its red cross. */
+.scene-stage[data-pivot] .scene-req:not(.sg-chip) .scene-req-fail-bg {
+  fill: var(--state-half);
+}
+
 /* What travels between the boxes: an event with a diamond on it, or a command
    with room on the right for the answer it comes back with. */
 .sg-chip-bg {

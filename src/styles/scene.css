@@ -350,13 +350,6 @@
   opacity: 0;
 }
 
-/* The Client only ever gets a cross when a saga was undone rather than lost, so
-   the marker is amber here: the order did not happen, and nothing is left half
-   done. The glyph still says failure, so the colour is not carrying it alone. */
-.scene-req:not(.sg-chip) .scene-req-fail-bg {
-  fill: var(--state-half);
-}
-
 /* Horizontal Pod Autoscaler */
 /* The node lights for as long as one evaluation takes, which is the only way
    the reader can see a control loop that is otherwise silent. */
