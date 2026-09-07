@@ -135,14 +135,18 @@ function initTheater(root: HTMLElement): void {
     if (instance.tl.paused() !== wasPaused) syncPlayButton();
   };
 
+  /**
+   * A step chosen by hand is a step the reader wants to look at, so the theater
+   * stops on its first frame rather than running into the next step a few
+   * seconds later. Play continues from there.
+   */
   const goToStep = (index: number): void => {
     if (!instance) return;
     const clamped = Math.min(Math.max(index, 0), instance.steps.length - 1);
     const step = instance.steps[clamped];
     if (!step) return;
-    const keepPlaying = !instance.tl.paused();
     instance.tl.seek(step.time, true);
-    if (reducedMotion() || !keepPlaying) instance.tl.pause();
+    instance.tl.pause();
     render();
     syncPlayButton();
   };
