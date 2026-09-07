@@ -11,6 +11,13 @@ import { formatSpeed, getSpeed, nextSpeed, setSpeed } from './speed';
  * paused on the first frame and then starts playing, unless the reader prefers
  * reduced motion, in which case it stays on that still frame until they ask
  * for movement.
+ *
+ * Choosing a step by hand stops the scene on the first frame of that step. A
+ * step picked from the step buttons, the previous and next buttons, or the
+ * arrow keys is a step the reader wants to look at, so the timeline holds there
+ * instead of running on into the next one, and play carries on from that point.
+ * Scrubbing is not a step choice and keeps its own behaviour: it drives the
+ * timeline directly and leaves it running or paused as it found it.
  */
 
 const reducedMotion = (): boolean =>
@@ -128,18 +135,28 @@ async function initPlayer(root: HTMLElement): Promise<void> {
     syncPlayButton();
   });
 
-  const seekTo = (time: number, keepPlaying: boolean): void => {
+  /**
+   * A seek always lands paused. Every caller names a position the reader asked
+   * for, so the timeline holds that frame and waits for play instead of moving
+   * on by itself. Scrubbing does not come through here.
+   */
+  const seekTo = (time: number): void => {
     tl.seek(time, true);
-    if (reducedMotion() || !keepPlaying) tl.pause();
+    tl.pause();
     render();
     syncPlayButton();
   };
 
+  /**
+   * A step chosen by hand is a step the reader wants to look at, so the scene
+   * stops on its first frame rather than running into the next step a few
+   * seconds later. Play continues from there.
+   */
   const goToStep = (index: number): void => {
     const clamped = Math.min(Math.max(index, 0), steps.length - 1);
     const step = steps[clamped];
     if (!step) return;
-    seekTo(step.time, !tl.paused());
+    seekTo(step.time);
   };
 
   const togglePlay = (): void => {
@@ -224,7 +241,7 @@ async function initPlayer(root: HTMLElement): Promise<void> {
         break;
       case 'Home':
         event.preventDefault();
-        seekTo(0, false);
+        seekTo(0);
         break;
       default:
         break;
